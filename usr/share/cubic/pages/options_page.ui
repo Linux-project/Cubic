@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+  options_page.ui
+
+  Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>
+
+-->
+<!--
+
+  This file is part of Cubic - Custom Ubuntu ISO Creator.
+
+  Cubic is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Cubic is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Cubic. If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkImage" id="options_page__boot_redo_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-redo</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkImage" id="options_page__boot_revert_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-revert</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkImage" id="options_page__boot_undo_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-undo</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkBox" id="options_page__header_bar_boot_box">
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkButton" id="options_page__boot_revert_button">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Revert</property>
+        <property name="image">options_page__boot_revert_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="clicked" handler="on_clicked__options_page__boot_revert_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="options_page__boot_undo_button">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Undo</property>
+        <property name="image">options_page__boot_undo_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="clicked" handler="on_clicked__options_page__boot_undo_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="options_page__boot_redo_button">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Redo</property>
+        <property name="image">options_page__boot_redo_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="clicked" handler="on_clicked__options_page__boot_redo_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <style>
+      <class name="linked"/>
+    </style>
+  </object>
+  <object class="GtkListStore" id="options_page__linux_kernels_tab__liststore">
+    <columns>
+      <!-- column-name Version -->
+      <column type="gchararray"/>
+      <!-- column-name vmlinuz -->
+      <column type="gchararray"/>
+      <!-- column-name new -->
+      <column type="gchararray"/>
+      <!-- column-name initrd -->
+      <column type="gchararray"/>
+      <!-- column-name new1 -->
+      <column type="gchararray"/>
+      <!-- column-name Directory -->
+      <column type="gchararray"/>
+      <!-- column-name Note -->
+      <column type="gchararray"/>
+      <!-- column-name Select -->
+      <column type="gboolean"/>
+      <!-- column-name Remove -->
+      <column type="gboolean"/>
+    </columns>
+  </object>
+  <object class="GtkGrid" id="options_page">
+    <property name="width_request">950</property>
+    <property name="height_request">650</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkLabel" id="options_page__instructions_label">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin_left">18</property>
+        <property name="margin_right">18</property>
+        <property name="margin_top">18</property>
+        <property name="margin_bottom">18</property>
+        <property name="label" translatable="yes">Make changes to advanced options on the tabs above, or proceed with default settings.
+Click the Generate button to begin creating the customized disk image.</property>
+        <property name="justify">fill</property>
+        <property name="wrap">True</property>
+        <property name="max_width_chars">0</property>
+        <property name="xalign">0</property>
+        <property name="yalign">0.5</property>
+        <attributes>
+          <attribute name="scale" value="1.25"/>
+        </attributes>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkStack" id="options_page__stack">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
+        <property name="border_width">1</property>
+        <child>
+          <object class="GtkGrid" id="options_page__linux_kernels_tab__grid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel" id="options_page__linux_kernels_tab__instructions_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">18</property>
+                <property name="margin_right">18</property>
+                <property name="margin_bottom">6</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Select the kernel that will be used to boot the customized live ISO image. This kernel is used during the ISO bootstrap process and may be different from the kernel used by your customized Linux file system. The ISO boot configurations are automatically updated to reference the correct &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names for the kernel selected below.</property>
+                <property name="use_markup">True</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="options_page__linux_kernels_tab__scrolled_window">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkTreeView" id="options_page__linux_kernels_tab__treeview">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="model">options_page__linux_kernels_tab__liststore</property>
+                    <property name="search_column">0</property>
+                    <property name="hover_selection">True</property>
+                    <property name="show_expanders">False</property>
+                    <property name="enable_grid_lines">horizontal</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection"/>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="options_page__linux_kernels_tab__select_treeviewcolumn">
+                        <property name="alignment">0.5</property>
+                        <child>
+                          <object class="GtkCellRendererToggle" id="options_page__linux_kernels_tab__select_cellrenderertoggle">
+                            <property name="height">120</property>
+                            <property name="xpad">12</property>
+                            <property name="radio">True</property>
+                            <signal name="toggled" handler="on_toggled__options_page__kernels_radio_button" swapped="no"/>
+                          </object>
+                          <attributes>
+                            <attribute name="active">7</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="options_page__linux_kernels_tab__treeviewcolumn_1">
+                        <property name="title" translatable="yes">Version</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="options_page__linux_kernels_tab__cellrenderertext_1">
+                            <property name="height">120</property>
+                            <property name="xpad">12</property>
+                          </object>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="options_page__linux_kernels_tab__treeviewcolumn_2">
+                        <property name="title" translatable="yes">Boot Files</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="options_page__linux_kernels_tab__cellrenderertext_2a">
+                            <property name="height">60</property>
+                            <property name="xpad">12</property>
+                            <property name="yalign">1</property>
+                          </object>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                        <child>
+                          <object class="GtkCellRendererText" id="options_page__linux_kernels_tab__cellrenderertext_2b">
+                            <property name="height">60</property>
+                            <property name="xpad">12</property>
+                            <property name="yalign">0</property>
+                          </object>
+                          <attributes>
+                            <attribute name="text">3</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="options_page__linux_kernels_tab__treeviewcolumn_3">
+                        <property name="title" translatable="yes">Notes</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="options_page__linux_kernels_tab__cellrenderertext_3">
+                            <property name="height">120</property>
+                            <property name="xpad">12</property>
+                            <property name="wrap_mode">word</property>
+                            <property name="wrap_width">75</property>
+                            <property name="max_width_chars">75</property>
+                          </object>
+                          <attributes>
+                            <attribute name="markup">6</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">page0</property>
+            <property name="title" translatable="yes">ISO Kernel</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid" id="options_page__preseed_tab__grid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <signal name="map" handler="on_map__options_page__preseed_tab" swapped="no"/>
+            <signal name="unmap" handler="on_unmap__options_page__preseed_tab" swapped="no"/>
+            <child>
+              <object class="GtkLabel" id="options_page__preseed_tab__instructions_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">18</property>
+                <property name="margin_right">18</property>
+                <property name="margin_bottom">6</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Update, add, or delete preseed files used to automate installation. Reference these files in the ISO boot configurations by prefixing them with &lt;tt&gt;/cdrom&lt;/tt&gt;.</property>
+                <property name="use_markup">True</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkStackSidebar" id="options_page__preseed_tab__stack_sidebar">
+                <property name="width_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="margin_right">1</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">True</property>
+                <property name="stack">options_page__preseed_tab__stack</property>
+                <signal name="button-press-event" handler="on_event__options_page__preseed_tab__stack_sidebar" swapped="no"/>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkStack" id="options_page__preseed_tab__stack">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="transition_type">crossfade</property>
+                <property name="interpolate_size">True</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="options_page__preseed_tab__create_grid">
+                <property name="width_request">300</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="valign">center</property>
+                <property name="margin_top">18</property>
+                <property name="margin_bottom">18</property>
+                <property name="hexpand">True</property>
+                <property name="border_width">18</property>
+                <property name="row_spacing">6</property>
+                <property name="column_spacing">12</property>
+                <child>
+                  <object class="GtkLabel" id="options_page__preseed_tab__create_grid__instructions_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">To add a new preseed file, enter a file name and click Create.</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="options_page__preseed_tab__create_grid__label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Preseed File</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="options_page__preseed_tab__create_grid__entry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="width_chars">50</property>
+                    <property name="placeholder_text" translatable="yes">example.seed</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="options_page__preseed_tab__create_grid__button">
+                    <property name="label" translatable="yes">Create</property>
+                    <property name="width_request">90</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <signal name="clicked" handler="on_clicked__options_page__create_button" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="options_page__preseed_tab__create_grid__error_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="options_page__preseed_tab__delete_grid">
+                <property name="width_request">300</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="valign">center</property>
+                <property name="margin_top">18</property>
+                <property name="margin_bottom">18</property>
+                <property name="hexpand">True</property>
+                <property name="border_width">18</property>
+                <property name="row_spacing">6</property>
+                <property name="column_spacing">12</property>
+                <child>
+                  <object class="GtkLabel" id="options_page__preseed_tab__delete_grid__instructions_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">To permanently remove the following preseed file, click Delete.</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="options_page__preseed_tab__delete_grid__label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Preseed File</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="options_page__preseed_tab__delete_grid__entry">
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="width_chars">50</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="options_page__preseed_tab__delete_grid__button">
+                    <property name="label" translatable="yes">Delete</property>
+                    <property name="width_request">90</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <signal name="clicked" handler="on_clicked__options_page__delete_button" swapped="no"/>
+                    <style>
+                      <class name="destructive-action"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="options_page__preseed_tab__delete_grid__error_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">page1</property>
+            <property name="title" translatable="yes">Preseed</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid" id="options_page__boot_configuration_tab__grid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <signal name="map" handler="on_map__options_page__boot_configuration_tab" swapped="no"/>
+            <signal name="unmap" handler="on_unmap__options_page__boot_configuration_tab" swapped="no"/>
+            <child>
+              <object class="GtkLabel" id="options_page__boot_configuration_tab__instructions_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">18</property>
+                <property name="margin_right">18</property>
+                <property name="margin_bottom">6</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Verify and update the live ISO boot parameters, or customize the live ISO boot menu entries. The &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names have been automatically updated to match the selected ISO boot kernel. Reference preseed files by prefixing them with &lt;tt&gt;/cdrom&lt;/tt&gt;.</property>
+                <property name="use_markup">True</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+                <property name="width">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkStackSidebar" id="options_page__boot_configuration_tab__stack_sidebar">
+                <property name="width_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="margin_right">1</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">True</property>
+                <property name="stack">options_page__boot_configuration_tab__stack</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkStack" id="options_page__boot_configuration_tab__stack">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="transition_type">crossfade</property>
+                <property name="interpolate_size">True</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">page2</property>
+            <property name="title" translatable="yes">ISO Boot</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">1</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkListStore" id="options_page__package_manifest_tab__liststore">
+    <columns>
+      <!-- column-name Typical -->
+      <column type="gboolean"/>
+      <!-- column-name Minimal -->
+      <column type="gboolean"/>
+      <!-- column-name Minimal_Previous -->
+      <column type="gboolean"/>
+      <!-- column-name Minimal_Active -->
+      <column type="gboolean"/>
+      <!-- column-name Package -->
+      <column type="gchararray"/>
+      <!-- column-name Version -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkImage" id="options_page__preseed_delete_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-delete</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkImage" id="options_page__preseed_new_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-new</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkBox" id="options_page__header_bar_preseed_box_1">
+    <property name="can_focus">False</property>
+    <property name="homogeneous">True</property>
+    <child>
+      <object class="GtkToggleButton" id="options_page__create_button">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Add a new preseed file</property>
+        <property name="image">options_page__preseed_new_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="toggled" handler="on_toggled__options_page__create_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleButton" id="options_page__delete_button">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Delete the preseed file</property>
+        <property name="image">options_page__preseed_delete_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="toggled" handler="on_toggled__options_page__delete_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <style>
+      <class name="linked"/>
+    </style>
+  </object>
+  <object class="GtkImage" id="options_page__preseed_redo_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-redo</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkImage" id="options_page__preseed_revert_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-revert</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkImage" id="options_page__preseed_undo_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">cubic-undo</property>
+    <property name="icon_size">3</property>
+  </object>
+  <object class="GtkBox" id="options_page__header_bar_preseed_box_2">
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkButton" id="options_page__preseed_revert_button">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Revert</property>
+        <property name="image">options_page__preseed_revert_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="clicked" handler="on_clicked__options_page__preseed_revert_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="options_page__preseed_undo_button">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Undo</property>
+        <property name="image">options_page__preseed_undo_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="clicked" handler="on_clicked__options_page__preseed_undo_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="options_page__preseed_redo_button">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Redo</property>
+        <property name="image">options_page__preseed_redo_image</property>
+        <property name="always_show_image">True</property>
+        <signal name="clicked" handler="on_clicked__options_page__preseed_redo_button" swapped="no"/>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <style>
+      <class name="linked"/>
+    </style>
+  </object>
+  <object class="GtkStackSwitcher" id="options_page__stack_switcher">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_size">0</property>
+  </object>
+</interface>

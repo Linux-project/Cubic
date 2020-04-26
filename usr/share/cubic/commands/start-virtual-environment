@@ -1,0 +1,94 @@
+#!/bin/bash
+
+########################################################################
+#                                                                      #
+# start-virtual-environment                                            #
+#                                                                      #
+# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
+#                                                                      #
+########################################################################
+
+########################################################################
+#                                                                      #
+# This file is part of Cubic - Custom Ubuntu ISO Creator.              #
+#                                                                      #
+# Cubic is free software: you can redistribute it and/or modify        #
+# it under the terms of the GNU General Public License as published by #
+# the Free Software Foundation, either version 3 of the License, or    #
+# (at your option) any later version.                                  #
+#                                                                      #
+# Cubic is distributed in the hope that it will be useful,             #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of       #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the         #
+# GNU General Public License for more details.                         #
+#                                                                      #
+# You should have received a copy of the GNU General Public License    #
+# along with Cubic. If not, see <http://www.gnu.org/licenses/>.        #
+#                                                                      #
+########################################################################
+
+########################################################################
+# Colors
+########################################################################
+
+# https://en.wikipedia.org/wiki/ANSI_escape_code
+# https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
+BOLD_RED='\033[1;31m'
+BOLD_GREEN='\033[1;32m'
+BOLD_BLUE='\033[1;34m'
+BOLD_YELLOW='\033[1;33;1m'
+NORMAL='\033[0m'
+
+########################################################################
+# Constants
+########################################################################
+
+bind_path="/etc/resolv.conf"
+
+########################################################################
+# Arguments
+########################################################################
+
+program=${0}
+number_arguments=${#}
+machine_name=${1}
+directory_path=${2}
+
+# echo "program..................... $program"
+# echo "number of arguments......... $number_arguments"
+# echo "machine_name................ $machine_name"
+# echo "directory_path.............. $directory_path"
+
+########################################################################
+# Command
+########################################################################
+
+# Automatic Networking (No Networking on Ubuntu)
+# ----------------------------------------------
+# systemd-nspawn --quiet --notify-ready=yes --machine "${machine_name}" --directory "${directory_path}"
+#
+# Networking: Option 1
+# --------------------
+# Bind /run/systemd/resolve on the host to /run/resolvconf in the virtual environment, because /etc/resolv.conf -> /run/resolvconf/resolv.conf
+# This is very specific to Ubuntu, which uses /run/systemd/resolve.
+# systemd-nspawn --quiet --notify-ready=yes --bind-ro="/run/systemd/resolve:/run/resolvconf" --machine "${machine_name}" --directory "${directory_path}"
+#
+# Networking: Option 2
+# --------------------
+# Bind the ~target~ of /etc/resolv.conf on the host to the ~target~ of /etc/resolv.conf in the virtual environment.
+# - Host.................. /etc/resolv.conf -> /run/systemd/resolve/stub-resolv.conf
+# - Virtual Environment... /etc/resolv.conf -> /run/resolvconf/resolv.conf
+# systemd-nspawn --quiet --notify-ready=yes --bind-ro="/etc/resolv.conf" --machine "${machine_name}" --directory "${directory_path}"
+
+if [[ -L ${bind_path} ]]; then
+    # Bind resolv.conf only if it is a symlink.
+    # This will bind the link's target as read-only.
+    systemd-nspawn --quiet --notify-ready=yes --bind-ro="${bind_path}" --machine "${machine_name}" --directory "${directory_path}"
+else
+    # Automatically handle resolv.conf as outlined in:
+    # https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html#--resolv-conf=
+    systemd-nspawn --quiet --notify-ready=yes --machine "${machine_name}" --directory "${directory_path}"
+fi
+exit_code=$?
+exit $exit_code
+

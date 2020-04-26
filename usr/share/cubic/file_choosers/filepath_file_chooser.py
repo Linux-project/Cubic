@@ -1,0 +1,97 @@
+#!/usr/bin/python3
+
+########################################################################
+#                                                                      #
+# filepath_file_chooser.py                                             #
+#                                                                      #
+# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
+#                                                                      #
+########################################################################
+
+########################################################################
+#                                                                      #
+# This file is part of Cubic - Custom Ubuntu ISO Creator.              #
+#                                                                      #
+# Cubic is free software: you can redistribute it and/or modify        #
+# it under the terms of the GNU General Public License as published by #
+# the Free Software Foundation, either version 3 of the License, or    #
+# (at your option) any later version.                                  #
+#                                                                      #
+# Cubic is distributed in the hope that it will be useful,             #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of       #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the         #
+# GNU General Public License for more details.                         #
+#                                                                      #
+# You should have received a copy of the GNU General Public License    #
+# along with Cubic. If not, see <http://www.gnu.org/licenses/>.        #
+#                                                                      #
+########################################################################
+
+from utilities import display
+from utilities import logger
+from utilities import model
+
+import os
+
+name = 'filepath_file_chooser'
+callback = None
+
+
+def open(calback):
+    display.set_sensitive('window', False)
+    display.show_all(name)
+    set_callback(calback)
+
+
+def close():
+    display.set_sensitive('window', False)
+    display.hide(name)
+    display.set_sensitive('window', True)
+
+
+def set_callback(new_callback):
+    global callback
+    callback = new_callback
+
+
+def get_selected_filepath():
+    dialog = model.builder.get_object(name)
+    filepath = dialog.get_filename()
+    return filepath
+
+
+def on_clicked__filepath_file_chooser__cancel_button(widget):
+    logger.log_title('Clicked ISO image file chooser cancel button')
+    close()
+
+
+########################################################################
+import traceback
+########################################################################
+
+
+def on_clicked__filepath_file_chooser__select_button(widget):
+    logger.log_title('Clicked ISO image file chooser select button')
+    filepath = get_selected_filepath()
+    # if os.path.isfile(filepath):
+    #     logger.log_value('The selected filepath is', filepath)
+    #     callback(filepath)
+    try:
+        os.path.isfile(filepath)
+        close()
+        callback(filepath)
+    except TypeError as exception:
+        logger.log_value('Error. The selected filepath is', filepath)
+        filepath = None
+
+        ################################################################
+        print(traceback.format_exc())
+        ################################################################
+
+    logger.log_value('The selected filepath is', filepath)
+
+
+def on_delete_event__filepath_file_chooser(widget, event):
+    logger.log_title('Delete ISO image file chooser')
+    close()
+    return True

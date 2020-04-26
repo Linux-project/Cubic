@@ -1,0 +1,238 @@
+#!/usr/bin/python3
+
+########################################################################
+#                                                                      #
+# copy_page.py                                                         #
+#                                                                      #
+# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
+#                                                                      #
+########################################################################
+
+########################################################################
+#                                                                      #
+# This file is part of Cubic - Custom Ubuntu ISO Creator.              #
+#                                                                      #
+# Cubic is free software: you can redistribute it and/or modify        #
+# it under the terms of the GNU General Public License as published by #
+# the Free Software Foundation, either version 3 of the License, or    #
+# (at your option) any later version.                                  #
+#                                                                      #
+# Cubic is distributed in the hope that it will be useful,             #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of       #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the         #
+# GNU General Public License for more details.                         #
+#                                                                      #
+# You should have received a copy of the GNU General Public License    #
+# along with Cubic. If not, see <http://www.gnu.org/licenses/>.        #
+#                                                                      #
+########################################################################
+
+from constants import PERCENT_STOP
+
+from utilities import display
+from utilities import logger
+from utilities import model
+from utilities.progress import show_progress
+from utilities.terminal_utilities import get_current_directory
+
+import os
+from urllib.parse import urlparse, unquote
+
+########################################################################
+# Globals & Constants
+########################################################################
+
+name = 'copy_page'
+
+current_directory = None
+total_files = 0
+file_number = 0
+
+########################################################################
+# Navigation Functions
+########################################################################
+
+
+def setup(action, old_page=None):
+
+    if action == 'copy':
+
+        global current_directory
+        # TODO: Truncate path current_directory so it only starts at root.
+        current_directory = get_current_directory()
+
+        total_files = len(model.uris)
+        if total_files == 1:
+            label = 'Copy one file to %s' % current_directory
+        else:
+            label = 'Copy %s files to %s' % (total_files, current_directory)
+
+        # Create a file details list of files to be copied.
+        file_details_list = create_file_details_list(model.uris)
+
+        display.update_label('copy_page__progress_label', label)
+        display.update_progressbar_text('copy_page__copy_files_progressbar', None)
+        display.update_progressbar_percent('copy_page__copy_files_progressbar', 0)
+        display.update_liststore('copy_page__file_details__liststore', file_details_list)
+
+        return
+
+    else:
+
+        return 'unknown'
+
+
+def enter(action, old_page=None):
+
+    if action == 'copy':
+
+        display.reset_buttons(
+            back_button_label='Cancel',
+            back_action='cancel',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Copy',
+            next_action='copy',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        return
+
+    else:
+
+        return 'unknown'
+
+
+def leave(action, new_page=None):
+
+    if action == 'cancel':
+
+        # TODO: Make sure the next button is enabled (only if the virtual environment is active).
+        #       This may need to be done on the termnal_page setup function for 'cancel' and for 'copy'.
+        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        return
+
+    elif action == 'copy':
+
+        # TODO: Make sure the next button is enabled (only if the virtual environment is active).
+        #       This may need to be done on the termnal_page setup function for 'cancel' and for 'copy'.
+        display.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
+
+        global current_directory
+        copy_files(current_directory, model.uris)
+
+        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        return
+
+    elif action == 'quit':
+
+        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        return
+
+    else:
+
+        return 'unknown'
+
+
+########################################################################
+# Handler Functions
+########################################################################
+
+########################################################################
+# Support Functions
+########################################################################
+
+
+def create_file_details_list(uris):
+    # logger.log_value('List files to copy')
+
+    file_details_list = []
+
+    for file_number, uri in enumerate(uris):
+        filepath = unquote(urlparse(uri).path)
+        file_details_list.append([0, filepath])
+
+    return file_details_list
+
+
+########################################################################
+# Copy Files Functions
+########################################################################
+
+# TODO: Move these functions to file_utilities.py
+
+
+def copy_files(current_directory, uris):
+
+    logger.log_label('Copy file(s)')
+
+    global total_files
+    total_files = len(uris)
+
+    # It is necessary to concatenate the custom root directory and
+    # the current directory using "+" because os.path.join() discards
+    # the current directory, which is considered an absolute path: "If a
+    # component is an absolute path, all previous components are thrown
+    # away and joining continues from the absolute path component."
+    # (See https://docs.python.org/3/library/os.path.html).
+    # TODO: consider using (a + '/' + b)
+    target_directory = os.path.abspath(model.project.custom_root_directory + current_directory)
+
+    logger.log_value('The current directory is', current_directory)
+    logger.log_value('The custom root directory is', model.project.custom_root_directory)
+    logger.log_value('The target directory is', target_directory)
+
+    global file_number
+    for file_number, uri in enumerate(uris):
+
+        filepath = unquote(urlparse(uri).path)
+
+        if total_files == 1:
+            # label = 'Copying one file to %s' % relative_directory
+            label = 'Copying one file to %s' % target_directory
+        else:
+            # label = 'Copying file %s of %s to %s' % (file_number + 1, total_files, relative_directory)
+            label = 'Copying file %s of %s to %s' % (file_number + 1, total_files, target_directory)
+
+        display.update_label('copy_page__progress_label', label)
+        display.scroll_to_tree_view_row('copy_page__treeview', file_number)
+        display.select_tree_view_row('copy_page__treeview', file_number)
+
+        print('%d of %s:\tCopy %s to %s.' % (file_number, total_files, filepath, target_directory))
+
+        copy_file(filepath, file_number, target_directory, total_files)
+
+
+def copy_file(filepath, file_number, directory, total_files):
+
+    logger.log_label('Copy file number %s of %s' % (file_number + 1, total_files))
+
+    logger.log_value('The file is', filepath)
+    logger.log_value('The target directory is', directory)
+
+    program = os.path.join(model.application.directory, 'commands', 'copy-file')
+    command = 'pkexec "%s" "%s" "%s"' % (program, filepath, directory)
+
+    show_progress(command, progress_callback)
+
+
+def progress_callback(percent):
+
+    global total_files
+    global file_number
+
+    total_percent = (PERCENT_STOP * file_number + percent) / total_files
+
+    display.update_progressbar_percent('copy_page__copy_files_progressbar', total_percent)
+
+    display.update_liststore_progressbar_percent('copy_page__file_details__liststore', file_number, percent)
+
+
+########################################################################
+# Validation Functions
+########################################################################

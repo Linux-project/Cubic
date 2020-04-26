@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+  generate_page.ui
+
+  Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>
+
+-->
+<!--
+
+  This file is part of Cubic - Custom Ubuntu ISO Creator.
+
+  Cubic is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Cubic is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Cubic. If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkGrid" id="generate_page">
+    <property name="width_request">950</property>
+    <property name="height_request">650</property>
+    <property name="can_focus">False</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="valign">start</property>
+        <property name="margin_left">18</property>
+        <property name="margin_right">18</property>
+        <property name="margin_top">18</property>
+        <property name="vexpand">True</property>
+        <property name="label" translatable="yes">Generating the customized disk image.</property>
+        <property name="wrap">True</property>
+        <property name="max_width_chars">0</property>
+        <property name="xalign">0</property>
+        <attributes>
+          <attribute name="scale" value="1.25"/>
+        </attributes>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkGrid">
+        <property name="width_request">950</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">center</property>
+        <property name="valign">start</property>
+        <property name="hexpand">True</property>
+        <property name="border_width">18</property>
+        <property name="column_spacing">36</property>
+        <property name="row_homogeneous">True</property>
+        <property name="column_homogeneous">True</property>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="valign">start</property>
+            <property name="vexpand">True</property>
+            <property name="row_spacing">18</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkImage" id="generate_page__copy_boot_files_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__copy_boot_files_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Save custom configuration and boot files.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="generate_page__copy_boot_files_scrolled_window">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkViewport" id="generate_page__copy_boot_files_view_port">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="vscroll_policy">natural</property>
+                    <signal name="size-allocate" handler="on_size_allocate__generate_page__copy_boot_files_view_port" swapped="no"/>
+                    <child>
+                      <object class="GtkBox" id="generate_page__copy_boot_files_box">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">start</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">6</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+                <property name="height">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__copy_boot_files_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="generate_page__create_squashfs_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__create_squashfs_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Compress the customized Linux file system.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkProgressBar" id="generate_page__create_squashfs_progressbar">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="show_text">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__create_squashfs_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="generate_page__update_filesystem_size_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__update_filesystem_size_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Update the customized Linux file system size.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__update_filesystem_size_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="generate_page__update_disk_name_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__update_disk_name_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Update the disk name.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__update_disk_name_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="valign">start</property>
+            <property name="vexpand">True</property>
+            <property name="row_spacing">18</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkImage" id="generate_page__update_checksums_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__update_checksums_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Update the checksums for all files on the disk.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__update_checksums_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkProgressBar" id="generate_page__update_checksums_progressbar">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="show_text">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__update_checksums_message_2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="generate_page__check_iso_size_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__check_iso_size_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Check the total size of all files on the disk.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__check_iso_size_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="generate_page__create_iso_image_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__create_iso_image_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Generate the customized disk image.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkProgressBar" id="generate_page__create_iso_image_progressbar">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="show_text">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__create_iso_image_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="generate_page__calculate_iso_image_checksum_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet</property>
+                <property name="icon_size">3</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="generate_page__calculate_iso_image_checksum_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Calculate the checksum for the new disk.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__calculate_iso_image_checksum_message_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="generate_page__calculate_iso_image_checksum_message_2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.5</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">1</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkSizeGroup" id="generate_page__size_group">
+    <property name="mode">both</property>
+    <widgets>
+      <widget name="generate_page__copy_boot_files_status"/>
+      <widget name="generate_page__copy_boot_files_spinner"/>
+      <widget name="generate_page__create_squashfs_status"/>
+      <widget name="generate_page__create_squashfs_spinner"/>
+      <widget name="generate_page__update_filesystem_size_status"/>
+      <widget name="generate_page__update_filesystem_size_spinner"/>
+      <widget name="generate_page__update_disk_name_status"/>
+      <widget name="generate_page__update_disk_name_spinner"/>
+      <widget name="generate_page__update_checksums_status"/>
+      <widget name="generate_page__update_checksums_spinner"/>
+      <widget name="generate_page__check_iso_size_status"/>
+      <widget name="generate_page__check_iso_size_spinner"/>
+      <widget name="generate_page__create_iso_image_status"/>
+      <widget name="generate_page__create_iso_image_spinner"/>
+      <widget name="generate_page__calculate_iso_image_checksum_status"/>
+      <widget name="generate_page__calculate_iso_image_checksum_spinner"/>
+    </widgets>
+  </object>
+</interface>

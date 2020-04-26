@@ -1,0 +1,126 @@
+#!/usr/bin/python3
+
+########################################################################
+#                                                                      #
+# model.py                                                             #
+#                                                                      #
+# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
+#                                                                      #
+########################################################################
+
+########################################################################
+#                                                                      #
+# This file is part of Cubic - Custom Ubuntu ISO Creator.              #
+#                                                                      #
+# Cubic is free software: you can redistribute it and/or modify        #
+# it under the terms of the GNU General Public License as published by #
+# the Free Software Foundation, either version 3 of the License, or    #
+# (at your option) any later version.                                  #
+#                                                                      #
+# Cubic is distributed in the hope that it will be useful,             #
+# but WITHOUT ANY WARRANTY, without even the implied warranty of       #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the         #
+# GNU General Public License for more details.                         #
+#                                                                      #
+# You should have received a copy of the GNU General Public License    #
+# along with Cubic. If not, see <http://www.gnu.org/licenses/>.        #
+#                                                                      #
+########################################################################
+
+from utilities.fields import Fields
+
+########################################################################
+# General
+########################################################################
+
+builder = None
+page = None
+
+application = Fields('application')
+application.cubic_version = None
+application.kernel_version = None
+application.directory = None
+application.theme_variant = None
+
+########################################################################
+# Project
+########################################################################
+
+project = Fields('project')
+project.cubic_version = None
+project.directory = None
+project.configuration_filepath = None
+project.iso_mount_point = None
+project.custom_root_directory = None
+project.custom_disk_directory = None
+
+########################################################################
+# Original
+########################################################################
+
+original = Fields('original')
+original.iso_filename = None
+original.iso_directory = None
+original.iso_volume_id = None
+original.iso_release_name = None
+original.iso_disk_name = None
+
+########################################################################
+# Custom
+########################################################################
+
+custom = Fields('custom')
+custom.iso_version_number = None
+custom.iso_filename = None
+custom.iso_directory = None
+custom.iso_volume_id = None
+custom.iso_release_name = None
+custom.iso_disk_name = None
+
+########################################################################
+# Status
+########################################################################
+
+status = Fields('status')
+status.is_success_copy = False
+status.is_success_extract = False
+status.casper_directory = None
+status.iso_checksum = None
+status.iso_checksum_filename = None
+
+########################################################################
+# Options
+########################################################################
+
+# TODO: Consider moving this to "Status"
+
+options = Fields('options')
+options.boot_configurations = None
+
+########################################################################
+# Page Specific
+########################################################################
+
+uris = None
+undo_index = 0
+undo_list = []
+delete_list = []
+
+########################################################################
+# Page Help
+########################################################################
+
+help_urls = {
+    'start_page': 'https://answers.launchpad.net/cubic/+faq/3230',
+    'migrate_page': 'https://answers.launchpad.net/cubic/+faq/3229',
+    'project_page': 'https://answers.launchpad.net/cubic/+faq/3228',
+    'delete_page': 'https://answers.launchpad.net/cubic/+faq/3227',
+    'extract_page': 'https://answers.launchpad.net/cubic/+faq/3226',
+    'terminal_page': 'https://answers.launchpad.net/cubic/+faq/3225',
+    'copy_page': 'https://answers.launchpad.net/cubic/+faq/3224',
+    'prepare_page': 'https://answers.launchpad.net/cubic/+faq/3223',
+    'packages_page': 'https://answers.launchpad.net/cubic/+faq/3222',
+    'options_page': 'https://answers.launchpad.net/cubic/+faq/3221',
+    'generate_page': 'https://answers.launchpad.net/cubic/+faq/3220',
+    'finish_page': 'https://answers.launchpad.net/cubic/+faq/3219'
+}
