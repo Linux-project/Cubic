@@ -4,7 +4,7 @@
 #                                                                              #
 # cubic                                                                        #
 #                                                                              #
-# Copyright (C) 2015 PJ Singh <psingh.cubic@gmail.com>                         #
+# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                         #
 #                                                                              #
 ################################################################################
 
@@ -28,6 +28,5 @@
 #                                                                              #
 ################################################################################
 
-echo
-/usr/share/cubic/cubic.py "/usr/share/cubic"
+/usr/share/cubic/cubic.py
 

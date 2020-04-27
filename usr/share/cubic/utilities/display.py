@@ -55,7 +55,13 @@ import os
 ########################################################################
 
 # Icons corresponding to status
-icons = ['cubic-ok', 'cubic-error', 'cubic-optional', 'cubic-bullet', 'cubic-blank', 'cubic-blank']
+# icons = ['cubic-ok', 'cubic-error', 'cubic-optional', 'cubic-bullet', 'cubic-blank', 'cubic-blank']
+# icons = ['dialog-ok', 'dialog-warning-symbolic', 'dialog-question-symbolic', 'go-next-symbolic', 'cubic-blank', 'cubic-blank']
+# icons = ['cubic-ok-symbolic', 'dialog-warning-symbolic', 'dialog-question-symbolic', 'cubic-bullet-symbolic', 'cubic-blank', 'cubic-blank']
+icons = ['cubic-ok-symbolic', 'cubic-error-symbolic', 'cubic-optional-symbolic', 'cubic-bullet-symbolic', 'cubic-blank-symbolic', 'cubic-blank-symbolic']
+
+# $ sudo gtk-update-icon-cache /usr/share/icons/Adwaita/
+# $ grep -r cubic-round /usr/share/icons/Adwaita/*
 
 ########################################################################
 # Functions
@@ -527,15 +533,20 @@ def update_status(prefix, status):
 
     # logger.log_value('Set status for entry %s_status' % prefix, status)
 
-    image = model.builder.get_object('%s_status' % prefix)
-
     # TODO: Use Gtk.Icontheme instead of Gtk.IconSize because Gtk.IconSize id deprecated.
     #       https://lazka.github.io/pgi-docs/Gtk-3.0/enums.html#Gtk.IconSize
-    # GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)
-    # GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.LARGE_TOOLBAR)
-    GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], 0)
+    #
+    # Valid icon sizes are:
+    #   0 = Gtk.IconSize.INVALID
+    #   1 = Gtk.IconSize.MENU
+    #   2 = Gtk.IconSize.SMALL_TOOLBAR
+    #   3 = Gtk.IconSize.LARGE_TOOLBAR
+    #   4 = Gtk.IconSize.BUTTON
+    #   5 = Gtk.IconSize.DND (Drag and Drop)
+    #   6 = Gtk.IconSize.DIALOG
 
-    # GLib.idle_add(Gtk.Image.set_opacity, image, False)
+    image = model.builder.get_object('%s_status' % prefix)
+    GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)
 
     spinner = model.builder.get_object('%s_spinner' % prefix)
     if spinner:

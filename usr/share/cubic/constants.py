@@ -39,7 +39,7 @@ BULLET = 3
 PROCESSING = 4
 BLANK = 5
 
-NEW_CUBIC_VERSION = '2020.05'
+NEW_CUBIC_VERSION = '2020.04'
 ISO_MOUNT_POINT = 'original-iso'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
@@ -79,4 +79,8 @@ BOLD_CYAN = '\033[1;36;1m'
 NORMAL = '\033[0m'
 
 # https://stackoverflow.com/questions/45065919/move-cursor-position-in-bash-at-specific-column
-NEW_LINE = '\033[50D\033[-1C\n'
+# http://www.termsys.demon.co.uk/vtansi.htm
+# Cursor Backward		<ESC>[{COUNT}D
+# Moves the cursor backward by COUNT columns; the default count is 1.
+# NEW_LINE = '\033[50D\033[-1C\n'
+NEW_LINE = '\033[99D\n'

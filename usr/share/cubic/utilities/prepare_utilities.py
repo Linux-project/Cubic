@@ -418,18 +418,18 @@ def update_vmlinuz_details_list(directory, details_list):
         realpath = os.path.realpath(filepath)
         if not os.path.exists(realpath):
             # The realpath may not exist because it may be relative to
-            # the root directory of the chroot environment. If this is
+            # the root directory of the virtual environment. If this is
             # the case, the link will appear broken outside of the
-            # chroot evironment, because it will seem to point to the
+            # virtual environment, because it will seem to point to the
             # root of the host system.
             # The following remedies this situation by appending the
-            # chroot environment's root directory to the realpath.
+            # virtual environment's root directory to the realpath.
             # However, if another file with the same path actually
             # exists on the host system, realpath will point to that
             # file instead, and this 'if not' block will not be
             # executed. This is considered a negligable risk.
-            # It is necessary to concatinate the directory and real path
-            # using "+" because os.path.join() discards the chroot
+            # It is necessary to concatenate the directory and real path
+            # using "+" because os.path.join() discards the virtual
             # environment's root directory, because the realpath may be
             # considered and absolute path: "If a component is an
             # absolute path, all previous components are thrown away and
@@ -562,18 +562,18 @@ def update_initrd_details_list(directory, details_list):
         realpath = os.path.realpath(filepath)
         if not os.path.exists(realpath):
             # The realpath may not exist because it may be relative to
-            # the root directory of the chroot environment. If this is
+            # the root directory of the virtual environment. If this is
             # the case, the link will appear broken outside of the
-            # chroot evironment, because it will seem to point to the
+            # virtual environment, because it will seem to point to the
             # root of the host system.
             # The following remedies this situation by appending the
-            # chroot environment's root directory to the realpath.
+            # virtual environment's root directory to the realpath.
             # However, if another file with the same path actually
             # exists on the host system, realpath will point to that
             # file instead, and this 'if not' block will not be
             # executed. This is considered a negligable risk.
-            # It is necessary to concatinate the directory and real path
-            # using "+" because os.path.join() discards the chroot
+            # It is necessary to concatenate the directory and real path
+            # using "+" because os.path.join() discards the virtual
             # environment's root directory, because the realpath may be
             # considered and absolute path: "If a component is an
             # absolute path, all previous components are thrown away and

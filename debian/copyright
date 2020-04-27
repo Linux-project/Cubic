@@ -1,17 +1,17 @@
 Files: debian/*
-Copyright: 2015 PJ Singh
+Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
 
 Files: usr/share/applications/*
-Copyright: 2015 PJ Singh
+Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
 
 Files: usr/share/cubic/*
-Copyright: 2015 PJ Singh
+Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
 
 Files: usr/share/icons/*
-Copyright: 2015 PJ Singh
+Copyright: 2015, 2020 PJ Singh
 License: CC BY-NC-SA
 
 License: CC BY-NC-SA

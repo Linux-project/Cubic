@@ -74,7 +74,7 @@
           <object class="GtkImage" id="terminal_page__status">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="icon_name">cubic-blank</property>
+            <property name="icon_name">cubic-error-symbolic</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -154,8 +154,7 @@
   <object class="GtkImage" id="terminal_page__copy_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-copy</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-copy-symbolic</property>
   </object>
   <object class="GtkButton" id="terminal_page__copy_button">
     <property name="visible">True</property>

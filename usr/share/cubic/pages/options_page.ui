@@ -30,20 +30,17 @@
   <object class="GtkImage" id="options_page__boot_redo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-redo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-redo-symbolic</property>
   </object>
   <object class="GtkImage" id="options_page__boot_revert_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-revert</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">document-revert-symbolic</property>
   </object>
   <object class="GtkImage" id="options_page__boot_undo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-undo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-undo-symbolic</property>
   </object>
   <object class="GtkBox" id="options_page__header_bar_boot_box">
     <property name="can_focus">False</property>
@@ -634,14 +631,12 @@ Click the Generate button to begin creating the customized disk image.</property
   <object class="GtkImage" id="options_page__preseed_delete_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-delete</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-delete-symbolic</property>
   </object>
   <object class="GtkImage" id="options_page__preseed_new_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-new</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">document-new-symbolic</property>
   </object>
   <object class="GtkBox" id="options_page__header_bar_preseed_box_1">
     <property name="can_focus">False</property>
@@ -685,20 +680,17 @@ Click the Generate button to begin creating the customized disk image.</property
   <object class="GtkImage" id="options_page__preseed_redo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-redo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-redo-symbolic</property>
   </object>
   <object class="GtkImage" id="options_page__preseed_revert_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-revert</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">document-revert-symbolic</property>
   </object>
   <object class="GtkImage" id="options_page__preseed_undo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-undo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-undo-symbolic</property>
   </object>
   <object class="GtkBox" id="options_page__header_bar_preseed_box_2">
     <property name="can_focus">False</property>

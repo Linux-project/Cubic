@@ -58,7 +58,7 @@ try:
     logger.log_title('Start Cubic')
 
     #-------------------------------------------------------------------
-    # General
+    # Initialize
     #-------------------------------------------------------------------
 
     # Realpath is necessary here.
@@ -72,10 +72,6 @@ try:
 
     model.builder = Gtk.Builder.new_from_file('cubic.ui')
     model.builder.connect_signals(navigation)
-
-    window = model.builder.get_object('window')
-    model.application.theme_variant = display.get_theme_variant(window)
-    display.update_icon_search_paths(model.application.theme_variant)
 
     #-------------------------------------------------------------------
     # File Choosers

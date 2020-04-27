@@ -79,8 +79,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -135,8 +134,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -191,8 +189,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -247,8 +244,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -329,8 +325,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -446,8 +441,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -502,8 +496,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>

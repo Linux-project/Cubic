@@ -69,6 +69,7 @@ def setup(action, old_page=None):
 
         # display.set_visible('options_page__header_bar_preseed_box_1', True)
         # display.set_visible('options_page__header_bar_box_2', True)
+        display.set_visible('title_label', False)
         display.set_visible('stack_switcher', True)
 
         # display.set_solid('packages_page__header_bar__box', False)
@@ -94,6 +95,7 @@ def setup(action, old_page=None):
 
         # display.set_visible('options_page__header_bar_preseed_box_1', True)
         # display.set_visible('options_page__header_bar_box_2', True)
+        display.set_visible('title_label', False)
         display.set_visible('stack_switcher', True)
 
         # display.set_solid('packages_page__header_bar__box', False)
@@ -131,6 +133,7 @@ def leave(action, new_page=None):
 
         # display.set_visible('options_page__header_bar_preseed_box_1', False)
         # display.set_visible('options_page__header_bar_box_2', False)
+        display.set_visible('title_label', True)
         display.set_visible('stack_switcher', False)
 
         return
@@ -141,6 +144,7 @@ def leave(action, new_page=None):
 
         # display.set_visible('options_page__header_bar_preseed_box_1', False)
         # display.set_visible('options_page__header_bar_box_2', False)
+        display.set_visible('title_label', True)
         display.set_visible('stack_switcher', False)
 
         # Save preseed files.

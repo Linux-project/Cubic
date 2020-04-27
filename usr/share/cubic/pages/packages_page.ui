@@ -155,20 +155,17 @@
   <object class="GtkImage" id="packages_page__redo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-redo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-redo-symbolic</property>
   </object>
   <object class="GtkImage" id="packages_page__revert_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-revert</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">document-revert-symbolic</property>
   </object>
   <object class="GtkImage" id="packages_page__undo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-undo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-undo-symbolic</property>
   </object>
   <object class="GtkBox" id="packages_page__header_bar_box">
     <property name="can_focus">False</property>

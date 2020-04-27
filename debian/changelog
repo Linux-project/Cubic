@@ -1,5 +1,20 @@
 cubic (2020.04) focal; urgency=low
 
-  * New version of Cubic.
+  * Updated Cubic to use standard symbolic icons, which are responsive
+    to light and dark theme changes and automatically adapt to hybrid
+    header bars.
+  * Removed dark and light icons from the /usr/share/cubic directory.
+  * Added symbolic status icons in the Adwaita theme for cubic ok, cubic
+    error, cubic optional, cubic bullet, and cubic blank.
+  * Stopped monitoring style changes and dynamically updating the icon
+    search path for light and dark themes, since this is no longer
+    necessary.
+  * Removed the PayPal icon from the Donate button.
+  * Set the NEW_CUBIC_VERSION to '2020.04', so all projects created with
+    a Cubic release prior to April 2020 will be migrated.
+  * Corrected the Terminal Control Escape Sequence, used to reset the
+    cursor position, to not print corrupted characters in Ubuntu 18.04.
+  * Corrected an issue in Ubuntu 18.04 where the header bar title
+    overlapped the tabs on the Options Page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 25 Apr 2020 20:42:37 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 00:03:04 -0400

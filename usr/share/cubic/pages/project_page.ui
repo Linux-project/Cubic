@@ -30,8 +30,7 @@
   <object class="GtkImage" id="project_page__delete_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-delete</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-delete-symbolic</property>
   </object>
   <object class="GtkButton" id="project_page__delete_button">
     <property name="can_focus">True</property>
@@ -44,26 +43,22 @@
   <object class="GtkImage" id="project_page__directory_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-directory</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">folder-symbolic</property>
   </object>
   <object class="GtkImage" id="project_page__new_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-new</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">document-open-symbolic</property>
   </object>
   <object class="GtkImage" id="project_page__redo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-redo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-redo-symbolic</property>
   </object>
   <object class="GtkImage" id="project_page__undo_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-undo</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">edit-undo-symbolic</property>
   </object>
   <object class="GtkBox" id="project_page__header_bar_box">
     <property name="can_focus">False</property>
@@ -108,8 +103,7 @@
   <object class="GtkImage" id="project_page__version_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-version</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">view-refresh-symbolic</property>
   </object>
   <object class="GtkGrid" id="project_page">
     <property name="width_request">950</property>
@@ -232,8 +226,7 @@
               <object class="GtkImage" id="project_page__original_iso_filename_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -309,8 +302,7 @@
               <object class="GtkImage" id="project_page__original_iso_directory_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -384,8 +376,7 @@
               <object class="GtkImage" id="project_page__original_iso_volume_id_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -459,8 +450,6 @@
               <object class="GtkImage" id="project_page__original_iso_release_name_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -534,8 +523,7 @@
               <object class="GtkImage" id="project_page__original_iso_disk_name_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -644,8 +632,7 @@
               <object class="GtkImage" id="project_page__custom_iso_version_number_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -717,8 +704,6 @@
               <object class="GtkImage" id="project_page__custom_iso_filename_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -805,8 +790,6 @@
               <object class="GtkImage" id="project_page__custom_iso_directory_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -879,8 +862,6 @@
               <object class="GtkImage" id="project_page__custom_iso_volume_id_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -950,8 +931,7 @@
               <object class="GtkImage" id="project_page__custom_iso_release_name_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -1021,8 +1001,7 @@
               <object class="GtkImage" id="project_page__custom_iso_disk_name_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="stock">cubic-ok</property>
-                <property name="icon_size">3</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>

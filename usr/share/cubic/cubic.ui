@@ -70,13 +70,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkImage" id="paypal_image">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="margin_left">6</property>
-    <property name="pixel_size">0</property>
-    <property name="icon_name">cubic-paypal</property>
-  </object>
   <object class="GtkPopoverMenu" id="popover_menu">
     <property name="width_request">200</property>
     <property name="can_focus">False</property>
@@ -160,9 +153,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="image">paypal_image</property>
             <property name="image_position">right</property>
-            <property name="always_show_image">True</property>
             <signal name="clicked" handler="on_clicked_donate_menu_button" swapped="no"/>
           </object>
           <packing>
@@ -184,7 +175,6 @@
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <signal name="destroy" handler="on_window_destroy" swapped="no"/>
-    <signal name="style-updated" handler="on_style_updated" swapped="no"/>
     <child type="titlebar">
       <object class="GtkHeaderBar" id="header_bar">
         <property name="visible">True</property>

@@ -30,14 +30,12 @@
   <object class="GtkImage" id="finish_page__directory_1_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-directory</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">document-open-symbolic</property>
   </object>
   <object class="GtkImage" id="finish_page__directory_2_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-directory</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">document-open-symbolic</property>
   </object>
   <object class="GtkGrid" id="finish_page">
     <property name="width_request">950</property>
@@ -326,8 +324,7 @@
             <property name="can_focus">False</property>
             <property name="halign">end</property>
             <property name="valign">center</property>
-            <property name="icon_name">cubic-blank</property>
-            <property name="icon_size">3</property>
+            <property name="icon_name">cubic-blank-symbolic</property>
           </object>
           <packing>
             <property name="left_attach">0</property>

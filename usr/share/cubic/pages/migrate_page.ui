@@ -30,8 +30,7 @@
   <object class="GtkImage" id="migrate_page__directory_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">cubic-directory</property>
-    <property name="icon_size">3</property>
+    <property name="icon_name">folder-symbolic</property>
   </object>
   <object class="GtkGrid" id="migrate_page">
     <property name="width_request">950</property>
@@ -277,8 +276,7 @@
             <property name="can_focus">False</property>
             <property name="halign">end</property>
             <property name="valign">start</property>
-            <property name="icon_name">cubic-bullet</property>
-            <property name="icon_size">3</property>
+            <property name="icon_name">cubic-bullet-symbolic</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -336,8 +334,7 @@
             <property name="can_focus">False</property>
             <property name="halign">end</property>
             <property name="valign">start</property>
-            <property name="icon_name">cubic-bullet</property>
-            <property name="icon_size">3</property>
+            <property name="icon_name">cubic-bullet-symbolic</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -395,8 +392,7 @@
             <property name="can_focus">False</property>
             <property name="halign">end</property>
             <property name="valign">start</property>
-            <property name="icon_name">cubic-bullet</property>
-            <property name="icon_size">3</property>
+            <property name="icon_name">cubic-bullet-symbolic</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
