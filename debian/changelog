@@ -1,5 +1,17 @@
 cubic (2020.04) focal; urgency=low
 
+  * Corrected two errors ("TypeError: Argument 0 does not allow None as
+     a value") on the Prepare Page.
+  * Moved cubic icons to /usr/share/icons/hicolor/scalable/status.
+    Removed /usr/share/icons/Adwaita/, since Cubic can access the icons
+    from hicolor for both light and dark theme variants. This aligns
+    with best practices, since it is not always guaranteed that the
+    Adwaita will be installed.
+  * On the Packages Page, set both the package column and the version
+    column to expand.
+
+  * Issues fixed in version 2020.04-02 and 2020.04-01:
+
   * Updated Cubic to use standard symbolic icons, which are responsive
     to light and dark theme changes and automatically adapt to hybrid
     header bars.
@@ -17,4 +29,4 @@ cubic (2020.04) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options Page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 09:46:18 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 12:10:58 -0400

@@ -122,6 +122,7 @@
             <child>
               <object class="GtkTreeViewColumn" id="packages_page__package_treeviewcolumn">
                 <property name="title" translatable="yes">Package</property>
+                <property name="expand">True</property>
                 <property name="clickable">True</property>
                 <child>
                   <object class="GtkCellRendererText" id="packages_page__package_cellrenderertext"/>
@@ -134,6 +135,7 @@
             <child>
               <object class="GtkTreeViewColumn" id="packages_page__version_treeviewcolumn">
                 <property name="title" translatable="yes">Version</property>
+                <property name="expand">True</property>
                 <property name="clickable">True</property>
                 <child>
                   <object class="GtkCellRendererText" id="packages_page__version_cellrenderertext"/>

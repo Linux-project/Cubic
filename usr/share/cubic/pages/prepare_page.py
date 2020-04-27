@@ -401,10 +401,10 @@ def prepare_preseed():
     if filepaths:
 
         # Stack create button
-        display.set_sensitive('options_page__preseed_tab__stack_sidebar__create_button', True)
+        display.set_sensitive('options_page__create_button', True)
 
         # Stack delete button
-        display.set_sensitive('options_page__preseed_tab__stack_sidebar__delete_button', True)
+        display.set_sensitive('options_page__delete_button', True)
 
         # Stack
         display.set_visible('options_page__preseed_tab__stack', True)
@@ -432,10 +432,10 @@ def prepare_preseed():
     else:
 
         # Stack create button
-        display.set_sensitive('options_page__preseed_tab__stack_sidebar__create_button', True)
+        display.set_sensitive('options_page__create_button', True)
 
         # Stack delete button
-        display.set_sensitive('options_page__preseed_tab__stack_sidebar__delete_button', False)
+        display.set_sensitive('options_page__delete_button', False)
 
         # Stack
         display.set_visible('options_page__preseed_tab__stack', False)
