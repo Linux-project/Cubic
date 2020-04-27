@@ -17,4 +17,4 @@ cubic (2020.04) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options Page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 00:03:04 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 09:46:18 -0400
