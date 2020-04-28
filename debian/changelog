@@ -1,5 +1,9 @@
 cubic (2020.04) focal; urgency=low
 
+  * Added missing exception type, ModuleNotFoundError, to navigation.py.
+
+  * Issues fixed in version 2020.04-04 and 2020.04-03:
+
   * Corrected two errors ("TypeError: Argument 0 does not allow None as
      a value") on the Prepare Page.
   * Moved cubic icons to /usr/share/icons/hicolor/scalable/status.
@@ -29,4 +33,4 @@ cubic (2020.04) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options Page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 12:10:58 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 21:18:27 -0400

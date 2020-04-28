@@ -162,6 +162,15 @@ navigation_thread = None
 ########################################################################
 
 
+class ModuleNotFoundError(Exception):
+    """
+    Exception raised by the get_page() function when page module does
+    not exist.
+    """
+
+    pass
+
+
 class InterruptException(Exception):
     """
     Exception used by the interrupt_navigation_thread() function to
