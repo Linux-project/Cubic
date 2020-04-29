@@ -190,7 +190,7 @@ def on_clicked__packages_page__redo_button(widget):
 
     print('on_clicked__packages_page__redo_button')
 
-    liststore = model.builder.get_object('packages_page__liststore')
+    list_store = model.builder.get_object('packages_page__list_store')
 
     row, column = model.undo_list[model.undo_index]
 
@@ -203,32 +203,32 @@ def on_clicked__packages_page__redo_button(widget):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
     if column == 0:
-        liststore[row][0] = not liststore[row][0]
+        list_store[row][0] = not list_store[row][0]
         # Even though the minimal check button column may not be visible (if
         # 'filesystem.manifest-minimal-remove' does not exist, still update
-        # the liststore. It's a little inefficient, but does no harm.
-        if liststore[row][0]:
+        # the list_store. It's a little inefficient, but does no harm.
+        if list_store[row][0]:
             # Backup original minimal check button value
-            liststore[row][2] = liststore[row][1]
+            list_store[row][2] = list_store[row][1]
             # Set minimal check button selected
-            liststore[row][1] = True
+            list_store[row][1] = True
             # Set minimal check button inactive
-            liststore[row][3] = False
+            list_store[row][3] = False
         else:
             # Restore original minimal check button value
-            liststore[row][1] = liststore[row][2]
+            list_store[row][1] = list_store[row][2]
             # Set minimal check button active
-            liststore[row][3] = True
+            list_store[row][3] = True
     else:
-        liststore[row][1] = not liststore[row][1]
+        list_store[row][1] = not list_store[row][1]
 
     model.undo_index += 1
 
@@ -243,10 +243,10 @@ def on_clicked__packages_page__redo_button(widget):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
@@ -255,7 +255,7 @@ def on_clicked__packages_page__revert_button(widget):
 
     print('on_clicked__packages_page__revert_button')
 
-    liststore = model.builder.get_object('packages_page__liststore')
+    list_store = model.builder.get_object('packages_page__list_store')
 
     while model.undo_index > 0:
 
@@ -272,32 +272,32 @@ def on_clicked__packages_page__revert_button(widget):
         #     % (
         #         row,
         #         column,
-        #         liststore[row][0],
-        #         liststore[row][1],
-        #         liststore[row][2],
-        #         liststore[row][3],
+        #         list_store[row][0],
+        #         list_store[row][1],
+        #         list_store[row][2],
+        #         list_store[row][3],
         #         len(model.undo_list),
         #         model.undo_index))
 
         if column == 0:
-            liststore[row][0] = not liststore[row][0]
+            list_store[row][0] = not list_store[row][0]
             # Even though the minimal check button column may not be visible (if
             # 'filesystem.manifest-minimal-remove' does not exist, still update
-            # the liststore. It's a little inefficient, but does no harm.
-            if liststore[row][0]:
+            # the list_store. It's a little inefficient, but does no harm.
+            if list_store[row][0]:
                 # Backup original minimal check button value
-                liststore[row][2] = liststore[row][1]
+                list_store[row][2] = list_store[row][1]
                 # Set minimal check button selected
-                liststore[row][1] = True
+                list_store[row][1] = True
                 # Set minimal check button inactive
-                liststore[row][3] = False
+                list_store[row][3] = False
             else:
                 # Restore original minimal check button value
-                liststore[row][1] = liststore[row][2]
+                list_store[row][1] = list_store[row][2]
                 # Set minimal check button active
-                liststore[row][3] = True
+                list_store[row][3] = True
         else:
-            liststore[row][1] = not liststore[row][1]
+            list_store[row][1] = not list_store[row][1]
 
     # if model.undo_index == 0:
     display.set_sensitive('packages_page__revert_button', False)
@@ -310,10 +310,10 @@ def on_clicked__packages_page__revert_button(widget):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
@@ -324,7 +324,7 @@ def on_clicked__packages_page__undo_button(widget):
 
     model.undo_index -= 1
 
-    liststore = model.builder.get_object('packages_page__liststore')
+    list_store = model.builder.get_object('packages_page__list_store')
 
     row, column = model.undo_list[model.undo_index]
 
@@ -337,32 +337,32 @@ def on_clicked__packages_page__undo_button(widget):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
     if column == 0:
-        liststore[row][0] = not liststore[row][0]
+        list_store[row][0] = not list_store[row][0]
         # Even though the minimal check button column may not be visible (if
         # 'filesystem.manifest-minimal-remove' does not exist, still update
-        # the liststore. It's a little inefficient, but does no harm.
-        if liststore[row][0]:
+        # the list_store. It's a little inefficient, but does no harm.
+        if list_store[row][0]:
             # Backup original minimal check button value
-            liststore[row][2] = liststore[row][1]
+            list_store[row][2] = list_store[row][1]
             # Set minimal check button selected
-            liststore[row][1] = True
+            list_store[row][1] = True
             # Set minimal check button inactive
-            liststore[row][3] = False
+            list_store[row][3] = False
         else:
             # Restore original minimal check button value
-            liststore[row][1] = liststore[row][2]
+            list_store[row][1] = list_store[row][2]
             # Set minimal check button active
-            liststore[row][3] = True
+            list_store[row][3] = True
     else:
-        liststore[row][1] = not liststore[row][1]
+        list_store[row][1] = not list_store[row][1]
 
     if model.undo_index == 0:
         display.set_sensitive('packages_page__revert_button', False)
@@ -375,10 +375,10 @@ def on_clicked__packages_page__undo_button(widget):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
@@ -387,7 +387,7 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
 
     print('on_toggled__packages_page__remove_1_check_button')
 
-    liststore = model.builder.get_object('packages_page__liststore')
+    list_store = model.builder.get_object('packages_page__list_store')
 
     # column = 0
     # print(
@@ -395,30 +395,30 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
-    liststore[row][0] = not liststore[row][0]
+    list_store[row][0] = not list_store[row][0]
 
     # Even though the minimal check button column may not be visible (if
     # 'filesystem.manifest-minimal-remove' does not exist, still update
-    # the liststore. It's a little inefficient, but does no harm.
-    if liststore[row][0]:
+    # the list_store. It's a little inefficient, but does no harm.
+    if list_store[row][0]:
         # Backup original minimal check button value
-        liststore[row][2] = liststore[row][1]
+        list_store[row][2] = list_store[row][1]
         # Set minimal check button selected
-        liststore[row][1] = True
+        list_store[row][1] = True
         # Set minimal check button inactive
-        liststore[row][3] = False
+        list_store[row][3] = False
     else:
         # Restore original minimal check button value
-        liststore[row][1] = liststore[row][2]
+        list_store[row][1] = list_store[row][2]
         # Set minimal check button active
-        liststore[row][3] = True
+        list_store[row][3] = True
 
     if len(model.undo_list) > model.undo_index:
         # print(' - Insert at %s, value %s' % (model.undo_index, [row, 0]))
@@ -442,10 +442,10 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
@@ -454,7 +454,7 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 
     print('on_toggled__packages_page__remove_2_check_button')
 
-    liststore = model.builder.get_object('packages_page__liststore')
+    list_store = model.builder.get_object('packages_page__list_store')
 
     # column = 1
     # print(
@@ -462,14 +462,14 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
-    liststore[row][1] = not liststore[row][1]
+    list_store[row][1] = not list_store[row][1]
 
     if len(model.undo_list) > model.undo_index:
         # print(' - Insert at %s, value %s' % (model.undo_index, [row, 1]))
@@ -493,10 +493,10 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
     #     % (
     #         row,
     #         column,
-    #         liststore[row][0],
-    #         liststore[row][1],
-    #         liststore[row][2],
-    #         liststore[row][3],
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
     #         len(model.undo_list),
     #         model.undo_index))
 
@@ -531,17 +531,17 @@ def is_exists_filesystem_manifest_remove(filename):
 def create_typical_removable_packages_list():
     logger.log_label('Create typical removable packages list')
 
-    listore_name = 'packages_page__liststore'
+    listore_name = 'packages_page__list_store'
     logger.log_value('Get user selections from', listore_name)
-    liststore = model.builder.get_object(listore_name)
+    list_store = model.builder.get_object(listore_name)
     removable_packages_list = []
-    item = liststore.get_iter_first()
+    item = list_store.get_iter_first()
     while item is not None:
-        flag = liststore.get_value(item, 0)
-        package_name = liststore.get_value(item, 4)
+        flag = list_store.get_value(item, 0)
+        package_name = list_store.get_value(item, 4)
         if flag:
             removable_packages_list.append(package_name)
-        item = liststore.iter_next(item)
+        item = list_store.iter_next(item)
     removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
@@ -551,17 +551,17 @@ def create_typical_removable_packages_list():
 def create_minimal_removable_packages_list():
     logger.log_label('Create minimal removable packages list')
 
-    listore_name = 'packages_page__liststore'
+    listore_name = 'packages_page__list_store'
     logger.log_value('Get user selections from', listore_name)
-    liststore = model.builder.get_object(listore_name)
+    list_store = model.builder.get_object(listore_name)
     removable_packages_list = []
-    item = liststore.get_iter_first()
+    item = list_store.get_iter_first()
     while item is not None:
-        flag = liststore.get_value(item, 1) and liststore.get_value(item, 3)
-        package_name = liststore.get_value(item, 4)
+        flag = list_store.get_value(item, 1) and list_store.get_value(item, 3)
+        package_name = list_store.get_value(item, 4)
         if flag:
             removable_packages_list.append(package_name)
-        item = liststore.iter_next(item)
+        item = list_store.iter_next(item)
     removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
@@ -572,15 +572,15 @@ def create_minimal_removable_packages_list():
 def create_removable_packages_list(listore_name, index):
     logger.log_label('Get removable packages list from user selections')
     logger.log_value('Get user selections from', listore_name)
-    liststore = model.builder.get_object(listore_name)
+    list_store = model.builder.get_object(listore_name)
     removable_packages_list = []
-    item = liststore.get_iter_first()
+    item = list_store.get_iter_first()
     while item is not None:
-        flag = liststore.get_value(item, index)
-        package_name = liststore.get_value(item, 2)
+        flag = list_store.get_value(item, index)
+        package_name = list_store.get_value(item, 2)
         if flag:
             removable_packages_list.append(package_name)
-        item = liststore.iter_next(item)
+        item = list_store.iter_next(item)
     removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 

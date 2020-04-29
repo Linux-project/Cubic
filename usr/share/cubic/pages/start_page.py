@@ -67,7 +67,7 @@ def setup(action, old_page=None):
 
         display_version = constructors.get_major_minor_version(model.application.cubic_version)
         display.update_label('start_page__version_label', 'Version %s' % display_version)
-        display.update_label('start_page__project_directory_message', 'Select an existing project directory or create a new project directory.')
+        display.update_label('start_page__project_directory_message', 'Select a project directory.')
 
         model.project.cubic_version = None
         model.project.directory = None
@@ -338,4 +338,4 @@ def validate_page():
             next_button_style='suggested-action',
             is_next_sensitive=False,
             is_next_visible=True)
-        display.update_label('start_page__project_directory_message', 'Select an existing project directory or create a new project directory.')
+        display.update_label('start_page__project_directory_message', 'Select a project directory.')

@@ -33,7 +33,6 @@
     <property name="icon_name">folder-symbolic</property>
   </object>
   <object class="GtkGrid" id="migrate_page">
-    <property name="width_request">950</property>
     <property name="height_request">650</property>
     <property name="can_focus">False</property>
     <property name="orientation">vertical</property>
@@ -41,11 +40,10 @@
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="valign">start</property>
-        <property name="margin_left">18</property>
-        <property name="margin_right">18</property>
+        <property name="margin_left">24</property>
+        <property name="margin_right">24</property>
         <property name="margin_top">18</property>
-        <property name="vexpand">True</property>
+        <property name="margin_bottom">18</property>
         <property name="label" translatable="yes">This project was created using a previous version of Cubic. Click the Migrate button to update it.</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
@@ -61,14 +59,16 @@
     </child>
     <child>
       <object class="GtkGrid">
-        <property name="width_request">712</property>
+        <property name="width_request">616</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">center</property>
-        <property name="valign">start</property>
+        <property name="valign">center</property>
+        <property name="margin_left">154</property>
+        <property name="margin_right">154</property>
+        <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="border_width">18</property>
         <property name="row_spacing">6</property>
         <property name="column_spacing">12</property>
         <child>
@@ -138,6 +138,20 @@
           </object>
           <packing>
             <property name="left_attach">1</property>
+            <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="migrate_page__project_directory_open_button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="image">migrate_page__directory_image</property>
+            <property name="always_show_image">True</property>
+            <signal name="clicked" handler="on_clicked__migrate_page__project_directory_open_button" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left_attach">2</property>
             <property name="top_attach">2</property>
           </packing>
         </child>
@@ -442,20 +456,6 @@
             <property name="left_attach">1</property>
             <property name="top_attach">13</property>
             <property name="width">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="migrate_page__project_directory_open_button">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="image">migrate_page__directory_image</property>
-            <property name="always_show_image">True</property>
-            <signal name="clicked" handler="on_clicked__migrate_page__project_directory_open_button" swapped="no"/>
-          </object>
-          <packing>
-            <property name="left_attach">2</property>
-            <property name="top_attach">2</property>
           </packing>
         </child>
         <child>

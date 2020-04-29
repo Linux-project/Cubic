@@ -40,15 +40,13 @@ PROCESSING = 4
 BLANK = 5
 
 NEW_CUBIC_VERSION = '2020.04'
-ISO_MOUNT_POINT = 'original-iso'  # 'original-iso-mount'
+
+ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
 
 # DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/isolinux.cfg,isolinux/txt.cfg'
 DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/txt.cfg'
-
-LIGHT_ICON_DIRECTORY = 'icons_light'
-DARK_ICON_DIRECTORY = 'icons_dark'
 
 ZOOM = 10
 PERCENT_START = 0

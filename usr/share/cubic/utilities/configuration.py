@@ -38,7 +38,7 @@ import configparser
 # Globals & Constants
 ########################################################################
 
-configuration = None
+config_parser = None
 
 ########################################################################
 # Support Functions
@@ -47,35 +47,35 @@ configuration = None
 
 def get_value(section, key, default=None):
 
-    return configuration.get(section, key, fallback=default)
+    return config_parser.get(section, key, fallback=default)
 
 
 def get_boolean(section, key, default=False):
 
-    return configuration.getboolean(section, key, fallback=default)
+    return config_parser.getboolean(section, key, fallback=default)
 
 
 def save_value(section, key, value):
 
     # Set the section, key, and value.
 
-    if not configuration.has_section(section):
-        configuration.add_section(section)
+    if not config_parser.has_section(section):
+        config_parser.add_section(section)
 
     if type(value) is str:
-        configuration.set(section, key, value)
+        config_parser.set(section, key, value)
     elif type(value) is bool:
-        configuration.set(section, key, str(value))
+        config_parser.set(section, key, str(value))
     elif type(value) is tuple:
-        configuration.set(section, key, ','.join(value))
+        config_parser.set(section, key, ','.join(value))
     elif type(value) is list:
-        configuration.set(section, key, ','.join(value))
+        config_parser.set(section, key, ','.join(value))
     else:
-        configuration.set(section, key, value)
+        config_parser.set(section, key, value)
 
     # Write the configuration file.
     with open(model.project.configuration_filepath, 'w') as configuration_file:
-        configuration.write(configuration_file)
+        config_parser.write(configuration_file)
 
 
 ########################################################################
@@ -95,36 +95,36 @@ def _initialize_2019_layout():
 
     logger.log_value('Initialize configuration', '2019 Layout')
 
-    global configuration
+    global config_parser
 
     # Create a new configuration.
-    configuration = configparser.ConfigParser(allow_no_value=True)
-    configuration.optionxform = str
+    config_parser = configparser.ConfigParser(allow_no_value=True)
+    config_parser.optionxform = str
 
     # Create sections.
-    configuration.add_section('General')
-    configuration.add_section('Original')
-    configuration.add_section('Custom')
-    configuration.add_section('Status')
-    configuration.add_section('Options')
+    config_parser.add_section('General')
+    config_parser.add_section('Original')
+    config_parser.add_section('Custom')
+    config_parser.add_section('Status')
+    config_parser.add_section('Options')
 
 
 def _initialize_2020_layout():
 
     logger.log_value('Initialize configuration', '2020 Layout')
 
-    global configuration
+    global config_parser
 
     # Create a new configuration.
-    configuration = configparser.ConfigParser(allow_no_value=True)
-    configuration.optionxform = str
+    config_parser = configparser.ConfigParser(allow_no_value=True)
+    config_parser.optionxform = str
 
     # Create sections.
-    configuration.add_section('Project')
-    configuration.add_section('Original')
-    configuration.add_section('Custom')
-    configuration.add_section('Status')
-    configuration.add_section('Options')
+    config_parser.add_section('Project')
+    config_parser.add_section('Original')
+    config_parser.add_section('Custom')
+    config_parser.add_section('Status')
+    config_parser.add_section('Options')
 
 
 ########################################################################
@@ -137,20 +137,20 @@ def load():
     logger.log_label('Load configuration')
 
     # Create a new configuration.
-    global configuration
-    configuration = configparser.ConfigParser(allow_no_value=True)
-    configuration.optionxform = str
+    global config_parser
+    config_parser = configparser.ConfigParser(allow_no_value=True)
+    config_parser.optionxform = str
 
     # Read the configuration file.
-    configuration.read(model.project.configuration_filepath)
+    config_parser.read(model.project.configuration_filepath)
 
     # Get Cubic the version.
-    if configuration.has_section('Project'):
+    if config_parser.has_section('Project'):
         # Using newer Cubic version.
-        model.project.cubic_version = configuration.get('Project', 'cubic_version')
-    elif configuration.has_section('General'):
+        model.project.cubic_version = config_parser.get('Project', 'cubic_version')
+    elif config_parser.has_section('General'):
         # Using older Cubic version.
-        model.project.cubic_version = configuration.get('General', 'cubic_version')
+        model.project.cubic_version = config_parser.get('General', 'cubic_version')
     else:
         # TODO: Error
         pass
@@ -272,41 +272,41 @@ def _save_using_2019_layout():
     logger.log_value('Save configuration', '2019 Layout')
 
     # Project
-    configuration.set('General', 'cubic_version', model.project.cubic_version)
-    configuration.set('General', 'project_directory', model.project.directory)
+    config_parser.set('General', 'cubic_version', model.project.cubic_version)
+    config_parser.set('General', 'project_directory', model.project.directory)
 
     # Original
-    configuration.set('Original', 'original_iso_image_filename', model.original.iso_filename)
-    configuration.set('Original', 'original_iso_image_directory', model.original.iso_directory)
-    configuration.set('Original', 'original_iso_image_volume_id', model.original.iso_volume_id)
-    configuration.set('Original', 'original_iso_image_release_name', model.original.iso_release_name)
-    configuration.set('Original', 'original_iso_image_disk_name', model.original.iso_disk_name)
+    config_parser.set('Original', 'original_iso_image_filename', model.original.iso_filename)
+    config_parser.set('Original', 'original_iso_image_directory', model.original.iso_directory)
+    config_parser.set('Original', 'original_iso_image_volume_id', model.original.iso_volume_id)
+    config_parser.set('Original', 'original_iso_image_release_name', model.original.iso_release_name)
+    config_parser.set('Original', 'original_iso_image_disk_name', model.original.iso_disk_name)
 
     # Custom
-    configuration.set('Custom', 'custom_iso_image_version_number', model.custom.iso_version_number)
-    configuration.set('Custom', 'custom_iso_image_filename', model.custom.iso_filename)
-    configuration.set('Custom', 'custom_iso_image_directory', model.custom.iso_directory)
-    configuration.set('Custom', 'custom_iso_image_volume_id', model.custom.iso_volume_id)
-    configuration.set('Custom', 'custom_iso_image_release_name', model.custom.iso_release_name)
-    configuration.set('Custom', 'custom_iso_image_disk_name', model.custom.iso_disk_name)
+    config_parser.set('Custom', 'custom_iso_image_version_number', model.custom.iso_version_number)
+    config_parser.set('Custom', 'custom_iso_image_filename', model.custom.iso_filename)
+    config_parser.set('Custom', 'custom_iso_image_directory', model.custom.iso_directory)
+    config_parser.set('Custom', 'custom_iso_image_volume_id', model.custom.iso_volume_id)
+    config_parser.set('Custom', 'custom_iso_image_release_name', model.custom.iso_release_name)
+    config_parser.set('Custom', 'custom_iso_image_disk_name', model.custom.iso_disk_name)
 
     # Status
-    configuration.set('Status', 'is_success_copy', str(bool(model.status.is_success_copy)))
-    configuration.set('Status', 'is_success_extract', str(bool(model.status.is_success_extract)))
+    config_parser.set('Status', 'is_success_copy', str(bool(model.status.is_success_copy)))
+    config_parser.set('Status', 'is_success_extract', str(bool(model.status.is_success_extract)))
     # Not in the original 2019 layout.
-    configuration.set('Status', 'casper_directory', str(model.status.casper_directory))
+    config_parser.set('Status', 'casper_directory', str(model.status.casper_directory))
     # Not in the original 2019 layout.
-    configuration.set('Status', 'custom_iso_image_checksum', str(model.status.iso_checksum))
+    config_parser.set('Status', 'custom_iso_image_checksum', str(model.status.iso_checksum))
     # In the Custom section of the 2019 layout.
-    configuration.set('Custom', 'custom_iso_image_md5_filename', str(model.status.iso_checksum_filename))
+    config_parser.set('Custom', 'custom_iso_image_md5_filename', str(model.status.iso_checksum_filename))
 
     # Save options values.
     boot_configurations_string = ','.join(boot_configuration.strip(' /') for boot_configuration in model.options.boot_configurations)
-    configuration.set('Options', 'boot_configurations', boot_configurations_string)
+    config_parser.set('Options', 'boot_configurations', boot_configurations_string)
 
     # Write the configuration file.
     with open(model.project.configuration_filepath, 'w') as configuration_file:
-        configuration.write(configuration_file)
+        config_parser.write(configuration_file)
 
 
 def _save_using_2020_layout():
@@ -317,35 +317,35 @@ def _save_using_2020_layout():
     logger.log_value('Save configuration', '2020 Layout')
 
     # Save project values.
-    configuration.set('Project', 'cubic_version', model.project.cubic_version)
-    configuration.set('Project', 'directory', model.project.directory)
+    config_parser.set('Project', 'cubic_version', model.project.cubic_version)
+    config_parser.set('Project', 'directory', model.project.directory)
 
     # Save original values.
-    configuration.set('Original', 'iso_filename', model.original.iso_filename)
-    configuration.set('Original', 'iso_directory', model.original.iso_directory)
-    configuration.set('Original', 'iso_volume_id', model.original.iso_volume_id)
-    configuration.set('Original', 'iso_release_name', model.original.iso_release_name)
-    configuration.set('Original', 'iso_disk_name', model.original.iso_disk_name)
+    config_parser.set('Original', 'iso_filename', model.original.iso_filename)
+    config_parser.set('Original', 'iso_directory', model.original.iso_directory)
+    config_parser.set('Original', 'iso_volume_id', model.original.iso_volume_id)
+    config_parser.set('Original', 'iso_release_name', model.original.iso_release_name)
+    config_parser.set('Original', 'iso_disk_name', model.original.iso_disk_name)
 
     # Save custom values.
-    configuration.set('Custom', 'iso_version_number', model.custom.iso_version_number)
-    configuration.set('Custom', 'iso_filename', model.custom.iso_filename)
-    configuration.set('Custom', 'iso_directory', model.custom.iso_directory)
-    configuration.set('Custom', 'iso_volume_id', model.custom.iso_volume_id)
-    configuration.set('Custom', 'iso_release_name', model.custom.iso_release_name)
-    configuration.set('Custom', 'iso_disk_name', model.custom.iso_disk_name)
+    config_parser.set('Custom', 'iso_version_number', model.custom.iso_version_number)
+    config_parser.set('Custom', 'iso_filename', model.custom.iso_filename)
+    config_parser.set('Custom', 'iso_directory', model.custom.iso_directory)
+    config_parser.set('Custom', 'iso_volume_id', model.custom.iso_volume_id)
+    config_parser.set('Custom', 'iso_release_name', model.custom.iso_release_name)
+    config_parser.set('Custom', 'iso_disk_name', model.custom.iso_disk_name)
 
     # Save status values.
-    configuration.set('Status', 'is_success_copy', str(bool(model.status.is_success_copy)))
-    configuration.set('Status', 'is_success_extract', str(bool(model.status.is_success_extract)))
-    configuration.set('Status', 'casper_directory', str(model.status.casper_directory))
-    configuration.set('Status', 'iso_checksum', str(model.status.iso_checksum))
-    configuration.set('Status', 'iso_checksum_filename', str(model.status.iso_checksum_filename))
+    config_parser.set('Status', 'is_success_copy', str(bool(model.status.is_success_copy)))
+    config_parser.set('Status', 'is_success_extract', str(bool(model.status.is_success_extract)))
+    config_parser.set('Status', 'casper_directory', str(model.status.casper_directory))
+    config_parser.set('Status', 'iso_checksum', str(model.status.iso_checksum))
+    config_parser.set('Status', 'iso_checksum_filename', str(model.status.iso_checksum_filename))
 
     # Save options values.
     boot_configurations_string = ','.join(boot_configuration.strip(' /') for boot_configuration in model.options.boot_configurations)
-    configuration.set('Options', 'boot_configurations', boot_configurations_string)
+    config_parser.set('Options', 'boot_configurations', boot_configurations_string)
 
     # Write the configuration file.
     with open(model.project.configuration_filepath, 'w') as configuration_file:
-        configuration.write(configuration_file)
+        config_parser.write(configuration_file)

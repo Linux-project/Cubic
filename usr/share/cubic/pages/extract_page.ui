@@ -28,18 +28,16 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkGrid" id="extract_page">
-    <property name="width_request">950</property>
     <property name="height_request">650</property>
     <property name="can_focus">False</property>
-    <property name="border_width">0</property>
-    <property name="row_spacing">18</property>
     <child>
-      <object class="GtkLabel" id="extract_page__instructions_label">
+      <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">18</property>
-        <property name="margin_right">18</property>
+        <property name="margin_left">24</property>
+        <property name="margin_right">24</property>
         <property name="margin_top">18</property>
+        <property name="margin_bottom">18</property>
         <property name="label" translatable="yes">Copying files from the original disk image, and extracting the compressed Linux file system.</property>
         <property name="justify">fill</property>
         <property name="wrap">True</property>
@@ -57,14 +55,16 @@
     </child>
     <child>
       <object class="GtkGrid">
-        <property name="width_request">712</property>
+        <property name="width_request">616</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
+        <property name="margin_left">154</property>
+        <property name="margin_right">154</property>
+        <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="border_width">18</property>
         <property name="row_spacing">18</property>
         <property name="column_homogeneous">True</property>
         <child>
@@ -98,7 +98,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="extract_page__casper_directory_title">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
@@ -167,7 +167,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="extract_page__unsquashfs_title">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
@@ -182,7 +182,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkProgressBar" id="extract_page__unsquashfs_progressbar">
+              <object class="GtkProgressBar" id="extract_page__unsquashfs_progress_bar">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
@@ -251,7 +251,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="extract_page__copy_original_iso_files_title">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
@@ -266,7 +266,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkProgressBar" id="extract_page__copy_original_iso_files_progressbar">
+              <object class="GtkProgressBar" id="extract_page__copy_original_iso_files_progress_bar">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
@@ -311,7 +311,7 @@
       </packing>
     </child>
   </object>
-  <object class="GtkSizeGroup" id="extract_page__size_group">
+  <object class="GtkSizeGroup">
     <property name="mode">both</property>
     <widgets>
       <widget name="extract_page__copy_original_iso_files_status"/>

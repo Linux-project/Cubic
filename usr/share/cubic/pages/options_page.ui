@@ -99,7 +99,7 @@
       <class name="linked"/>
     </style>
   </object>
-  <object class="GtkListStore" id="options_page__linux_kernels_tab__liststore">
+  <object class="GtkListStore" id="options_page__linux_kernels_tab__list_store">
     <columns>
       <!-- column-name Version -->
       <column type="gchararray"/>
@@ -122,17 +122,17 @@
     </columns>
   </object>
   <object class="GtkGrid" id="options_page">
-    <property name="width_request">950</property>
     <property name="height_request">650</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkLabel" id="options_page__instructions_label">
+      <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">18</property>
-        <property name="margin_right">18</property>
+        <property name="margin_left">24</property>
+        <property name="margin_right">24</property>
         <property name="margin_top">18</property>
         <property name="margin_bottom">18</property>
+        <property name="hexpand">True</property>
         <property name="label" translatable="yes">Make changes to advanced options on the tabs above, or proceed with default settings.
 Click the Generate button to begin creating the customized disk image.</property>
         <property name="justify">fill</property>
@@ -151,11 +151,14 @@ Click the Generate button to begin creating the customized disk image.</property
     </child>
     <child>
       <object class="GtkStack" id="options_page__stack">
+        <property name="width_request">922</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="margin_left">1</property>
+        <property name="margin_right">1</property>
+        <property name="margin_bottom">1</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="border_width">1</property>
         <child>
           <object class="GtkGrid" id="options_page__linux_kernels_tab__grid">
             <property name="visible">True</property>
@@ -164,8 +167,8 @@ Click the Generate button to begin creating the customized disk image.</property
               <object class="GtkLabel" id="options_page__linux_kernels_tab__instructions_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">18</property>
-                <property name="margin_right">18</property>
+                <property name="margin_left">23</property>
+                <property name="margin_right">23</property>
                 <property name="margin_bottom">6</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Select the kernel that will be used to boot the customized live ISO image. This kernel is used during the ISO bootstrap process and may be different from the kernel used by your customized Linux file system. The ISO boot configurations are automatically updated to reference the correct &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names for the kernel selected below.</property>
@@ -193,7 +196,7 @@ Click the Generate button to begin creating the customized disk image.</property
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="vexpand">True</property>
-                    <property name="model">options_page__linux_kernels_tab__liststore</property>
+                    <property name="model">options_page__linux_kernels_tab__list_store</property>
                     <property name="search_column">0</property>
                     <property name="hover_selection">True</property>
                     <property name="show_expanders">False</property>
@@ -297,8 +300,8 @@ Click the Generate button to begin creating the customized disk image.</property
               <object class="GtkLabel" id="options_page__preseed_tab__instructions_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">18</property>
-                <property name="margin_right">18</property>
+                <property name="margin_left">23</property>
+                <property name="margin_right">23</property>
                 <property name="margin_bottom">6</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Update, add, or delete preseed files used to automate installation. Reference these files in the ISO boot configurations by prefixing them with &lt;tt&gt;/cdrom&lt;/tt&gt;.</property>
@@ -546,8 +549,8 @@ Click the Generate button to begin creating the customized disk image.</property
               <object class="GtkLabel" id="options_page__boot_configuration_tab__instructions_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">18</property>
-                <property name="margin_right">18</property>
+                <property name="margin_left">23</property>
+                <property name="margin_right">23</property>
                 <property name="margin_bottom">6</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Verify and update the live ISO boot parameters, or customize the live ISO boot menu entries. The &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names have been automatically updated to match the selected ISO boot kernel. Reference preseed files by prefixing them with &lt;tt&gt;/cdrom&lt;/tt&gt;.</property>
@@ -612,7 +615,7 @@ Click the Generate button to begin creating the customized disk image.</property
       </packing>
     </child>
   </object>
-  <object class="GtkListStore" id="options_page__package_manifest_tab__liststore">
+  <object class="GtkListStore" id="options_page__package_manifest_tab__list_store">
     <columns>
       <!-- column-name Typical -->
       <column type="gboolean"/>

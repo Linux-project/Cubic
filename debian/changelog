@@ -1,5 +1,19 @@
 cubic (2020.04) focal; urgency=low
 
+  * Removed icon theme related functions from display.py.
+
+  * Changed the original iso mount point name from "original-iso" to
+    "source-disk" consistent  with the naming convention used with the
+    custom iso, "custom-disk".
+
+  * Adjusted the window dimensions to fit on 1024x768 screens. The pages
+    are 976 px wide to allow space for a 48 px wide vertical dock. Pages
+    use an aspect ratio of 3:2 for better readability. As a result, page
+    height is 650 px, leaving 118 px available for window's title bar
+    and horizontal docks of varying heights.
+
+  * Issues fixed in version 2020.04-05:
+
   * Added missing exception type, ModuleNotFoundError, to navigation.py.
 
   * Issues fixed in version 2020.04-04 and 2020.04-03:
@@ -33,4 +47,4 @@ cubic (2020.04) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options Page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Apr 2020 21:18:27 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Tue, 28 Apr 2020 21:23:31 -0400

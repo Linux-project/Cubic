@@ -170,7 +170,7 @@
     </child>
   </object>
   <object class="GtkWindow" id="window">
-    <property name="width_request">950</property>
+    <property name="width_request">902</property>
     <property name="height_request">450</property>
     <property name="visible">True</property>
     <property name="can_focus">True</property>

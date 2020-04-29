@@ -339,10 +339,10 @@ def update_kernel_details_list(kernel_details_list):
     # 8: is_remove
 
     # It is not necessary to remove the 1st column because because items
-    # are selectively added to the liststore in the
-    # display.update_liststore() function.
+    # are selectively added to the list_store in the
+    # display.update_list_store() function.
 
-    # (liststore_name, data_list)
+    # (list_store_name, data_list)
     # [
     #     kernel_details.pop('version_integers')
     #     for kernel_details in kernel_details_list
@@ -896,16 +896,16 @@ def create_package_details_list(installed_packages_list, removable_packages_list
 def create_typical_removable_packages_list():
     logger.log_label('Create typical removable packages list')
 
-    listore_name = 'options_page__package_manifest_tab__liststore'
+    listore_name = 'options_page__package_manifest_tab__list_store'
     logger.log_value('Get user selections from', listore_name)
-    liststore = model.builder.get_object(listore_name)
+    list_store = model.builder.get_object(listore_name)
     removable_packages_list = []
-    item = liststore.get_iter_first()
+    item = list_store.get_iter_first()
     while item is not None:
-        flag = liststore.get_value(item, 0)
-        package_name = liststore.get_value(item, 4)
+        flag = list_store.get_value(item, 0)
+        package_name = list_store.get_value(item, 4)
         if flag: removable_packages_list.append(package_name)
-        item = liststore.iter_next(item)
+        item = list_store.iter_next(item)
     removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
@@ -915,16 +915,16 @@ def create_typical_removable_packages_list():
 def create_minimal_removable_packages_list():
     logger.log_label('Create minimal removable packages list')
 
-    listore_name = 'options_page__package_manifest_tab__liststore'
+    listore_name = 'options_page__package_manifest_tab__list_store'
     logger.log_value('Get user selections from', listore_name)
-    liststore = model.builder.get_object(listore_name)
+    list_store = model.builder.get_object(listore_name)
     removable_packages_list = []
-    item = liststore.get_iter_first()
+    item = list_store.get_iter_first()
     while item is not None:
-        flag = liststore.get_value(item, 1) and liststore.get_value(item, 3)
-        package_name = liststore.get_value(item, 4)
+        flag = list_store.get_value(item, 1) and list_store.get_value(item, 3)
+        package_name = list_store.get_value(item, 4)
         if flag: removable_packages_list.append(package_name)
-        item = liststore.iter_next(item)
+        item = list_store.iter_next(item)
     removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
@@ -935,14 +935,14 @@ def create_minimal_removable_packages_list():
 def create_removable_packages_list(listore_name, index):
     logger.log_label('Get removable packages list from user selections')
     logger.log_value('Get user selections from', listore_name)
-    liststore = model.builder.get_object(listore_name)
+    list_store = model.builder.get_object(listore_name)
     removable_packages_list = []
-    item = liststore.get_iter_first()
+    item = list_store.get_iter_first()
     while item is not None:
-        flag = liststore.get_value(item, index)
-        package_name = liststore.get_value(item, 2)
+        flag = list_store.get_value(item, index)
+        package_name = list_store.get_value(item, 2)
         if flag: removable_packages_list.append(package_name)
-        item = liststore.iter_next(item)
+        item = list_store.iter_next(item)
     removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 

@@ -258,7 +258,6 @@ def delete_project_files():
     # Delete the configuration file
     #
     logger.log_value('Delete the configuration file', model.project.configuration_filepath)
-    display.update_status('finish_page__project_configuration_file', PROCESSING)
     sleep(1.00)
     if os.path.exists(model.project.configuration_filepath):
         result, exitstatus, signalstatus = file_utilities.delete_file(model.project.configuration_filepath)
@@ -275,7 +274,6 @@ def delete_project_files():
     # Delete the custom root directory.
     #
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
-    display.update_status('finish_page__custom_root_directory', PROCESSING)
     sleep(1.00)
     if os.path.exists(model.project.custom_root_directory):
         result, exitstatus, signalstatus = file_utilities.delete_path_as_root(model.project.custom_root_directory)
@@ -292,8 +290,6 @@ def delete_project_files():
     # Delete the custom disk directory.
     #
     logger.log_value('Delete the custom ISO directory', model.project.custom_disk_directory)
-    # display.update_label('finish_page__custom_disk_directory_message', model.project.custom_disk_directory)
-    display.update_status('finish_page__custom_disk_directory', PROCESSING)
     sleep(1.00)
     if os.path.exists(model.project.custom_disk_directory):
         result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.custom_disk_directory)
@@ -307,7 +303,7 @@ def delete_project_files():
         pass
 
     # Reset the model.
-    # TODO: reset these as the files are deleted.
+    # TODO: Reset these as the files are deleted.
 
     model.status.is_success_copy = None
     model.status.is_success_extract = None

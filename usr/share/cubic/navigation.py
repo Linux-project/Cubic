@@ -276,43 +276,6 @@ def on_close_about_dialog(widget, event):
     return True
 
 
-def on_style_updated_NEW(window):
-    """
-    Reference: https://developer.gnome.org/gtk3/stable/GtkWidget.html#GtkWidget-style-updated
-    """
-
-    logger.log_title('Style updated')
-
-    theme_variant = display.get_theme_variant(window)
-    if theme_variant != model.application.theme_variant:
-        logger.log_value('Use new icon theme', theme_variant)
-        model.application.theme_variant = theme_variant
-        display.update_icon_search_paths(theme_variant)
-    else:
-        logger.log_value('Use current icon theme style', theme_variant)
-        pass
-
-
-# https://developer.gnome.org/gtk3/stable/GtkWidget.html#GtkWidget-style-updated
-def on_style_updated(window):
-    """
-    Reference: https://developer.gnome.org/gtk3/stable/GtkWidget.html#GtkWidget-style-updated
-    """
-
-    # logger.log_title('Style updated')
-
-    theme_variant = display.get_theme_variant(window)
-
-    # Check if the theme variant actually changed before updating the
-    # icon search path, because the style-updated signal is emitted
-    # every time the icon search path is changed.
-
-    if theme_variant != model.application.theme_variant:
-
-        display.update_icon_search_paths(theme_variant)
-        model.application.theme_variant = theme_variant
-
-
 ########################################################################
 # Navigation Functions
 ########################################################################

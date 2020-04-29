@@ -85,8 +85,8 @@ def setup(action, old_page=None):
         display.update_label('generate_page__copy_boot_files_message_1', '...')
 
         display.update_status('generate_page__create_squashfs', display.BULLET)
-        display.update_progressbar_percent('generate_page__create_squashfs_progressbar', 0)
-        display.update_progressbar_text('generate_page__create_squashfs_progressbar', '')
+        display.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', 0)
+        display.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '')
 
         display.update_status('generate_page__update_filesystem_size', display.BULLET)
         display.update_label('generate_page__update_filesystem_size_message_1', '...')
@@ -96,16 +96,16 @@ def setup(action, old_page=None):
 
         display.update_status('generate_page__update_checksums', display.BULLET)
         display.update_label('generate_page__update_checksums_message_1', '...')
-        display.update_progressbar_percent('generate_page__update_checksums_progressbar', 0)
-        display.update_progressbar_text('generate_page__update_checksums_progressbar', '')
+        display.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 0)
+        display.update_progress_bar_text('generate_page__update_checksums_progress_bar', '')
         display.update_label('generate_page__update_checksums_message_2', '...')
 
         display.update_status('generate_page__check_iso_size', display.BULLET)
         display.update_label('generate_page__check_iso_size_message_1', '...')
 
         display.update_status('generate_page__create_iso_image', display.BULLET)
-        display.update_progressbar_percent('generate_page__create_iso_image_progressbar', 0)
-        display.update_progressbar_text('generate_page__create_iso_image_progressbar', '')
+        display.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', 0)
+        display.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '')
 
         display.update_status('generate_page__calculate_iso_image_checksum', display.BULLET)
         display.update_label('generate_page__calculate_iso_image_checksum_message_1', '...')
@@ -361,8 +361,8 @@ def copy_boot_files():
     # 6: note
     # 7: is_selected
     # 8: is_remove
-    liststore = model.builder.get_object('options_page__linux_kernels_tab__liststore')
-    for selected_index, kernel_details in enumerate(liststore):
+    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
+    for selected_index, kernel_details in enumerate(list_store):
         if kernel_details[7]:
             break
     else:
@@ -370,7 +370,7 @@ def copy_boot_files():
     logger.log_value('The selected kernel is index number', selected_index)
 
     # Get selected directory.
-    source_directory = liststore[selected_index][5]
+    source_directory = list_store[selected_index][5]
 
     # Get target directory.
     target_directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
@@ -380,9 +380,9 @@ def copy_boot_files():
     #
 
     logger.log_label('Update vmlinuz boot file.')
-    source_filename = liststore[selected_index][1]
+    source_filename = list_store[selected_index][1]
     source_filepath = os.path.join(source_directory, source_filename)
-    target_filename = liststore[selected_index][2]
+    target_filename = list_store[selected_index][2]
     target_filepath = os.path.join(target_directory, target_filename)
     add_message('Update /%s/%s' % (model.status.casper_directory, source_filename))
     # Delete existing vmlinuz* file(s) in target directory.
@@ -398,9 +398,9 @@ def copy_boot_files():
     #
 
     logger.log_label('Update initrd boot file.')
-    source_filename = liststore[selected_index][3]
+    source_filename = list_store[selected_index][3]
     source_filepath = os.path.join(source_directory, source_filename)
-    target_filename = liststore[selected_index][4]
+    target_filename = list_store[selected_index][4]
     target_filepath = os.path.join(target_directory, target_filename)
     add_message('Update /%s/%s' % (model.status.casper_directory, source_filename))
     # Delete existing initrd* file in target directory
@@ -475,7 +475,7 @@ def _create_squashfs():
     file_number = 0
 
     # Show % in progress by setting text to None.
-    display.update_progressbar_text('generate_page__create_squashfs_progressbar', None)
+    display.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
 
     def progress_callback_1(percent):
 
@@ -484,7 +484,7 @@ def _create_squashfs():
 
         total_percent = (PERCENT_STOP * file_number + percent) / total_files
 
-        display.update_progressbar_percent('generate_page__create_squashfs_progressbar', total_percent)
+        display.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', total_percent)
 
     error = show_progress(command, progress_callback_1)
 
@@ -548,7 +548,7 @@ def progress_callback_2(percent):
 
     total_percent = (PERCENT_STOP * file_number + percent) / total_files
 
-    display.update_progressbar_percent('generate_page__update_filesystem_size_progressbar', total_percent)
+    display.update_progress_bar_percent('generate_page__update_filesystem_size_progress_bar', total_percent)
 
 
 def update_disk_name_and_disk_info():
@@ -671,7 +671,7 @@ def update_checksums():
     total_files = len(filepaths)
 
     # Show % in progress by setting text to None.
-    display.update_progressbar_text('generate_page__update_checksums_progressbar', None)
+    display.update_progress_bar_text('generate_page__update_checksums_progress_bar', None)
     # TODO: This doesn't use a pexpect process.
     with open(checksums_filepath, 'w') as file:
         for filepath in filepaths:
@@ -681,7 +681,7 @@ def update_checksums():
             relative_filepath = os.path.relpath(filepath, start_directory)
             file.write('%s  ./%s\n' % (hash, relative_filepath))
             # logger.log_label('%s  ./%s' % (hash, relative_filepath))
-            display.update_progressbar_percent('generate_page__update_checksums_progressbar', 100 * file_number / total_files)
+            display.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 100 * file_number / total_files)
             sleep(0.0025)
 
     display.update_label('generate_page__update_checksums_message_1', 'Calculated checksums for %i files.' % total_files)
@@ -822,7 +822,7 @@ def create_iso_image():
                             custom_iso_filepath))
 
     # Show % in progress by setting text to None.
-    display.update_progressbar_text('generate_page__create_iso_image_progressbar', None)
+    display.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
     error = show_progress(command, progress_callback_3, working_directory=model.project.custom_disk_directory)
 
     display.update_label('generate_page__create_iso_image_message_1', 'Success.')
@@ -837,7 +837,7 @@ def progress_callback_3(percent):
 
     total_percent = (PERCENT_STOP * file_number + percent) / total_files
 
-    display.update_progressbar_percent('generate_page__create_iso_image_progressbar', total_percent)
+    display.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', total_percent)
 
 
 def calculate_md5_hash_for_iso():

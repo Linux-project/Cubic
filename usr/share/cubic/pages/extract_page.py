@@ -77,16 +77,16 @@ def setup(action, old_page=None):
         # Setup the "Extract Linux File System" section.
 
         display.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
-        display.update_progressbar_percent('extract_page__unsquashfs_progressbar', 0)
-        # display.update_progressbar_text('extract_page__unsquashfs_progressbar', None)
+        display.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
+        # display.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
         display.update_label('extract_page__unsquashfs_message', '')
         display.update_status('extract_page__unsquashfs', display.BULLET)
 
         # Setup the "Copy Original ISO Files" section.
 
         display.set_visible('extract_page__copy_original_iso_files_section', not model.status.is_success_copy)
-        display.update_progressbar_percent('extract_page__copy_original_iso_files_progressbar', 0)
-        # display.update_progressbar_text('extract_page__copy_original_iso_files_progressbar', None)
+        display.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', 0)
+        # display.update_progress_bar_text('extract_page__copy_original_iso_files_progress_bar', None)
         display.update_label('extract_page__copy_original_iso_files_message', '')
         display.update_status('extract_page__copy_original_iso_files', display.BULLET)
 
@@ -294,7 +294,7 @@ def extract_squashfs():
 
     # The progress callback function.
     def progress_extract_squashfs(percent):
-        display.update_progressbar_percent('extract_page__unsquashfs_progressbar', percent)
+        display.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_extract_squashfs)
@@ -384,7 +384,7 @@ def copy_original_iso_files():
 
     # The progress callback function.
     def progress_copy_original_iso_files(percent):
-        display.update_progressbar_percent('extract_page__copy_original_iso_files_progressbar', percent)
+        display.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_copy_original_iso_files)

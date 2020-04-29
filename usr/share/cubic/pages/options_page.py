@@ -459,11 +459,11 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
     # 6: note
     # 7: is_selected
     # 8: is_remove
-    liststore = model.builder.get_object('options_page__linux_kernels_tab__liststore')
+    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
 
     # Select clicked row, and unselect other rows.
-    for number, item in enumerate(liststore):
-        liststore[number][7] = (number == selected_index)
+    for number, item in enumerate(list_store):
+        list_store[number][7] = (number == selected_index)
 
     # Search and replace text.
     stack_name = 'options_page__boot_configuration_tab__stack'
@@ -473,17 +473,17 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
     # and utilities.update_and_save_boot_configurations().
 
     # search_text_1 = r'/vmlinuz\S*'
-    # replacement_text_1 = '/%s' % liststore[selected_index][2]
+    # replacement_text_1 = '/%s' % list_store[selected_index][2]
     search_text_1 = r'(linux.*)vmlinuz\S*'
-    replacement_text_1 = r'\1%s' % liststore[selected_index][2]
+    replacement_text_1 = r'\1%s' % list_store[selected_index][2]
 
     search_text_2 = r'(kernel.*)vmlinuz\S*'
-    replacement_text_2 = r'\1%s' % liststore[selected_index][2]
+    replacement_text_2 = r'\1%s' % list_store[selected_index][2]
 
     # search_text_3 = r'/initrd\S*'
-    # replacement_text_3 = '/%s' % liststore[selected_index][4]
+    # replacement_text_3 = '/%s' % list_store[selected_index][4]
     search_text_3 = r'(initrd.*)initrd\S*'
-    replacement_text_3 = r'\1%s' % liststore[selected_index][4]
+    replacement_text_3 = r'\1%s' % list_store[selected_index][4]
 
     # Note: This won't work if boot appears between linux and vmlinuz.
     search_text_4 = r'(linux.*vmlinuz\S*\s*)(?!.*boot=)'

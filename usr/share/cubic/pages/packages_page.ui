@@ -27,7 +27,7 @@
 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkListStore" id="packages_page__liststore">
+  <object class="GtkListStore" id="packages_page__list_store">
     <columns>
       <!-- column-name Typical -->
       <column type="gboolean"/>
@@ -44,17 +44,17 @@
     </columns>
   </object>
   <object class="GtkGrid" id="packages_page">
-    <property name="width_request">950</property>
     <property name="height_request">650</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkLabel" id="packages_page__instructions_label">
+      <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">18</property>
-        <property name="margin_right">18</property>
+        <property name="margin_left">24</property>
+        <property name="margin_right">24</property>
         <property name="margin_top">18</property>
         <property name="margin_bottom">18</property>
+        <property name="hexpand">True</property>
         <property name="label" translatable="yes">Select packages that will be automatically removed after a typical or minimal install.</property>
         <property name="justify">fill</property>
         <property name="wrap">True</property>
@@ -72,18 +72,21 @@
     </child>
     <child>
       <object class="GtkScrolledWindow" id="packages_page__scrolled_window">
+        <property name="width_request">922</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
+        <property name="margin_left">1</property>
+        <property name="margin_right">1</property>
+        <property name="margin_bottom">1</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="border_width">1</property>
         <property name="shadow_type">in</property>
         <child>
           <object class="GtkTreeView" id="packages_page__treeview">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="vexpand">True</property>
-            <property name="model">packages_page__liststore</property>
+            <property name="model">packages_page__list_store</property>
             <property name="search_column">4</property>
             <child internal-child="selection">
               <object class="GtkTreeSelection"/>

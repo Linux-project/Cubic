@@ -274,7 +274,7 @@ def save_package_manifest(installed_packages_list, removable_packages_list_1, re
 
     package_details_list = prepare_utilities.create_package_details_list(installed_packages_list, removable_packages_list_1, removable_packages_list_2)
 
-    display.update_liststore('packages_page__liststore', package_details_list)
+    display.update_list_store('packages_page__list_store', package_details_list)
 
     if removable_packages_list_2:
         display.set_column_visible('packages_page__remove_2_treeviewcolumn', True)
@@ -302,10 +302,10 @@ def create_kernel_details_list():
     sleep(0.50)
 
     # Get the list of linux kernels.
-    # .../custom-linux/boot/vmlinuz-*; initrd.img-*
+    # .../custom-root/boot/vmlinuz-*; initrd.img-*
     directory_1 = os.path.join(model.project.custom_root_directory, 'boot')
 
-    # .../original-iso-mount/casper/vmlinuz.efi; initrd.lz
+    # .../source-disk/casper/vmlinuz.efi; initrd.lz
     directory_2 = os.path.join(model.project.iso_mount_point, model.status.casper_directory)
 
     kernel_details_list = prepare_utilities.create_kernel_details_list(directory_1, directory_2)
@@ -339,8 +339,8 @@ def prepare_linux_kernels(kernel_details_list):
         # https://bugs.launchpad.net/cubic/+bug/1860682
         # https://stackoverflow.com/questions/1867861/how-to-keep-keys-values-in-same-order-as-declared
         #
-        # display.update_liststore(
-        #     'options_page__linux_kernels_tab__liststore',
+        # display.update_list_store(
+        #     'options_page__linux_kernels_tab__list_store',
         #     [
         #         list(kernel_details.values())
         #         for kernel_details in kernel_details_list
@@ -355,8 +355,8 @@ def prepare_linux_kernels(kernel_details_list):
         # 6: note
         # 7: is_selected
         # 8: is_remove
-        display.update_liststore(
-            'options_page__linux_kernels_tab__liststore',
+        display.update_list_store(
+            'options_page__linux_kernels_tab__list_store',
             [
                 [
                     kernel_details['version_name'],

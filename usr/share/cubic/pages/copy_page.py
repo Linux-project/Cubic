@@ -71,9 +71,9 @@ def setup(action, old_page=None):
         file_details_list = create_file_details_list(model.uris)
 
         display.update_label('copy_page__progress_label', label)
-        display.update_progressbar_text('copy_page__copy_files_progressbar', None)
-        display.update_progressbar_percent('copy_page__copy_files_progressbar', 0)
-        display.update_liststore('copy_page__file_details__liststore', file_details_list)
+        display.update_progress_bar_text('copy_page__copy_files_progress_bar', None)
+        display.update_progress_bar_percent('copy_page__copy_files_progress_bar', 0)
+        display.update_list_store('copy_page__file_details__list_store', file_details_list)
 
         return
 
@@ -228,9 +228,9 @@ def progress_callback(percent):
 
     total_percent = (PERCENT_STOP * file_number + percent) / total_files
 
-    display.update_progressbar_percent('copy_page__copy_files_progressbar', total_percent)
+    display.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
 
-    display.update_liststore_progressbar_percent('copy_page__file_details__liststore', file_number, percent)
+    display.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
 
 
 ########################################################################

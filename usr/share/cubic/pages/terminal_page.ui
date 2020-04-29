@@ -35,16 +35,14 @@
   <requires lib="gtk+" version="3.20"/>
   <requires lib="vte-2.91" version="0.56"/>
   <object class="GtkGrid" id="terminal_page">
-    <property name="width_request">950</property>
     <property name="height_request">650</property>
     <property name="can_focus">False</property>
-    <property name="border_width">0</property>
     <child>
-      <object class="GtkLabel" id="terminal_page__instructions_label">
+      <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">18</property>
-        <property name="margin_right">18</property>
+        <property name="margin_left">24</property>
+        <property name="margin_right">24</property>
         <property name="margin_top">18</property>
         <property name="margin_bottom">18</property>
         <property name="label" translatable="yes">Customize the Linux file system using the virtual environment terminal.</property>
@@ -66,8 +64,8 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">18</property>
-        <property name="margin_right">18</property>
+        <property name="margin_left">24</property>
+        <property name="margin_right">24</property>
         <property name="margin_bottom">6</property>
         <property name="spacing">6</property>
         <child>
@@ -122,11 +120,14 @@
     </child>
     <child>
       <object class="GtkScrolledWindow" id="terminal_page__scrolled_window">
+        <property name="width_request">922</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
+        <property name="margin_left">1</property>
+        <property name="margin_right">1</property>
+        <property name="margin_bottom">1</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="border_width">1</property>
         <property name="hscrollbar_policy">never</property>
         <child>
           <object class="VteTerminal" id="terminal_page__terminal">
