@@ -30,11 +30,11 @@
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 
 from utilities import configuration
-from utilities import constructors
-from utilities import display
+from utilities import constructor
+from utilities import displayer
 from utilities import logger
 from utilities import model
-from utilities.process_utilities import execute_synchronous
+from utilities.processor import execute_synchronous
 
 import getpass
 import os
@@ -59,7 +59,7 @@ def setup(action, old_page=None):
 
     if action == 'migrate':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Cancel',
             back_action='back',
             back_button_style=None,
@@ -71,23 +71,23 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        display_version = constructors.get_major_minor_version(model.project.cubic_version)
-        display.update_entry('migrate_page__project_cubic_version_entry', display_version)
-        display.update_entry('migrate_page__project_directory_entry', model.project.directory)
-        # display.update_entry('migrate_page__original_iso_filename_entry', model.original.iso_filename)
-        display.update_entry('migrate_page__custom_iso_version_number_entry', model.custom.iso_version_number)
-        display.update_entry('migrate_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
-        display.update_entry('migrate_page__custom_iso_release_name_entry', model.custom.iso_release_name)
-        display.update_entry('migrate_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
+        display_version = constructor.get_major_minor_version(model.project.cubic_version)
+        displayer.update_entry('migrate_page__project_cubic_version_entry', display_version)
+        displayer.update_entry('migrate_page__project_directory_entry', model.project.directory)
+        # displayer.update_entry('migrate_page__original_iso_filename_entry', model.original.iso_filename)
+        displayer.update_entry('migrate_page__custom_iso_version_number_entry', model.custom.iso_version_number)
+        displayer.update_entry('migrate_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
+        displayer.update_entry('migrate_page__custom_iso_release_name_entry', model.custom.iso_release_name)
+        displayer.update_entry('migrate_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
 
-        display.update_status('migrate_page__configuration', BULLET)
-        display.update_label('migrate_page__configuration_message', '')
+        displayer.update_status('migrate_page__configuration', BULLET)
+        displayer.update_label('migrate_page__configuration_message', '')
 
-        display.update_status('migrate_page__custom_root', BULLET)
-        display.update_label('migrate_page__custom_root_message', '')
+        displayer.update_status('migrate_page__custom_root', BULLET)
+        displayer.update_label('migrate_page__custom_root_message', '')
 
-        display.update_status('migrate_page__custom_disk', BULLET)
-        display.update_label('migrate_page__custom_disk_message', '')
+        displayer.update_status('migrate_page__custom_disk', BULLET)
+        displayer.update_label('migrate_page__custom_disk_message', '')
 
         return
 
@@ -111,13 +111,13 @@ def leave(action, new_page=None):
 
     if action == 'back':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
     elif action == 'next':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         is_error = migrate_configuration()
         if is_error: return 'error'
@@ -132,7 +132,7 @@ def leave(action, new_page=None):
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
@@ -147,8 +147,6 @@ def leave(action, new_page=None):
 
 
 def on_clicked__migrate_page__project_directory_open_button(widget):
-
-    print('on_clicked__migrate_page__project_directory_open_button')
 
     command = 'xdg-open %s &' % model.project.directory
     os.system(command)
@@ -169,19 +167,19 @@ def migrate_configuration():
     logger.log_label('Migrate the configuration')
     logger.log_value('Update the configuration file to the current format', model.project.configuration_filepath)
 
-    display.update_status('migrate_page__configuration', PROCESSING)
+    displayer.update_status('migrate_page__configuration', PROCESSING)
     sleep(1.00)
 
     try:
         configuration.save()
         logger.log_value('Migrated', model.project.configuration_filepath)
-        display.update_status('migrate_page__configuration', OK)
-        display.update_label('migrate_page__configuration_message', '')
+        displayer.update_status('migrate_page__configuration', OK)
+        displayer.update_label('migrate_page__configuration_message', '')
     except Exception as exception:
         logger.log_value('Error. Unable to migrate', model.project.configuration_filepath)
         logger.log_value('The exception is', exception)
-        display.update_status('migrate_page__configuration', ERROR)
-        display.update_label('migrate_page__configuration_message', 'Error. Unable to migrate %s.' % model.project.configuration_filepath)
+        displayer.update_status('migrate_page__configuration', ERROR)
+        displayer.update_label('migrate_page__configuration_message', 'Error. Unable to migrate %s.' % model.project.configuration_filepath)
         is_error = True
 
     # Pause to allow the user to see the result.
@@ -208,7 +206,7 @@ def migrate_custom_root():
     logger.log_value('From', source_path)
     logger.log_value('To', target_path)
 
-    display.update_status('migrate_page__custom_root', PROCESSING)
+    displayer.update_status('migrate_page__custom_root', PROCESSING)
     sleep(1.00)
 
     if os.path.exists(source_path):
@@ -219,20 +217,20 @@ def migrate_custom_root():
 
         if not exitstatus:
             logger.log_value('Migrated', source_path)
-            display.update_status('migrate_page__custom_root', OK)
-            display.update_label('migrate_page__custom_root_message', '')
+            displayer.update_status('migrate_page__custom_root', OK)
+            displayer.update_label('migrate_page__custom_root_message', '')
         else:
             logger.log_value('Error. Unable to migrate', source_path)
             logger.log_value('The result is', result)
-            display.update_status('migrate_page__custom_root', ERROR)
-            display.update_label('migrate_page__custom_root_message', 'Error. Unable to migrate %s.' % source_path)
+            displayer.update_status('migrate_page__custom_root', ERROR)
+            displayer.update_label('migrate_page__custom_root_message', 'Error. Unable to migrate %s.' % source_path)
             is_error = True
 
     else:
 
         logger.log_value('Error. Unable to migrate because the source directory does not exist', source_path)
-        display.update_status('migrate_page__custom_root', ERROR)
-        display.update_label('migrate_page__custom_root_message', 'Error. Unable to migrate %s.' % source_path)
+        displayer.update_status('migrate_page__custom_root', ERROR)
+        displayer.update_label('migrate_page__custom_root_message', 'Error. Unable to migrate %s.' % source_path)
         is_error = True
 
     # Pause to allow the user to see the result.
@@ -264,7 +262,7 @@ def migrate_custom_disk():
     logger.log_value('To', target_path)
     logger.log_value('User', user)
 
-    display.update_status('migrate_page__custom_disk', PROCESSING)
+    displayer.update_status('migrate_page__custom_disk', PROCESSING)
     sleep(1.00)
 
     if os.path.exists(source_path):
@@ -275,20 +273,20 @@ def migrate_custom_disk():
 
         if not exitstatus:
             logger.log_value('Migrated', source_path)
-            display.update_status('migrate_page__custom_disk', OK)
-            display.update_label('migrate_page__custom_disk_message', '')
+            displayer.update_status('migrate_page__custom_disk', OK)
+            displayer.update_label('migrate_page__custom_disk_message', '')
         else:
             logger.log_value('Error. Unable to migrate', source_path)
             logger.log_value('The result is', result)
-            display.update_status('migrate_page__custom_disk', ERROR)
-            display.update_label('migrate_page__custom_disk_message', 'Error. Unable to migrate %s.' % source_path)
+            displayer.update_status('migrate_page__custom_disk', ERROR)
+            displayer.update_label('migrate_page__custom_disk_message', 'Error. Unable to migrate %s.' % source_path)
             is_error = True
 
     else:
 
         logger.log_value('Error. Unable to migrate because the source directory does not exist', source_path)
-        display.update_status('migrate_page__custom_disk', ERROR)
-        display.update_label('migrate_page__custom_disk_message', 'Error. Unable to migrate %s.' % source_path)
+        displayer.update_status('migrate_page__custom_disk', ERROR)
+        displayer.update_label('migrate_page__custom_disk_message', 'Error. Unable to migrate %s.' % source_path)
         is_error = True
 
     # Pause to allow the user to see the result.

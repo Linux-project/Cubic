@@ -30,14 +30,14 @@
 from utilities import logger
 logger.log_title('Cubic - Custom Ubuntu ISO Creator')
 
-import navigation
+import navigator
 
-from utilities import display
+from utilities import displayer
 from utilities import model
-from utilities import constructors
+from utilities import constructor
 
-from file_choosers import directory_file_chooser
-from file_choosers import filepath_file_chooser
+from file_choosers import directory_chooser
+from file_choosers import iso_image_chooser
 from file_choosers import copy_file_chooser
 
 import gi
@@ -67,21 +67,21 @@ try:
 
     # TODO: FOR TESTING ONLY
     # model.application.cubic_version = '2020.05-01-release~202005010300~ubuntu19.10.1'
-    model.application.cubic_version = constructors.get_package_version('cubic')
-    model.application.kernel_version = constructors.get_kernel_version()
+    model.application.cubic_version = constructor.get_package_version('cubic')
+    model.application.kernel_version = constructor.get_kernel_version()
 
     model.builder = Gtk.Builder.new_from_file('cubic.ui')
-    model.builder.connect_signals(navigation)
+    model.builder.connect_signals(navigator)
 
     #-------------------------------------------------------------------
     # File Choosers
     #-------------------------------------------------------------------
 
-    model.builder.add_from_file('file_choosers/directory_file_chooser.ui')
-    model.builder.connect_signals(directory_file_chooser)
+    model.builder.add_from_file('file_choosers/directory_chooser.ui')
+    model.builder.connect_signals(directory_chooser)
 
-    model.builder.add_from_file('file_choosers/filepath_file_chooser.ui')
-    model.builder.connect_signals(filepath_file_chooser)
+    model.builder.add_from_file('file_choosers/iso_image_chooser.ui')
+    model.builder.connect_signals(iso_image_chooser)
 
     model.builder.add_from_file('file_choosers/copy_file_chooser.ui')
     model.builder.connect_signals(copy_file_chooser)
@@ -95,7 +95,7 @@ try:
     for file in sorted(glob.glob('pages/*_page.ui')):
         module_name = file[6:-3]
         logger.log_value('Setup', module_name.replace('_', ' '))
-        module = navigation.get_page(module_name)
+        module = navigator.get_page(module_name)
         # logger.log_value('.', module.name)
         model.builder.add_from_file(file)
         model.builder.connect_signals(module)
@@ -106,40 +106,40 @@ try:
 
     widget = model.builder.get_object('project_page__delete_button')
     header_bar.add(widget)
-    display.set_visible('project_page__delete_button', False)  # TODO: Set invisible in cubic.ui
+    displayer.set_visible('project_page__delete_button', False)  # TODO: Set invisible in cubic.ui
 
     widget = model.builder.get_object('terminal_page__copy_button')
     header_bar.add(widget)
-    display.set_visible('terminal_page__copy_button', False)  # TODO: Set invisible in cubic.ui
+    displayer.set_visible('terminal_page__copy_button', False)  # TODO: Set invisible in cubic.ui
 
     widget = model.builder.get_object('project_page__header_bar_box')
     header_bar.add(widget)
-    display.set_visible('project_page__header_bar_box', False)  # TODO: Set invisible in project_page.ui
+    displayer.set_visible('project_page__header_bar_box', False)  # TODO: Set invisible in project_page.ui
 
     widget = model.builder.get_object('packages_page__header_bar_box')
     header_bar.add(widget)
-    display.set_visible('packages_page__header_bar_box', False)  # TODO: Set invisible in packages_page.ui
+    displayer.set_visible('packages_page__header_bar_box', False)  # TODO: Set invisible in packages_page.ui
 
     widget = model.builder.get_object('options_page__header_bar_preseed_box_1')
     header_bar.add(widget)
-    display.set_visible('options_page__header_bar_preseed_box_1', False)  # TODO: Set invisible in cubic.ui
+    displayer.set_visible('options_page__header_bar_preseed_box_1', False)  # TODO: Set invisible in cubic.ui
 
     widget = model.builder.get_object('options_page__header_bar_preseed_box_2')
     header_bar.add(widget)
-    display.set_visible('options_page__header_bar_preseed_box_2', False)  # TODO: Set invisible in cubic.ui
+    displayer.set_visible('options_page__header_bar_preseed_box_2', False)  # TODO: Set invisible in cubic.ui
 
     widget = model.builder.get_object('options_page__header_bar_boot_box')
     header_bar.add(widget)
-    display.set_visible('options_page__header_bar_boot_box', False)  # TODO: Set invisible in cubic.ui
+    displayer.set_visible('options_page__header_bar_boot_box', False)  # TODO: Set invisible in cubic.ui
 
     # Title
     widget = model.builder.get_object('title_label')
-    display.set_visible('title_label', True)  # TODO: Already set visible in cubic.ui; no need to do it here.
+    displayer.set_visible('title_label', True)  # TODO: Already set visible in cubic.ui; no need to do it here.
 
     stack_switcher = model.builder.get_object('stack_switcher')
     options_page__stack = model.builder.get_object('options_page__stack')
     stack_switcher.set_stack(options_page__stack)
-    display.set_visible('stack_switcher', False)  # TODO: Set invisible in cubic.ui
+    displayer.set_visible('stack_switcher', False)  # TODO: Set invisible in cubic.ui
 
     #-------------------------------------------------------------------
     # Set Terminal Font
@@ -194,7 +194,7 @@ try:
     window.show()
 
     # Open the application.
-    navigation.handle_navigation('open')
+    navigator.handle_navigation('open')
 
     # Start the Gtk main loop.
     Gtk.main()

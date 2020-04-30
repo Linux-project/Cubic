@@ -29,11 +29,11 @@
 
 from constants import PERCENT_STOP
 
-from utilities import display
+from utilities import displayer
 from utilities import logger
 from utilities import model
 from utilities.progress import show_progress
-from utilities.terminal_utilities import get_current_directory
+from utilities.console import get_current_directory
 
 import os
 from urllib.parse import urlparse, unquote
@@ -70,10 +70,10 @@ def setup(action, old_page=None):
         # Create a file details list of files to be copied.
         file_details_list = create_file_details_list(model.uris)
 
-        display.update_label('copy_page__progress_label', label)
-        display.update_progress_bar_text('copy_page__copy_files_progress_bar', None)
-        display.update_progress_bar_percent('copy_page__copy_files_progress_bar', 0)
-        display.update_list_store('copy_page__file_details__list_store', file_details_list)
+        displayer.update_label('copy_page__progress_label', label)
+        displayer.update_progress_bar_text('copy_page__copy_files_progress_bar', None)
+        displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', 0)
+        displayer.update_list_store('copy_page__file_details__list_store', file_details_list)
 
         return
 
@@ -86,7 +86,7 @@ def enter(action, old_page=None):
 
     if action == 'copy':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='Cancel',
             back_action='cancel',
             back_button_style=None,
@@ -111,7 +111,7 @@ def leave(action, new_page=None):
 
         # TODO: Make sure the next button is enabled (only if the virtual environment is active).
         #       This may need to be done on the termnal_page setup function for 'cancel' and for 'copy'.
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
@@ -119,18 +119,18 @@ def leave(action, new_page=None):
 
         # TODO: Make sure the next button is enabled (only if the virtual environment is active).
         #       This may need to be done on the termnal_page setup function for 'cancel' and for 'copy'.
-        display.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
 
         global current_directory
         copy_files(current_directory, model.uris)
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
@@ -199,11 +199,9 @@ def copy_files(current_directory, uris):
             # label = 'Copying file %s of %s to %s' % (file_number + 1, total_files, relative_directory)
             label = 'Copying file %s of %s to %s' % (file_number + 1, total_files, target_directory)
 
-        display.update_label('copy_page__progress_label', label)
-        display.scroll_to_tree_view_row('copy_page__treeview', file_number)
-        display.select_tree_view_row('copy_page__treeview', file_number)
-
-        print('%d of %s:\tCopy %s to %s.' % (file_number, total_files, filepath, target_directory))
+        displayer.update_label('copy_page__progress_label', label)
+        displayer.scroll_to_tree_view_row('copy_page__treeview', file_number)
+        displayer.select_tree_view_row('copy_page__treeview', file_number)
 
         copy_file(filepath, file_number, target_directory, total_files)
 
@@ -228,9 +226,9 @@ def progress_callback(percent):
 
     total_percent = (PERCENT_STOP * file_number + percent) / total_files
 
-    display.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
+    displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
 
-    display.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
+    displayer.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
 
 
 ########################################################################

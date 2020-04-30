@@ -29,7 +29,7 @@
 
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 
-from utilities import display
+from utilities import displayer
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
@@ -53,7 +53,7 @@ def setup(action, old_page=None):
 
     if action == 'finish':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -65,17 +65,17 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        display.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
-        display.update_entry('finish_page__custom_iso_filename_entry', model.custom.iso_filename)
-        display.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
-        display.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
-        display.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
-        display.update_entry('finish_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
-        display.update_entry('finish_page__custom_iso_checksum_entry', model.status.iso_checksum)
-        display.update_entry('finish_page__custom_iso_checksum_filename_entry', model.status.iso_checksum_filename)
+        displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
+        displayer.update_entry('finish_page__custom_iso_filename_entry', model.custom.iso_filename)
+        displayer.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
+        displayer.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
+        displayer.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
+        displayer.update_entry('finish_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
+        displayer.update_entry('finish_page__custom_iso_checksum_entry', model.status.iso_checksum)
+        displayer.update_entry('finish_page__custom_iso_checksum_filename_entry', model.status.iso_checksum_filename)
 
-        display.update_status('finish_page__delete_project_files', BLANK)
-        display.activate_check_button('finish_page__delete_project_files_check_button', False)
+        displayer.update_status('finish_page__delete_project_files', BLANK)
+        displayer.activate_check_button('finish_page__delete_project_files_check_button', False)
 
         return
 
@@ -83,7 +83,7 @@ def setup(action, old_page=None):
 
         # TODO: FOR TESTING ONLY
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -95,17 +95,17 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        display.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
-        display.update_entry('finish_page__custom_iso_filename_entry', model.custom.iso_filename)
-        display.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
-        display.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
-        display.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
-        display.update_entry('finish_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
-        display.update_entry('finish_page__custom_iso_checksum_entry', model.status.iso_checksum)
-        display.update_entry('finish_page__custom_iso_checksum_filename_entry', model.status.iso_checksum_filename)
+        displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
+        displayer.update_entry('finish_page__custom_iso_filename_entry', model.custom.iso_filename)
+        displayer.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
+        displayer.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
+        displayer.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
+        displayer.update_entry('finish_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
+        displayer.update_entry('finish_page__custom_iso_checksum_entry', model.status.iso_checksum)
+        displayer.update_entry('finish_page__custom_iso_checksum_filename_entry', model.status.iso_checksum_filename)
 
-        display.update_status('finish_page__delete_project_files', BLANK)
-        display.activate_check_button('finish_page__delete_project_files_check_button', False)
+        displayer.update_status('finish_page__delete_project_files', BLANK)
+        displayer.activate_check_button('finish_page__delete_project_files_check_button', False)
 
         return
     else:
@@ -134,9 +134,9 @@ def leave(action, new_page=None):
 
     if action == 'close':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_sensitive('finish_page__delete_project_files_check_button', False)
+        displayer.set_sensitive('finish_page__delete_project_files_check_button', False)
 
         #
         # Unmount and delete the original ISO mount point.
@@ -151,27 +151,27 @@ def leave(action, new_page=None):
         logger.log_value('Delete the project files?', is_active)
         if is_active:
 
-            display.update_status('finish_page__delete_project_files', PROCESSING)
+            displayer.update_status('finish_page__delete_project_files', PROCESSING)
 
             # Pause.
-            sleep(1.00)
+            # sleep(1.00)
 
             delete_project_files()
 
-            display.update_status('finish_page__delete_project_files', OK)
+            displayer.update_status('finish_page__delete_project_files', OK)
             # Pause to allow the user to see the result.
             sleep(1.0)
 
         # TODO: Is it appropriate to quit here, or must this be done in
         #       navigation as a special case?
         #
-        # display.main_quit()
+        # displayer.main_quit()
 
         return
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
@@ -187,8 +187,6 @@ def leave(action, new_page=None):
 
 def on_clicked__finish_page__custom_iso_filename_open_button(widget):
 
-    print('on_clicked__finish_page__custom_iso_filename_open_button')
-
     if os.path.isfile('/bin/nautilus'):
         filepath = os.path.join(model.custom.iso_directory, model.custom.iso_filename)
         if not os.path.isfile(filepath):
@@ -201,8 +199,6 @@ def on_clicked__finish_page__custom_iso_filename_open_button(widget):
 
 
 def on_clicked__finish_page__custom_iso_checksum_filename_open_button(widget):
-
-    print('on_clicked__finish_page__custom_iso_checksum_filename_open_button')
 
     if os.path.isfile('/bin/nautilus'):
         filepath = os.path.join(model.custom.iso_directory, model.status.iso_checksum_filename)
@@ -258,7 +254,7 @@ def delete_project_files():
     # Delete the configuration file
     #
     logger.log_value('Delete the configuration file', model.project.configuration_filepath)
-    sleep(1.00)
+    # sleep(1.00)
     if os.path.exists(model.project.configuration_filepath):
         result, exitstatus, signalstatus = file_utilities.delete_file(model.project.configuration_filepath)
         if not signalstatus:
@@ -274,7 +270,7 @@ def delete_project_files():
     # Delete the custom root directory.
     #
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
-    sleep(1.00)
+    # sleep(1.00)
     if os.path.exists(model.project.custom_root_directory):
         result, exitstatus, signalstatus = file_utilities.delete_path_as_root(model.project.custom_root_directory)
         if not signalstatus:
@@ -290,7 +286,7 @@ def delete_project_files():
     # Delete the custom disk directory.
     #
     logger.log_value('Delete the custom ISO directory', model.project.custom_disk_directory)
-    sleep(1.00)
+    # sleep(1.00)
     if os.path.exists(model.project.custom_disk_directory):
         result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.custom_disk_directory)
         if not signalstatus:

@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# package_utilities.py                                                 #
+# iso_image_chooser.py                                                 #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,13 +27,65 @@
 #                                                                      #
 ########################################################################
 
-from utilities.process_utilities import execute_synchronous
+from utilities import displayer
+from utilities import logger
+from utilities import model
+
+import os
+
+name = 'iso_image_chooser'
+callback = None
 
 
-# TODO: Move this to constructors
-def get_package_version(package_name):
+def open(calback):
 
-    command = 'dpkg-query --showformat="${Version}\n" --show "%s"' % package_name
-    result, exitstatus, signalstatus = execute_synchronous(command)
+    displayer.set_sensitive('window', False)
+    displayer.show_all(name)
+    set_callback(calback)
 
-    return result
+
+def close():
+
+    displayer.set_sensitive('window', False)
+    displayer.hide(name)
+    displayer.set_sensitive('window', True)
+
+
+def set_callback(new_callback):
+
+    global callback
+    callback = new_callback
+
+
+def get_selected_filepath():
+
+    dialog = model.builder.get_object(name)
+    filepath = dialog.get_filename()
+    return filepath
+
+
+def on_clicked__iso_image_chooser__cancel_button(widget):
+
+    logger.log_title('Clicked ISO image chooser cancel button')
+    close()
+
+
+def on_clicked__iso_image_chooser__select_button(widget):
+
+    logger.log_title('Clicked ISO image chooser select button')
+    filepath = get_selected_filepath()
+    try:
+        os.path.isfile(filepath)
+        close()
+        logger.log_value('The selected filepath is', filepath)
+        callback(filepath)
+    except TypeError as exception:
+        logger.log_value('Error. The selected filepath is', filepath)
+        filepath = None
+
+
+def on_delete_event__iso_image_chooser(widget, event):
+
+    logger.log_title('Delete ISO image chooser')
+    close()
+    return True

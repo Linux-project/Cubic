@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# terminal_utilities.py                                                #
+# console.py                                                           #
 #                                                                      #
 # Copyright (C) 2019 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -30,7 +30,7 @@
 from constants import BOLD_RED, BOLD_GREEN, BOLD_BLUE, BOLD_YELLOW, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
 from utilities import logger
 from utilities import model
-from utilities.process_utilities import execute_synchronous, execute_synchronous_unregistered
+from utilities.processor import execute_synchronous, execute_synchronous_unregistered
 
 # TODO: Add to debian control file.
 # $ sudo apt install python3-pydbus
@@ -116,9 +116,9 @@ def _enter_virtual_environment():
     # terminal.set_pty(None)
 
     # The process executed by spawn_async() below is not registered with
-    # the process_utilities module. As a result, this process is not
+    # the processor module. As a result, this process is not
     # terminated by the interrupt_navigation_thread() function of the
-    # navigation module. This allows the terminal to continue running
+    # navigator module. This allows the terminal to continue running
     # while the application navigates away from the terminal page. The
     # pseudo terminal process must be explicitly killed by executing
     # exit_virtual_environment().
@@ -129,9 +129,22 @@ def _enter_virtual_environment():
     # Allocate a new pseudo-terminal.
     global pseudo_terminal
     pseudo_terminal = Pty.new_sync(PtyFlags.DEFAULT)
+    pseudo_terminal.set_utf8(True)
 
     # Start the virtual environment in the pseudo-terminal.
-    # https://lazka.github.io/pgi-docs/#Vte-2.91/classes/Pty.html#Vte.Pty.spawn_async
+    # https://lazka.github.io/pgi-docs/Vte-2.91/classes/Pty.html#Vte.Pty.spawn_async
+    # inspect.getdoc(Vte.Terminal.spawn_async)
+    # 'spawn_async(self,
+    #              pty_flags:Vte.PtyFlags,
+    #              working_directory:str=None,
+    #              argv:list, envv:list=None,
+    #              spawn_flags_:GLib.SpawnFlags,
+    #              child_setup:GLib.SpawnChildSetupFunc=None,
+    #              timeout:int,
+    #              cancellable:Gio.Cancellable=None,
+    #              callback:Vte.TerminalSpawnAsyncCallback=None,
+    #              user_data=None)'
+
     pseudo_terminal.spawn_async(
         working_directory=None,
         argv=command,
@@ -170,6 +183,7 @@ def watch_virtual_environment(pseudo_terminal, task, data):
     """
     A terminal_spawn_async_callback function that is invoked when
     spawn_async() completes.
+    https://lazka.github.io/pgi-docs/Gio-2.0/callbacks.html#Gio.AsyncReadyCallback
     """
 
     logger.log_label('Watch virtual environment')
@@ -432,8 +446,8 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
 
 # The process executed by spawn_async() in the
 # _enter_virtual_environment() function is not registered with the
-# process_utilities module. As a result, this process is not terminated
-# by the interrupt_navigation_thread() function of the navigation module.
+# processor module. As a result, this process is not terminated
+# by the interrupt_navigation_thread() function of the navigator module.
 # This allows the terminal to continue running while the application
 # navigates away from the terminal page. The pseudo terminal process
 # must be explicitly killed by executing exit_virtual_environment().
@@ -464,6 +478,9 @@ def exit_virtual_environment_using_kill():
         # TODO: Should we use execute_synchronous_unregistered() ?
         command = 'pkexec "%s" "%s"' % (program, process_id)
         result, exitstatus, signalstatus = execute_synchronous(command)
+    else:
+
+        logger.log_value('There is no pseudo terminal to exit. The pseudo_terminal is ', pseudo_terminal)
 
 
 '''

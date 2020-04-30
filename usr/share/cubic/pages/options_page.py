@@ -27,7 +27,7 @@
 #                                                                      #
 ########################################################################
 
-from utilities import display
+from utilities import displayer
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
@@ -55,7 +55,7 @@ def setup(action, old_page=None):
 
     if action == 'back':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -67,21 +67,21 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        # display.set_visible('options_page__header_bar_preseed_box_1', True)
-        # display.set_visible('options_page__header_bar_box_2', True)
-        display.set_visible('title_label', False)
-        display.set_visible('stack_switcher', True)
+        # displayer.set_visible('options_page__header_bar_preseed_box_1', True)
+        # displayer.set_visible('options_page__header_bar_box_2', True)
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('stack_switcher', True)
 
-        # display.set_solid('packages_page__header_bar__box', False)
-        # display.set_solid('options_page__header_bar__box', False)
-        # # display.set_solid('options_page__stack_switcher', True)
-        # # display.set_solid('stack_switcher', True)
+        # displayer.set_solid('packages_page__header_bar__box', False)
+        # displayer.set_solid('options_page__header_bar__box', False)
+        # # displayer.set_solid('options_page__stack_switcher', True)
+        # # displayer.set_solid('stack_switcher', True)
 
         return
 
     elif action == 'next':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -93,15 +93,15 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        # display.set_visible('options_page__header_bar_preseed_box_1', True)
-        # display.set_visible('options_page__header_bar_box_2', True)
-        display.set_visible('title_label', False)
-        display.set_visible('stack_switcher', True)
+        # displayer.set_visible('options_page__header_bar_preseed_box_1', True)
+        # displayer.set_visible('options_page__header_bar_box_2', True)
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('stack_switcher', True)
 
-        # display.set_solid('packages_page__header_bar__box', False)
-        # display.set_solid('options_page__header_bar__box', False)
-        # # display.set_solid('options_page__stack_switcher', True)
-        # display.set_solid('stack_switcher', True)
+        # displayer.set_solid('packages_page__header_bar__box', False)
+        # displayer.set_solid('options_page__header_bar__box', False)
+        # # displayer.set_solid('options_page__stack_switcher', True)
+        # displayer.set_solid('stack_switcher', True)
 
         return
 
@@ -129,23 +129,23 @@ def leave(action, new_page=None):
 
     if action == 'back':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # display.set_visible('options_page__header_bar_preseed_box_1', False)
-        # display.set_visible('options_page__header_bar_box_2', False)
-        display.set_visible('title_label', True)
-        display.set_visible('stack_switcher', False)
+        # displayer.set_visible('options_page__header_bar_preseed_box_1', False)
+        # displayer.set_visible('options_page__header_bar_box_2', False)
+        displayer.set_visible('title_label', True)
+        displayer.set_visible('stack_switcher', False)
 
         return
 
     elif action == 'generate':
 
-        display.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
 
-        # display.set_visible('options_page__header_bar_preseed_box_1', False)
-        # display.set_visible('options_page__header_bar_box_2', False)
-        display.set_visible('title_label', True)
-        display.set_visible('stack_switcher', False)
+        # displayer.set_visible('options_page__header_bar_preseed_box_1', False)
+        # displayer.set_visible('options_page__header_bar_box_2', False)
+        displayer.set_visible('title_label', True)
+        displayer.set_visible('stack_switcher', False)
 
         # Save preseed files.
         # TODO: Remove this line when 14.04 is no longer supported.
@@ -178,13 +178,13 @@ def leave(action, new_page=None):
         # TODO: If either of the above fails, action should be 'error'
         #       and we should navigate to an error page.
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # TODO: When the original ISO image is unmounted we leave the
         #       extract page, remove the following:
@@ -209,52 +209,45 @@ def leave(action, new_page=None):
 
 def on_clicked__options_page__boot_revert_button(widget):
 
-    print('TBD:on_clicked__options_page__boot_revert_button')
+    print('TBD: on_clicked__options_page__boot_revert_button')
 
 
 def on_clicked__options_page__boot_undo_button(widget):
 
-    print('TBD:on_clicked__options_page__boot_undo_button')
+    print('TBD: on_clicked__options_page__boot_undo_button')
 
 
 def on_clicked__options_page__boot_redo_button(widget):
 
-    print('TBD:on_clicked__options_page__boot_redo_button')
+    print('TBD: on_clicked__options_page__boot_redo_button')
 
 
 def on_clicked__options_page__preseed_revert_button(widget):
 
-    print('TBD:on_clicked__options_page__preseed_revert_button')
+    print('TBD: on_clicked__options_page__preseed_revert_button')
 
 
 def on_clicked__options_page__preseed_undo_button(widget):
 
-    print('TBD:on_clicked__options_page__preseed_undo_button')
+    print('TBD: on_clicked__options_page__preseed_undo_button')
 
 
 def on_clicked__options_page__preseed_redo_button(widget):
 
-    print('TBD:on_clicked__options_page__preseed_redo_button')
+    print('TBD: on_clicked__options_page__preseed_redo_button')
 
 
 def on_toggled__options_page__create_button(widget):
-
-    print('on_toggled__options_page__create_button')
 
     on_toggled_create_or_delete_toggle_buttons('options_page__create_button')
 
 
 def on_toggled__options_page__delete_button(widget):
 
-    print('on_toggled__options_page__delete_button')
-
     on_toggled_create_or_delete_toggle_buttons('options_page__delete_button')
 
 
 def on_toggled_create_or_delete_toggle_buttons(toggle_button_name):
-
-    print('toggle button: %s' % toggle_button_name)
-    print()
 
     options_page__create_button = model.builder.get_object('options_page__create_button')
     is_active_options_page__create_button = options_page__create_button.get_active()
@@ -264,49 +257,47 @@ def on_toggled_create_or_delete_toggle_buttons(toggle_button_name):
 
     if is_active_options_page__create_button and not is_active_options_page__delete_button:
         # Create
-        display.set_visible('options_page__preseed_tab__stack', False)
+        displayer.set_visible('options_page__preseed_tab__stack', False)
 
         # Reset the name of the file to create and reset the error message.
-        display.update_entry('options_page__preseed_tab__create_grid__entry', '')
-        display.update_label('options_page__preseed_tab__create_grid__error_label', '')
+        displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
+        displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
 
-        display.set_visible('options_page__preseed_tab__create_grid', True)
-        display.set_visible('options_page__preseed_tab__delete_grid', False)
+        displayer.set_visible('options_page__preseed_tab__create_grid', True)
+        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
 
     elif not is_active_options_page__create_button and is_active_options_page__delete_button:
         # Delete
-        display.set_visible('options_page__preseed_tab__stack', False)
-        display.set_visible('options_page__preseed_tab__create_grid', False)
+        displayer.set_visible('options_page__preseed_tab__stack', False)
+        displayer.set_visible('options_page__preseed_tab__create_grid', False)
 
         # Get the name of the file to delete and reset the error message.
         stack = model.builder.get_object('options_page__preseed_tab__stack')
         scrolled_window = stack.get_visible_child()
         title = stack.child_get_property(scrolled_window, 'title')
-        display.update_entry('options_page__preseed_tab__delete_grid__entry', title)
-        display.update_label('options_page__preseed_tab__delete_grid__error_label', '')
+        displayer.update_entry('options_page__preseed_tab__delete_grid__entry', title)
+        displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
 
-        display.set_visible('options_page__preseed_tab__delete_grid', True)
+        displayer.set_visible('options_page__preseed_tab__delete_grid', True)
 
     elif not is_active_options_page__create_button and not is_active_options_page__delete_button:
         # Edit
-        display.set_visible('options_page__preseed_tab__stack', True)
-        display.set_visible('options_page__preseed_tab__create_grid', False)
-        display.set_visible('options_page__preseed_tab__delete_grid', False)
+        displayer.set_visible('options_page__preseed_tab__stack', True)
+        displayer.set_visible('options_page__preseed_tab__create_grid', False)
+        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
     elif toggle_button_name == 'options_page__create_button':
         # Create
-        display.activate_toggle_button('options_page__create_button', True)
-        display.activate_toggle_button('options_page__delete_button', False)
+        displayer.activate_toggle_button('options_page__create_button', True)
+        displayer.activate_toggle_button('options_page__delete_button', False)
     elif toggle_button_name == 'options_page__delete_button':
         # Delete
-        display.activate_toggle_button('options_page__create_button', False)
-        display.activate_toggle_button('options_page__delete_button', True)
+        displayer.activate_toggle_button('options_page__create_button', False)
+        displayer.activate_toggle_button('options_page__delete_button', True)
     else:
         print('NO MATCH')
 
 
 def on_event__options_page__preseed_tab__stack_sidebar(widget, event):
-
-    print('on_event__options_page__preseed_tab__stack_sidebar')
 
     stack = model.builder.get_object('options_page__preseed_tab__stack')
 
@@ -317,19 +308,17 @@ def on_event__options_page__preseed_tab__stack_sidebar(widget, event):
     if scrolled_window:
 
         # Toggle buttons
-        display.activate_toggle_button('options_page__create_button', False)
-        display.activate_toggle_button('options_page__delete_button', False)
+        displayer.activate_toggle_button('options_page__create_button', False)
+        displayer.activate_toggle_button('options_page__delete_button', False)
 
     else:
 
         # Toggle buttons
-        display.activate_toggle_button('options_page__create_button', True)
-        display.activate_toggle_button('options_page__delete_button', False)
+        displayer.activate_toggle_button('options_page__create_button', True)
+        displayer.activate_toggle_button('options_page__delete_button', False)
 
 
 def on_clicked__options_page__create_button(widget):
-
-    print('on_clicked__options_page__create_button')
 
     # Get new item name.
     entry = model.builder.get_object('options_page__preseed_tab__create_grid__entry')
@@ -368,27 +357,23 @@ def on_clicked__options_page__create_button(widget):
             logger.log_value('The title is', title)
             logger.log_value('The name (filepath) is', filepath)
 
-            # Create a new scrolled window.
-            builder_temp = Gtk.Builder.new_from_file('scrolled_window.ui')
-            scrolled_window = builder_temp.get_object('scrolled_window')
-
             # Ensure the file is not flaged for deletion.
             if filepath in model.delete_list:
                 model.delete_list.remove(filepath)
 
-            # Add the new scrolled window to the stack.
-            stack.add_titled(scrolled_window, filepath, title)
-            stack.set_visible_child(scrolled_window)
+            # Add a new scrolled window to the stack.
+            scrolled_window = displayer.add_source_view_to_stack(stack, title, filepath)
 
             # Show or hide widgets, as necessary.
+            stack.set_visible_child(scrolled_window)
 
             # Toggle buttons
 
-            display.activate_toggle_button('options_page__create_button', False)
-            display.set_sensitive('options_page__create_button', True)
+            displayer.activate_toggle_button('options_page__create_button', False)
+            displayer.set_sensitive('options_page__create_button', True)
 
-            display.activate_toggle_button('options_page__delete_button', False)
-            display.set_sensitive('options_page__delete_button', True)
+            displayer.activate_toggle_button('options_page__delete_button', False)
+            displayer.set_sensitive('options_page__delete_button', True)
 
     else:
 
@@ -399,8 +384,6 @@ def on_clicked__options_page__create_button(widget):
 
 
 def on_clicked__options_page__delete_button(widget):
-
-    print('on_clicked__options_page__delete_button')
 
     stack_name = 'options_page__preseed_tab__stack'
     stack = model.builder.get_object(stack_name)
@@ -427,25 +410,24 @@ def on_clicked__options_page__delete_button(widget):
 
         # Toggle buttons
 
-        display.activate_toggle_button('options_page__create_button', False)
-        display.set_sensitive('options_page__create_button', True)
+        displayer.activate_toggle_button('options_page__create_button', False)
+        displayer.set_sensitive('options_page__create_button', True)
 
-        display.activate_toggle_button('options_page__delete_button', False)
-        display.set_sensitive('options_page__delete_button', True)
+        displayer.activate_toggle_button('options_page__delete_button', False)
+        displayer.set_sensitive('options_page__delete_button', True)
 
     else:
 
         # Toggle buttons
 
-        display.activate_toggle_button('options_page__create_button', True)
-        display.set_sensitive('options_page__create_button', False)
+        displayer.activate_toggle_button('options_page__create_button', True)
+        displayer.set_sensitive('options_page__create_button', False)
 
-        display.activate_toggle_button('options_page__delete_button', False)
-        display.set_sensitive('options_page__delete_button', False)
+        displayer.activate_toggle_button('options_page__delete_button', False)
+        displayer.set_sensitive('options_page__delete_button', False)
 
 
 def on_toggled__options_page__kernels_radio_button(widget, row):
-    print('on_toggled__options_page__kernels_radio_button')
 
     selected_index = int(row)
     logger.log_value('The selected kernel is item number', selected_index)
@@ -492,7 +474,7 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
     search_text_5 = r'(append\s*)(?!.*boot=)'
     replacement_text_5 = r'\1boot=casper '
 
-    display.replace_text_in_stack_buffer(
+    displayer.replace_text_in_stack_buffer(
         stack_name,
         (search_text_1,
          replacement_text_1),
@@ -506,33 +488,33 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
          replacement_text_5))
 
 
-def on_options_page__stack_switcher_set_focus_child(*args):
-    print('on_options_page__stack_switcher_set_focus_child')
-    print('There are %s args' % len(args))
-    for arg in args:
-        print('arg = %s' % arg)
-
-
 def on_map__options_page__preseed_tab(*args):
 
-    display.set_visible('options_page__header_bar_preseed_box_1', True)
-    display.set_visible('options_page__header_bar_preseed_box_2', True)
+    displayer.set_visible('options_page__header_bar_preseed_box_1', True)
+
+    # TODO: Do not show the revert, undo, and redo buttons until they
+    # are implemented.
+    # displayer.set_visible('options_page__header_bar_preseed_box_2', True)
+    displayer.set_visible('options_page__header_bar_preseed_box_2', False)
 
 
 def on_unmap__options_page__preseed_tab(*args):
 
-    display.set_visible('options_page__header_bar_preseed_box_1', False)
-    display.set_visible('options_page__header_bar_preseed_box_2', False)
+    displayer.set_visible('options_page__header_bar_preseed_box_1', False)
+    displayer.set_visible('options_page__header_bar_preseed_box_2', False)
 
 
 def on_map__options_page__boot_configuration_tab(*args):
 
-    display.set_visible('options_page__header_bar_boot_box', True)
+    # TODO: Do not show the revert, undo, and redo buttons until they
+    # are implemented.
+    # displayer.set_visible('options_page__header_bar_boot_box', True)
+    displayer.set_visible('options_page__header_bar_boot_box', False)
 
 
 def on_unmap__options_page__boot_configuration_tab(*args):
 
-    display.set_visible('options_page__header_bar_boot_box', False)
+    displayer.set_visible('options_page__header_bar_boot_box', False)
 
 
 ########################################################################

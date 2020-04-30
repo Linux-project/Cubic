@@ -83,11 +83,11 @@ directory_path=${2}
 if [[ -L ${bind_path} ]]; then
     # Bind resolv.conf only if it is a symlink.
     # This will bind the link's target as read-only.
-    systemd-nspawn --quiet --notify-ready=yes --bind-ro="${bind_path}" --machine "${machine_name}" --directory "${directory_path}"
+    systemd-nspawn --quiet --notify-ready=yes --register=yes --bind-ro="${bind_path}" --machine="${machine_name}" --directory="${directory_path}"
 else
     # Automatically handle resolv.conf as outlined in:
     # https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html#--resolv-conf=
-    systemd-nspawn --quiet --notify-ready=yes --machine "${machine_name}" --directory "${directory_path}"
+    systemd-nspawn --quiet --notify-ready=yes --register=yes --machine="${machine_name}" --directory="${directory_path}"
 fi
 exit_code=$?
 exit $exit_code

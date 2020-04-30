@@ -29,7 +29,7 @@
 
 from utilities import logger
 from utilities import model
-from utilities.process_utilities import execute_synchronous
+from utilities.processor import execute_synchronous
 
 import glob
 import os

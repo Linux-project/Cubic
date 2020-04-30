@@ -27,15 +27,15 @@
 #                                                                      #
 ########################################################################
 
-import navigation
+import navigator
 
-from utilities import display
+from utilities import displayer
 from file_choosers import copy_file_chooser
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities import terminal_utilities
+from utilities import console
 
 import gi
 gi.require_version('Gdk', '3.0')
@@ -63,7 +63,7 @@ def setup(action, old_page=None):
 
         # The virtual environment will be started in enter().
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -75,8 +75,8 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        display.set_visible('terminal_page__copy_button', True)
-        display.set_sensitive('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_button', True)
+        displayer.set_sensitive('terminal_page__copy_button', False)
 
         return
 
@@ -84,7 +84,7 @@ def setup(action, old_page=None):
 
         # Do not assume the virtual environment is running.
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -96,8 +96,8 @@ def setup(action, old_page=None):
             is_next_sensitive=is_running,
             is_next_visible=True)
 
-        display.set_visible('terminal_page__copy_button', True)
-        display.set_sensitive('terminal_page__copy_button', is_running)
+        displayer.set_visible('terminal_page__copy_button', True)
+        displayer.set_sensitive('terminal_page__copy_button', is_running)
 
         return
 
@@ -105,7 +105,7 @@ def setup(action, old_page=None):
 
         # Do not assume the virtual environment is running.
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -117,8 +117,8 @@ def setup(action, old_page=None):
             is_next_sensitive=is_running,
             is_next_visible=True)
 
-        display.set_visible('terminal_page__copy_button', True)
-        display.set_sensitive('terminal_page__copy_button', is_running)
+        displayer.set_visible('terminal_page__copy_button', True)
+        displayer.set_sensitive('terminal_page__copy_button', is_running)
 
         return
 
@@ -126,7 +126,7 @@ def setup(action, old_page=None):
 
         # The virtual environment will be started in enter().
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -138,8 +138,8 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        display.set_visible('terminal_page__copy_button', True)
-        display.set_sensitive('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_button', True)
+        displayer.set_sensitive('terminal_page__copy_button', False)
 
         return
 
@@ -147,7 +147,7 @@ def setup(action, old_page=None):
 
         # The virtual environment will be started in enter().
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -159,8 +159,8 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        display.set_visible('terminal_page__copy_button', True)
-        display.set_sensitive('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_button', True)
+        displayer.set_sensitive('terminal_page__copy_button', False)
 
         return
 
@@ -174,7 +174,7 @@ def enter(action, old_page=None):
     if action == 'back':
 
         # Attempt to enter the virtual environment.
-        terminal_utilities.enter_virtual_environment(update_status)
+        console.enter_virtual_environment(update_status)
 
         return
 
@@ -189,14 +189,14 @@ def enter(action, old_page=None):
     elif action == 'next':
 
         # Attempt to enter the virtual environment.
-        terminal_utilities.enter_virtual_environment(update_status)
+        console.enter_virtual_environment(update_status)
 
         return
 
     elif action == 'next_terminal_page':
 
         # Attempt to enter the virtual environment.
-        terminal_utilities.enter_virtual_environment(update_status)
+        console.enter_virtual_environment(update_status)
 
         return
 
@@ -209,46 +209,46 @@ def leave(action, new_page=None):
 
     if action == 'back':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_button', False)
 
         # The terminal continues running whenever the application
         # navigates away from the terminal page, so the pseudo terminal
         # process must be explicitly killed.
-        terminal_utilities.exit_virtual_environment()
+        console.exit_virtual_environment()
 
         return
 
     elif action == 'copy':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_button', False)
 
         return
 
     elif action == 'next':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_button', False)
 
         # The terminal continues running whenever the application
         # navigates away from the terminal page, so the pseudo terminal
         # process must be explicitly killed.
-        terminal_utilities.exit_virtual_environment()
+        console.exit_virtual_environment()
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_button', False)
 
         # The terminal continues running whenever the application
         # navigates away from the terminal page, so the pseudo terminal
         # process must be explicitly killed.
-        terminal_utilities.exit_virtual_environment()
+        console.exit_virtual_environment()
 
         return
 
@@ -271,14 +271,14 @@ def selected_filepaths(filepaths):
     # Go to the copy page.
 
     # The pseudo terminal process is not registered with the
-    # process_utilities module. As a result, the terminal's process
+    # processor module. As a result, the terminal's process
     # is not terminated by the interrupt_navigation_thread() function
-    # of the navigation module. This allows the terminal to continue
+    # of the navigator module. This allows the terminal to continue
     # running while the application navigates away from the terminal
     # page. The pseudo terminal process must be explicitly killed by
     # executing the exit_virtual_environment() function of the
-    # terminal_utilities module.
-    navigation.handle_navigation('copy')
+    # console module.
+    navigator.handle_navigation('copy')
 
 
 ########################################################################
@@ -292,10 +292,10 @@ def on_terminal_page__terminal_child_exited(*args):
     This function is not used.
     """
 
-    print('on_terminal_page__terminal_child_exited')
-    print('ARGS:', args)
+    logger.log_title('On terminal page terminal child exited')
+    logger.log_value('The arcuments are', args)
     for arg in args:
-        print('ARG: %s' % arg)
+        logger.log_value('The argument is', arg)
 
 
 def on_clicked__terminal_page__copy_button(widget):
@@ -325,26 +325,24 @@ def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info,
     text = data.get_text()
 
     if text is not None:
-        terminal_utilities.send_text_to_terminal(text)
+        console.send_text_to_terminal(text)
     else:
         model.uris = data.get_uris()
 
         # Go to the copy page.
 
         # The pseudo terminal process is not registered with the
-        # process_utilities module. As a result, the terminal's process
+        # processor module. As a result, the terminal's process
         # is not terminated by the interrupt_navigation_thread() function
-        # of the navigation module. This allows the terminal to continue
+        # of the navigator module. This allows the terminal to continue
         # running while the application navigates away from the terminal
         # page. The pseudo terminal process must be explicitly killed by
         # executing the exit_virtual_environment() function of the
-        # terminal_utilities module.
-        navigation.handle_navigation('copy')
+        # console module.
+        navigator.handle_navigation('copy')
 
 
 def on_button_press_event__terminal_page(widget, event):
-
-    print('on_button_press_event__terminal_page')
 
     if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
 
@@ -356,40 +354,38 @@ def on_button_press_event__terminal_page(widget, event):
         clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
 
         # Menu Item 1: Select Text
-        display.set_sensitive('terminal_page__select_all_menu_item', True)
+        displayer.set_sensitive('terminal_page__select_all_menu_item', True)
 
         # Menu Item 2: Copy Test
         if (terminal_has_selection):
-            display.set_sensitive('terminal_page__copy_text_menu_item', True)
+            displayer.set_sensitive('terminal_page__copy_text_menu_item', True)
         else:
-            display.set_sensitive('terminal_page__copy_text_menu_item', False)
+            displayer.set_sensitive('terminal_page__copy_text_menu_item', False)
 
         # Menu Item 3: Paste Text
         clipboard_has_text = clipboard.wait_is_text_available()
         if (is_running and clipboard_has_text and not terminal_has_selection):
-            display.set_sensitive('terminal_page__paste_text_menu_item', True)
+            displayer.set_sensitive('terminal_page__paste_text_menu_item', True)
         else:
-            display.set_sensitive('terminal_page__paste_text_menu_item', False)
+            displayer.set_sensitive('terminal_page__paste_text_menu_item', False)
 
         # Menu Item 4: Paste Files
         clipboard_has_uris = clipboard.wait_is_uris_available()
         if (is_running and clipboard_has_uris and not terminal_has_selection):
             count = len(clipboard.wait_for_uris())
             label = 'Paste File' if count == 1 else 'Paste %s Files' % count
-            display.update_menu_item('terminal_page__paste_file_menu_item', label)
-            display.set_sensitive('terminal_page__paste_file_menu_item', True)
+            displayer.update_menu_item('terminal_page__paste_file_menu_item', label)
+            displayer.set_sensitive('terminal_page__paste_file_menu_item', True)
         else:
             label = 'Paste File(s)'
-            display.update_menu_item('terminal_page__paste_file_menu_item', label)
-            display.set_sensitive('terminal_page__paste_file_menu_item', False)
+            displayer.update_menu_item('terminal_page__paste_file_menu_item', label)
+            displayer.set_sensitive('terminal_page__paste_file_menu_item', False)
 
         menu = model.builder.get_object('terminal_page__menu')
         menu.popup(None, None, None, None, event.button, event.time)
 
 
 def on_button_release_event__terminal_page__copy_text_menu_item(*args):
-
-    print('on_button_release_event__terminal_page__copy_text_menu_item')
 
     terminal = model.builder.get_object('terminal_page__terminal')
     terminal.copy_clipboard()
@@ -412,35 +408,30 @@ def on_button_release_event__terminal_page__copy_text_menu_item(*args):
 
 def on_button_release_event__terminal_page__paste_file_menu_item(*args):
 
-    print('on_button_release_event__terminal_page__paste_file_menu_item')
-
     clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
     model.uris = clipboard.wait_for_uris()
 
     # Go to the copy page.
 
     # The pseudo terminal process is not registered with the
-    # process_utilities module. As a result, the terminal's process is
-    # not terminated by the interrupt_navigation_thread() function of the
-    # navigation module. This allows the terminal to continue running
-    # while the application navigates away from the terminal page. The
-    # pseudo terminal process must be explicitly killed by executing the
-    # exit_virtual_environment() function of the terminal_utilities
-    # module.
-    navigation.handle_navigation('copy')
+    # processor module. As a result, the terminal's process
+    # is not terminated by the interrupt_navigation_thread() function
+    # of the navigator module. This allows the terminal to continue
+    # running while the application navigates away from the terminal
+    # page. The pseudo terminal process must be explicitly killed by
+    # executing the exit_virtual_environment() function of the
+    # console module.
+
+    navigator.handle_navigation('copy')
 
 
 def on_button_release_event__terminal_page__paste_text_menu_item(*args):
-
-    print('on_button_release_event__terminal_page__paste_text_menu_item')
 
     terminal = model.builder.get_object('terminal_page__terminal')
     terminal.paste_clipboard()
 
 
 def on_button_release_event__terminal_page__select_all_menu_item(*args):
-
-    print('on_button_release_event__terminal_page__select_all_menu_item')
 
     terminal = model.builder.get_object('terminal_page__terminal')
     terminal.select_all()
@@ -466,19 +457,19 @@ def update_status(status):
     is_running = status
 
     # Reset buttons based on status.
-    display.reset_buttons(is_back_sensitive=True, is_next_sensitive=status)
-    display.set_sensitive('terminal_page__copy_button', status)
+    displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=status)
+    displayer.set_sensitive('terminal_page__copy_button', status)
 
     # Display the status.
     if status:
         message = 'You are in the virtual environment.'
-        display.update_status_image('terminal_page__status', display.OK)
-        display.update_label('terminal_page__status_label', message)
-        display.update_label('terminal_page__kernel_version_label', 'kernel ' + model.application.kernel_version)
+        displayer.update_status_image('terminal_page__status', displayer.OK)
+        displayer.update_label('terminal_page__status_label', message)
+        displayer.update_label('terminal_page__kernel_version_label', 'kernel ' + model.application.kernel_version)
     else:
         message = 'You are not in the virtual environment.'
-        display.update_status_image('terminal_page__status', display.ERROR)
-        display.update_label('terminal_page__status_label', message)
-        display.update_label('terminal_page__kernel_version_label', '')
+        displayer.update_status_image('terminal_page__status', displayer.ERROR)
+        displayer.update_label('terminal_page__status_label', message)
+        displayer.update_label('terminal_page__kernel_version_label', '')
 
     logger.log_value('Notify virtual environment status message', message)

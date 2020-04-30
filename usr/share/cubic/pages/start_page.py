@@ -27,12 +27,12 @@
 #                                                                      #
 ########################################################################
 
-from file_choosers import directory_file_chooser
+from file_choosers import directory_chooser
 
 from constants import NEW_CUBIC_VERSION
 from utilities import configuration
-from utilities import constructors
-from utilities import display
+from utilities import constructor
+from utilities import displayer
 from utilities import logger
 from utilities import model
 
@@ -53,7 +53,7 @@ def setup(action, old_page=None):
 
     if action == 'open':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -65,9 +65,9 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        display_version = constructors.get_major_minor_version(model.application.cubic_version)
-        display.update_label('start_page__version_label', 'Version %s' % display_version)
-        display.update_label('start_page__project_directory_message', 'Select a project directory.')
+        display_version = constructor.get_major_minor_version(model.application.cubic_version)
+        displayer.update_label('start_page__version_label', 'Version %s' % display_version)
+        displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
 
         model.project.cubic_version = None
         model.project.directory = None
@@ -102,7 +102,7 @@ def setup(action, old_page=None):
     elif action == 'back':
 
         if model.project.cubic_version < NEW_CUBIC_VERSION:
-            display.reset_buttons(
+            displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
                 back_button_style=None,
@@ -113,9 +113,9 @@ def setup(action, old_page=None):
                 next_button_style='suggested-action',
                 is_next_sensitive=True,
                 is_next_visible=True)
-            # display.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
+            # displayer.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
         else:
-            display.reset_buttons(
+            displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
                 back_button_style=None,
@@ -126,13 +126,13 @@ def setup(action, old_page=None):
                 next_button_style='suggested-action',
                 is_next_sensitive=True,
                 is_next_visible=True)
-            # display.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
+            # displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
 
         return
 
     elif action == 'cancel':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -177,7 +177,7 @@ def leave(action, new_page=None):
 
     if action == 'next':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # The following fields must be set before leaving this page:
         # 1. project.cubic_version
@@ -191,15 +191,15 @@ def leave(action, new_page=None):
         # 5. project.custom_root_directory
         # 6. project.custom_disk_directory
 
-        model.project.iso_mount_point = constructors.construct_original_iso_mount_point(model.project.directory)
-        model.project.custom_root_directory = constructors.construct_custom_root_directory(model.project.directory)
-        model.project.custom_disk_directory = constructors.construct_custom_disk_directory(model.project.directory)
+        model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
+        model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
+        model.project.custom_disk_directory = constructor.construct_custom_disk_directory(model.project.directory)
 
         return
 
     elif action == 'migrate':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # The following fields must be set before leaving this page:
         # 1. project.cubic_version
@@ -213,15 +213,15 @@ def leave(action, new_page=None):
         # 5. project.custom_root_directory
         # 6. project.custom_disk_directory
 
-        model.project.iso_mount_point = constructors.construct_original_iso_mount_point(model.project.directory)
-        model.project.custom_root_directory = constructors.construct_custom_root_directory(model.project.directory)
-        model.project.custom_disk_directory = constructors.construct_custom_disk_directory(model.project.directory)
+        model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
+        model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
+        model.project.custom_disk_directory = constructor.construct_custom_disk_directory(model.project.directory)
 
         return
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
@@ -248,11 +248,11 @@ def on_clicked__start_page__project_directory_open_button(widget):
 
     logger.log_title('Clicked project directory page project directory file chooser open button')
 
-    directory_file_chooser.open(selected_project_directory)
+    directory_chooser.open(selected_project_directory)
 
     # TODO: Remove
     # if model.project.cubic_version < model.application.cubic_version:
-    #     display.update_label('start_page__project_directory_message', 'This project was created using an older version of Cubic.')
+    #     displayer.update_label('start_page__project_directory_message', 'This project was created using an older version of Cubic.')
 
 
 ########################################################################
@@ -272,7 +272,7 @@ def selected_project_directory(directory):
     logger.log_label('Directory selected')
     logger.log_value('Directory', directory)
 
-    display.update_entry('start_page__project_directory_entry', directory)
+    displayer.update_entry('start_page__project_directory_entry', directory)
 
 
 ########################################################################
@@ -283,11 +283,11 @@ def selected_project_directory(directory):
 def validate_page():
 
     if model.project.directory:
-        model.project.configuration_filepath = constructors.construct_configuration_filepath(model.project.directory)
+        model.project.configuration_filepath = constructor.construct_configuration_filepath(model.project.directory)
         if isfile(model.project.configuration_filepath):
             configuration.load()
             if model.project.cubic_version < NEW_CUBIC_VERSION:
-                display.reset_buttons(
+                displayer.reset_buttons(
                     back_button_label='❬Back',
                     back_action='back',
                     back_button_style=None,
@@ -298,9 +298,9 @@ def validate_page():
                     next_button_style='suggested-action',
                     is_next_sensitive=True,
                     is_next_visible=True)
-                display.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
+                displayer.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
             else:
-                display.reset_buttons(
+                displayer.reset_buttons(
                     back_button_label='❬Back',
                     back_action='back',
                     back_button_style=None,
@@ -311,10 +311,10 @@ def validate_page():
                     next_button_style='suggested-action',
                     is_next_sensitive=True,
                     is_next_visible=True)
-                display.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
+                displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
         else:
             configuration.initialize()
-            display.reset_buttons(
+            displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
                 back_button_style=None,
@@ -325,9 +325,9 @@ def validate_page():
                 next_button_style='suggested-action',
                 is_next_sensitive=True,
                 is_next_visible=True)
-            display.update_label('start_page__project_directory_message', 'A new cubic project will be created in this directory.')
+            displayer.update_label('start_page__project_directory_message', 'A new cubic project will be created in this directory.')
     else:
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -338,4 +338,4 @@ def validate_page():
             next_button_style='suggested-action',
             is_next_sensitive=False,
             is_next_visible=True)
-        display.update_label('start_page__project_directory_message', 'Select a project directory.')
+        displayer.update_label('start_page__project_directory_message', 'Select a project directory.')

@@ -28,12 +28,12 @@
 ########################################################################
 
 from utilities import configuration
-from utilities import display
+from utilities import displayer
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.process_utilities import terminate_process
+from utilities.processor import terminate_process
 from utilities.progress import show_progress
 
 import os
@@ -56,7 +56,7 @@ def setup(action, old_page=None):
 
     if action == 'next':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -70,25 +70,25 @@ def setup(action, old_page=None):
 
         # Setup the "Identify Casper Directory" section.
 
-        display.set_visible('extract_page__casper_directory_section', not model.status.casper_directory)
-        display.update_label('extract_page__casper_directory_message', '')
-        display.update_status('extract_page__casper_directory', display.BULLET)
+        displayer.set_visible('extract_page__casper_directory_section', not model.status.casper_directory)
+        displayer.update_label('extract_page__casper_directory_message', '')
+        displayer.update_status('extract_page__casper_directory', displayer.BULLET)
 
         # Setup the "Extract Linux File System" section.
 
-        display.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
-        display.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
-        # display.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
-        display.update_label('extract_page__unsquashfs_message', '')
-        display.update_status('extract_page__unsquashfs', display.BULLET)
+        displayer.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
+        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
+        # displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
+        displayer.update_label('extract_page__unsquashfs_message', '')
+        displayer.update_status('extract_page__unsquashfs', displayer.BULLET)
 
         # Setup the "Copy Original ISO Files" section.
 
-        display.set_visible('extract_page__copy_original_iso_files_section', not model.status.is_success_copy)
-        display.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', 0)
-        # display.update_progress_bar_text('extract_page__copy_original_iso_files_progress_bar', None)
-        display.update_label('extract_page__copy_original_iso_files_message', '')
-        display.update_status('extract_page__copy_original_iso_files', display.BULLET)
+        displayer.set_visible('extract_page__copy_original_iso_files_section', not model.status.is_success_copy)
+        displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', 0)
+        # displayer.update_progress_bar_text('extract_page__copy_original_iso_files_progress_bar', None)
+        displayer.update_label('extract_page__copy_original_iso_files_message', '')
+        displayer.update_status('extract_page__copy_original_iso_files', displayer.BULLET)
 
         return
 
@@ -133,7 +133,7 @@ def leave(action, new_page=None):
 
     if action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # TODO: Is this necessary here, since it is done in navigation?
         terminate_process()
@@ -151,7 +151,7 @@ def leave(action, new_page=None):
 
     elif action == 'back':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # TODO: Is this necessary here, since it is done in navigation?
         terminate_process()
@@ -162,7 +162,7 @@ def leave(action, new_page=None):
 
     elif action == 'next':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # TODO: Is this necessary here, since it is done in navigation?
         terminate_process()
@@ -197,7 +197,7 @@ def identify_casper_relative_directory():
 
     logger.log_label('Find the compressed Linux file system.')
 
-    display.update_status('extract_page__casper_directory', display.PROCESSING)
+    displayer.update_status('extract_page__casper_directory', displayer.PROCESSING)
 
     sleep(1.00)
 
@@ -231,14 +231,14 @@ def identify_casper_relative_directory():
     if relative_directory:
         error = False
         model.status.casper_directory = relative_directory
-        # display.update_label('extract_page__casper_directory_message', '')
-        # display.update_label('extract_page__casper_directory_message', 'The compressed Linux file system directory is /%s.' % model.status.casper_directory)
-        display.update_status('extract_page__casper_directory', display.OK)
+        # displayer.update_label('extract_page__casper_directory_message', '')
+        # displayer.update_label('extract_page__casper_directory_message', 'The compressed Linux file system directory is /%s.' % model.status.casper_directory)
+        displayer.update_status('extract_page__casper_directory', displayer.OK)
     else:
         error = True
         model.status.casper_directory = None
-        display.update_label('extract_page__casper_directory_message', 'The compressed Linux file system was not found.')
-        display.update_status('extract_page__casper_directory', display.ERROR)
+        displayer.update_label('extract_page__casper_directory_message', 'The compressed Linux file system was not found.')
+        displayer.update_status('extract_page__casper_directory', displayer.ERROR)
 
     return error
 
@@ -269,7 +269,7 @@ def extract_squashfs():
 
     logger.log_label('Extract the compressed Linux file system.')
 
-    display.update_status('extract_page__unsquashfs', display.PROCESSING)
+    displayer.update_status('extract_page__unsquashfs', displayer.PROCESSING)
 
     # sleep(1.00)
 
@@ -294,20 +294,20 @@ def extract_squashfs():
 
     # The progress callback function.
     def progress_extract_squashfs(percent):
-        display.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
+        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_extract_squashfs)
 
     if not error:
         model.status.is_success_extract = True
-        # display.update_label('extract_page__unsquashfs_message', '')
-        display.update_status('extract_page__unsquashfs', display.OK)
+        # displayer.update_label('extract_page__unsquashfs_message', '')
+        displayer.update_status('extract_page__unsquashfs', displayer.OK)
     else:
         # TODO: Log error, since error may be an exception?
         model.status.is_success_extract = False
-        display.update_label('extract_page__unsquashfs_message', 'Unable to extract the compressed Linux file system.')
-        display.update_status('extract_page__unsquashfs', display.ERROR)
+        displayer.update_label('extract_page__unsquashfs_message', 'Unable to extract the compressed Linux file system.')
+        displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
 
     return bool(error)
 
@@ -321,7 +321,7 @@ def copy_original_iso_files():
 
     logger.log_label('Copy important files from the original disk image.')
 
-    display.update_status('extract_page__copy_original_iso_files', display.PROCESSING)
+    displayer.update_status('extract_page__copy_original_iso_files', displayer.PROCESSING)
 
     # sleep(1.00)
 
@@ -384,19 +384,19 @@ def copy_original_iso_files():
 
     # The progress callback function.
     def progress_copy_original_iso_files(percent):
-        display.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
+        displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_copy_original_iso_files)
 
     if not error:
         model.status.is_success_copy = True
-        # display.update_label('extract_page__copy_original_iso_files_message', '')
-        display.update_status('extract_page__copy_original_iso_files', display.OK)
+        # displayer.update_label('extract_page__copy_original_iso_files_message', '')
+        displayer.update_status('extract_page__copy_original_iso_files', displayer.OK)
     else:
         model.status.is_success_copy = False
-        display.update_label('extract_page__copy_original_iso_files_message', 'Unable to copy files from the original disk image.')
-        display.update_status('extract_page__copy_original_iso_files', display.ERROR)
+        displayer.update_label('extract_page__copy_original_iso_files_message', 'Unable to copy files from the original disk image.')
+        displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
 
     return bool(error)
 

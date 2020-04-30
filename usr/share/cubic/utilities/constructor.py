@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# constructors.py                                                      #
+# constructor.py                                                      #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -30,7 +30,7 @@
 from constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
 from constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
 from utilities import logger
-from utilities.process_utilities import execute_synchronous
+from utilities.processor import execute_synchronous
 
 import datetime
 import os

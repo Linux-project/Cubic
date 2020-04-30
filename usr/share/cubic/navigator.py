@@ -138,10 +138,10 @@ Summary
 """
 
 from constants import BOLD_RED, BOLD_GREEN, BOLD_BLUE, BOLD_YELLOW, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
-from utilities import display
+from utilities import displayer
 from utilities import logger
 from utilities import model
-from utilities.process_utilities import terminate_process
+from utilities.processor import terminate_process
 
 import ctypes
 import importlib
@@ -209,7 +209,7 @@ def on_window_destroy(*args):
     # action = button.action
     action = 'quit'
     handle_navigation(action)
-    # display.main_quit()
+    # displayer.main_quit()
 
 
 def on_clicked__navigation_button(button):
@@ -260,8 +260,8 @@ def on_clicked_about_menu_button(button):
 
     logger.log_title('Clicked about menu button')
 
-    display.set_sensitive('window', False)
-    display.show('about_dialog')
+    displayer.set_sensitive('window', False)
+    displayer.show('about_dialog')
 
     # return True
 
@@ -270,8 +270,8 @@ def on_close_about_dialog(widget, event):
 
     logger.log_title('Clicked close about dialog')
 
-    display.hide('about_dialog')
-    display.set_sensitive('window', True)
+    displayer.hide('about_dialog')
+    displayer.set_sensitive('window', True)
 
     return True
 
@@ -393,7 +393,7 @@ def navigate(action, page, new_page):
 
     if action in ('quit', 'exit', 'close'):
         page.leave(action, new_page)
-        display.main_quit()
+        displayer.main_quit()
         return
 
     # Leave the current page.
@@ -426,7 +426,7 @@ def navigate(action, page, new_page):
 
     # Show the new page.
 
-    display.transition(page, new_page)
+    displayer.transition(page, new_page)
     model.page = new_page
 
     # Enter the new page.

@@ -27,7 +27,7 @@
 #                                                                      #
 ########################################################################
 
-from utilities import display
+from utilities import displayer
 from utilities import logger
 from utilities import model
 
@@ -37,43 +37,49 @@ callback = None
 
 def open(calback):
 
-    print('OPEN!')
-    display.set_sensitive('window', False)
-    display.show_all(name)
+    displayer.set_sensitive('window', False)
+    displayer.show_all(name)
     set_callback(calback)
 
 
 def close():
-    display.set_sensitive('window', False)
-    display.hide(name)
-    display.set_sensitive('window', True)
+
+    displayer.set_sensitive('window', False)
+    displayer.hide(name)
+    displayer.set_sensitive('window', True)
 
 
 def set_callback(new_callback):
+
     global callback
     callback = new_callback
 
 
 def get_selected_filepaths():
+
     dialog = model.builder.get_object(name)
     filepaths = dialog.get_filenames()
     return filepaths
 
 
 def on_clicked__copy_file_chooser__cancel_button(widget):
-    logger.log_title('Clicked directory file chooser cancel button')
+
+    logger.log_title('Clicked copy file chooser cancel button')
     close()
 
 
 def on_clicked__copy_file_chooser__select_button(widget):
+
     logger.log_title('Clicked copy file chooser select button')
     close()
+
     filepaths = get_selected_filepaths()
     logger.log_value('The selected filepaths are', filepaths)
     callback(filepaths)
 
 
 def on_delete_event__copy_file_chooser(widget, event):
+
     logger.log_title('Delete copy file chooser')
     close()
     return True

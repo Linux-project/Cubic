@@ -1,5 +1,28 @@
 cubic (2020.04) focal; urgency=low
 
+  * Updated dependencies and versions. Fixes Bug #1876127.
+  - Added python3-pydbus and systemd-container.
+
+  * Set the style for the source views on the Preseed and ISO Boot tabs:
+  - The system mono spaced font from org.gnome.desktop.interface
+  - The Tango style scheme for colored fonts
+  - The ini language for context highlighting
+
+  * Removed prepare_utilities module and moved functions to prepare_page.
+
+  * Renamed modules:
+  - directory_file_chooser => directory_chooser
+  - filepath_file_chooser => iso_image_chooser
+  - constructors => constructor
+  - display => displayer
+  - navigation => navigator
+  - process_utilities => processor
+  - terminal_utilities => console
+
+  * Removed print statements.
+
+  * Issues fixed in version 2020.04-6:
+
   * Removed icon theme related functions from display.py.
 
   * Changed the original iso mount point name from "original-iso" to
@@ -12,11 +35,11 @@ cubic (2020.04) focal; urgency=low
     height is 650 px, leaving 118 px available for window's title bar
     and horizontal docks of varying heights.
 
-  * Issues fixed in version 2020.04-05:
+  * Issues fixed in version 2020.04-5:
 
   * Added missing exception type, ModuleNotFoundError, to navigation.py.
 
-  * Issues fixed in version 2020.04-04 and 2020.04-03:
+  * Issues fixed in version 2020.04-4 and 2020.04-3:
 
   * Corrected two errors ("TypeError: Argument 0 does not allow None as
      a value") on the Prepare Page.
@@ -28,7 +51,7 @@ cubic (2020.04) focal; urgency=low
   * On the Packages Page, set both the package column and the version
     column to expand.
 
-  * Issues fixed in version 2020.04-02 and 2020.04-01:
+  * Issues fixed in version 2020.04-2 and 2020.04-1:
 
   * Updated Cubic to use standard symbolic icons, which are responsive
     to light and dark theme changes and automatically adapt to hybrid
@@ -47,4 +70,4 @@ cubic (2020.04) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options Page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 28 Apr 2020 21:23:31 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 30 Apr 2020 16:43:14 -0400

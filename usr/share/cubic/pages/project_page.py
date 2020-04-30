@@ -27,15 +27,15 @@
 #                                                                      #
 ########################################################################
 
-import navigation
+import navigator
 
 from constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
-from file_choosers import directory_file_chooser
-from file_choosers import filepath_file_chooser
+from file_choosers import directory_chooser
+from file_choosers import iso_image_chooser
 from utilities import configuration
-from utilities import constructors
-from utilities import display
+from utilities import constructor
+from utilities import displayer
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
@@ -72,7 +72,7 @@ custom_history = IsoFieldsHistory()
 
 def setup(action, old_page=None):
     """
-    Prepare this page for display. This function is executed while the
+    Prepare this page for displayer. This function is executed while the
     previous page is still shown.
     
     Args
@@ -93,7 +93,7 @@ def setup(action, old_page=None):
 
         # Navigation buttons are also set in the validate_page() function.
         if model.status.casper_directory and model.status.is_success_extract and model.status.is_success_copy:
-            display.reset_buttons(
+            displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
                 back_button_style=None,
@@ -105,7 +105,7 @@ def setup(action, old_page=None):
                 is_next_sensitive=True,
                 is_next_visible=True)
         else:
-            display.reset_buttons(
+            displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
                 back_button_style=None,
@@ -117,10 +117,10 @@ def setup(action, old_page=None):
                 is_next_sensitive=True,
                 is_next_visible=True)
 
-        display.set_visible('project_page__header_bar_box', True)
+        displayer.set_visible('project_page__header_bar_box', True)
 
         # Show the Delete button because the project already exists.
-        display.set_visible('project_page__delete_button', True)
+        displayer.set_visible('project_page__delete_button', True)
 
         # Validation is not required since nothing has changed.
         # validate_page()
@@ -129,7 +129,7 @@ def setup(action, old_page=None):
 
     elif action == 'cancel':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -141,10 +141,10 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        display.set_visible('project_page__header_bar_box', True)
+        displayer.set_visible('project_page__header_bar_box', True)
 
         # Show the Delete button because the project already exists.
-        display.set_visible('project_page__delete_button', True)
+        displayer.set_visible('project_page__delete_button', True)
 
         # Validation is not required since nothing changed.
         # validate_page()
@@ -153,7 +153,7 @@ def setup(action, old_page=None):
 
     elif action == 'delete':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -165,10 +165,10 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        display.set_visible('project_page__header_bar_box', True)
+        displayer.set_visible('project_page__header_bar_box', True)
 
         # Hide the Delete button because the project was deleted.
-        display.set_visible('project_page__delete_button', False)
+        displayer.set_visible('project_page__delete_button', False)
 
         original = None
         custom = None
@@ -192,7 +192,7 @@ def setup(action, old_page=None):
 
     elif action == 'next':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -204,7 +204,7 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        display.set_visible('project_page__header_bar_box', True)
+        displayer.set_visible('project_page__header_bar_box', True)
 
         original = None
         custom = None
@@ -214,7 +214,7 @@ def setup(action, old_page=None):
             # There is a saved configuration.
 
             # Show the Delete button because the project already exists.
-            display.set_visible('project_page__delete_button', True)
+            displayer.set_visible('project_page__delete_button', True)
 
             configured_original_iso_filepath = join(model.original.iso_directory, model.original.iso_filename)
             mount_original_iso(configured_original_iso_filepath)
@@ -241,7 +241,7 @@ def setup(action, old_page=None):
             # There is no saved configuration.
 
             # Hide the Delete button because the project does not exist.
-            display.set_visible('project_page__delete_button', False)
+            displayer.set_visible('project_page__delete_button', False)
 
             # Set status before initializing original because filename
             # validator requires is_success_copy and is_success_extract.
@@ -262,7 +262,7 @@ def setup(action, old_page=None):
 
     elif action == 'migrate':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -274,10 +274,10 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        display.set_visible('project_page__header_bar_box', True)
+        displayer.set_visible('project_page__header_bar_box', True)
 
         # Show the Delete button because the project already exists.
-        display.set_visible('project_page__delete_button', True)
+        displayer.set_visible('project_page__delete_button', True)
 
         # Validation is not required since nothing changed.
         # validate_page()
@@ -346,12 +346,12 @@ def leave(action, new_page=None):
 
     if action == 'back':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('project_page__header_bar_box', False)
+        displayer.set_visible('project_page__header_bar_box', False)
 
         # Hide the Delete button on other pages.
-        display.set_visible('project_page__delete_button', False)
+        displayer.set_visible('project_page__delete_button', False)
 
         if model.project.iso_mount_point:
             # Unmount the ISO image.
@@ -364,23 +364,23 @@ def leave(action, new_page=None):
 
     elif action == 'delete':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('project_page__header_bar_box', False)
+        displayer.set_visible('project_page__header_bar_box', False)
 
         # Hide the Delete button on other pages.
-        display.set_visible('project_page__delete_button', False)
+        displayer.set_visible('project_page__delete_button', False)
 
         return
 
     elif action == 'next':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('project_page__header_bar_box', False)
+        displayer.set_visible('project_page__header_bar_box', False)
 
         # Hide the Delete button on other pages.
-        display.set_visible('project_page__delete_button', False)
+        displayer.set_visible('project_page__delete_button', False)
 
         # Copy the values to the model.
 
@@ -429,12 +429,12 @@ def leave(action, new_page=None):
     #        - 'next' and 'customize'
     elif action == 'next_terminal_page':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('project_page__header_bar_box', False)
+        displayer.set_visible('project_page__header_bar_box', False)
 
         # Hide the Delete button on other pages.
-        display.set_visible('project_page__delete_button', False)
+        displayer.set_visible('project_page__delete_button', False)
 
         # Copy the values to the model.
 
@@ -474,10 +474,10 @@ def leave(action, new_page=None):
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('project_page__header_bar_box', False)
-        display.set_visible('project_page__delete_button', False)
+        displayer.set_visible('project_page__header_bar_box', False)
+        displayer.set_visible('project_page__delete_button', False)
 
         if model.project.iso_mount_point:
             # Unmount the ISO image.
@@ -636,7 +636,7 @@ def selected_custom_iso_directory(directory):
     custom.iso_directory.value = directory
 
     # Display custom fields.
-    display.update_entry('project_page__custom_iso_directory_entry', custom.iso_directory.value)
+    displayer.update_entry('project_page__custom_iso_directory_entry', custom.iso_directory.value)
 
 
 ########################################################################
@@ -770,12 +770,12 @@ def initialize_custom_from_iso():
     fields = IsoFields('custom')
 
     # Update fields.
-    fields.iso_version_number.value = constructors.construct_custom_iso_version_number()
-    fields.iso_filename.value = constructors.construct_custom_iso_filename(original.iso_filename.value, fields.iso_version_number.value)
+    fields.iso_version_number.value = constructor.construct_custom_iso_version_number()
+    fields.iso_filename.value = constructor.construct_custom_iso_filename(original.iso_filename.value, fields.iso_version_number.value)
     fields.iso_directory.value = model.project.directory
-    fields.iso_volume_id.value = constructors.construct_custom_iso_volume_id(original.iso_volume_id.value, fields.iso_version_number.value)
-    fields.iso_release_name.value = constructors.construct_custom_iso_release_name(original.iso_release_name.value)
-    fields.iso_disk_name.value = constructors.construct_custom_iso_disk_name(fields.iso_volume_id.value, fields.iso_release_name.value)
+    fields.iso_volume_id.value = constructor.construct_custom_iso_volume_id(original.iso_volume_id.value, fields.iso_version_number.value)
+    fields.iso_release_name.value = constructor.construct_custom_iso_release_name(original.iso_release_name.value)
+    fields.iso_disk_name.value = constructor.construct_custom_iso_disk_name(fields.iso_volume_id.value, fields.iso_release_name.value)
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -812,7 +812,7 @@ def initialize_custom_from_version_number():
 
     # Update fields.
     # re.sub(search_string, replace_string, original_string)
-    fields.iso_version_number.value = constructors.construct_custom_iso_version_number()
+    fields.iso_version_number.value = constructor.construct_custom_iso_version_number()
     fields.iso_filename.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_filename.value)
     fields.iso_directory.value = custom.iso_directory.value
     fields.iso_volume_id.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_volume_id.value)[:32]
@@ -975,35 +975,35 @@ def display_original_fields(fields):
     """
 
     # Block handlers.
-    display.idle_add(block_original_handlers)
+    displayer.idle_add(block_original_handlers)
 
-    display.update_entry('project_page__original_iso_filename_entry', fields.iso_filename.value)
-    display.update_status('project_page__original_iso_filename', fields.iso_filename.status)
-    display.set_entry_error('project_page__original_iso_filename_entry', fields.iso_filename.status == ERROR)
-    display.update_label('project_page__original_iso_filename_message', fields.iso_filename.message)
+    displayer.update_entry('project_page__original_iso_filename_entry', fields.iso_filename.value)
+    displayer.update_status('project_page__original_iso_filename', fields.iso_filename.status)
+    displayer.set_entry_error('project_page__original_iso_filename_entry', fields.iso_filename.status == ERROR)
+    displayer.update_label('project_page__original_iso_filename_message', fields.iso_filename.message)
 
-    display.update_entry('project_page__original_iso_directory_entry', fields.iso_directory.value)
-    display.update_status('project_page__original_iso_directory', fields.iso_directory.status)
-    display.set_entry_error('project_page__original_iso_directory_entry', fields.iso_directory.status == ERROR)
-    display.update_label('project_page__original_iso_directory_message', fields.iso_directory.message)
+    displayer.update_entry('project_page__original_iso_directory_entry', fields.iso_directory.value)
+    displayer.update_status('project_page__original_iso_directory', fields.iso_directory.status)
+    displayer.set_entry_error('project_page__original_iso_directory_entry', fields.iso_directory.status == ERROR)
+    displayer.update_label('project_page__original_iso_directory_message', fields.iso_directory.message)
 
-    display.update_entry('project_page__original_iso_volume_id_entry', fields.iso_volume_id.value)
-    display.update_status('project_page__original_iso_volume_id', fields.iso_volume_id.status)
-    display.set_entry_error('project_page__original_iso_volume_id_entry', fields.iso_volume_id.status == ERROR)
-    display.update_label('project_page__original_iso_volume_id_message', fields.iso_volume_id.message)
+    displayer.update_entry('project_page__original_iso_volume_id_entry', fields.iso_volume_id.value)
+    displayer.update_status('project_page__original_iso_volume_id', fields.iso_volume_id.status)
+    displayer.set_entry_error('project_page__original_iso_volume_id_entry', fields.iso_volume_id.status == ERROR)
+    displayer.update_label('project_page__original_iso_volume_id_message', fields.iso_volume_id.message)
 
-    display.update_entry('project_page__original_iso_release_name_entry', fields.iso_release_name.value)
-    display.update_status('project_page__original_iso_release_name', fields.iso_release_name.status)
-    display.set_entry_error('project_page__original_iso_release_name_entry', fields.iso_release_name.status == ERROR)
-    display.update_label('project_page__original_iso_release_name_message', fields.iso_release_name.message)
+    displayer.update_entry('project_page__original_iso_release_name_entry', fields.iso_release_name.value)
+    displayer.update_status('project_page__original_iso_release_name', fields.iso_release_name.status)
+    displayer.set_entry_error('project_page__original_iso_release_name_entry', fields.iso_release_name.status == ERROR)
+    displayer.update_label('project_page__original_iso_release_name_message', fields.iso_release_name.message)
 
-    display.update_entry('project_page__original_iso_disk_name_entry', fields.iso_disk_name.value)
-    display.update_status('project_page__original_iso_disk_name', fields.iso_disk_name.status)
-    display.set_entry_error('project_page__original_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
-    display.update_label('project_page__original_iso_disk_name_message', fields.iso_disk_name.message)
+    displayer.update_entry('project_page__original_iso_disk_name_entry', fields.iso_disk_name.value)
+    displayer.update_status('project_page__original_iso_disk_name', fields.iso_disk_name.status)
+    displayer.set_entry_error('project_page__original_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
+    displayer.update_label('project_page__original_iso_disk_name_message', fields.iso_disk_name.message)
 
     # Unblock handlers.
-    display.idle_add(unblock_original_handlers)
+    displayer.idle_add(unblock_original_handlers)
 
 
 def block_original_handlers():
@@ -1063,40 +1063,40 @@ def display_custom_fields(fields):
     """
 
     # Block handlers.
-    display.idle_add(block_custom_handlers)
+    displayer.idle_add(block_custom_handlers)
 
-    display.update_entry('project_page__custom_iso_version_number_entry', fields.iso_version_number.value)
-    display.update_status('project_page__custom_iso_version_number', fields.iso_version_number.status)
-    display.set_entry_error('project_page__custom_iso_version_number_entry', fields.iso_version_number.status == ERROR)
-    display.update_label('project_page__custom_iso_version_number_message', fields.iso_version_number.message)
+    displayer.update_entry('project_page__custom_iso_version_number_entry', fields.iso_version_number.value)
+    displayer.update_status('project_page__custom_iso_version_number', fields.iso_version_number.status)
+    displayer.set_entry_error('project_page__custom_iso_version_number_entry', fields.iso_version_number.status == ERROR)
+    displayer.update_label('project_page__custom_iso_version_number_message', fields.iso_version_number.message)
 
-    display.update_entry('project_page__custom_iso_filename_entry', fields.iso_filename.value)
-    display.update_status('project_page__custom_iso_filename', fields.iso_filename.status)
-    display.set_entry_error('project_page__custom_iso_filename_entry', fields.iso_filename.status == ERROR)
-    display.update_label('project_page__custom_iso_filename_message', fields.iso_filename.message)
+    displayer.update_entry('project_page__custom_iso_filename_entry', fields.iso_filename.value)
+    displayer.update_status('project_page__custom_iso_filename', fields.iso_filename.status)
+    displayer.set_entry_error('project_page__custom_iso_filename_entry', fields.iso_filename.status == ERROR)
+    displayer.update_label('project_page__custom_iso_filename_message', fields.iso_filename.message)
 
-    display.update_entry('project_page__custom_iso_directory_entry', fields.iso_directory.value)
-    display.update_status('project_page__custom_iso_directory', fields.iso_directory.status)
-    display.set_entry_error('project_page__custom_iso_directory_entry', fields.iso_directory.status == ERROR)
-    display.update_label('project_page__custom_iso_directory_message', fields.iso_directory.message)
+    displayer.update_entry('project_page__custom_iso_directory_entry', fields.iso_directory.value)
+    displayer.update_status('project_page__custom_iso_directory', fields.iso_directory.status)
+    displayer.set_entry_error('project_page__custom_iso_directory_entry', fields.iso_directory.status == ERROR)
+    displayer.update_label('project_page__custom_iso_directory_message', fields.iso_directory.message)
 
-    display.update_entry('project_page__custom_iso_volume_id_entry', fields.iso_volume_id.value)
-    display.update_status('project_page__custom_iso_volume_id', fields.iso_volume_id.status)
-    display.set_entry_error('project_page__custom_iso_volume_id_entry', fields.iso_volume_id.status == ERROR)
-    display.update_label('project_page__custom_iso_volume_id_message', fields.iso_volume_id.message)
+    displayer.update_entry('project_page__custom_iso_volume_id_entry', fields.iso_volume_id.value)
+    displayer.update_status('project_page__custom_iso_volume_id', fields.iso_volume_id.status)
+    displayer.set_entry_error('project_page__custom_iso_volume_id_entry', fields.iso_volume_id.status == ERROR)
+    displayer.update_label('project_page__custom_iso_volume_id_message', fields.iso_volume_id.message)
 
-    display.update_entry('project_page__custom_iso_release_name_entry', fields.iso_release_name.value)
-    display.update_status('project_page__custom_iso_release_name', fields.iso_release_name.status)
-    display.set_entry_error('project_page__custom_iso_release_name_entry', fields.iso_release_name.status == ERROR)
-    display.update_label('project_page__custom_iso_release_name_message', fields.iso_release_name.message)
+    displayer.update_entry('project_page__custom_iso_release_name_entry', fields.iso_release_name.value)
+    displayer.update_status('project_page__custom_iso_release_name', fields.iso_release_name.status)
+    displayer.set_entry_error('project_page__custom_iso_release_name_entry', fields.iso_release_name.status == ERROR)
+    displayer.update_label('project_page__custom_iso_release_name_message', fields.iso_release_name.message)
 
-    display.update_entry('project_page__custom_iso_disk_name_entry', fields.iso_disk_name.value)
-    display.update_status('project_page__custom_iso_disk_name', fields.iso_disk_name.status)
-    display.set_entry_error('project_page__custom_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
-    display.update_label('project_page__custom_iso_disk_name_message', fields.iso_disk_name.message)
+    displayer.update_entry('project_page__custom_iso_disk_name_entry', fields.iso_disk_name.value)
+    displayer.update_status('project_page__custom_iso_disk_name', fields.iso_disk_name.status)
+    displayer.set_entry_error('project_page__custom_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
+    displayer.update_label('project_page__custom_iso_disk_name_message', fields.iso_disk_name.message)
 
     # Unblock handlers.
-    display.idle_add(unblock_custom_handlers)
+    displayer.idle_add(unblock_custom_handlers)
 
 
 def block_custom_handlers():
@@ -1158,7 +1158,7 @@ def unblock_custom_handlers():
 
 def on_clicked__project_page__delete_button(widget):
     logger.log_value('Clicked', 'Delete')
-    navigation.handle_navigation('delete')
+    navigator.handle_navigation('delete')
 
 
 #-----------------------------------------------------------------------
@@ -1170,7 +1170,7 @@ def on_clicked__project_page__original_iso_filename_open_button(widget):
 
     logger.log_title('Clicked project page original iso image filepath file chooser open button')
 
-    filepath_file_chooser.open(selected_original_iso_filepath)
+    iso_image_chooser.open(selected_original_iso_filepath)
 
 
 def on_changed__project_page__original_iso_filename_entry(widget):
@@ -1189,9 +1189,9 @@ def on_changed__project_page__original_iso_filename_entry(widget):
             widget.set_position(position)
     original.iso_filename.value = widget.get_text()
 
-    display.update_status('project_page__original_iso_filename', original.iso_filename.status)
-    display.set_entry_error('project_page__original_iso_filename_entry', original.iso_filename.status == ERROR)
-    display.update_label('project_page__original_iso_filename_message', original.iso_filename.message)
+    displayer.update_status('project_page__original_iso_filename', original.iso_filename.status)
+    displayer.set_entry_error('project_page__original_iso_filename_entry', original.iso_filename.status == ERROR)
+    displayer.update_label('project_page__original_iso_filename_message', original.iso_filename.message)
 
     validate_page()
 
@@ -1202,9 +1202,9 @@ def on_changed__project_page__original_iso_directory_entry(widget):
 
     original.iso_directory.value = widget.get_text()
 
-    display.update_status('project_page__original_iso_directory', original.iso_directory.status)
-    display.set_entry_error('project_page__original_iso_directory_entry', original.iso_directory.status == ERROR)
-    display.update_label('project_page__original_iso_directory_message', original.iso_directory.message)
+    displayer.update_status('project_page__original_iso_directory', original.iso_directory.status)
+    displayer.set_entry_error('project_page__original_iso_directory_entry', original.iso_directory.status == ERROR)
+    displayer.update_label('project_page__original_iso_directory_message', original.iso_directory.message)
 
     validate_page()
 
@@ -1215,9 +1215,9 @@ def on_changed__project_page__original_iso_volume_id_entry(widget):
 
     original.iso_volume_id.value = widget.get_text()
 
-    display.update_status('project_page__original_iso_volume_id', original.iso_volume_id.status)
-    display.set_entry_error('project_page__original_iso_volume_id_entry', original.iso_volume_id.status == ERROR)
-    display.update_label('project_page__original_iso_volume_id_message', original.iso_volume_id.message)
+    displayer.update_status('project_page__original_iso_volume_id', original.iso_volume_id.status)
+    displayer.set_entry_error('project_page__original_iso_volume_id_entry', original.iso_volume_id.status == ERROR)
+    displayer.update_label('project_page__original_iso_volume_id_message', original.iso_volume_id.message)
 
     validate_page()
 
@@ -1228,9 +1228,9 @@ def on_changed__project_page__original_iso_release_name_entry(widget):
 
     original.iso_release_name.value = widget.get_text()
 
-    display.update_status('project_page__original_iso_release_name', original.iso_release_name.status)
-    display.set_entry_error('project_page__original_iso_release_name_entry', original.iso_release_name.status == ERROR)
-    display.update_label('project_page__original_iso_release_name_message', original.iso_release_name.message)
+    displayer.update_status('project_page__original_iso_release_name', original.iso_release_name.status)
+    displayer.set_entry_error('project_page__original_iso_release_name_entry', original.iso_release_name.status == ERROR)
+    displayer.update_label('project_page__original_iso_release_name_message', original.iso_release_name.message)
 
     validate_page()
 
@@ -1241,9 +1241,9 @@ def on_changed__project_page__original_iso_disk_name_entry(widget):
 
     original.iso_disk_name.value = widget.get_text()
 
-    display.update_status('project_page__original_iso_disk_name', original.iso_disk_name.status)
-    display.set_entry_error('project_page__original_iso_disk_name_entry', original.iso_disk_name.status == ERROR)
-    display.update_label('project_page__original_iso_disk_name_message', original.iso_disk_name.message)
+    displayer.update_status('project_page__original_iso_disk_name', original.iso_disk_name.status)
+    displayer.set_entry_error('project_page__original_iso_disk_name_entry', original.iso_disk_name.status == ERROR)
+    displayer.update_label('project_page__original_iso_disk_name_message', original.iso_disk_name.message)
 
     validate_page()
 
@@ -1301,7 +1301,7 @@ def on_clicked__project_page__custom_iso_directory_open_button(widget):
 
     logger.log_title('Clicked project page custom iso image directory file chooser open button')
 
-    directory_file_chooser.open(selected_custom_iso_directory)
+    directory_chooser.open(selected_custom_iso_directory)
 
 
 def on_changed__project_page__custom_iso_version_number_entry(widget):
@@ -1310,21 +1310,21 @@ def on_changed__project_page__custom_iso_version_number_entry(widget):
 
     custom.iso_version_number.value = widget.get_text()
 
-    display.update_status('project_page__custom_iso_version_number', custom.iso_version_number.status)
-    display.set_entry_error('project_page__custom_iso_version_number_entry', custom.iso_version_number.status == ERROR)
-    display.update_label('project_page__custom_iso_version_number_message', custom.iso_version_number.message)
+    displayer.update_status('project_page__custom_iso_version_number', custom.iso_version_number.status)
+    displayer.set_entry_error('project_page__custom_iso_version_number_entry', custom.iso_version_number.status == ERROR)
+    displayer.update_label('project_page__custom_iso_version_number_message', custom.iso_version_number.message)
 
     # Propagate.
 
-    iso_filename = constructors.construct_custom_iso_filename(original.iso_filename.value, custom.iso_version_number.value)
+    iso_filename = constructor.construct_custom_iso_filename(original.iso_filename.value, custom.iso_version_number.value)
     # custom.iso_filename.value will be updated automatically when the
     # on_changed handler is invoked.
-    display.update_entry('project_page__custom_iso_filename_entry', iso_filename)
+    displayer.update_entry('project_page__custom_iso_filename_entry', iso_filename)
 
-    iso_volume_id = constructors.construct_custom_iso_volume_id(original.iso_volume_id.value, custom.iso_version_number.value)
+    iso_volume_id = constructor.construct_custom_iso_volume_id(original.iso_volume_id.value, custom.iso_version_number.value)
     # custom.iso_volume_id.value will be updated automatically when the
     # on_changed handler is invoked.
-    display.update_entry('project_page__custom_iso_volume_id_entry', iso_volume_id)
+    displayer.update_entry('project_page__custom_iso_volume_id_entry', iso_volume_id)
 
     validate_page()
 
@@ -1345,9 +1345,9 @@ def on_changed__project_page__custom_iso_filename_entry(widget):
             widget.set_position(position)
     custom.iso_filename.value = widget.get_text()
 
-    display.update_status('project_page__custom_iso_filename', custom.iso_filename.status)
-    display.set_entry_error('project_page__custom_iso_filename_entry', custom.iso_filename.status == ERROR)
-    display.update_label('project_page__custom_iso_filename_message', custom.iso_filename.message)
+    displayer.update_status('project_page__custom_iso_filename', custom.iso_filename.status)
+    displayer.set_entry_error('project_page__custom_iso_filename_entry', custom.iso_filename.status == ERROR)
+    displayer.update_label('project_page__custom_iso_filename_message', custom.iso_filename.message)
 
     validate_page()
 
@@ -1358,9 +1358,9 @@ def on_changed__project_page__custom_iso_directory_entry(widget):
 
     custom.iso_directory.value = widget.get_text()
 
-    display.update_status('project_page__custom_iso_directory', custom.iso_directory.status)
-    display.set_entry_error('project_page__custom_iso_directory_entry', custom.iso_directory.status == ERROR)
-    display.update_label('project_page__custom_iso_directory_message', custom.iso_directory.message)
+    displayer.update_status('project_page__custom_iso_directory', custom.iso_directory.status)
+    displayer.set_entry_error('project_page__custom_iso_directory_entry', custom.iso_directory.status == ERROR)
+    displayer.update_label('project_page__custom_iso_directory_message', custom.iso_directory.message)
 
     validate_page()
 
@@ -1371,16 +1371,16 @@ def on_changed__project_page__custom_iso_volume_id_entry(widget):
 
     custom.iso_volume_id.value = widget.get_text()
 
-    display.update_status('project_page__custom_iso_volume_id', custom.iso_volume_id.status)
-    display.set_entry_error('project_page__custom_iso_volume_id_entry', custom.iso_volume_id.status == ERROR)
-    display.update_label('project_page__custom_iso_volume_id_message', custom.iso_volume_id.message)
+    displayer.update_status('project_page__custom_iso_volume_id', custom.iso_volume_id.status)
+    displayer.set_entry_error('project_page__custom_iso_volume_id_entry', custom.iso_volume_id.status == ERROR)
+    displayer.update_label('project_page__custom_iso_volume_id_message', custom.iso_volume_id.message)
 
     # Propagate.
 
     # custom.iso_disk_name.value will be updated automaticallywhen the
     # on_changed handler is invoked.
-    iso_disk_name = constructors.construct_custom_iso_disk_name(custom.iso_volume_id.value, custom.iso_release_name.value)
-    display.update_entry('project_page__custom_iso_disk_name_entry', iso_disk_name)
+    iso_disk_name = constructor.construct_custom_iso_disk_name(custom.iso_volume_id.value, custom.iso_release_name.value)
+    displayer.update_entry('project_page__custom_iso_disk_name_entry', iso_disk_name)
 
     validate_page()
 
@@ -1391,16 +1391,16 @@ def on_changed__project_page__custom_iso_release_name_entry(widget):
 
     custom.iso_release_name.value = widget.get_text()
 
-    display.update_status('project_page__custom_iso_release_name', custom.iso_release_name.status)
-    display.set_entry_error('project_page__custom_iso_release_name_entry', custom.iso_release_name.status == ERROR)
-    display.update_label('project_page__custom_iso_release_name_message', custom.iso_release_name.message)
+    displayer.update_status('project_page__custom_iso_release_name', custom.iso_release_name.status)
+    displayer.set_entry_error('project_page__custom_iso_release_name_entry', custom.iso_release_name.status == ERROR)
+    displayer.update_label('project_page__custom_iso_release_name_message', custom.iso_release_name.message)
 
     # Propagate.
 
     # custom.iso_disk_name.value will be updated automatically when the
     # on_changed handler is invoked.
-    iso_disk_name = constructors.construct_custom_iso_disk_name(custom.iso_volume_id.value, custom.iso_release_name.value)
-    display.update_entry('project_page__custom_iso_disk_name_entry', iso_disk_name)
+    iso_disk_name = constructor.construct_custom_iso_disk_name(custom.iso_volume_id.value, custom.iso_release_name.value)
+    displayer.update_entry('project_page__custom_iso_disk_name_entry', iso_disk_name)
 
     validate_page()
 
@@ -1411,9 +1411,9 @@ def on_changed__project_page__custom_iso_disk_name_entry(widget):
 
     custom.iso_disk_name.value = widget.get_text()
 
-    display.update_status('project_page__custom_iso_disk_name', custom.iso_disk_name.status)
-    display.set_entry_error('project_page__custom_iso_disk_name_entry', custom.iso_disk_name.status == ERROR)
-    display.update_label('project_page__custom_iso_disk_name_message', custom.iso_disk_name.message)
+    displayer.update_status('project_page__custom_iso_disk_name', custom.iso_disk_name.status)
+    displayer.set_entry_error('project_page__custom_iso_disk_name_entry', custom.iso_disk_name.status == ERROR)
+    displayer.update_label('project_page__custom_iso_disk_name_message', custom.iso_disk_name.message)
 
     validate_page()
 
@@ -1454,7 +1454,7 @@ def validate_page():
 
     # Navigation buttons are also set in the setup() function.
     if status.casper_directory and status.is_success_extract and status.is_success_copy:
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -1466,7 +1466,7 @@ def validate_page():
             is_next_sensitive=is_page_valid,
             is_next_visible=True)
     else:
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -1486,12 +1486,12 @@ def validate_page():
 
 def set_sensitive_original_section(is_valid):
 
-    display.set_sensitive('project_page__original_iso_filename_entry', is_valid)
-    # display.set_sensitive('project_page__original_iso_filename_open_button', is_valid)
-    display.set_sensitive('project_page__original_iso_directory_entry', is_valid)
-    display.set_sensitive('project_page__original_iso_volume_id_entry', is_valid)
-    display.set_sensitive('project_page__original_iso_release_name_entry', is_valid)
-    display.set_sensitive('project_page__original_iso_disk_name_entry', is_valid)
+    displayer.set_sensitive('project_page__original_iso_filename_entry', is_valid)
+    # displayer.set_sensitive('project_page__original_iso_filename_open_button', is_valid)
+    displayer.set_sensitive('project_page__original_iso_directory_entry', is_valid)
+    displayer.set_sensitive('project_page__original_iso_volume_id_entry', is_valid)
+    displayer.set_sensitive('project_page__original_iso_release_name_entry', is_valid)
+    displayer.set_sensitive('project_page__original_iso_disk_name_entry', is_valid)
 
 
 #-----------------------------------------------------------------------
@@ -1505,14 +1505,14 @@ def set_editable_custom_section(is_valid):
     Setting the entries not editable allows the text to be selected.
     """
 
-    display.set_entry_editable('project_page__custom_iso_version_number_entry', is_valid)
-    # display.set_sensitive('project_page__custom_iso_version_number_refresh_button', is_valid)
-    display.set_entry_editable('project_page__custom_iso_filename_entry', is_valid)
-    # display.set_entry_editable('project_page__custom_iso_directory_entry', is_valid)
-    display.set_sensitive('project_page__custom_iso_directory_open_button', is_valid)
-    display.set_entry_editable('project_page__custom_iso_volume_id_entry', is_valid)
-    display.set_entry_editable('project_page__custom_iso_release_name_entry', is_valid)
-    display.set_entry_editable('project_page__custom_iso_disk_name_entry', is_valid)
+    displayer.set_entry_editable('project_page__custom_iso_version_number_entry', is_valid)
+    # displayer.set_sensitive('project_page__custom_iso_version_number_refresh_button', is_valid)
+    displayer.set_entry_editable('project_page__custom_iso_filename_entry', is_valid)
+    # displayer.set_entry_editable('project_page__custom_iso_directory_entry', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_directory_open_button', is_valid)
+    displayer.set_entry_editable('project_page__custom_iso_volume_id_entry', is_valid)
+    displayer.set_entry_editable('project_page__custom_iso_release_name_entry', is_valid)
+    displayer.set_entry_editable('project_page__custom_iso_disk_name_entry', is_valid)
 
 
 def set_sensitive_custom_section(is_valid):
@@ -1520,14 +1520,14 @@ def set_sensitive_custom_section(is_valid):
     Setting the entries insensitive makes the text unselectable.
     """
 
-    display.set_sensitive('project_page__custom_iso_version_number_entry', is_valid)
-    # display.set_sensitive('project_page__custom_iso_version_number_refresh_button', is_valid)
-    display.set_sensitive('project_page__custom_iso_filename_entry', is_valid)
-    display.set_sensitive('project_page__custom_iso_directory_entry', is_valid)
-    display.set_sensitive('project_page__custom_iso_directory_open_button', is_valid)
-    display.set_sensitive('project_page__custom_iso_volume_id_entry', is_valid)
-    display.set_sensitive('project_page__custom_iso_release_name_entry', is_valid)
-    display.set_sensitive('project_page__custom_iso_disk_name_entry', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_version_number_entry', is_valid)
+    # displayer.set_sensitive('project_page__custom_iso_version_number_refresh_button', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_filename_entry', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_directory_entry', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_directory_open_button', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_volume_id_entry', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_release_name_entry', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_disk_name_entry', is_valid)
 
 
 def validate_custom_iso_undo_button():
@@ -1540,7 +1540,7 @@ def validate_custom_iso_undo_button():
         # it is less expensive than comparing the currently displayed
         # iso-fields with currently selected iso-fields in the history.
 
-        display.set_sensitive('project_page__undo_button', True)
+        displayer.set_sensitive('project_page__undo_button', True)
 
     elif custom_history.has_history() and custom != custom_history.current():
 
@@ -1549,31 +1549,31 @@ def validate_custom_iso_undo_button():
         # True causing the undo button to be enabled. To avoid this,
         # check if history is not empty before performing the comparison.
 
-        display.set_sensitive('project_page__undo_button', True)
+        displayer.set_sensitive('project_page__undo_button', True)
 
     else:
 
-        display.set_sensitive('project_page__undo_button', False)
+        displayer.set_sensitive('project_page__undo_button', False)
 
 
 def validate_custom_iso_redo_button():
 
     if custom_history.has_redo() and custom == custom_history.current():
-        display.set_sensitive('project_page__redo_button', True)
+        displayer.set_sensitive('project_page__redo_button', True)
     else:
-        display.set_sensitive('project_page__redo_button', False)
+        displayer.set_sensitive('project_page__redo_button', False)
 
 
 def validate_custom_iso_refresh_button():
 
     if custom.is_valid:
-        iso_version_number = constructors.construct_custom_iso_version_number()
+        iso_version_number = constructor.construct_custom_iso_version_number()
         if custom.iso_version_number.value != iso_version_number:
-            display.set_sensitive('project_page__custom_iso_version_number_refresh_button', True)
+            displayer.set_sensitive('project_page__custom_iso_version_number_refresh_button', True)
         else:
-            display.set_sensitive('project_page__custom_iso_version_number_refresh_button', False)
+            displayer.set_sensitive('project_page__custom_iso_version_number_refresh_button', False)
     else:
-        display.set_sensitive('project_page__custom_iso_version_number_refresh_button', False)
+        displayer.set_sensitive('project_page__custom_iso_version_number_refresh_button', False)
 
 
 ########################################################################

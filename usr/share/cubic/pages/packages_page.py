@@ -27,7 +27,7 @@
 #                                                                      #
 ########################################################################
 
-from utilities import display
+from utilities import displayer
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
@@ -50,7 +50,7 @@ def setup(action, old_page=None):
 
     if action == 'back':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -62,21 +62,21 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        display.set_visible('packages_page__header_bar_box', True)
+        displayer.set_visible('packages_page__header_bar_box', True)
 
         # TODO: Shouldn't we do this on the options page?
 
-        # display.set_solid('packages_page__header_bar__box', True)
-        # display.set_solid('options_page__header_bar__box', False)
-        # display.set_solid('options_page__stack_switcher', False)
-        # display.set_solid('stack_switcher', False)
-        display.set_visible('stack_switcher', False)
+        # displayer.set_solid('packages_page__header_bar__box', True)
+        # displayer.set_solid('options_page__header_bar__box', False)
+        # displayer.set_solid('options_page__stack_switcher', False)
+        # displayer.set_solid('stack_switcher', False)
+        displayer.set_visible('stack_switcher', False)
 
         return
 
     elif action == 'next':
 
-        display.reset_buttons(
+        displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
             back_button_style=None,
@@ -88,15 +88,15 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        display.set_visible('packages_page__header_bar_box', True)
+        displayer.set_visible('packages_page__header_bar_box', True)
 
         # TODO: Shouldn't we do this on the options page?
 
-        # display.set_solid('packages_page__header_bar__box', True)
-        # display.set_solid('options_page__header_bar__box', False)
-        # display.set_solid('options_page__stack_switcher', False)
-        # display.set_solid('stack_switcher', False)
-        display.set_visible('stack_switcher', False)
+        # displayer.set_solid('packages_page__header_bar__box', True)
+        # displayer.set_solid('options_page__header_bar__box', False)
+        # displayer.set_solid('options_page__stack_switcher', False)
+        # displayer.set_solid('stack_switcher', False)
+        displayer.set_visible('stack_switcher', False)
 
         return
 
@@ -124,17 +124,17 @@ def leave(action, new_page=None):
 
     if action == 'back':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('packages_page__header_bar_box', False)
+        displayer.set_visible('packages_page__header_bar_box', False)
 
         return
 
     elif action == 'next':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        display.set_visible('packages_page__header_bar_box', False)
+        displayer.set_visible('packages_page__header_bar_box', False)
 
         # Update filesystem.manifest-remove file.
         # Always save the filesystem.manifest-remove file, even if there are no
@@ -163,7 +163,7 @@ def leave(action, new_page=None):
 
     elif action == 'quit':
 
-        display.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # TODO: When the original ISO image is unmounted we leave the
         #       extract page, remove the following:
@@ -188,14 +188,12 @@ def leave(action, new_page=None):
 
 def on_clicked__packages_page__redo_button(widget):
 
-    print('on_clicked__packages_page__redo_button')
-
     list_store = model.builder.get_object('packages_page__list_store')
 
     row, column = model.undo_list[model.undo_index]
 
-    display.select_tree_view_row('packages_page__treeview', row)
-    # display.scroll_to_tree_view_row('packages_page__treeview', row)
+    displayer.select_tree_view_row('packages_page__treeview', row)
+    # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
     # sleep(0.25)
 
     # print(
@@ -233,10 +231,10 @@ def on_clicked__packages_page__redo_button(widget):
     model.undo_index += 1
 
     if len(model.undo_list) == model.undo_index:
-        display.set_sensitive('packages_page__redo_button', False)
+        displayer.set_sensitive('packages_page__redo_button', False)
 
-    display.set_sensitive('packages_page__revert_button', True)
-    display.set_sensitive('packages_page__undo_button', True)
+    displayer.set_sensitive('packages_page__revert_button', True)
+    displayer.set_sensitive('packages_page__undo_button', True)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -253,8 +251,6 @@ def on_clicked__packages_page__redo_button(widget):
 
 def on_clicked__packages_page__revert_button(widget):
 
-    print('on_clicked__packages_page__revert_button')
-
     list_store = model.builder.get_object('packages_page__list_store')
 
     while model.undo_index > 0:
@@ -263,8 +259,8 @@ def on_clicked__packages_page__revert_button(widget):
 
         row, column = model.undo_list[model.undo_index]
 
-        display.select_tree_view_row('packages_page__treeview', row)
-        # display.scroll_to_tree_view_row('packages_page__treeview', row)
+        displayer.select_tree_view_row('packages_page__treeview', row)
+        # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
         # sleep(0.25)
 
         # print(
@@ -300,10 +296,10 @@ def on_clicked__packages_page__revert_button(widget):
             list_store[row][1] = not list_store[row][1]
 
     # if model.undo_index == 0:
-    display.set_sensitive('packages_page__revert_button', False)
-    display.set_sensitive('packages_page__undo_button', False)
+    displayer.set_sensitive('packages_page__revert_button', False)
+    displayer.set_sensitive('packages_page__undo_button', False)
 
-    display.set_sensitive('packages_page__redo_button', True)
+    displayer.set_sensitive('packages_page__redo_button', True)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -320,16 +316,14 @@ def on_clicked__packages_page__revert_button(widget):
 
 def on_clicked__packages_page__undo_button(widget):
 
-    print('on_clicked__packages_page__undo_button')
-
     model.undo_index -= 1
 
     list_store = model.builder.get_object('packages_page__list_store')
 
     row, column = model.undo_list[model.undo_index]
 
-    display.select_tree_view_row('packages_page__treeview', row)
-    # display.scroll_to_tree_view_row('packages_page__treeview', row)
+    displayer.select_tree_view_row('packages_page__treeview', row)
+    # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
     # sleep(0.25)
 
     # print(
@@ -365,10 +359,10 @@ def on_clicked__packages_page__undo_button(widget):
         list_store[row][1] = not list_store[row][1]
 
     if model.undo_index == 0:
-        display.set_sensitive('packages_page__revert_button', False)
-        display.set_sensitive('packages_page__undo_button', False)
+        displayer.set_sensitive('packages_page__revert_button', False)
+        displayer.set_sensitive('packages_page__undo_button', False)
 
-    display.set_sensitive('packages_page__redo_button', True)
+    displayer.set_sensitive('packages_page__redo_button', True)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -384,8 +378,6 @@ def on_clicked__packages_page__undo_button(widget):
 
 
 def on_toggled__packages_page__remove_1_check_button(widget, row):
-
-    print('on_toggled__packages_page__remove_1_check_button')
 
     list_store = model.builder.get_object('packages_page__list_store')
 
@@ -432,9 +424,9 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
 
     model.undo_index += 1
 
-    display.set_sensitive('packages_page__revert_button', True)
-    display.set_sensitive('packages_page__undo_button', True)
-    display.set_sensitive('packages_page__redo_button', False)
+    displayer.set_sensitive('packages_page__revert_button', True)
+    displayer.set_sensitive('packages_page__undo_button', True)
+    displayer.set_sensitive('packages_page__redo_button', False)
     del model.undo_list[model.undo_index:]
 
     # print(
@@ -451,8 +443,6 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
 
 
 def on_toggled__packages_page__remove_2_check_button(widget, row):
-
-    print('on_toggled__packages_page__remove_2_check_button')
 
     list_store = model.builder.get_object('packages_page__list_store')
 
@@ -483,9 +473,9 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 
     model.undo_index += 1
 
-    display.set_sensitive('packages_page__revert_button', True)
-    display.set_sensitive('packages_page__undo_button', True)
-    display.set_sensitive('packages_page__redo_button', False)
+    displayer.set_sensitive('packages_page__revert_button', True)
+    displayer.set_sensitive('packages_page__undo_button', True)
+    displayer.set_sensitive('packages_page__redo_button', False)
     del model.undo_list[model.undo_index:]
 
     # print(

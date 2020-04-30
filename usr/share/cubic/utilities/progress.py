@@ -29,7 +29,7 @@
 
 from constants import ZOOM, PERCENT_START, PERCENT_STOP, PROGRESS_START, PROGRESS_STOP, SLOW_INTERVAL, FAST_INTERVAL
 
-from utilities.process_utilities import execute_asynchronous
+from utilities.processor import execute_asynchronous
 from utilities import logger
 
 from datetime import datetime

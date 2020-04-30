@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# filepath_file_chooser.py                                             #
+# directory_chooser.py                                                 #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,71 +27,59 @@
 #                                                                      #
 ########################################################################
 
-from utilities import display
+from utilities import displayer
 from utilities import logger
 from utilities import model
 
-import os
-
-name = 'filepath_file_chooser'
+name = 'directory_chooser'
 callback = None
 
 
 def open(calback):
-    display.set_sensitive('window', False)
-    display.show_all(name)
+
+    displayer.set_sensitive('window', False)
+    displayer.show_all(name)
     set_callback(calback)
 
 
 def close():
-    display.set_sensitive('window', False)
-    display.hide(name)
-    display.set_sensitive('window', True)
+
+    displayer.set_sensitive('window', False)
+    displayer.hide(name)
+    displayer.set_sensitive('window', True)
 
 
 def set_callback(new_callback):
+
     global callback
     callback = new_callback
 
 
 def get_selected_filepath():
+
     dialog = model.builder.get_object(name)
     filepath = dialog.get_filename()
     return filepath
 
 
-def on_clicked__filepath_file_chooser__cancel_button(widget):
-    logger.log_title('Clicked ISO image file chooser cancel button')
+def on_clicked__directory_chooser__cancel_button(widget):
+
+    logger.log_title('Clicked directory chooser cancel button')
     close()
 
 
-########################################################################
-import traceback
-########################################################################
+def on_clicked__directory_chooser__select_button(widget):
 
+    logger.log_title('Clicked directory chooser select button')
+    close()
 
-def on_clicked__filepath_file_chooser__select_button(widget):
-    logger.log_title('Clicked ISO image file chooser select button')
     filepath = get_selected_filepath()
-    # if os.path.isfile(filepath):
-    #     logger.log_value('The selected filepath is', filepath)
-    #     callback(filepath)
-    try:
-        os.path.isfile(filepath)
-        close()
-        callback(filepath)
-    except TypeError as exception:
-        logger.log_value('Error. The selected filepath is', filepath)
-        filepath = None
-
-        ################################################################
-        print(traceback.format_exc())
-        ################################################################
-
-    logger.log_value('The selected filepath is', filepath)
+    logger.log_value('The selected directory is', filepath)
+    callback(filepath)
 
 
-def on_delete_event__filepath_file_chooser(widget, event):
-    logger.log_title('Delete ISO image file chooser')
+def on_delete_event__directory_chooser(widget, event):
+
+    logger.log_title('Delete directory chooser')
     close()
     return True
