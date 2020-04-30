@@ -1,5 +1,10 @@
 cubic (2020.04) focal; urgency=low
 
+  * Fixed Bug #1876190, Cubic crashes with Failed to open file
+    "pages/source_view.ui" error. Added pages/source_view.ui file.
+
+  * Issues fixed in version 2020.04-6:
+
   * Updated dependencies and versions. Fixes Bug #1876127.
   - Added python3-pydbus and systemd-container.
 
