@@ -42,7 +42,7 @@ from utilities import logger
 from utilities import model
 from utilities.fields import Fields, IsoFields, IsoFieldsHistory
 
-from os.path import isfile, join, split
+from os.path import isdir, isfile, join, split
 import re
 
 # The following fields must be set before entering this page:
@@ -1758,13 +1758,19 @@ def validate_custom_iso_directory(fields):
         is_valid = False
         message = None
         status = BLANK
-    else:
-        is_valid = bool(fields.iso_directory.value)
-        status = OK if is_valid else ERROR
-        if is_valid:
+    elif bool(fields.iso_directory.value):
+        if isdir(fields.iso_directory.value):
+            is_valid = True
             message = None
+            status = OK
         else:
-            message = 'Error. Directory is a required field.'
+            is_valid = False
+            message = 'Error. Directory not found.'
+            status = ERROR
+    else:
+        is_valid = False
+        status = ERROR
+        message = 'Error. Directory is a required field.'
     return is_valid, status, message
 
 

@@ -1,9 +1,14 @@
 cubic (2020.04) focal; urgency=low
 
+  * Fixed Bug #1855153. Cubic will prevent the user from proceeding past
+    the Project page if the custom ISO directory is invalid.
+
+  * Issues fixed in version 2020.04-8:
+
   * Fixed Bug #1876190, Cubic crashes with Failed to open file
     "pages/source_view.ui" error. Added pages/source_view.ui file.
 
-  * Issues fixed in version 2020.04-6:
+  * Issues fixed in version 2020.04-7:
 
   * Updated dependencies and versions. Fixes Bug #1876127.
   - Added python3-pydbus and systemd-container.
@@ -47,13 +52,13 @@ cubic (2020.04) focal; urgency=low
   * Issues fixed in version 2020.04-4 and 2020.04-3:
 
   * Corrected two errors ("TypeError: Argument 0 does not allow None as
-     a value") on the Prepare Page.
+     a value") on the Prepare page.
   * Moved cubic icons to /usr/share/icons/hicolor/scalable/status.
     Removed /usr/share/icons/Adwaita/, since Cubic can access the icons
     from hicolor for both light and dark theme variants. This aligns
     with best practices, since it is not always guaranteed that the
     Adwaita will be installed.
-  * On the Packages Page, set both the package column and the version
+  * On the Packages page, set both the package column and the version
     column to expand.
 
   * Issues fixed in version 2020.04-2 and 2020.04-1:
@@ -73,6 +78,6 @@ cubic (2020.04) focal; urgency=low
   * Corrected the Terminal Control Escape Sequence, used to reset the
     cursor position, to not print corrupted characters in Ubuntu 18.04.
   * Corrected an issue in Ubuntu 18.04 where the header bar title
-    overlapped the tabs on the Options Page.
+    overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 30 Apr 2020 16:43:14 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 30 Apr 2020 20:04:22 -0400
