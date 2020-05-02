@@ -28,12 +28,18 @@
 ########################################################################
 
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+from utilities import constructor
 from utilities import displayer
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 from utilities.processor import execute_synchronous
+
+# TODO: Can this be moved to displayer?
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from collections import Counter
 import glob
@@ -71,6 +77,15 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
+        displayer.update_status('prepare_page__iso_boot_kernels', BULLET)
+        displayer.empty_box('prepare_page__iso_boot_kernels_box')
+
+        displayer.update_status('prepare_page__preseed_files', BULLET)
+        displayer.update_label('prepare_page__preseed_files_message', '...')
+
+        displayer.update_status('prepare_page__iso_boot_configurations', BULLET)
+        displayer.update_label('prepare_page__iso_boot_configurations_message', '...')
+
         displayer.update_status('prepare_page__installed_packages', BULLET)
         displayer.update_label('prepare_page__installed_packages_message', '...')
 
@@ -83,16 +98,6 @@ def setup(action, old_page=None):
         displayer.update_status('prepare_page__save_package_manifest', BULLET)
         displayer.update_label('prepare_page__save_package_manifest_message', '...')
 
-        displayer.update_status('prepare_page__iso_boot_kernels', BULLET)
-        displayer.empty_box('prepare_page__iso_boot_kernels_box')
-        displayer.update_label('prepare_page__iso_boot_kernels_message', '...')
-
-        displayer.update_status('prepare_page__preseed_files', BULLET)
-        displayer.update_label('prepare_page__preseed_files_message', '...')
-
-        displayer.update_status('prepare_page__iso_boot_configurations', BULLET)
-        displayer.update_label('prepare_page__iso_boot_configurations_message', '...')
-
         return
 
     else:
@@ -101,44 +106,172 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    '''
+    iso_count_text = constructor.number_as_text(len(iso_filepath_list))
+    iso_files_text = 'file' if len(iso_filepath_list) == 1 else 'files'
+    md5_count_text = constructor.number_as_text(len(iso_checksum_filepath_list))
+    md5_files_text = 'file' if len(iso_checksum_filepath_list) == 1 else 'files'
+    label = 'Delete %s ISO disk image %s and %s MD5 checksum %s.' % (iso_count_text, iso_files_text, md5_count_text, md5_files_text)
+    '''
 
     if action == 'next':
 
         #
-        # Package manifest
+        # Identify ISO boot kernels.
         #
-        installed_packages_list = get_a_list_of_installed_packages()
-        sleep(0.50)
-        removable_packages_list_1 = prepare_typical_manifest(installed_packages_list)
-        sleep(0.50)
-        removable_packages_list_2 = prepare_minimal_manifest(installed_packages_list)
-        sleep(0.50)
-        package_details_list = save_package_manifest(installed_packages_list, removable_packages_list_1, removable_packages_list_2)
-        sleep(0.50)
 
-        #
-        # Linux kernels
-        #
+        displayer.update_status('prepare_page__iso_boot_kernels', PROCESSING)
+        sleep(0.50)
         kernel_details_list = create_boot_kernel_details_list()
-        prepare_linux_kernels(kernel_details_list)
+        if kernel_details_list:
+            displayer.update_status('prepare_page__iso_boot_kernels', OK)
+            prepare_linux_kernels(kernel_details_list)
+            count = len(kernel_details_list)
+            logger.log_value('Number of valid ISO boot kernels found', count)
+            number_text = constructor.number_as_text(count)
+            plural_text = constructor.get_plural('kernel', 'kernels', count)
+            add_message_to_iso_boot_kernels_box('\nFound %s valid ISO boot %s.' % (number_text, plural_text))
+        else:
+            displayer.update_status('prepare_page__iso_boot_kernels', ERROR)
+            logger.log_value('Error. Number of valid ISO boot kernels found', 0)
+            add_message_to_iso_boot_kernels_box('\nError. No valid ISO boot kernels were found.')
+            add_message_to_iso_boot_kernels_box(
+                'To correct this issue, click the Back button and install missing Linux kernel packages on the Terminal page, or select the original ISO image on the Project page.')
+            return 'error'
         sleep(0.50)
 
         #
-        # Preseed
+        # Identify preseed files.
         #
-        prepare_preseed()
+
+        displayer.update_status('prepare_page__preseed_files', PROCESSING)
+        sleep(0.50)
+        preseed_file_list = create_preseed_file_list()
+        if preseed_file_list:
+            prepare_preseed(preseed_file_list)
+            count = len(preseed_file_list)
+            logger.log_value('Number of preseed files found', count)
+            number_text = constructor.number_as_text(count)
+            plural_text = constructor.get_plural('file', 'files', count)
+            displayer.update_label('prepare_page__preseed_files_message', 'Found %s preseed %s.' % (number_text, plural_text))
+            displayer.update_status('prepare_page__preseed_files', OK)
+        else:
+            logger.log_value('Alert. Number of preseed files found', 0)
+            displayer.update_label('prepare_page__preseed_files_message', 'No preseed files found.')
+            displayer.update_status('prepare_page__preseed_files', displayer.OPTIONAL)
         sleep(0.50)
 
         #
-        # Boot configurations
+        # Identify ISO boot configurations.
         #
-        prepare_boot_configuration(kernel_details_list)
+
+        displayer.update_status('prepare_page__iso_boot_configurations', PROCESSING)
+        sleep(0.50)
+        boot_configuration_list = create_boot_configuration_list(kernel_details_list)
+        if boot_configuration_list and kernel_details_list:
+            prepare_boot_configurations(boot_configuration_list, kernel_details_list)
+            count = len(boot_configuration_list)
+            logger.log_value('Number of ISO boot configuration files found', count)
+            number_text = constructor.number_as_text(count)
+            plural_text = constructor.get_plural('file', 'files', count)
+            displayer.update_label('prepare_page__iso_boot_configurations_message', 'Found %s ISO boot configuration %s.' % (number_text, plural_text))
+            displayer.update_status('prepare_page__iso_boot_configurations', OK)
+        else:
+            logger.log_value('Error. Number of iso boot configuration files found', 0)
+            displayer.update_label('prepare_page__iso_boot_configurations_message', 'Error. No ISO boot configuration files found.')
+            displayer.update_status('prepare_page__iso_boot_configurations', displayer.ERROR)
+            return 'error'
         sleep(0.50)
 
-        # TODO: Do not proceed to next page if error.
+        #
+        # Identify installed packages.
+        #
 
-        sleep(1.00)
+        displayer.update_status('prepare_page__installed_packages', PROCESSING)
+        sleep(0.50)
+        installed_packages_list = create_installed_packages_list()
+        if installed_packages_list and kernel_details_list:
+            count = len(installed_packages_list)
+            logger.log_value('Number of installed packages found', count)
+            number_text = constructor.number_as_text(count)
+            plural_text = constructor.get_plural('package', 'packages', count)
+            displayer.update_label('prepare_page__installed_packages_message', 'Found %s installed %s.' % (number_text, plural_text))
+            displayer.update_status('prepare_page__installed_packages', OK)
+        else:
+            logger.log_value('Error. Number of installed packages found', 0)
+            displayer.update_label('prepare_page__installed_packages_message', 'Error. No installed packages found.')
+            displayer.update_status('prepare_page__installed_packages', displayer.ERROR)
+            return 'error'
+        sleep(0.50)
 
+        #
+        # Create the package manifest for a typical install.
+        #
+
+        displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
+        sleep(0.50)
+        filename = 'filesystem.manifest-remove'
+        is_exists = is_exists_filesystem_manifest_remove(filename)
+        if is_exists:
+            removable_packages_list_1 = get_removable_packages_list(filename)
+            count = len(removable_packages_list_1)
+            logger.log_value('Number of installed packages found', count)
+            number_text = constructor.number_as_text(count, True)
+            plural_text = constructor.get_plural('package is', 'packages are', count)
+            displayer.update_label('prepare_page__package_manifest_1_message', '%s %s flagged for removal after a typical install.' % (number_text, plural_text))
+            displayer.update_status('prepare_page__package_manifest_1', OK)
+        else:
+            removable_packages_list_1 = []
+            displayer.update_status('prepare_page__package_manifest_1', OPTIONAL)
+            displayer.update_label('prepare_page__package_manifest_1_message', 'This ISO does not have a list of packages to be removed after a typical install.')
+        sleep(0.50)
+
+        #
+        # Create the package manifest for a minimal install.
+        #
+
+        displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
+        sleep(0.50)
+        filename = 'filesystem.manifest-minimal-remove'
+        is_exists = is_exists_filesystem_manifest_remove(filename)
+        if is_exists:
+            removable_packages_list_2 = get_removable_packages_list(filename)
+            count = len(removable_packages_list_2)
+            logger.log_value('Number of installed packages found', count)
+            number_text = constructor.number_as_text(count, True)
+            plural_text = constructor.get_plural('package is', 'packages are', count)
+            displayer.update_label('prepare_page__package_manifest_2_message', '%s %s flagged for removal after a minimal install.' % (number_text, plural_text))
+            displayer.update_status('prepare_page__package_manifest_2', OK)
+        else:
+            removable_packages_list_2 = []
+            displayer.update_status('prepare_page__package_manifest_2', OPTIONAL)
+            displayer.update_label('prepare_page__package_manifest_2_message', 'This ISO does not have a list of packages to be removed after a minimal install.')
+        sleep(0.50)
+
+        #
+        # Save the package manifests.
+        #
+
+        displayer.update_status('prepare_page__save_package_manifest', PROCESSING)
+        sleep(0.50)
+        package_details_list = create_package_details_list(installed_packages_list, removable_packages_list_1, removable_packages_list_2)
+        if installed_packages_list:
+            displayer.update_list_store('packages_page__list_store', package_details_list)
+            if removable_packages_list_2:
+                # TODO: Rename treeviewcolumn to treeview_column
+                displayer.set_column_visible('packages_page__remove_2_treeviewcolumn', True)
+            else:
+                # TODO: Rename treeviewcolumn to treeview_column
+                displayer.set_column_visible('packages_page__remove_2_treeviewcolumn', False)
+            save_filesystem_manifest_file(installed_packages_list)
+            displayer.update_status('prepare_page__save_package_manifest', OK)
+            displayer.update_label('prepare_page__save_package_manifest_message', 'Saved the package manifest file.')
+        else:
+            displayer.update_status('prepare_page__save_package_manifest', ERROR)
+            displayer.update_label('prepare_page__save_package_manifest_message', 'Unable to save the package manifest file.')
+        sleep(0.50)
+
+        sleep(2.00)
         return 'next'
 
 
@@ -190,377 +323,10 @@ def on_size_allocate__prepare_page__iso_boot_kernels_view_port(widget, event, da
 # Support Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
-# Package Manifest
-#-----------------------------------------------------------------------
 
-
-def get_a_list_of_installed_packages():
-
-    displayer.update_status('prepare_page__installed_packages', PROCESSING)
-    sleep(0.50)
-
-    # Get the list of installed packages.
-    installed_packages_list = create_installed_packages_list()
-
-    if installed_packages_list:
-        displayer.update_status('prepare_page__installed_packages', OK)
-        displayer.update_label('prepare_page__installed_packages_message', 'There are %d installed packages.' % len(installed_packages_list))
-    else:
-        displayer.update_status('prepare_page__installed_packages', ERROR)
-        displayer.update_label('prepare_page__installed_packages_message', 'Error. Unable to identify the installed packages.')
-
-    return installed_packages_list
-
-
-def prepare_typical_manifest(installed_packages_list):
-
-    # Create list of removable packages for a typical install.
-
-    displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
-    sleep(0.50)
-
-    filename = 'filesystem.manifest-remove'
-    is_exists = is_exists_filesystem_manifest_remove(filename)
-    removable_packages_list = get_removable_packages_list(filename) if is_exists else []
-    if is_exists:
-        displayer.update_status('prepare_page__package_manifest_1', OK)
-        removable_packages_count = len(removable_packages_list)
-        if removable_packages_count == 0:
-            displayer.update_label('prepare_page__package_manifest_1_message', 'No packages are flagged for removal after a typical install.')
-        elif removable_packages_count == 1:
-            displayer.update_label('prepare_page__package_manifest_1_message', 'One package is flagged for removal after a typical install.')
-        else:
-            displayer.update_label('prepare_page__package_manifest_1_message', '%d packages are flagged for removal after a typical install.' % removable_packages_count)
-    else:
-        displayer.update_status('prepare_page__package_manifest_1', OK)
-        displayer.update_label('prepare_page__package_manifest_1_message', 'This ISO does not have a list of packages to be removed after a typical install.')
-
-    return removable_packages_list
-
-
-def prepare_minimal_manifest(installed_packages_list):
-
-    # Create list of removable packages for a minimal install.
-
-    displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
-    sleep(0.50)
-
-    filename = 'filesystem.manifest-minimal-remove'
-    is_exists = is_exists_filesystem_manifest_remove(filename)
-    removable_packages_list = get_removable_packages_list(filename) if is_exists else []
-    if is_exists:
-        displayer.update_status('prepare_page__package_manifest_2', OK)
-        removable_packages_count = len(removable_packages_list)
-        if removable_packages_count == 0:
-            displayer.update_label('prepare_page__package_manifest_2_message', 'No packages are flagged for removal after a minimal install.')
-        elif removable_packages_count == 1:
-            displayer.update_label('prepare_page__package_manifest_2_message', 'One package is flagged for removal after a minimal install.')
-        else:
-            displayer.update_label('prepare_page__package_manifest_2_message', '%d packages are flagged for removal after a minimal install.' % removable_packages_count)
-    else:
-        displayer.update_status('prepare_page__package_manifest_2', OK)
-        displayer.update_label('prepare_page__package_manifest_2_message', 'This ISO does not have a list of packages to be removed after a minimal install.')
-
-    return removable_packages_list
-
-
-def save_package_manifest(installed_packages_list, removable_packages_list_1, removable_packages_list_2):
-
-    # TODO: We assume this file is created successfully. Should we catch an error and display a message?
-
-    displayer.update_status('prepare_page__save_package_manifest', PROCESSING)
-    sleep(0.50)
-
-    # Save the filesystem manifest file.
-    create_filesystem_manifest_file(installed_packages_list)
-
-    # Create list of package details for typical and minimal installs.
-
-    package_details_list = create_package_details_list(installed_packages_list, removable_packages_list_1, removable_packages_list_2)
-
-    displayer.update_list_store('packages_page__list_store', package_details_list)
-
-    if removable_packages_list_2:
-        displayer.set_column_visible('packages_page__remove_2_treeviewcolumn', True)
-    else:
-        displayer.set_column_visible('packages_page__remove_2_treeviewcolumn', False)
-
-    # TODO: This should be a part of the packages_page.
-    model.undo_index = 0
-    model.undo_list = []
-
-    displayer.update_status('prepare_page__save_package_manifest', OK)
-    displayer.update_label('prepare_page__save_package_manifest_message', 'Saved the package manifest file.')
-
-    return package_details_list
-
-
-#-----------------------------------------------------------------------
-# Kernels
-#-----------------------------------------------------------------------
-
-
-def create_boot_kernel_details_list():
-
-    displayer.update_status('prepare_page__iso_boot_kernels', PROCESSING)
-    sleep(0.50)
-
-    # Get the list of linux kernels.
-    # .../custom-root/boot/vmlinuz-*; initrd.img-*
-    directory_1 = os.path.join(model.project.custom_root_directory, 'boot')
-
-    # .../source-disk/casper/vmlinuz.efi; initrd.lz
-    directory_2 = os.path.join(model.project.iso_mount_point, model.status.casper_directory)
-
-    kernel_details_list = create_kernel_details_list(directory_1, directory_2)
-
-    displayer.update_status('prepare_page__iso_boot_kernels', OK)
-    displayer.update_label('prepare_page__iso_boot_kernels_message', 'Found %d valid ISO boot kernels.' % len(kernel_details_list))
-
-    return kernel_details_list
-
-
-def prepare_linux_kernels(kernel_details_list):
-
-    if kernel_details_list:
-
-        # TODO: See if this code can be replaced with elements in cubic.ui
-        # REFERENCE: https://whyareyoureadingthisurl.wordpress.com/2012/01/21/howto-pack-gtk-cellrenderers-vertically-in-a-gtk-treeview/
-        import gi
-        gi.require_version('Gtk', '3.0')
-        from gi.repository import Gtk
-        column = model.builder.get_object('options_page__linux_kernels_tab__treeviewcolumn_2')
-        area = column.get_area()
-        area.set_orientation(Gtk.Orientation.VERTICAL)
-
-        # Because Python < 3.7 does not guarantee that the order of
-        # dictionary elements is preserved when using the value() method.
-        # Instead of simply using list(kernel_details.values()), it is
-        # necessary to explicitly add each dictionary element to the new
-        # list.
-        #
-        # https://bugs.launchpad.net/cubic/+bug/1860345
-        # https://bugs.launchpad.net/cubic/+bug/1860682
-        # https://stackoverflow.com/questions/1867861/how-to-keep-keys-values-in-same-order-as-declared
-        #
-        # displayer.update_list_store(
-        #     'options_page__linux_kernels_tab__list_store',
-        #     [
-        #         list(kernel_details.values())
-        #         for kernel_details in kernel_details_list
-        #     ])
-        #
-        # 0: version_name
-        # 1: vmlinuz_filename
-        # 2: new_vmlinuz_filename
-        # 3: initrd_filename
-        # 4: new_initrd_filename
-        # 5: directory
-        # 6: note
-        # 7: is_selected
-        # 8: is_remove
-        displayer.update_list_store(
-            'options_page__linux_kernels_tab__list_store',
-            [
-                [
-                    kernel_details['version_name'],
-                    kernel_details['vmlinuz_filename'],
-                    kernel_details['new_vmlinuz_filename'],
-                    kernel_details['initrd_filename'],
-                    kernel_details['new_initrd_filename'],
-                    kernel_details['directory'],
-                    kernel_details['note'],
-                    kernel_details['is_selected'],
-                    kernel_details['is_remove']
-                ] for kernel_details in kernel_details_list
-            ])
-
-        return False
-
-    else:
-
-        return True
-
-
-#-----------------------------------------------------------------------
-# Preseed
-#-----------------------------------------------------------------------
-
-
-def prepare_preseed():
-
-    displayer.update_status('prepare_page__preseed_files', PROCESSING)
-    sleep(0.50)
-
-    stack_name = 'options_page__preseed_tab__stack'
-
-    model.delete_list = []
-    # TODO: Only read text files.
-    search_filepath = os.path.join(model.project.custom_disk_directory, 'preseed', '*')
-    filepaths = glob.glob(search_filepath)
-    filepaths.sort()
-
-    displayer.add_to_stack(stack_name, filepaths)
-
-    if filepaths:
-
-        # Stack create button
-        displayer.set_sensitive('options_page__create_button', True)
-
-        # Stack delete button
-        displayer.set_sensitive('options_page__delete_button', True)
-
-        # Stack
-        displayer.set_visible('options_page__preseed_tab__stack', True)
-
-        # Create box
-        # displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
-        # displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__create_grid', False)
-
-        # Delete box
-        # displayer.update_entry('options_page__preseed_tab__delete_grid__entry', '')
-        # displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
-
-        displayer.update_status('prepare_page__preseed_files', OK)
-        if len(filepaths) == 1:
-            displayer.update_label('prepare_page__preseed_files_message', 'Found one preseed file.')
-        else:
-            displayer.update_label('prepare_page__preseed_files_message', 'Found %d preseed files.' % len(filepaths))
-
-        sleep(0.50)
-
-        return False
-
-    else:
-
-        # Stack create button
-        displayer.set_sensitive('options_page__create_button', True)
-
-        # Stack delete button
-        displayer.set_sensitive('options_page__delete_button', False)
-
-        # Stack
-        displayer.set_visible('options_page__preseed_tab__stack', False)
-
-        # Create box
-        displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
-        displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__create_grid', True)
-
-        # Delete box
-        # displayer.update_entry('options_page__preseed_tab__delete_grid__entry', '')
-        # displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
-
-        displayer.update_status('prepare_page__preseed_files', displayer.OPTIONAL)
-        displayer.update_label('prepare_page__preseed_files_message', 'Did not find any preseed files.')
-
-        sleep(0.50)
-
-        return False
-
-
-#-----------------------------------------------------------------------
-# Boot Configurations
-#-----------------------------------------------------------------------
-
-
-def prepare_boot_configuration(kernel_details_list):
-
-    displayer.update_status('prepare_page__iso_boot_configurations', PROCESSING)
-    sleep(0.50)
-
-    if kernel_details_list:
-
-        filepaths = []
-        for boot_configuration in model.options.boot_configurations:
-            filepath = os.path.join(model.project.custom_disk_directory, boot_configuration)
-            filepaths.append(filepath)
-
-        # Get the selected kernel.
-        for selected_index, kernel_details in enumerate(kernel_details_list):
-            if kernel_details['is_selected']: break
-        else: selected_index = 0
-        logger.log_value('The selected kernel is index number', selected_index)
-
-        # Add files to the stack, and search and replace text.
-        stack_name = 'options_page__boot_configuration_tab__stack'
-
-        # The contents of the boot configurations files is also replaced in
-        # handlers.on_toggled__options_page__linux_kernels_tab__radio_button()
-        # and utilities.update_and_save_boot_configurations().
-
-        # search_text_1 = r'/vmlinuz\S*'
-        # replacement_text_1 = '/%s' % kernel_details_list[selected_index]['new_vmlinuz_filename']
-        search_text_1 = r'(linux.*)vmlinuz\S*'
-        replacement_text_1 = r'\1%s' % kernel_details_list[selected_index]['new_vmlinuz_filename']
-
-        search_text_2 = r'(kernel.*)vmlinuz\S*'
-        replacement_text_2 = r'\1%s' % kernel_details_list[selected_index]['new_vmlinuz_filename']
-
-        # search_text_3 = r'/initrd\S*'
-        # replacement_text_3 = '/%s' % kernel_details_list[selected_index]['new_initrd_filename']
-        search_text_3 = r'(initrd.*)initrd\S*'
-        replacement_text_3 = r'\1%s' % kernel_details_list[selected_index]['new_initrd_filename']
-
-        # Note: This won't work if boot appears between linux and vmlinuz.
-        search_text_4 = r'(linux.*vmlinuz\S*\s*)(?!.*boot=)'
-        replacement_text_4 = r'\1boot=casper '
-
-        search_text_5 = r'(append\s*)(?!.*boot=)'
-        replacement_text_5 = r'\1boot=casper '
-
-        displayer.add_to_stack(
-            stack_name,
-            filepaths,
-            (search_text_1,
-             replacement_text_1),
-            (search_text_2,
-             replacement_text_2),
-            (search_text_3,
-             replacement_text_3),
-            (search_text_4,
-             replacement_text_4),
-            (search_text_5,
-             replacement_text_5))
-
-        # TODO: better way to check for errors.
-
-        displayer.update_status('prepare_page__iso_boot_configurations', OK)
-        if len(filepaths) == 1:
-            displayer.update_label('prepare_page__iso_boot_configurations_message', 'Found one ISO boot configuration file.')
-        else:
-            displayer.update_label('prepare_page__iso_boot_configurations_message', 'Found %d ISO boot configuration files.' % len(filepaths))
-
-        return False
-
-    else:
-
-        displayer.update_status('prepare_page__iso_boot_configurations', ERROR)
-        displayer.update_label('prepare_page__iso_boot_configurations_message', 'Error. Did not find any ISO boot configuration files.')
-
-        return True
-
-
-# TODO: This function is needed on multiple pages. Consider refactoring.
-#       - extract_page
-#       - generate_page
-#       - options_page
-def is_exists_filesystem_manifest_remove(filename):
-
-    # Check custom live iso directory
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)
-
-    is_exists = os.path.exists(filepath)
-    if is_exists:
-        logger.log_value('%s found in' % filename, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
-        return True
-    else:
-        logger.log_value('%s not found in' % filename, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
-        return False
+def add_message_to_iso_boot_kernels_box(message):
+    displayer.insert_box_label('prepare_page__iso_boot_kernels_box', message, 0.50)
+    sleep(0.125)
 
 
 ########################################################################
@@ -572,7 +338,73 @@ def is_exists_filesystem_manifest_remove(filename):
 # ----------------------------------------------------------------------
 
 
+def create_boot_kernel_details_list():
+    """
+    Get the list of linux kernels from the following directories:
+      1. custom-root/boot/vmlinuz-*; initrd.img-*
+      2. source-disk/casper/vmlinuz.efi; initrd.lz
+    """
+
+    directory_1 = os.path.join(model.project.custom_root_directory, 'boot')
+    directory_2 = os.path.join(model.project.iso_mount_point, model.status.casper_directory)
+    kernel_details_list = create_kernel_details_list(directory_1, directory_2)
+
+    return kernel_details_list
+
+
+def prepare_linux_kernels(kernel_details_list):
+
+    # TODO: See if this code can be replaced with elements in cubic.ui
+    # REFERENCE: https://whyareyoureadingthisurl.wordpress.com/2012/01/21/howto-pack-gtk-cellrenderers-vertically-in-a-gtk-treeview/
+    column = model.builder.get_object('options_page__linux_kernels_tab__treeviewcolumn_2')
+    area = column.get_area()
+    area.set_orientation(Gtk.Orientation.VERTICAL)
+
+    # Because Python < 3.7 does not guarantee that the order of
+    # dictionary elements is preserved when using the value() method.
+    # Instead of simply using list(kernel_details.values()), it is
+    # necessary to explicitly add each dictionary element to the new
+    # list.
+    #
+    # https://bugs.launchpad.net/cubic/+bug/1860345
+    # https://bugs.launchpad.net/cubic/+bug/1860682
+    # https://stackoverflow.com/questions/1867861/how-to-keep-keys-values-in-same-order-as-declared
+    #
+    # displayer.update_list_store(
+    #     'options_page__linux_kernels_tab__list_store',
+    #     [
+    #         list(kernel_details.values())
+    #         for kernel_details in kernel_details_list
+    #     ])
+    #
+    # 0: version_name
+    # 1: vmlinuz_filename
+    # 2: new_vmlinuz_filename
+    # 3: initrd_filename
+    # 4: new_initrd_filename
+    # 5: directory
+    # 6: note
+    # 7: is_selected
+    # 8: is_remove
+    displayer.update_list_store(
+        'options_page__linux_kernels_tab__list_store',
+        [
+            [
+                kernel_details['version_name'],
+                kernel_details['vmlinuz_filename'],
+                kernel_details['new_vmlinuz_filename'],
+                kernel_details['initrd_filename'],
+                kernel_details['new_initrd_filename'],
+                kernel_details['directory'],
+                kernel_details['note'],
+                kernel_details['is_selected'],
+                kernel_details['is_remove']
+            ] for kernel_details in kernel_details_list
+        ])
+
+
 def create_kernel_details_list(*directories):
+
     logger.log_label('Create kernel details list')
 
     #
@@ -618,6 +450,8 @@ def create_kernel_details_list(*directories):
     # Kernels (vmlinuz and initrd)
     #
 
+    add_message_to_iso_boot_kernels_box('Consolidated kernel files')
+
     # Create a list of directories that only contain one vmlinuz file
     # and one initrd file.
     directories_with_one_vmlinuz_and_initrd = list(set(directories_with_one_vmlinuz) & set(directories_with_one_initrd))
@@ -627,7 +461,8 @@ def create_kernel_details_list(*directories):
     _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kernel_details_list, directories_with_one_vmlinuz_and_initrd)
 
     # Sort, select kernel, add notes, and remove the 1st column.
-    update_kernel_details_list(kernel_details_list)
+    if kernel_details_list:
+        update_kernel_details_list(kernel_details_list)
 
     # For debugging.
     # print_details_list(kernel_details_list, {'note': 10})
@@ -733,59 +568,10 @@ def _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kerne
                         kernel_details_list.append(kernel_details)
 
 
-def _create_kernel_details_list_ORIGINAL(vmlinuz_details_list, initrd_details_list, kernel_details_list):
-
-    note = ''
-    is_selected = False
-    is_remove = False
-
-    for vmlinuz_details in vmlinuz_details_list:
-
-        vmlinuz_version_integers = vmlinuz_details['version_integers']
-        vmlinuz_version_name = vmlinuz_details['version_name']
-        vmlinuz_filename = vmlinuz_details['filename']
-        new_vmlinuz_filename = vmlinuz_details['new_filename']
-        vmlinuz_directory = vmlinuz_details['directory']
-
-        for initrd_details in initrd_details_list:
-
-            initrd_version_integers = initrd_details['version_integers']
-            initrd_version_name = initrd_details['version_name']
-            initrd_filename = initrd_details['filename']
-            new_initrd_filename = initrd_details['new_filename']
-            initrd_directory = initrd_details['directory']
-
-            if vmlinuz_version_integers == initrd_version_integers and vmlinuz_directory == initrd_directory:
-
-                # 0: version_integers
-                # 1: version_name
-                # 2: vmlinuz_filename
-                # 3: new_vmlinuz_filename
-                # 4: initrd_filename
-                # 5: new_initrd_filename
-                # 6: directory
-                # 7: note
-                # 8: is_selected
-                # 9: is_remove
-
-                kernel_details = {
-                    'version_integers': vmlinuz_version_integers,
-                    'version_name': vmlinuz_version_name,
-                    'vmlinuz_filename': vmlinuz_filename,
-                    'new_vmlinuz_filename': new_vmlinuz_filename,
-                    'initrd_filename': initrd_filename,
-                    'new_initrd_filename': new_initrd_filename,
-                    'directory': vmlinuz_directory,
-                    'note': note,
-                    'is_selected': is_selected,
-                    'is_remove': is_remove
-                }
-
-                kernel_details_list.append(kernel_details)
-
-
-# Sort, select kernel, add notes, and remove the 1st column.
 def update_kernel_details_list(kernel_details_list):
+    """
+    Sort, select kernel, add notes, and remove the 1st column.
+    """
 
     # Reverse sort the kernel details list by kernel version number (1st
     # column).
@@ -926,6 +712,9 @@ def update_vmlinuz_details_list(directory, details_list):
     logger.log_label('Create vmlinuz details list')
     logger.log_value('• Search directory', directory)
 
+    relative_directory = os.path.relpath(directory, model.project.directory)
+    add_message_to_iso_boot_kernels_box('Search for vmlinuz files in %s' % relative_directory)
+
     filepath_list = []
 
     # Replace simlinks with the actual filepath.
@@ -962,15 +751,12 @@ def update_vmlinuz_details_list(directory, details_list):
 
     filepath_list = list(set(filepath_list))
 
-    logger.log_value('• Number of vmlinuz files found', len(filepath_list))
-    relative_directory = os.path.relpath(directory, model.project.directory)
-    if len(filepath_list) == 0:
-        add_message('Found no vmlinuz files in .../%s' % relative_directory)
-    elif len(filepath_list) == 1:
-        add_message('Found one vmlinuz file in .../%s' % relative_directory)
-    else:
-        add_message('Found %d vmlinuz files in .../%s' % (len(filepath_list), relative_directory))
-    sleep(0.50)
+    count = len(filepath_list)
+    logger.log_value('• Number of vmlinuz files found', count)
+    number_text = constructor.number_as_text(count)
+    plural_text = constructor.get_plural('file', 'files', count)
+    add_message_to_iso_boot_kernels_box('Found %s vmlinuz %s' % (number_text, plural_text))
+    sleep(0.25)
 
     for index, filepath in enumerate(filepath_list):
         filename = os.path.basename(filepath)
@@ -986,7 +772,7 @@ def update_vmlinuz_details_list(directory, details_list):
 
         details = {'version_integers': version_integers, 'version_name': version_name, 'filename': filename, 'new_filename': new_filename, 'directory': directory}
         details_list.append(details)
-        sleep(0.50)
+        sleep(0.25)
 
 
 def calculate_vmlinuz_filename(filepath):
@@ -1002,11 +788,11 @@ def get_vmlinuz_version_name(filepath):
     # logger.log_value('Get vmlinuz version', filepath)
     # relative_filepath = os.path.relpath(filepath, model.project.directory)
     filename = os.path.basename(filepath)
-    add_message('Processing %s' % filename)
+    add_message_to_iso_boot_kernels_box('Identify version for %s' % filename)
 
     version_name = (_get_vmlinuz_version_name_from_file_name(filepath) or _get_vmlinuz_version_name_from_file_type(filepath) or _get_vmlinuz_version_name_from_file_contents(filepath))
 
-    # add_message('The version is %s' % version_name)
+    # add_message_to_iso_boot_kernels_box('The version is %s' % version_name)
     return version_name
 
 
@@ -1070,6 +856,9 @@ def update_initrd_details_list(directory, details_list):
     logger.log_label('Create initrd details list')
     logger.log_value('• Search directory', directory)
 
+    relative_directory = os.path.relpath(directory, model.project.directory)
+    add_message_to_iso_boot_kernels_box('Search for initrd files in %s' % relative_directory)
+
     filepath_list = []
 
     # Replace simlinks with the actual filepath.
@@ -1106,15 +895,12 @@ def update_initrd_details_list(directory, details_list):
 
     filepath_list = list(set(filepath_list))
 
-    logger.log_value('• Number of initrd files found', len(filepath_list))
-    relative_directory = os.path.relpath(directory, model.project.directory)
-    if len(filepath_list) == 0:
-        add_message('Found no initrd files in .../%s' % relative_directory)
-    elif len(filepath_list) == 1:
-        add_message('Found one initrd file in .../%s' % relative_directory)
-    else:
-        add_message('Found %d initrd files in .../%s' % (len(filepath_list), relative_directory))
-    sleep(0.50)
+    count = len(filepath_list)
+    logger.log_value('• Number of initrd files found', count)
+    number_text = constructor.number_as_text(count)
+    plural_text = constructor.get_plural('file', 'files', count)
+    add_message_to_iso_boot_kernels_box('Found %s initrd %s' % (number_text, plural_text))
+    sleep(0.25)
 
     for index, filepath in enumerate(filepath_list):
         filename = os.path.basename(filepath)
@@ -1130,7 +916,7 @@ def update_initrd_details_list(directory, details_list):
 
         details = {'version_integers': version_integers, 'version_name': version_name, 'filename': filename, 'new_filename': new_filename, 'directory': directory}
         details_list.append(details)
-        sleep(0.50)
+        sleep(0.25)
 
 
 def calculate_initrd_filename(filepath):
@@ -1179,14 +965,15 @@ def get_vmlinuz_version_from_kernel_details_list(kernel_details_list, directory)
 def get_initrd_version_name(filepath):
 
     # logger.log_value('Get initrd version', filepath)
+    # TODO: INVESTIGATE IF THIS RELATIVE FILEPATH SHOULD HAVE BEEN USED BELOW !!!
     relative_filepath = os.path.relpath(filepath, model.project.directory)
-    # add_message('• Processing .../%s' % relative_filepath)
+    # add_message_to_iso_boot_kernels_box('• Processing .../%s' % relative_filepath)
     filename = os.path.basename(filepath)
-    add_message('Processing %s' % filename)
+    add_message_to_iso_boot_kernels_box('Identify version for %s' % filename)
 
     version_name = (_get_initrd_version_name_from_file_name(filepath) or _get_initrd_version_name_from_file_contents(filepath) or _get_initrd_version_name_from_file_type(filepath))
 
-    # add_message('The version is %s' % version_name)
+    # add_message_to_iso_boot_kernels_box('The version is %s' % version_name)
     return version_name
 
 
@@ -1293,10 +1080,145 @@ def print_details_list(details_list, default_widths={}):
 
 
 ########################################################################
-# Create Filesystem Manifest Functions
+# Preseed Functions
 ########################################################################
 
 
+def create_preseed_file_list():
+
+    # TODO: Should this be done on the Options page?
+    #       If so, this parameter can be removed from model.
+    # Empty the list of preseed files to be deleted.
+    model.delete_list = []
+
+    # TODO: Only read text files.
+    search_filepath = os.path.join(model.project.custom_disk_directory, 'preseed', '*')
+    filepaths = glob.glob(search_filepath)
+    filepaths.sort()
+
+    return filepaths
+
+
+def prepare_preseed(preseed_file_list):
+
+    displayer.add_to_stack('options_page__preseed_tab__stack', preseed_file_list)
+
+    if preseed_file_list:
+
+        # Stack create button
+        displayer.set_sensitive('options_page__create_button', True)
+
+        # Stack delete button
+        displayer.set_sensitive('options_page__delete_button', True)
+
+        # Stack
+        displayer.set_visible('options_page__preseed_tab__stack', True)
+
+        # Create box
+        # displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
+        # displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
+        displayer.set_visible('options_page__preseed_tab__create_grid', False)
+
+        # Delete box
+        # displayer.update_entry('options_page__preseed_tab__delete_grid__entry', '')
+        # displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
+        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
+
+    else:
+
+        # Stack create button
+        displayer.set_sensitive('options_page__create_button', True)
+
+        # Stack delete button
+        displayer.set_sensitive('options_page__delete_button', False)
+
+        # Stack
+        displayer.set_visible('options_page__preseed_tab__stack', False)
+
+        # Create box
+        displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
+        displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
+        displayer.set_visible('options_page__preseed_tab__create_grid', True)
+
+        # Delete box
+        # displayer.update_entry('options_page__preseed_tab__delete_grid__entry', '')
+        # displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
+        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
+
+
+########################################################################
+# Boot Configurations Functions
+########################################################################
+
+
+def create_boot_configuration_list(kernel_details_list):
+
+    filepaths = []
+    if kernel_details_list:
+        for boot_configuration in model.options.boot_configurations:
+            filepath = os.path.join(model.project.custom_disk_directory, boot_configuration)
+            filepaths.append(filepath)
+    return filepaths
+
+
+def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
+
+    # Get the selected kernel.
+    for selected_index, kernel_details in enumerate(kernel_details_list):
+        if kernel_details['is_selected']: break
+    else: selected_index = 0
+    logger.log_value('The selected kernel is index number', selected_index)
+
+    # Add files to the stack, and search and replace text.
+    stack_name = 'options_page__boot_configuration_tab__stack'
+
+    # The contents of the boot configurations files is also replaced in
+    # handlers.on_toggled__options_page__linux_kernels_tab__radio_button()
+    # and utilities.update_and_save_boot_configurations().
+
+    # search_text_1 = r'/vmlinuz\S*'
+    # replacement_text_1 = '/%s' % kernel_details_list[selected_index]['new_vmlinuz_filename']
+    search_text_1 = r'(linux.*)vmlinuz\S*'
+    replacement_text_1 = r'\1%s' % kernel_details_list[selected_index]['new_vmlinuz_filename']
+
+    search_text_2 = r'(kernel.*)vmlinuz\S*'
+    replacement_text_2 = r'\1%s' % kernel_details_list[selected_index]['new_vmlinuz_filename']
+
+    # search_text_3 = r'/initrd\S*'
+    # replacement_text_3 = '/%s' % kernel_details_list[selected_index]['new_initrd_filename']
+    search_text_3 = r'(initrd.*)initrd\S*'
+    replacement_text_3 = r'\1%s' % kernel_details_list[selected_index]['new_initrd_filename']
+
+    # Note: This won't work if boot appears between linux and vmlinuz.
+    search_text_4 = r'(linux.*vmlinuz\S*\s*)(?!.*boot=)'
+    replacement_text_4 = r'\1boot=casper '
+
+    search_text_5 = r'(append\s*)(?!.*boot=)'
+    replacement_text_5 = r'\1boot=casper '
+
+    displayer.add_to_stack(
+        stack_name,
+        boot_configuration_list,
+        (search_text_1,
+         replacement_text_1),
+        (search_text_2,
+         replacement_text_2),
+        (search_text_3,
+         replacement_text_3),
+        (search_text_4,
+         replacement_text_4),
+        (search_text_5,
+         replacement_text_5))
+
+
+########################################################################
+# Filesystem Manifest Functions
+########################################################################
+
+
+# TODO: This function is needed on multiple pages. Consider refactoring.
+#       - packages_page
+#       - prepare_page
 def is_exists_filesystem_manifest_remove(filename):
 
     # Check custom live iso directory
@@ -1330,7 +1252,7 @@ def create_installed_packages_list():
     return installed_packages_list
 
 
-def create_filesystem_manifest_file(installed_packages_list):
+def save_filesystem_manifest_file(installed_packages_list):
 
     logger.log_label('Create new filesystem manifest file')
 
@@ -1411,6 +1333,9 @@ def create_package_details_list(installed_packages_list, removable_packages_list
     return package_details_list
 
 
+# TODO: This function is needed on multiple pages. Consider refactoring.
+#       - packages_page
+#       - prepare_page
 def create_typical_removable_packages_list():
     logger.log_label('Create typical removable packages list')
 
@@ -1430,6 +1355,9 @@ def create_typical_removable_packages_list():
     return removable_packages_list
 
 
+# TODO: This function is needed on multiple pages. Consider refactoring.
+#       - packages_page
+#       - prepare_page
 def create_minimal_removable_packages_list():
     logger.log_label('Create minimal removable packages list')
 
@@ -1449,6 +1377,9 @@ def create_minimal_removable_packages_list():
     return removable_packages_list
 
 
+# TODO: This function is needed on multiple pages. Consider refactoring.
+#       - packages_page
+#       - prepare_page
 # TODO: This function is not used.
 def create_removable_packages_list(listore_name, index):
     logger.log_label('Get removable packages list from user selections')
@@ -1465,22 +1396,3 @@ def create_removable_packages_list(listore_name, index):
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
     return removable_packages_list
-
-
-def create_filesystem_manifest_remove_file(filename, removable_packages_list):
-    logger.log_label('Create new filesystem manifest remove file')
-
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)
-    logger.log_value('Write filesystem manifest remove file to', filepath)
-    with open(filepath, 'w') as file:
-        first_line = True
-        for packages_name in removable_packages_list:
-            if first_line:
-                file.write('%s' % packages_name)
-                first_line = False
-            else:
-                file.write('\n%s' % packages_name)
-
-
-def add_message(message):
-    displayer.insert_box_label('prepare_page__iso_boot_kernels_box', message, 0.50)

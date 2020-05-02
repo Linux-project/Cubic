@@ -65,262 +65,14 @@
         <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
+        <property name="row_spacing">36</property>
         <property name="column_spacing">24</property>
-        <property name="row_homogeneous">True</property>
         <property name="column_homogeneous">True</property>
         <child>
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="valign">start</property>
-            <property name="vexpand">True</property>
-            <property name="row_spacing">18</property>
-            <property name="column_spacing">12</property>
-            <child>
-              <object class="GtkImage" id="prepare_page__installed_packages_status">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinner" id="prepare_page__installed_packages_spinner">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="active">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Identify installed packages.</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="prepare_page__installed_packages_message">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="opacity">0.5</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">...</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkImage" id="prepare_page__package_manifest_1_status">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinner" id="prepare_page__package_manifest_1_spinner">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="active">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Create the package manifest for a typical install.</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="prepare_page__package_manifest_1_message">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="opacity">0.5</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">...</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkImage" id="prepare_page__package_manifest_2_status">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinner" id="prepare_page__package_manifest_2_spinner">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="active">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Create the package manifest for a minimal install.</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="prepare_page__package_manifest_2_message">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="opacity">0.5</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">...</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">5</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkImage" id="prepare_page__save_package_manifest_status">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinner" id="prepare_page__save_package_manifest_spinner">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="active">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Save the package manifest.</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="prepare_page__save_package_manifest_message">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="opacity">0.5</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">...</property>
-                <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">7</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkGrid">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="valign">start</property>
-            <property name="vexpand">True</property>
-            <property name="row_spacing">18</property>
+            <property name="row_spacing">12</property>
             <property name="column_spacing">12</property>
             <child>
               <object class="GtkImage" id="prepare_page__iso_boot_kernels_status">
@@ -350,30 +102,12 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="label" translatable="yes">
+</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">3</property>
               </packing>
             </child>
             <child>
@@ -392,23 +126,24 @@
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="prepare_page__iso_boot_kernels_scrolled_window">
+              <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
                 <child>
                   <object class="GtkViewport" id="prepare_page__iso_boot_kernels_view_port">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="vscroll_policy">natural</property>
+                    <property name="valign">start</property>
                     <signal name="size-allocate" handler="on_size_allocate__prepare_page__iso_boot_kernels_view_port" swapped="no"/>
                     <child>
                       <object class="GtkBox" id="prepare_page__iso_boot_kernels_box">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="valign">start</property>
+                        <property name="margin_right">12</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">6</property>
-                        <property name="homogeneous">True</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -420,24 +155,21 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">1</property>
-                <property name="height">3</property>
               </packing>
             </child>
-            <child>
-              <object class="GtkLabel" id="prepare_page__iso_boot_kernels_message">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="opacity">0.5</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">...</property>
-                <property name="max_width_chars">0</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">4</property>
-              </packing>
-            </child>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+            <property name="height">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="row_spacing">12</property>
+            <property name="column_spacing">12</property>
             <child>
               <object class="GtkImage" id="prepare_page__preseed_files_status">
                 <property name="visible">True</property>
@@ -447,7 +179,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">5</property>
+                <property name="top_attach">0</property>
               </packing>
             </child>
             <child>
@@ -459,7 +191,19 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">5</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">
+</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
             <child>
@@ -474,25 +218,40 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">5</property>
+                <property name="top_attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="prepare_page__preseed_files_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.5</property>
+                <property name="opacity">0.50196078431372548</property>
                 <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
+                <property name="justify">fill</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
+                <property name="yalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">6</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="row_spacing">12</property>
+            <property name="column_spacing">12</property>
             <child>
               <object class="GtkImage" id="prepare_page__iso_boot_configurations_status">
                 <property name="visible">True</property>
@@ -502,7 +261,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">7</property>
+                <property name="top_attach">0</property>
               </packing>
             </child>
             <child>
@@ -514,7 +273,19 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">7</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">
+</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
             <child>
@@ -529,38 +300,359 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">7</property>
+                <property name="top_attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="prepare_page__iso_boot_configurations_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.5</property>
+                <property name="opacity">0.50196078431372548</property>
                 <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="row_spacing">12</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkImage" id="prepare_page__installed_packages_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="prepare_page__installed_packages_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">
+</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Identify installed packages.</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">8</property>
+                <property name="top_attach">0</property>
               </packing>
             </child>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
+              <object class="GtkLabel" id="prepare_page__installed_packages_message">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.50196078431372548</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
             </child>
           </object>
           <packing>
             <property name="left_attach">1</property>
             <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="row_spacing">12</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkImage" id="prepare_page__package_manifest_1_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="prepare_page__package_manifest_1_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">
+</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Create the package manifest for a typical install.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="prepare_page__package_manifest_1_message">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.50196078431372548</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="row_spacing">12</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkImage" id="prepare_page__package_manifest_2_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="prepare_page__package_manifest_2_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">
+</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Create the package manifest for a minimal install.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="prepare_page__package_manifest_2_message">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.50196078431372548</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="row_spacing">12</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkImage" id="prepare_page__save_package_manifest_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="icon_name">cubic-bullet-symbolic</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="prepare_page__save_package_manifest_spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">
+</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Save the package manifest.</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="prepare_page__save_package_manifest_message">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="opacity">0.50196078431372548</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="label" translatable="yes">...</property>
+                <property name="justify">fill</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">3</property>
           </packing>
         </child>
       </object>
@@ -573,6 +665,12 @@
   <object class="GtkSizeGroup">
     <property name="mode">both</property>
     <widgets>
+      <widget name="prepare_page__iso_boot_kernels_status"/>
+      <widget name="prepare_page__iso_boot_kernels_spinner"/>
+      <widget name="prepare_page__preseed_files_status"/>
+      <widget name="prepare_page__preseed_files_spinner"/>
+      <widget name="prepare_page__iso_boot_configurations_status"/>
+      <widget name="prepare_page__iso_boot_configurations_spinner"/>
       <widget name="prepare_page__installed_packages_status"/>
       <widget name="prepare_page__installed_packages_spinner"/>
       <widget name="prepare_page__package_manifest_1_status"/>
@@ -581,12 +679,6 @@
       <widget name="prepare_page__package_manifest_2_spinner"/>
       <widget name="prepare_page__save_package_manifest_status"/>
       <widget name="prepare_page__save_package_manifest_spinner"/>
-      <widget name="prepare_page__iso_boot_kernels_status"/>
-      <widget name="prepare_page__iso_boot_kernels_spinner"/>
-      <widget name="prepare_page__preseed_files_status"/>
-      <widget name="prepare_page__preseed_files_spinner"/>
-      <widget name="prepare_page__iso_boot_configurations_status"/>
-      <widget name="prepare_page__iso_boot_configurations_spinner"/>
     </widgets>
   </object>
 </interface>

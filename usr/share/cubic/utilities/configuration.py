@@ -157,8 +157,6 @@ def load():
 
     # Load values from the configuration.
     # (Add new layouts here, based on the version).
-    print('model.project.cubic_version = %s' % model.project.cubic_version)
-
     if model.project.cubic_version < NEW_CUBIC_VERSION:
         _load_from_2019_layout()
     else:

@@ -1,4 +1,21 @@
-cubic (2020.04) focal; urgency=low
+cubic (2020.05) focal; urgency=low
+
+  * Fixed Bug #1831859, Cubuc freeze after project directory selection
+    due to exception:
+  - If the original ISO is not available, but the necessary files have
+    already been copied to the custom disk, then Cubic will present a
+    warning on the Project page, yet will allow the user to continue.
+  - On the Prepare page, Cubic will attempt to locate the kernel files
+    on the original ISO (if available) and from the customized file
+    system.
+  - If valid kernel files (vmlinuz and initrd) can not be found after
+    searching these two locations, Cubic will present an error to the
+    user, asking the user to either install missing Linux image kernel
+    files on the Terminal page, or supply the original ISO image on the
+    Project page. In this case, Cubic will not allow the user to proceed
+    until the issue is corrected.
+
+  * Issues fixed in version 2020.04-9:
 
   * Fixed Bug #1855153. Cubic will prevent the user from proceeding past
     the Project page if the custom ISO directory is invalid.
@@ -80,4 +97,4 @@ cubic (2020.04) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 30 Apr 2020 20:04:22 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 02 May 2020 00:00:19 -0400

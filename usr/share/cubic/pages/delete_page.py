@@ -106,6 +106,8 @@ def setup(action, old_page=None):
         filepath_pattern = os.path.join(model.project.directory, '*.md5')
         iso_checksum_filepath_list = glob.glob(filepath_pattern)
 
+        # TOOD: Use constructor.get_plural and format on prepare_page.
+
         # This must be consistent with on_toggled__delete_page__custom_iso_and_checksum_check_button()
         if iso_checksum_filepath_list and iso_filepath_list:
             iso_count_text = constructor.number_as_text(len(iso_filepath_list))

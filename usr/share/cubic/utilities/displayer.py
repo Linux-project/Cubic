@@ -232,6 +232,11 @@ def insert_box_label(box_name, text, opacity):
     label.set_halign(Gtk.Align.START)
     label.set_visible(True)
     label.set_opacity(opacity)
+
+    label.set_justify(Gtk.Justification.FILL)
+    label.set_line_wrap(True)
+    # label.set_max_width_chars(0)
+
     box = model.builder.get_object(box_name)
     GLib.idle_add(Gtk.Box.add, box, label)
 

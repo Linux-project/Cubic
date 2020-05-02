@@ -236,7 +236,7 @@ def subscribe_virtual_environment_entered():
             signal_fired=entered_virtual_environment)
         logger.log_value('Subscribe to virtual environment entered signals with subscription id', id(properties_changed_subscription))
     else:
-        logger.log_value('WARNING. Subscription to virtual environment entered signal already existswith subscription id', id(properties_changed_subscription))
+        logger.log_value('WARNING. Subscription to virtual environment entered signal already exists with subscription id', id(properties_changed_subscription))
 
 
 # https://developer.gnome.org/gio/2.60/GDBusConnection.html#g-dbus-connection-signal-unsubscribe

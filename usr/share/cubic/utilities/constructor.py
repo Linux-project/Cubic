@@ -48,6 +48,11 @@ def number_as_text(number, title_case=False):
         return str(number)
 
 
+def get_plural(singular_text, plural_text, count):
+
+    return singular_text if count == 1 else plural_text
+
+
 def get_kernel_version():
 
     command = 'uname -r'

@@ -98,6 +98,14 @@ def setup(action, old_page=None):
         # displayer.set_solid('stack_switcher', False)
         displayer.set_visible('stack_switcher', False)
 
+        # TODO: Remove these variables from the model, and add them to the Packages page.
+        model.undo_index = 0
+        model.undo_list = []
+
+        displayer.set_sensitive('packages_page__redo_button', False)
+        displayer.set_sensitive('packages_page__revert_button', False)
+        displayer.set_sensitive('packages_page__undo_button', False)
+
         return
 
     else:
@@ -142,7 +150,7 @@ def leave(action, new_page=None):
         # This function will create the file if it does not exist.
         filename = 'filesystem.manifest-remove'
         removable_packages_list = create_typical_removable_packages_list()
-        create_filesystem_manifest_remove_file(filename, removable_packages_list)
+        save_filesystem_manifest_remove_file(filename, removable_packages_list)
 
         # Update filesystem.manifest-minimal-remove file.
         filename = 'filesystem.manifest-minimal-remove'
@@ -154,7 +162,7 @@ def leave(action, new_page=None):
         # minimal remove column even when the file does not exist).
         if is_exists or removable_packages_list:
             # This function will create the file if it does not exist.
-            create_filesystem_manifest_remove_file(filename, removable_packages_list)
+            save_filesystem_manifest_remove_file(filename, removable_packages_list)
 
         # TODO: If either of the above fails, action should be 'error'
         #       and we should navigate to an error page.
@@ -184,69 +192,6 @@ def leave(action, new_page=None):
 ########################################################################
 # Handler Functions
 ########################################################################
-
-
-def on_clicked__packages_page__redo_button(widget):
-
-    list_store = model.builder.get_object('packages_page__list_store')
-
-    row, column = model.undo_list[model.undo_index]
-
-    displayer.select_tree_view_row('packages_page__treeview', row)
-    # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
-    # sleep(0.25)
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
-
-    if column == 0:
-        list_store[row][0] = not list_store[row][0]
-        # Even though the minimal check button column may not be visible (if
-        # 'filesystem.manifest-minimal-remove' does not exist, still update
-        # the list_store. It's a little inefficient, but does no harm.
-        if list_store[row][0]:
-            # Backup original minimal check button value
-            list_store[row][2] = list_store[row][1]
-            # Set minimal check button selected
-            list_store[row][1] = True
-            # Set minimal check button inactive
-            list_store[row][3] = False
-        else:
-            # Restore original minimal check button value
-            list_store[row][1] = list_store[row][2]
-            # Set minimal check button active
-            list_store[row][3] = True
-    else:
-        list_store[row][1] = not list_store[row][1]
-
-    model.undo_index += 1
-
-    if len(model.undo_list) == model.undo_index:
-        displayer.set_sensitive('packages_page__redo_button', False)
-
-    displayer.set_sensitive('packages_page__revert_button', True)
-    displayer.set_sensitive('packages_page__undo_button', True)
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
 
 
 def on_clicked__packages_page__revert_button(widget):
@@ -363,6 +308,69 @@ def on_clicked__packages_page__undo_button(widget):
         displayer.set_sensitive('packages_page__undo_button', False)
 
     displayer.set_sensitive('packages_page__redo_button', True)
+
+    # print(
+    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
+    #     % (
+    #         row,
+    #         column,
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
+    #         len(model.undo_list),
+    #         model.undo_index))
+
+
+def on_clicked__packages_page__redo_button(widget):
+
+    list_store = model.builder.get_object('packages_page__list_store')
+
+    row, column = model.undo_list[model.undo_index]
+
+    displayer.select_tree_view_row('packages_page__treeview', row)
+    # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
+    # sleep(0.25)
+
+    # print(
+    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
+    #     % (
+    #         row,
+    #         column,
+    #         list_store[row][0],
+    #         list_store[row][1],
+    #         list_store[row][2],
+    #         list_store[row][3],
+    #         len(model.undo_list),
+    #         model.undo_index))
+
+    if column == 0:
+        list_store[row][0] = not list_store[row][0]
+        # Even though the minimal check button column may not be visible (if
+        # 'filesystem.manifest-minimal-remove' does not exist, still update
+        # the list_store. It's a little inefficient, but does no harm.
+        if list_store[row][0]:
+            # Backup original minimal check button value
+            list_store[row][2] = list_store[row][1]
+            # Set minimal check button selected
+            list_store[row][1] = True
+            # Set minimal check button inactive
+            list_store[row][3] = False
+        else:
+            # Restore original minimal check button value
+            list_store[row][1] = list_store[row][2]
+            # Set minimal check button active
+            list_store[row][3] = True
+    else:
+        list_store[row][1] = not list_store[row][1]
+
+    model.undo_index += 1
+
+    if len(model.undo_list) == model.undo_index:
+        displayer.set_sensitive('packages_page__redo_button', False)
+
+    displayer.set_sensitive('packages_page__revert_button', True)
+    displayer.set_sensitive('packages_page__undo_button', True)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -495,10 +503,6 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 # Support Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
-# Manifest Functions
-#-----------------------------------------------------------------------
-
 
 # TODO: This function is needed on multiple pages. Consider refactoring.
 #       - extract_page
@@ -518,6 +522,9 @@ def is_exists_filesystem_manifest_remove(filename):
         return False
 
 
+# TODO: This function is needed on multiple pages. Consider refactoring.
+#       - packages_page
+#       - prepare_page
 def create_typical_removable_packages_list():
     logger.log_label('Create typical removable packages list')
 
@@ -538,6 +545,9 @@ def create_typical_removable_packages_list():
     return removable_packages_list
 
 
+# TODO: This function is needed on multiple pages. Consider refactoring.
+#       - packages_page
+#       - prepare_page
 def create_minimal_removable_packages_list():
     logger.log_label('Create minimal removable packages list')
 
@@ -558,6 +568,9 @@ def create_minimal_removable_packages_list():
     return removable_packages_list
 
 
+# TODO: This function is needed on multiple pages. Consider refactoring.
+#       - packages_page
+#       - prepare_page
 # TODO: This function is not used.
 def create_removable_packages_list(listore_name, index):
     logger.log_label('Get removable packages list from user selections')
@@ -577,7 +590,7 @@ def create_removable_packages_list(listore_name, index):
     return removable_packages_list
 
 
-def create_filesystem_manifest_remove_file(filename, removable_packages_list):
+def save_filesystem_manifest_remove_file(filename, removable_packages_list):
     logger.log_label('Create new filesystem manifest remove file')
 
     filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)
