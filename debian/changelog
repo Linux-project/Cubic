@@ -1,5 +1,9 @@
 cubic (2020.05) focal; urgency=low
 
+  * Corrected a typo causing 'initialize_options_()' not defined error.
+
+  * Issues fixed in version 2020.05-10:
+
   * Fixed Bug #1831859, Cubuc freeze after project directory selection
     due to exception:
   - If the original ISO is not available, but the necessary files have
@@ -97,4 +101,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 02 May 2020 00:00:19 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 03 May 2020 22:13:48 -0400
