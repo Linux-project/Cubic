@@ -296,7 +296,7 @@ def extract_squashfs():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
         if percent % 10 == 0:
-            compresslogger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('• Completed', '%i%%' % percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_callback)
@@ -388,7 +388,7 @@ def copy_original_iso_files():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
         if percent % 10 == 0:
-            compresslogger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('• Completed', '%i%%' % percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_callback)

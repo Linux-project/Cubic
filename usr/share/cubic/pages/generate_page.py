@@ -576,7 +576,7 @@ def _create_squashfs():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
         if percent % 10 == 0:
-            compresslogger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('• Completed', '%i%%' % percent)
 
     error = show_progress(command, progress_callback)
 
@@ -621,7 +621,7 @@ def _create_squashfs_ORIGINAL():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
         if percent % 10 == 0:
-            compresslogger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('• Completed', '%i%%' % percent)
 
     error = show_progress(command, progress_callback)
 
@@ -960,7 +960,7 @@ def create_iso_image():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', percent)
         if percent % 10 == 0:
-            compresslogger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('• Completed', '%i%%' % percent)
 
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
