@@ -293,11 +293,13 @@ def extract_squashfs():
     command = 'pkexec "%s" "%s" "%s"' % (program, target_path, source_path)
 
     # The progress callback function.
-    def progress_extract_squashfs(percent):
+    def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
+        if percent % 10 == 0:
+            compresslogger.log_value('• Completed', '%i%%' % percent)
 
     # Error may be None or an exception.
-    error = show_progress(command, progress_extract_squashfs)
+    error = show_progress(command, progress_callback)
 
     if not error:
         model.status.is_success_extract = True
@@ -383,11 +385,13 @@ def copy_original_iso_files():
          model.status.casper_directory))
 
     # The progress callback function.
-    def progress_copy_original_iso_files(percent):
+    def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
+        if percent % 10 == 0:
+            compresslogger.log_value('• Completed', '%i%%' % percent)
 
     # Error may be None or an exception.
-    error = show_progress(command, progress_copy_original_iso_files)
+    error = show_progress(command, progress_callback)
 
     if not error:
         model.status.is_success_copy = True

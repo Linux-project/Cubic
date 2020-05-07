@@ -82,34 +82,31 @@ def setup(action, old_page=None):
 
         displayer.update_status('generate_page__copy_boot_files', displayer.BULLET)
         displayer.empty_box('generate_page__copy_boot_files_box')
-        displayer.update_label('generate_page__copy_boot_files_message_1', '...')
 
         displayer.update_status('generate_page__create_squashfs', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '')
 
         displayer.update_status('generate_page__update_filesystem_size', displayer.BULLET)
-        displayer.update_label('generate_page__update_filesystem_size_message_1', '...')
+        displayer.update_label('generate_page__update_filesystem_size_message', '...')
 
         displayer.update_status('generate_page__update_disk_name', displayer.BULLET)
-        displayer.update_label('generate_page__update_disk_name_message_1', '...')
+        displayer.update_label('generate_page__update_disk_name_message', '...')
 
         displayer.update_status('generate_page__update_checksums', displayer.BULLET)
-        displayer.update_label('generate_page__update_checksums_message_1', '...')
+        displayer.update_label('generate_page__update_checksums_message', '...')
         displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', '')
-        displayer.update_label('generate_page__update_checksums_message_2', '...')
 
         displayer.update_status('generate_page__check_iso_size', displayer.BULLET)
-        displayer.update_label('generate_page__check_iso_size_message_1', '...')
+        displayer.update_label('generate_page__check_iso_size_message', '...')
 
         displayer.update_status('generate_page__create_iso_image', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '')
 
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.BULLET)
-        displayer.update_label('generate_page__calculate_iso_image_checksum_message_1', '...')
-        displayer.update_label('generate_page__calculate_iso_image_checksum_message_2', '...')
+        displayer.update_label('generate_page__calculate_iso_image_checksum_message', '...')
 
         return
 
@@ -129,72 +126,123 @@ def enter(action, old_page=None):
         #
 
         displayer.update_status('generate_page__copy_boot_files', displayer.PROCESSING)
-        error = copy_boot_files()
-        displayer.update_status('generate_page__copy_boot_files', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = copy_boot_files()
+        if not is_error:
+            displayer.update_status('generate_page__copy_boot_files', displayer.OK)
+            add_message('\nSuccess.')
+        else:
+            displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
+            add_message('\nError. Unable to copy all boot files.')
+            return 'error'
+        sleep(0.50)
 
         #
         # Create squashfs.
         #
 
         displayer.update_status('generate_page__create_squashfs', displayer.PROCESSING)
-        error = create_squashfs()
-        displayer.update_status('generate_page__create_squashfs', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = create_squashfs()
+        if not is_error:
+            displayer.update_status('generate_page__create_squashfs', displayer.OK)
+            displayer.update_label('generate_page__create_squashfs_message', 'Success.')
+        else:
+            displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
+            displayer.update_label('generate_page__create_squashfs_message', 'Error. Unable to create the compressed Linux file system.')
+            return 'error'
+        sleep(0.50)
 
         #
         # Update filesystem size.
         #
 
         displayer.update_status('generate_page__update_filesystem_size', displayer.PROCESSING)
-        error = update_filesystem_size()
-        displayer.update_status('generate_page__update_filesystem_size', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = update_filesystem_size()
+        # TODO: Update label for success and error "...message"
+        if not is_error:
+            displayer.update_status('generate_page__update_filesystem_size', displayer.OK)
+        else:
+            displayer.update_status('generate_page__update_filesystem_size', displayer.ERROR)
+            return 'error'
+        sleep(0.50)
 
         #
         # Update disk name and disk info.
         #
 
         displayer.update_status('generate_page__update_disk_name', displayer.PROCESSING)
-        error = update_disk_name_and_disk_info()
-        displayer.update_status('generate_page__update_disk_name', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = update_disk_name_and_disk_info()
+        # TODO: Update label for success and error "...message"
+        if not is_error:
+            displayer.update_status('generate_page__update_disk_name', displayer.OK)
+        else:
+            displayer.update_status('generate_page__update_disk_name', displayer.ERROR)
+            return 'error'
+        sleep(0.50)
 
         #
         # Update MD5 sums.
         #
 
         displayer.update_status('generate_page__update_checksums', displayer.PROCESSING)
-        error = update_checksums()
-        displayer.update_status('generate_page__update_checksums', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = update_checksums()
+        # TODO: Update label for success and error "...message"
+        if not is_error:
+            displayer.update_status('generate_page__update_checksums', displayer.OK)
+        else:
+            displayer.update_status('generate_page__update_checksums', displayer.ERROR)
+            return 'error'
+        sleep(0.50)
 
         #
         # Check ISO size and create ISO image.
         #
 
         displayer.update_status('generate_page__check_iso_size', displayer.PROCESSING)
-        error = check_iso_size()
-        displayer.update_status('generate_page__check_iso_size', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = check_iso_size()
+        # TODO: Update label for success and error "...message"
+        if not is_error:
+            displayer.update_status('generate_page__check_iso_size', displayer.OK)
+        else:
+            displayer.update_status('generate_page__check_iso_size', displayer.ERROR)
+            return 'error'
+        sleep(0.50)
 
         #
         # Create ISO image.
         #
 
         displayer.update_status('generate_page__create_iso_image', displayer.PROCESSING)
-        error = create_iso_image()
-        displayer.update_status('generate_page__create_iso_image', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = create_iso_image()
+        if not is_error:
+            displayer.update_status('generate_page__create_iso_image', displayer.OK)
+            displayer.update_label('generate_page__create_iso_image_message', 'Success.')
+        else:
+            displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
+            displayer.update_label('generate_page__create_iso_image_message', 'Success.')
+            return 'error'
+        sleep(0.50)
 
         #
         # Calculate ISO image MD5 checksum.
         #
 
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.PROCESSING)
-        error = calculate_md5_hash_for_iso()
-        displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.OK)
-        sleep(1.00)
+        sleep(0.50)
+        is_error = calculate_md5_hash_for_iso()
+        # TODO: Update label for success and error "...message"
+        if not is_error:
+            displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.OK)
+        else:
+            displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.ERROR)
+            return 'error'
+        sleep(0.50)
 
         # TODO: Only activate the next button if no error.
         # TODO: Double check page validators on other pages to ensure
@@ -275,12 +323,13 @@ def on_size_allocate__generate_page__copy_boot_files_view_port(widget, event, da
 # Repackage Functions
 #-----------------------------------------------------------------------
 
-
+# TODO: Improve this function name.
 def add_message(message):
 
     displayer.insert_box_label('generate_page__copy_boot_files_box', message, 0.50)
 
-
+# TODO: This function is in generate_page.py and options_page.py. Consider refactoring.
+# TODO: Add error checking to this function.
 def save_stack_buffers(stack_name):
 
     stack = model.builder.get_object(stack_name)
@@ -307,11 +356,15 @@ def save_stack_buffers(stack_name):
         os.makedirs(directory, exist_ok=True)
 
         # Write the file.
+        # TODO: Use try except block.
         with open(filepath, 'w') as file:
             file.write(data)
         # file.flush()
 
-        sleep(1.0)
+        sleep(0.50)
+
+    is_error = False
+    return is_error
 
 
 def copy_boot_files():
@@ -320,11 +373,13 @@ def copy_boot_files():
     # Preseed
     #
 
+    is_error = False
+
     logger.log_label('Save preseed files')
     save_stack_buffers('options_page__preseed_tab__stack')
-    sleep(1.0)
 
     # Delete preseed files.
+
     logger.log_label('Delete preseed files')
     for filepath in model.delete_list:
         try:
@@ -333,23 +388,37 @@ def copy_boot_files():
             add_message('Delete %s' % filepath)
             os.remove(filepath)
         except OSError as exception:
+            is_error = True
             logger.log_value('Error deleting file', exception)
             add_message('Error deleting preseed file %s' % filepath)
         sleep(0.50)
     model.delete_list = []
-    sleep(1.0)
+    if is_error: return True
 
     #
     # ISO Boot Configurations
     #
 
+    is_error = False
+
+    sleep(0.50)
     logger.log_label('Save ISO boot configurations')
-    save_stack_buffers('options_page__boot_configuration_tab__stack')
-    sleep(1.0)
+    is_error = save_stack_buffers('options_page__boot_configuration_tab__stack')
+    if is_error: return True
+
+
+    #
+    # Vmlinuz & Initrd
+    #
 
     #
     # Get selected kernel.
     #
+
+    is_error = False
+
+    sleep(0.50)
+
     logger.log_label('Update vmlinuz boot file.')
     # Get the selected kernel details.
     # 0: version_name
@@ -390,11 +459,16 @@ def copy_boot_files():
     file_utilities.delete_files_with_pattern(pattern)
     # Copy new vmlinuz file.
     command = 'rsync --archive "%s" "%s"' % (source_filepath, target_filepath)
+    # Rsync returns an exitstatus = 0 when successful.
     result, exitstatus, signalstatus = execute_synchronous(command)
-    sleep(1.0)
+    print('result=%s, exitstatus=%s, signalstatus=%s' % (result, exitstatus, signalstatus))
+    if exitstatus:
+        is_error = True
+    sleep(0.50)
+    if is_error: return True
 
     #
-    # Intrd
+    # Initrd
     #
 
     logger.log_label('Update initrd boot file.')
@@ -407,11 +481,15 @@ def copy_boot_files():
     pattern = os.path.join(target_directory, 'initrd*')
     file_utilities.delete_files_with_pattern(pattern)
     # Copy new initrd file.
+    # Rsync returns an exitstatus = 0 when successful.
     command = 'rsync --archive "%s" "%s"' % (source_filepath, target_filepath)
     result, exitstatus, signalstatus = execute_synchronous(command)
-    sleep(1.0)
+    if exitstatus:
+        is_error = True
+    sleep(0.50)
+    if is_error: return True
 
-    displayer.update_label('generate_page__copy_boot_files_message_1', 'Success.')
+    return is_error
 
 
 #
@@ -426,11 +504,42 @@ def copy_boot_files():
 
 def create_squashfs():
 
-    # _create_squashfs_TESTING()
-    _create_squashfs()
+    # return _create_squashfs_TESTING_2()
+    # return _create_squashfs_TESTING_1()
+    return _create_squashfs()
 
 
-def _create_squashfs_TESTING():
+def _create_squashfs_TESTING_2():
+    """
+    This function copies the original filesystem.squashfs file.
+    """
+
+    logger.log_label('Create squashfs (Testing)')
+
+    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The source path is', source_path)
+
+    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The target path is', target_path)
+
+    # Copy the original filesystem.squashfs.
+    file_utilities.copy_file(source_path, target_path)
+
+    if os.path.exists(target_path):
+        is_error = False
+        logger.log_value('The file exists', target_path)
+    else:
+        logger.log_value('The file exists', target_path)
+        is_error = True
+
+    return is_error
+
+
+def _create_squashfs_TESTING_1():
+    """
+    This function does nothing.
+    """
+
     logger.log_label('Create squashfs (Testing)')
 
     source_path = model.project.custom_root_directory
@@ -439,8 +548,45 @@ def _create_squashfs_TESTING():
     target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The target path is', target_path)
 
+    is_error = False
+
 
 def _create_squashfs():
+
+    logger.log_label('Compress the Linux file system.')
+
+    is_error = False
+
+    source_path = model.project.custom_root_directory
+    logger.log_value('The source path is', source_path)
+
+    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The target path is', target_path)
+
+    # Create filesystem.squashfs.
+
+    # Pkexec is required.
+    program = os.path.join(model.application.directory, 'commands', 'compress-root')
+    command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
+
+    # Show % in progress by setting text to None.
+    displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
+
+    # The progress callback function.
+    def progress_callback(percent):
+        displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
+        if percent % 10 == 0:
+            compresslogger.log_value('• Completed', '%i%%' % percent)
+
+    error = show_progress(command, progress_callback)
+
+    is_error = bool(error)
+
+    return is_error
+
+
+def _create_squashfs_ORIGINAL():
+
     logger.log_label('Create squashfs')
 
     source_path = model.project.custom_root_directory
@@ -469,75 +615,74 @@ def _create_squashfs():
         ' -e "tmp/.*"' % (source_path,
                           target_path))
 
-    global total_files
-    global file_number
-    total_files = 1
-    file_number = 0
-
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
 
-    def progress_callback_1(percent):
+    def progress_callback(percent):
+        displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
+        if percent % 10 == 0:
+            compresslogger.log_value('• Completed', '%i%%' % percent)
 
-        global total_files
-        global file_number
+    error = show_progress(command, progress_callback)
 
-        total_percent = (PERCENT_STOP * file_number + percent) / total_files
+    is_error = bool(error)
 
-        displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', total_percent)
-
-    error = show_progress(command, progress_callback_1)
-
-    if error:
-        displayer.update_label('generate_page__create_squashfs_message_1', 'Error.')
-    else:
-        displayer.update_label('generate_page__create_squashfs_message_1', 'Success.')
-
-    return error
+    return is_error
 
 
 def update_filesystem_size():
+
     logger.log_label('Update filesystem size')
+
+    is_error = False
 
     # Pkexec is required.
     program = os.path.join(model.application.directory, 'commands', 'disk-usage')
     command = 'pkexec "%s" "%s"' % (program, model.project.custom_root_directory)
     result, exitstatus, signalstatus = execute_synchronous(command)
 
-    size = '0'
     if not exitstatus and not signalstatus:
-        size_information = re.search(r'^([0-9]+)\s', result)
-        if size_information:
-            size = size_information.group(1)
-        else:
+        try:
+            size_information = re.search(r'^([0-9]+)\s', result)
+            size = int(size_information.group(1))
+        except AttributeError as exception:
+            is_error = True
             logger.log_value('1. Unable to get filesystem size for %s' % model.project.custom_root_directory, result)
+            displayer.update_label('generate_page__update_filesystem_size_message', 'Error. Unable to get filesystem size.')
+        except IndexError as exception:
+            is_error = True
+            logger.log_value('2. Unable to get filesystem size for %s' % model.project.custom_root_directory, result)
+            displayer.update_label('generate_page__update_filesystem_size_message', 'Error. Unable to get filesystem size.')
+        except TypeError as exception:
+            is_error = True
+            logger.log_value('3. Unable to get filesystem size for %s' % model.project.custom_root_directory, result)
+            displayer.update_label('generate_page__update_filesystem_size_message', 'Error. Unable to get filesystem size.')
+        else:
+            logger.log_value('The file system size is', '%.2f GiB (%s bytes)' % ((size / 1073741824.0), size))
+            if size > 0:
+                filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.size')
+                logger.log_value('Write filesystem size to', filepath)
+                # TODO: Use try for all write operations.
+                try:
+                    # TODO: Use try except block.
+                    with open(filepath, 'w') as file:
+                        file.write('%s' % size)
+                    displayer.update_label('generate_page__update_filesystem_size_message', 'The file system size is %.2f GiB (%s bytes).' % ((size / 1073741824.0), size))
+                    is_error = False
+                except Exception as exception:
+                    is_error = True
+                    logger.log_value('Unable to write filesystem size due to exception', exception)
+                    displayer.update_label('generate_page__update_filesystem_size_message', 'Error. Unable to save filesystem size, %.2f GiB (%s bytes).' % ((size / 1073741824.0), size))
+            else:
+                is_error = False
+                logger.log_value('4. Unable to get filesystem size for %s' % model.project.custom_root_directory, result)
+                displayer.update_label('generate_page__update_filesystem_size_message', 'Error. Unable to get filesystem size.')
     else:
-        logger.log_value('2. Unable to get filesystem size for %s' % model.project.custom_root_directory, result)
+        is_error = True
+        logger.log_value('5. Unable to get filesystem size for %s' % model.project.custom_root_directory, result)
+        displayer.update_label('generate_page__update_filesystem_size_message', 'Error. Unable to get filesystem size.')
 
-    # TODO: This should be done only if size is found (in the "if size =" clause)
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.size')
-    logger.log_value('Write filesystem size to', filepath)
-    with open(filepath, 'w') as file:
-        file.write('%s' % size)
-
-    filesystem_size = int(size)
-    logger.log_value('The file system size is', '%.2f GiB (%s bytes)' % ((filesystem_size / 1073741824.0), filesystem_size))
-    displayer.update_label('generate_page__update_filesystem_size_message_1', 'The file system size is %.2f GiB (%s bytes).' % ((filesystem_size / 1073741824.0), filesystem_size))
-
-    # TODO: Return appropriate error.
-    error = False
-
-    return error
-
-
-def progress_callback_2(percent):
-
-    global total_files
-    global file_number
-
-    total_percent = (PERCENT_STOP * file_number + percent) / total_files
-
-    displayer.update_progress_bar_percent('generate_page__update_filesystem_size_progress_bar', total_percent)
+    return is_error
 
 
 def update_disk_name_and_disk_info():
@@ -559,7 +704,7 @@ def update_disk_name():
         logger.log_value('Write disk name to', filepath)
         error = file_utilities.replace_text_in_file(filepath, search_text, replacement_text)
         logger.log_value('Updated the disk name', model.custom.iso_disk_name)
-        displayer.update_label('generate_page__update_disk_name_message_1', model.custom.iso_disk_name)
+        displayer.update_label('generate_page__update_disk_name_message', model.custom.iso_disk_name)
     except Exception as exception:
         logger.log_value('Ignoring exception while updating disk name in README.diskdefines', exception)
         # TODO: display error
@@ -581,11 +726,12 @@ def update_disk_info():
         text = '%s (%s)' % (model.custom.iso_disk_name, formatted_time)
         logger.log_value('Write custom ISO image disk name and release date', text)
         logger.log_value('Write to', filepath)
+        # TODO: Use try except block.
         with open(filepath, 'w') as file:
             file.write('%s' % text)
         # TODO: Correct the log message.
         logger.log_value('Updated the disk info', text)
-        # displayer.update_label('generate_page__update_disk_name_message_2', 'Saved disk information to %s.' % filepath)
+        # displayer.update_label('generate_page__update_disk_name_message', 'Saved disk information to %s.' % filepath)
     except Exception as exception:
         logger.log_value('Ignoring exception while updating disk name in .disk/info', exception)
         # TODO: display error
@@ -596,6 +742,7 @@ def update_disk_info():
 
 def calculate_md5_hash_for_file(filepath, blocksize=2**20):
     hash = hashlib.md5()
+    # TODO: Use try except block.
     with open(filepath, 'rb') as file:
         while True:
             buffer = file.read(blocksize)
@@ -613,6 +760,7 @@ def update_checksums_WITHOUT_PROGRESS(checksums_filepath, start_directory, exclu
     exclude_paths = [os.path.realpath(path) for path in exclude_paths]
     logger.log_value('Write md5 sums to', checksums_filepath)
     count = 0
+    # TODO: Use try except block.
     with open(checksums_filepath, 'w') as file:
         for directory, directory_names, filenames in os.walk(start_directory):
             if directory not in exclude_paths:
@@ -656,32 +804,31 @@ def update_checksums():
     filepaths.sort(key=lambda filepath: filepath.lower())
 
     # Calculate MD5 checksums and display progress.
-    file_number = 0
     total_files = len(filepaths)
 
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', None)
     # TODO: This doesn't use a pexpect process.
+    # TODO: Use try except block.
     with open(checksums_filepath, 'w') as file:
-        for filepath in filepaths:
-            file_number += 1
-            displayer.update_label('generate_page__update_checksums_message_1', 'Calculating checksum for file %i of %i.' % (file_number, total_files))
+        for file_number, filepath in enumerate(filepaths, start=1):
+            # displayer.update_label('generate_page__update_checksums_message', 'Calculating checksum for file %i of %i.' % (file_number, total_files))
             hash = calculate_md5_hash_for_file(filepath)
             relative_filepath = os.path.relpath(filepath, start_directory)
             file.write('%s  ./%s\n' % (hash, relative_filepath))
-            # logger.log_label('%s  ./%s' % (hash, relative_filepath))
             displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 100 * file_number / total_files)
+            displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', 'Calculating checksum for file %i of %i' % (file_number, total_files))
             sleep(0.0025)
 
-    displayer.update_label('generate_page__update_checksums_message_1', 'Calculated checksums for %i files.' % total_files)
-    displayer.update_label('generate_page__update_checksums_message_2', 'Success.')
+    displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', '100%')
+    displayer.update_label('generate_page__update_checksums_message', 'Calculated checksums for %i files.' % total_files)
 
     if not total_files:
-        error = True
+        is_error = True
     else:
-        error = False
+        is_error = False
 
-    return error
+    return is_error
 
 
 def check_iso_size():
@@ -701,7 +848,7 @@ def check_iso_size():
         # Show directory size error message.
         displayer.update_status('generate_page__check_iso_size', displayer.ERROR)
         displayer.update_label(
-            'generate_page__check_iso_size_message_1',
+            'generate_page__check_iso_size_message',
             'The total size of all files is %.2f GiB (%i bytes).' % (directory_size_gib,
                                                                      directory_size_bytes) + os.linesep + 'This is larger than the %.2f GiB (%i bytes) limit.' %
             (MAXIMUM_ISO_SIZE_GIB,
@@ -712,7 +859,7 @@ def check_iso_size():
     else:
         # Show directory size.
         displayer.update_status('generate_page__check_iso_size', displayer.OK)
-        displayer.update_label('generate_page__check_iso_size_message_1', 'The total size of all files is %.2f GiB (%i bytes).' % (directory_size_gib, directory_size_bytes))
+        displayer.update_label('generate_page__check_iso_size_message', 'The total size of all files is %.2f GiB (%i bytes).' % (directory_size_gib, directory_size_bytes))
 
         error = False
 
@@ -810,23 +957,18 @@ def create_iso_image():
             ' -o "%s" .' % (model.custom.iso_volume_id,
                             custom_iso_filepath))
 
+    def progress_callback(percent):
+        displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', percent)
+        if percent % 10 == 0:
+            compresslogger.log_value('• Completed', '%i%%' % percent)
+
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
-    error = show_progress(command, progress_callback_3, working_directory=model.project.custom_disk_directory)
+    error = show_progress(command, progress_callback, working_directory=model.project.custom_disk_directory)
 
-    displayer.update_label('generate_page__create_iso_image_message_1', 'Success.')
+    is_error = bool(error)
 
-    return error
-
-
-def progress_callback_3(percent):
-
-    global total_files
-    global file_number
-
-    total_percent = (PERCENT_STOP * file_number + percent) / total_files
-
-    displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', total_percent)
+    return is_error
 
 
 def calculate_md5_hash_for_iso():
@@ -843,7 +985,9 @@ def calculate_md5_hash_for_iso():
     with open(custom_iso_checksum_filepath, 'w') as md5_sum_file:
         md5_sum_file.write('%s  %s' % (md5_sum, model.custom.iso_filename))
 
-    displayer.update_label('generate_page__calculate_iso_image_checksum_message_1', 'The checksum is %s.' % model.status.iso_checksum)
-    displayer.update_label('generate_page__calculate_iso_image_checksum_message_2', 'The checksum file is %s.' % model.status.iso_checksum_filename)
+    # displayer.update_label('generate_page__calculate_iso_image_checksum_message', 'The checksum is %s.\nThe checksum file is %s.' % (model.status.iso_checksum, model.status.iso_checksum_filename))
+    displayer.update_label('generate_page__calculate_iso_image_checksum_message', 'The checksum is %s.' % model.status.iso_checksum)
+    sleep(0.50)
+    displayer.update_label('generate_page__calculate_iso_image_checksum_message', 'The checksum is %s.\nThe checksum file is %s.' % (model.status.iso_checksum, model.status.iso_checksum_filename))
 
     return False

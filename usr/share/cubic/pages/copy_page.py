@@ -216,19 +216,19 @@ def copy_file(filepath, file_number, directory, total_files):
     program = os.path.join(model.application.directory, 'commands', 'copy-file')
     command = 'pkexec "%s" "%s" "%s"' % (program, filepath, directory)
 
+    # The progress callback function.
+    def progress_callback(percent):
+        global total_files
+        global file_number
+        total_percent = (PERCENT_STOP * file_number + percent) / total_files
+        displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
+        displayer.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
+        if total_percent % 10 == 0:
+            logger.log_value('• Completed', '%i%%' % total_percent)
+
     show_progress(command, progress_callback)
 
 
-def progress_callback(percent):
-
-    global total_files
-    global file_number
-
-    total_percent = (PERCENT_STOP * file_number + percent) / total_files
-
-    displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
-
-    displayer.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
 
 
 ########################################################################

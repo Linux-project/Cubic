@@ -102,23 +102,43 @@ try:
         page = model.builder.get_object(module.name)
         pages.attach(page, 0, 0, 1, 1)
 
+    #-------------------------------------------------------------------
+    # Header Bar
+    #-------------------------------------------------------------------
+
     header_bar = model.builder.get_object('header_bar')
+
+    # Title
+
+    widget = model.builder.get_object('title_label')
+    displayer.set_visible('title_label', True)  # TODO: Already set visible in cubic.ui; no need to do it here.
+
+    # Project page
 
     widget = model.builder.get_object('project_page__delete_button')
     header_bar.add(widget)
     displayer.set_visible('project_page__delete_button', False)  # TODO: Set invisible in cubic.ui
 
-    widget = model.builder.get_object('terminal_page__copy_button')
-    header_bar.add(widget)
-    displayer.set_visible('terminal_page__copy_button', False)  # TODO: Set invisible in cubic.ui
-
     widget = model.builder.get_object('project_page__header_bar_box')
     header_bar.add(widget)
     displayer.set_visible('project_page__header_bar_box', False)  # TODO: Set invisible in project_page.ui
 
+    # Packages page
+
     widget = model.builder.get_object('packages_page__header_bar_box')
     header_bar.add(widget)
     displayer.set_visible('packages_page__header_bar_box', False)  # TODO: Set invisible in packages_page.ui
+
+    # Options page
+
+    widget = model.builder.get_object('options_page__header_bar_boot_box')
+    header_bar.add(widget)
+    displayer.set_visible('options_page__header_bar_boot_box', False)  # TODO: Set invisible in cubic.ui
+
+    stack_switcher = model.builder.get_object('stack_switcher')
+    options_page__stack = model.builder.get_object('options_page__stack')
+    stack_switcher.set_stack(options_page__stack)
+    displayer.set_visible('stack_switcher', False)  # TODO: Set invisible in cubic.ui
 
     widget = model.builder.get_object('options_page__header_bar_preseed_box_1')
     header_bar.add(widget)
@@ -128,22 +148,17 @@ try:
     header_bar.add(widget)
     displayer.set_visible('options_page__header_bar_preseed_box_2', False)  # TODO: Set invisible in cubic.ui
 
-    widget = model.builder.get_object('options_page__header_bar_boot_box')
+    # Terminal page
+
+    widget = model.builder.get_object('terminal_page__copy_button')
     header_bar.add(widget)
-    displayer.set_visible('options_page__header_bar_boot_box', False)  # TODO: Set invisible in cubic.ui
-
-    # Title
-    widget = model.builder.get_object('title_label')
-    displayer.set_visible('title_label', True)  # TODO: Already set visible in cubic.ui; no need to do it here.
-
-    stack_switcher = model.builder.get_object('stack_switcher')
-    options_page__stack = model.builder.get_object('options_page__stack')
-    stack_switcher.set_stack(options_page__stack)
-    displayer.set_visible('stack_switcher', False)  # TODO: Set invisible in cubic.ui
+    displayer.set_visible('terminal_page__copy_button', False)  # TODO: Set invisible in cubic.ui
 
     #-------------------------------------------------------------------
+    # Terminal
+    #-------------------------------------------------------------------
+
     # Set Terminal Font
-    #-------------------------------------------------------------------
 
     terminal = model.builder.get_object('terminal_page__terminal')
     # terminal.reset(True, False)
@@ -152,9 +167,7 @@ try:
     font = Pango.FontDescription(font_name)
     terminal.set_font(font)
 
-    #-------------------------------------------------------------------
     # Set Terminal Colors
-    #-------------------------------------------------------------------
 
     settings = Gio.Settings.new_with_path('org.gnome.Terminal.Legacy.Profile', '/org/gnome/terminal/legacy/')
     fg_rgb_color = None
@@ -174,9 +187,7 @@ try:
         rgb_palette.append(rgb_color)
     terminal.set_colors(fg_rgb_color, bg_rgb_color, rgb_palette)
 
-    #-------------------------------------------------------------------
     # Allow Drag and Drop in the Terminal
-    #-------------------------------------------------------------------
 
     flags = Gtk.DestDefaults.MOTION | Gtk.DestDefaults.HIGHLIGHT | Gtk.DestDefaults.DROP
     # TODO: Change: Gtk.TargetFlags

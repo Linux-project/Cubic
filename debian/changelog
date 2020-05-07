@@ -1,6 +1,14 @@
 cubic (2020.05) focal; urgency=low
 
-  * Corrected a typo causing 'initialize_options_()' not defined error.
+  * Fixed Bug #1877193, The customized ISO always boots to the
+    gnome-initial-setup instead of the desktop.
+
+  * Added support for symlinks for the project directory and for the
+    original iso image file.
+    
+  * Improved the layout of the Generate page.
+  
+  * Print log output for all progress bars in increments of 10%.
 
   * Issues fixed in version 2020.05-10:
 
@@ -101,4 +109,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 03 May 2020 22:13:48 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Wed, 06 May 2020 20:04:03 -0400

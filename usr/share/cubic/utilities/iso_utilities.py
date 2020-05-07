@@ -82,7 +82,21 @@ def _is_mounted_1(iso_mount_point, iso_filepath):
 
     logger.log_label('Check if the iso image is mounted')
     logger.log_value('The mount point is', iso_mount_point)
-    logger.log_value('The iso filepath is', iso_mount_point)
+    logger.log_value('The iso filepath is', iso_filepath)
+
+    # Realpath is necessary here.
+    # The the output of the mount command only includes real paths.
+    iso_mount_point_realpath = os.path.realpath(iso_mount_point)
+    iso_filepath_realpath = os.path.realpath(iso_filepath)
+
+    # The function os.path.islink() can not be used because it only
+    # checks if the last item in the path is a link.
+    if iso_mount_point != iso_mount_point_realpath:
+        iso_mount_point = iso_mount_point_realpath
+        logger.log_value('The mount point is a link to', iso_mount_point)
+    if iso_filepath != iso_filepath_realpath:
+        iso_filepath = iso_filepath_realpath
+        logger.log_value('The iso filepath is a link to', iso_filepath)
 
     command = 'mount'
     result, exitstatus, signalstatus = execute_synchronous(command)
@@ -101,6 +115,15 @@ def _is_mounted_2(iso_mount_point):
     logger.log_label('Check if the mount point is mounted')
     logger.log_value('The mount point is', iso_mount_point)
 
+    # The link target is provided for information purposes only.
+    # The function os.path.islink() can not be used because it only
+    # checks if the last item in the path is a link.
+    iso_mount_point_realpath = os.path.realpath(iso_mount_point)
+    if iso_mount_point != iso_mount_point_realpath:
+        logger.log_value('The mount point is a link to', iso_mount_point_realpath)
+
+    # Realpath is not necessary here, because the function
+    # os.path.ismount() also works for symlinks.
     is_mounted = os.path.ismount(iso_mount_point)
 
     logger.log_value('Is mounted?', is_mounted)

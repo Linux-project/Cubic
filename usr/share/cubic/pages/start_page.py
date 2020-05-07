@@ -156,7 +156,7 @@ def enter(action, old_page=None):
     if action == 'open':
 
         # TODO: FOR TESTING ONLY
-        # test('/mnt/ram/Ubuntu-19.10')
+        # test('/mnt/ram/Ubuntu')
 
         return
 

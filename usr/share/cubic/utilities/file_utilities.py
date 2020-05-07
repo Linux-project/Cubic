@@ -138,6 +138,15 @@ def get_directory_for_file(filename, start_path):
 #-----------------------------------------------------------------------
 
 
+def copy_file(source_path, target_path):
+
+    logger.log_label('Copy file')
+    logger.log_value('Source file path', source_path)
+    logger.log_value('Target file path', target_path)
+
+    shutil.copy(source_path, target_path)
+
+
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_file(filepath):
     logger.log_value('Delete file', filepath)
