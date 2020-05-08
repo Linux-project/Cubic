@@ -323,10 +323,12 @@ def on_size_allocate__generate_page__copy_boot_files_view_port(widget, event, da
 # Repackage Functions
 #-----------------------------------------------------------------------
 
+
 # TODO: Improve this function name.
 def add_message(message):
 
     displayer.insert_box_label('generate_page__copy_boot_files_box', message, 0.50)
+
 
 # TODO: This function is in generate_page.py and options_page.py. Consider refactoring.
 # TODO: Add error checking to this function.
@@ -405,7 +407,6 @@ def copy_boot_files():
     logger.log_label('Save ISO boot configurations')
     is_error = save_stack_buffers('options_page__boot_configuration_tab__stack')
     if is_error: return True
-
 
     #
     # Vmlinuz & Initrd

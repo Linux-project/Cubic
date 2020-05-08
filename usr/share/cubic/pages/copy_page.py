@@ -229,8 +229,6 @@ def copy_file(filepath, file_number, directory, total_files):
     show_progress(command, progress_callback)
 
 
-
-
 ########################################################################
 # Validation Functions
 ########################################################################

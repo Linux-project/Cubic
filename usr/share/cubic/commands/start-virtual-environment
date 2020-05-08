@@ -33,11 +33,20 @@
 
 # https://en.wikipedia.org/wiki/ANSI_escape_code
 # https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
-BOLD_RED='\033[1;31m'
-BOLD_GREEN='\033[1;32m'
-BOLD_BLUE='\033[1;34m'
-BOLD_YELLOW='\033[1;33;1m'
-NORMAL='\033[0m'
+
+# BOLD_RED='\033[1;31m'
+# BOLD_GREEN='\033[1;32m'
+# BOLD_BLUE='\033[1;34m'
+# BOLD_YELLOW='\033[1;33;1m'
+# NORMAL='\033[0m'
+
+BOLD_RED=$(tput bold)$(tput setaf 1)        # Bold Red
+BOLD_GREEN=$(tput bold)$(tput setaf 2)      # Bold Green
+BOLD_YELLOW=$(tput bold)$(tput setaf 3)     # Bold Yellow
+BOLD_BLUE=$(tput bold)$(tput setaf 4)       # Bold Blue
+BOLD_MAGENTA=$(tput bold)$(tput setaf 5)    # Bold Purple or Magenta
+BOLD_CYAN=$(tput bold)$(tput setaf 6)       # Bold Cyan
+NORMAL=$(tput sgr0)                         # Text Reset
 
 ########################################################################
 # Constants
@@ -90,5 +99,9 @@ else
     systemd-nspawn --quiet --notify-ready=yes --register=yes --machine="${machine_name}" --directory="${directory_path}"
 fi
 exit_code=$?
+
+# echo
+# echo "${BOLD_YELLOW}You have exited the virtual environment.${NORMAL}"
+
 exit $exit_code
 

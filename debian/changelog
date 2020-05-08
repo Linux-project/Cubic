@@ -1,5 +1,13 @@
 cubic (2020.05) focal; urgency=low
 
+  * Fixed Bug #1877232, In Ubuntu 20.04, Vte crashes with a Segmentation
+    fault when the user exits the terminal.
+    
+  * Fixed issue where the message, "You have exited the virtual
+    environment," is not consistently printed in the terminal.
+
+  * Issues fixed in version 2020.05-12:
+
   * Fixed Bug #1877193, The customized ISO always boots to the
     gnome-initial-setup instead of the desktop.
 
@@ -109,4 +117,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Wed, 06 May 2020 22:47:01 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 07 May 2020 20:30:02 -0400

@@ -31,8 +31,6 @@ import navigator
 
 from utilities import displayer
 from file_choosers import copy_file_chooser
-from utilities import file_utilities
-from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 from utilities import console
@@ -42,6 +40,8 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gdk
 from gi.repository import Gtk
+
+from time import sleep
 
 ########################################################################
 # Globals & Constants
@@ -218,6 +218,8 @@ def leave(action, new_page=None):
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
+        sleep(0.250)
+
         return
 
     elif action == 'copy':
@@ -238,6 +240,8 @@ def leave(action, new_page=None):
         # navigates away from the terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
+
+        sleep(0.250)
 
     elif action == 'quit':
 

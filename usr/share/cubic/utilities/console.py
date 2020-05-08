@@ -47,6 +47,7 @@ from gi.repository.Vte import PtyFlags, Pty
 import os
 from re import sub
 import sys
+from time import sleep
 
 ########################################################################
 # References
@@ -77,24 +78,25 @@ properties_changed_subscription = None
 # terminal.watch_child(process_id) is not used because it only sends a
 # child-exited signal when the pseudo terminal exits but does not notify
 # clients when the virtual environment has started successfully.
-notify_status = None
+
+status_callback = None
 
 ########################################################################
 # Enter Virtual Environment Functions
 ########################################################################
 
 
-def enter_virtual_environment(status_callback):
+def enter_virtual_environment(new_status_callback):
 
     global first_time
     global reenter
     global attempts
-    global notify_status
+    global status_callback
 
     first_time = True
     reenter = True
     attempts = 0
-    notify_status = status_callback
+    status_callback = new_status_callback
 
     _enter_virtual_environment()
 
@@ -123,15 +125,15 @@ def _enter_virtual_environment():
     # pseudo terminal process must be explicitly killed by executing
     # exit_virtual_environment().
 
+    # Allocate a new pseudo-terminal.
     # The global pseudo_terminal is used by entered_virtual_environment()
     # to set the pseudo terminal for the terminal.
-
-    # Allocate a new pseudo-terminal.
     global pseudo_terminal
     pseudo_terminal = Pty.new_sync(PtyFlags.DEFAULT)
     pseudo_terminal.set_utf8(True)
 
-    # Start the virtual environment in the pseudo-terminal.
+    # The spawn_async() parameters are as follows:
+    #
     # https://lazka.github.io/pgi-docs/Vte-2.91/classes/Pty.html#Vte.Pty.spawn_async
     # inspect.getdoc(Vte.Terminal.spawn_async)
     # 'spawn_async(self,
@@ -145,12 +147,12 @@ def _enter_virtual_environment():
     #              callback:Vte.TerminalSpawnAsyncCallback=None,
     #              user_data=None)'
 
+    # Start the virtual environment in the pseudo-terminal.
     pseudo_terminal.spawn_async(
         working_directory=None,
         argv=command,
         envv=None,
-        spawn_flags=(GLib.SpawnFlags.DEFAULT
-                     | GLib.SpawnFlags.SEARCH_PATH),
+        spawn_flags=(GLib.SpawnFlags.DEFAULT | GLib.SpawnFlags.SEARCH_PATH),
         child_setup=None,
         child_setup_data=None,
         timeout=-1,
@@ -174,7 +176,7 @@ def child_setup(*data):
     child_setup_data=(,).
     """
     logger.log_value('CHILD SETUP', 'START')
-    # time.sleep(1.000)
+    # sleep(1.000)
     logger.log_value('CHILD SETUP', 'STOP')
     logger.log_value('CHILD DATA', data)
 
@@ -311,8 +313,8 @@ def _entered_virtual_environment(active_state, sub_state, job_status, job_path):
     # https://stackoverflow.com/questions/11686510/how-to-enable-transparency-in-vte-terminal
 
     # Notify clients that the virtual environment started.
-    global notify_status
-    if notify_status: notify_status(True)
+    global status_callback
+    if status_callback: status_callback(True)
 
     # Reset attempt.
     global first_time
@@ -334,7 +336,8 @@ def subscribe_virtual_environment_exited(process_id, pseudo_terminal):
     # https://lazka.github.io/pgi-docs/#GLib-2.0/callbacks.html#GLib.ChildWatchFunc
     # https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.child_watch_add
     logger.log_value('Subscribe to virtual environment exited events for process id', process_id)
-    GLib.child_watch_add(GLib.PRIORITY_DEFAULT_IDLE, process_id, exited_virtual_environment, pseudo_terminal)
+    # GLib.child_watch_add(GLib.PRIORITY_DEFAULT_IDLE, process_id, exited_virtual_environment, pseudo_terminal)
+    GLib.child_watch_add(GLib.PRIORITY_HIGH_IDLE, process_id, exited_virtual_environment, pseudo_terminal)
 
     # To use the terminal.watch_child(process_id) function instead,
     # exited_virtual_environment() must be registered as the handler for
@@ -345,63 +348,74 @@ def subscribe_virtual_environment_exited(process_id, pseudo_terminal):
     # terminal.watch_child(process_id)
 
 
-# These arguments match the arguments for:
-# https://lazka.github.io/pgi-docs/#GLib-2.0/callbacks.html#GLib.ChildWatchFunc
 def exited_virtual_environment(process_id, status, pseudo_terminal):
+    """
+    These arguments match the arguments for:
+    https://lazka.github.io/pgi-docs/#GLib-2.0/callbacks.html#GLib.ChildWatchFunc
+
+    GLib.spawn_close_pid() should be used on all platforms, even though it
+    doesn't do anything under UNIX.
+    https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_close_pid
+    GLib.spawn_close_pid(process_id)
+
+    Different ways to exit the terminal, and the coresponding status values.
+
+    Execute the follwing from outside Cubic's terminal.
+    $ pkexec /usr/share/cubic/commands/terminate-process <pid of start-virtual-environment>
+    status = 9
+
+    Execute the follwing from outside Cubic's terminal.
+    $ sudo kill -9 <pid of start-virtual-environment>
+    status = 9
+
+    Execute the follwing from outside Cubic's terminal.
+    $ sudo machinectl terminate cubic
+    status = 256
+
+    Type "exit" in Cubic's terminal.
+    status = 0
+
+    Click Quit, Back, Next, or the window's exit control.
+    status = 9
+    Uses the exit_virtual_environment_using_kill() function.
+
+    References:
+    https://stackoverflow.com/questions/1535672/how-to-interpret-status-code-in-python-commands-getstatusoutput/1535675#1535675
+    https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_check_exit_status
+    https://docs.python.org/3/library/os.html
+
+    signal = os.WTERMSIG(status)
+    """
 
     logger.log_label('Exited virtual environment')
 
-    unsubscribe_virtual_environment_entered()
+    # send_message_to_terminal(BOLD_YELLOW + 'YOU HAVE EXITED THE VIRTUAL ENVIRONMENT.' + NORMAL)
+    # sleep(0.125)
 
     # Notify clients that the virtual environment exited.
-    global notify_status
-    if notify_status: notify_status(False)
+    global status_callback
+    if status_callback: status_callback(False)
 
-    # GLib.spawn_close_pid() should be used on all platforms, even though it
-    # doesn't do anything under UNIX.
-    # https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_close_pid
-    # GLib.spawn_close_pid(process_id)
-
-    # Different ways to exit the terminal, and the coresponding status values.
-    #
-    # Execute the follwing from outside Cubic's terminal.
-    # $ pkexec /home/psingh/Projects/Cubic_23/utilities/terminate-process <pid of start-virtual-environment>
-    # status = 256
-    #
-    # Execute the follwing from outside Cubic's terminal.
-    # $ sudo kill -9 <pid of start-virtual-environment>
-    # status = 9
-    #
-    # Execute the follwing from outside Cubic's terminal.
-    # $ sudo machinectl terminate cubic
-    # status = 256
-    #
-    # Type "exit" in Cubic's terminal.
-    # status = 0
-    #
-    # Click Quit, Back, Next, or the window's exit control.
-    # status = 9
-    # Uses the exit_virtual_environment_using_kill() function.
-
-    # References:
-    # https://stackoverflow.com/questions/1535672/how-to-interpret-status-code-in-python-commands-getstatusoutput/1535675#1535675
-    # https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_check_exit_status
-    # https://docs.python.org/3/library/os.html
-
-    # signal = os.WTERMSIG(status)
+    unsubscribe_virtual_environment_entered()
 
     logger.log_value('Process id', process_id)
     logger.log_value('Status', BOLD_RED + str(status) + NORMAL)
     # logger.log_value('Signal', signal)
     logger.log_value('Pseudo terminal', pseudo_terminal.get_fd())
 
+    # Do not set the Pty to none.
+    #
+    # Reference Bug #1877232 (https://bugs.launchpad.net/cubic/+bug/1877232).
+    # In Ubuntu 20.04 Vte crashes with Segmentation fault when the
+    # terminal's Pty is set to None.
+    #
     # Set the terminal's pseudo_terminal to None in order to prevent the
     # following message from being printed to the terminal:
     #   Container termination requested. Exiting.
     #   Container cubic terminated by signal KILL.
-    logger.log_value('Set new pseudo terminal', 'None')
-    terminal = model.builder.get_object('terminal_page__terminal')
-    terminal.set_pty(None)
+    # logger.log_value('Set new pseudo terminal', 'None')
+    # terminal = model.builder.get_object('terminal_page__terminal')
+    # terminal.set_pty(None)
 
     global MAX_ATTEMPTS
     global first_time
@@ -417,18 +431,46 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
 
     # Display message in the terminal.
     if (first_time and attempts == MAX_ATTEMPTS) or (not first_time and attempts == 1):
-        if status > 0:
-            if not reenter:
-                send_message_to_terminal()
+        if status == 0:
+            # If the user exits the terminal, print the message in
+            # yellow.
+            if not reenter: send_message_to_terminal()
+            # Use GLib.idle_add() because the message is sometimes not
+            # printed to the terminal.
+            # send_message_to_terminal(BOLD_YELLOW + 'You have exited the virtual environment.' + NORMAL)
+            GLib.idle_add(send_message_to_terminal, BOLD_YELLOW + 'You have exited the virtual environment.' + NORMAL)
+            # Pause to allow GLib.idle_add() to display message in the terminal.
+            sleep(0.250)
+        elif status == 9:
             # If the terminal exits due to an external action, print the
-            # message in red.
+            # message in red. (kill -9 <pid> or exit_virtual_environment_using_kill())
+            if not reenter: send_message_to_terminal()
+            # Use GLib.idle_add() because the message is sometimes not
+            # printed to the terminal.
+            # GLib.idle_add(send_message_to_terminal, BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
             send_message_to_terminal(BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
+            # Pause for consistency with other if conditions.
+            sleep(0.250)
+        elif status == 256:
+            # If the terminal exits due to an external action, print the
+            # message in cyan. (machinectl terminate cubic)
+            if not reenter: send_message_to_terminal()
+            # Use GLib.idle_add() because the message is sometimes not
+            # printed to the terminal.
+            # send_message_to_terminal(BOLD_CYAN + 'You have exited the virtual environment.' + NORMAL)
+            GLib.idle_add(send_message_to_terminal, BOLD_CYAN + 'You have exited the virtual environment.' + NORMAL)
+            # Pause to allow GLib.idle_add() to display message in the terminal.
+            sleep(0.250)
         else:
-            # If the user exits the terminal, print the message in in
-            # magenta.
-            if not reenter:
-                send_message_to_terminal()
-            send_message_to_terminal(BOLD_MAGENTA + 'You have exited the virtual environment.' + NORMAL)
+            # If the terminal exits due to another reason, print the
+            # message in magenta.
+            if not reenter: send_message_to_terminal()
+            # Use GLib.idle_add() because the message is sometimes not
+            # printed to the terminal. This was not tested.
+            # send_message_to_terminal(BOLD_MAGENTA + 'You have exited the virtual environment.' + NORMAL)
+            GLib.idle_add(send_message_to_terminal, BOLD_MAGENTA + 'You have exited the virtual environment.' + NORMAL)
+            # Pause to allow GLib.idle_add() to display message in the terminal.
+            sleep(0.250)
 
     # Decide to reenter the virtual environment.
     if reenter and attempts < MAX_ATTEMPTS:
@@ -632,8 +674,6 @@ def send_message_to_terminal(text=None):
         # Print a new line. (This is necessary).
         terminal.feed(bytes(NEW_LINE, encoding='utf-8'))
         logger.log_value('Send bytes to terminal', text)
-    # This seems necessary to avoid a race condition in Vte.Terminal.
-    # time.sleep(0.1)
 
 
 def send_text_to_terminal(text):
@@ -648,5 +688,3 @@ def send_text_to_terminal(text):
         # Using Vte.Terminal "new" 2.91
         terminal.feed_child(bytes(text, encoding='utf-8'))
         logger.log_value('Send bytes to terminal', text)
-    # This seems necessary to avoid a race condition in Vte.Terminal.
-    # time.sleep(0.1)
