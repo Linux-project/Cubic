@@ -86,7 +86,7 @@ def delete_directory(directory):
 
 
 def delete_files_with_pattern(pattern):
-    logger.log_value('Delete existig  files with pattern', pattern)
+    logger.log_value('Delete existing  files with pattern', pattern)
     # TODO: Make this code more clear.
     [os.remove(delete_filepath) for delete_filepath in glob.glob(pattern)]
 

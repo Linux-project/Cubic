@@ -131,6 +131,28 @@ def _is_mounted_2(iso_mount_point):
     return is_mounted
 
 
+def unmount_iso_and_delete_mount_point(iso_mount_point):
+    """
+    Unmount the ISO and delete the mount point.
+    """
+
+    logger.log_value('Unmount the ISO and delete the mount point', iso_mount_point)
+    if os.path.exists(iso_mount_point):
+        result, exitstatus, signalstatus = unmount(iso_mount_point)
+        if not signalstatus:
+            logger.log_value('Delete the mount point', iso_mount_point)
+            result, exitstatus, signalstatus = file_utilities.delete_directory(iso_mount_point)
+            if not signalstatus:
+                logger.log_value('Deleted the mount point', iso_mount_point)
+                pass
+            else:
+                logger.log_value('Unable to delete the mount point', iso_mount_point)
+        else:
+            logger.log_value('Unable to unmount the ISO and delete the mount point', iso_mount_point)
+    else:
+        logger.log_value('Skipping. The mount point does not exist', iso_mount_point)
+
+
 ########################################################################
 # ISO Information
 ########################################################################

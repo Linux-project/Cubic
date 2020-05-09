@@ -268,14 +268,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # TODO: When the original ISO image is unmounted we leave the
-        #       extract page, remove the following:
-        if model.project.iso_mount_point:
-            # Unmount the ISO image.
-            if iso_utilities.is_mounted(model.project.iso_mount_point):
-                iso_utilities.unmount(model.project.iso_mount_point)
-            # Delete the mount point.
-            file_utilities.delete_directory(model.project.iso_mount_point)
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         configuration.save()
 
@@ -285,20 +278,19 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # TODO: When the original ISO image is unmounted we leave the
-        #       extract page, remove the following:
-        if model.project.iso_mount_point:
-            # Unmount the ISO image.
-            if iso_utilities.is_mounted(model.project.iso_mount_point):
-                iso_utilities.unmount(model.project.iso_mount_point)
-            # Delete the mount point.
-            file_utilities.delete_directory(model.project.iso_mount_point)
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         configuration.save()
 
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        configuration.save()
 
         return 'unknown'
 

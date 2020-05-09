@@ -32,6 +32,7 @@ import navigator
 from utilities import displayer
 from file_choosers import copy_file_chooser
 from utilities import logger
+from utilities import iso_utilities
 from utilities import model
 from utilities import console
 
@@ -254,9 +255,22 @@ def leave(action, new_page=None):
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        displayer.set_visible('terminal_page__copy_button', False)
+
+        # The terminal continues running whenever the application
+        # navigates away from the terminal page, so the pseudo terminal
+        # process must be explicitly killed.
+        console.exit_virtual_environment()
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return 'unknown'
 
@@ -312,8 +326,7 @@ def on_clicked__terminal_page__copy_button(widget):
 def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info, drag_time):
 
     # Skip if terminal is not running.
-    if is_running:
-        return
+    if not is_running: return
 
     logger.log_value('Drag data received for', 'terminal_page')
 
@@ -476,4 +489,4 @@ def update_status(status):
         displayer.update_label('terminal_page__status_label', message)
         displayer.update_label('terminal_page__kernel_version_label', '')
 
-    logger.log_value('Notify virtual environment status message', message)
+    logger.log_value('Virtual environment status message', message)

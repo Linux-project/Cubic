@@ -300,10 +300,17 @@ def _entered_virtual_environment(active_state, sub_state, job_status, job_path):
     logger.log_value('Set new pseudo terminal', pseudo_terminal.get_fd())
     terminal = model.builder.get_object('terminal_page__terminal')
 
-    # TODO: Should the terminal be reset?
-    #       If so, what is the best location or function in this module
-    #       to reset the terminal?
-    # terminal.reset(True, False)
+    # The function terminal.reset() doesn't work.
+    # Reset the terminal if the root directory has changed.
+    # global custom_root_directory
+    # # logger.log_value('* custom_root_directory', custom_root_directory)
+    # # logger.log_value('* model.project.custom_root_directory', model.project.custom_root_directory)
+    # if custom_root_directory != model.project.custom_root_directory:
+    #     logger.log_value('Reset the terminal?', 'Yes')
+    #     terminal.reset(True, False)
+    #     custom_root_directory = model.project.custom_root_directory
+    # else:
+    #     logger.log_value('Reset the terminal?', 'No')
 
     terminal.set_pty(pseudo_terminal)
 
@@ -350,7 +357,7 @@ def subscribe_virtual_environment_exited(process_id, pseudo_terminal):
 
 def exited_virtual_environment(process_id, status, pseudo_terminal):
     """
-    These arguments match the arguments for:
+    This functions arguments match the arguments match the arguments for:
     https://lazka.github.io/pgi-docs/#GLib-2.0/callbacks.html#GLib.ChildWatchFunc
 
     GLib.spawn_close_pid() should be used on all platforms, even though it
@@ -358,7 +365,7 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_close_pid
     GLib.spawn_close_pid(process_id)
 
-    Different ways to exit the terminal, and the coresponding status values.
+    Different ways to exit the terminal, and the corresponding status values:
 
     Execute the follwing from outside Cubic's terminal.
     $ pkexec /usr/share/cubic/commands/terminate-process <pid of start-virtual-environment>
@@ -366,6 +373,12 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
 
     Execute the follwing from outside Cubic's terminal.
     $ sudo kill -9 <pid of start-virtual-environment>
+    status = 9
+
+    Execute the follwing from outside Cubic's terminal.
+    $ sudo pkill --full start-virtual-environment
+    status = 15
+    $ sudo pkill --signal 9 --full start-virtual-environment
     status = 9
 
     Execute the follwing from outside Cubic's terminal.
@@ -383,39 +396,40 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     https://stackoverflow.com/questions/1535672/how-to-interpret-status-code-in-python-commands-getstatusoutput/1535675#1535675
     https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_check_exit_status
     https://docs.python.org/3/library/os.html
-
-    signal = os.WTERMSIG(status)
     """
 
     logger.log_label('Exited virtual environment')
 
-    # send_message_to_terminal(BOLD_YELLOW + 'YOU HAVE EXITED THE VIRTUAL ENVIRONMENT.' + NORMAL)
-    # sleep(0.125)
+    # Prevent the following message from being printed to the terminal:
+    #   "Container termination requested. Exiting.
+    #    Container cubic terminated by signal KILL."
+    # In Ubuntu 20.04, Vte crashes with Segmentation fault when the
+    # terminal's Pty is set to None. Reference Bug #1877232
+    # (https://bugs.launchpad.net/cubic/+bug/1877232.
+    # An alternative that works sometimes is to set a new dummy Pty for
+    # the terminal.
+    terminal = model.builder.get_object('terminal_page__terminal')
+    terminal.set_pty(Pty())
+
+    # The signal number that killed the process.
+    signal = status % 256  # Gets the low byte.
+
+    # The exit status of the process (only set if the signal is 0).
+    exit_code = status >> 8  # Gets the high byte.
+
+    logger.log_value('Process id', process_id)
+    logger.log_value('Pseudo terminal', pseudo_terminal.get_fd())
+    logger.log_value('Status', BOLD_CYAN + str(status) + NORMAL)
+    logger.log_value('Signal', BOLD_RED + str(signal) + NORMAL)
+    logger.log_value('Exit Code', BOLD_YELLOW + str(exit_code) + NORMAL)
 
     # Notify clients that the virtual environment exited.
     global status_callback
     if status_callback: status_callback(False)
 
+    # Unsubscribe from virtual environment entered signals because the
+    # virtual environment already exited.
     unsubscribe_virtual_environment_entered()
-
-    logger.log_value('Process id', process_id)
-    logger.log_value('Status', BOLD_RED + str(status) + NORMAL)
-    # logger.log_value('Signal', signal)
-    logger.log_value('Pseudo terminal', pseudo_terminal.get_fd())
-
-    # Do not set the Pty to none.
-    #
-    # Reference Bug #1877232 (https://bugs.launchpad.net/cubic/+bug/1877232).
-    # In Ubuntu 20.04 Vte crashes with Segmentation fault when the
-    # terminal's Pty is set to None.
-    #
-    # Set the terminal's pseudo_terminal to None in order to prevent the
-    # following message from being printed to the terminal:
-    #   Container termination requested. Exiting.
-    #   Container cubic terminated by signal KILL.
-    # logger.log_value('Set new pseudo terminal', 'None')
-    # terminal = model.builder.get_object('terminal_page__terminal')
-    # terminal.set_pty(None)
 
     global MAX_ATTEMPTS
     global first_time
@@ -429,48 +443,42 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     logger.log_value('Reenter', reenter)
     logger.log_value('Attempts', (BOLD_YELLOW + '%s of %s times' + NORMAL) % (attempts, MAX_ATTEMPTS))
 
+    # The status is a 16-bit number:
+    # - The low byte (right byte) contains the signal number that killed
+    #   the process.
+    # - The high byte (left byte) is only set when the signal is zero.
+    #   It contains the exit status of the process.
+    #
+    # ---------  ------  ---------  --------------------------------
+    # Status     Signal  Exit Code  Note
+    # ---------  ------  ---------  --------------------------------
+    #         0       0          0  Process exited without error
+    #     1-255   1-255          0  Process terminated by signal
+    #       256       0          1  Process terminated by machinectl
+    # 257-65280       0  257-65280  Process exited with error
+    # ---------  ------  ---------  --------------------------------
+
     # Display message in the terminal.
     if (first_time and attempts == MAX_ATTEMPTS) or (not first_time and attempts == 1):
         if status == 0:
-            # If the user exits the terminal, print the message in
-            # yellow.
-            if not reenter: send_message_to_terminal()
-            # Use GLib.idle_add() because the message is sometimes not
-            # printed to the terminal.
-            # send_message_to_terminal(BOLD_YELLOW + 'You have exited the virtual environment.' + NORMAL)
+            # The process exited normally.
             GLib.idle_add(send_message_to_terminal, BOLD_YELLOW + 'You have exited the virtual environment.' + NORMAL)
-            # Pause to allow GLib.idle_add() to display message in the terminal.
-            sleep(0.250)
-        elif status == 9:
-            # If the terminal exits due to an external action, print the
-            # message in red. (kill -9 <pid> or exit_virtual_environment_using_kill())
+        elif status >= 1 and status <= 255:
+            # The process exited due to a signal.
+            # Do not use GLib.idle_add().
             if not reenter: send_message_to_terminal()
-            # Use GLib.idle_add() because the message is sometimes not
-            # printed to the terminal.
-            # GLib.idle_add(send_message_to_terminal, BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
             send_message_to_terminal(BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
-            # Pause for consistency with other if conditions.
-            sleep(0.250)
         elif status == 256:
-            # If the terminal exits due to an external action, print the
-            # message in cyan. (machinectl terminate cubic)
-            if not reenter: send_message_to_terminal()
-            # Use GLib.idle_add() because the message is sometimes not
-            # printed to the terminal.
-            # send_message_to_terminal(BOLD_CYAN + 'You have exited the virtual environment.' + NORMAL)
-            GLib.idle_add(send_message_to_terminal, BOLD_CYAN + 'You have exited the virtual environment.' + NORMAL)
-            # Pause to allow GLib.idle_add() to display message in the terminal.
-            sleep(0.250)
+            # The process was terminated by machinectl terminate.
+            GLib.idle_add(send_message_to_terminal, BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
+        elif status >= 257 and status <= 65280:
+            # The process exited normally with an error code.
+            GLib.idle_add(send_message_to_terminal, BOLD_YELLOW + 'You have exited the virtual environment.' + NORMAL)
         else:
-            # If the terminal exits due to another reason, print the
-            # message in magenta.
-            if not reenter: send_message_to_terminal()
-            # Use GLib.idle_add() because the message is sometimes not
-            # printed to the terminal. This was not tested.
-            # send_message_to_terminal(BOLD_MAGENTA + 'You have exited the virtual environment.' + NORMAL)
-            GLib.idle_add(send_message_to_terminal, BOLD_MAGENTA + 'You have exited the virtual environment.' + NORMAL)
-            # Pause to allow GLib.idle_add() to display message in the terminal.
-            sleep(0.250)
+            # This situation will never happen.
+            GLib.idle_add(send_message_to_terminal, BOLD_BLUE + 'You have exited the virtual environment.' + NORMAL)
+        # Pause to allow GLib.idle_add() to display the message.
+        sleep(0.250)
 
     # Decide to reenter the virtual environment.
     if reenter and attempts < MAX_ATTEMPTS:
@@ -486,24 +494,26 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
 ########################################################################
 
 
-# The process executed by spawn_async() in the
-# _enter_virtual_environment() function is not registered with the
-# processor module. As a result, this process is not terminated
-# by the interrupt_navigation_thread() function of the navigator module.
-# This allows the terminal to continue running while the application
-# navigates away from the terminal page. The pseudo terminal process
-# must be explicitly killed by executing exit_virtual_environment().
 def exit_virtual_environment():
+    """
+    The process executed by spawn_async() in the
+    _enter_virtual_environment() function is not registered with the
+    processor module. As a result, this process is not terminated
+    by the interrupt_navigation_thread() function of the navigator module.
+    This allows the terminal to continue running while the application
+    navigates away from the terminal page. The pseudo terminal process
+    must be explicitly killed by executing exit_virtual_environment().
+    """
 
     logger.log_label('Exit virtual environment')
 
     global reenter
     reenter = False
-
-    sys.stdout.flush()
-
-    # Kill the process.
-    exit_virtual_environment_using_kill()
+    try:
+        sys.stdout.flush()
+        exit_virtual_environment_using_kill()
+    except Exception as exception:
+        logger.log_value('Warning', exception)
 
 
 def exit_virtual_environment_using_kill():
@@ -512,16 +522,15 @@ def exit_virtual_environment_using_kill():
 
     terminal = model.builder.get_object('terminal_page__terminal')
     pseudo_terminal = terminal.get_pty()
-    if pseudo_terminal:
+    if pseudo_terminal and pseudo_terminal.process_id:
+        # If the pseudo terminal does not have a process id, then the
+        # virtual environment already exited.
         process_id = pseudo_terminal.process_id
-
         program = os.path.join(model.application.directory, 'commands', 'terminate-process')
-
         # TODO: Should we use execute_synchronous_unregistered() ?
         command = 'pkexec "%s" "%s"' % (program, process_id)
         result, exitstatus, signalstatus = execute_synchronous(command)
     else:
-
         logger.log_value('There is no pseudo terminal to exit. The pseudo_terminal is ', pseudo_terminal)
 
 
@@ -543,7 +552,6 @@ def exit_virtual_environment_using_machinectl():
     logger.log_label('Exit virtual environment using machinectl')
 
     program = os.path.join(model.application.directory, 'commands', 'stop-virtual-environment')
-
     # TODO: Should we use execute_synchronous_unregistered() ?
     command = 'pkexec "%s" "%s"' % (program, 'cubic')
     result, exitstatus, signalstatus = execute_synchronous(command)
@@ -676,7 +684,7 @@ def send_message_to_terminal(text=None):
         logger.log_value('Send bytes to terminal', text)
 
 
-def send_text_to_terminal(text):
+def send_command_to_terminal(text):
 
     terminal = model.builder.get_object('terminal_page__terminal')
 

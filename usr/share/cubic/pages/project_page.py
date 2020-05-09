@@ -74,11 +74,11 @@ def setup(action, old_page=None):
     """
     Prepare this page for displayer. This function is executed while the
     previous page is still shown.
-    
+
     Args
         action: The action from the previous page.
         old_page: The previous page; optional.
-    
+
     Returns:
         None: To continue to page.
         error (str): To automatically transition to an error page.
@@ -293,11 +293,11 @@ def enter(action, old_page=None):
     """
     Preform functions on this page after it is shown. This function is
     executed after the previous page is hidden.
-    
+
     Args:
         action: The action from the previous page.
         old_page: The previous page; optional.
-    
+
     Returns:
         None: To stay on this page.
         action (str): To automatically transition to another page.
@@ -333,12 +333,11 @@ def leave(action, new_page=None):
     """
     Preform functions on this page before leaving it. This function is
     executed while this page is visible.
-    
+
     Args
     action: The action on this page.
     old_page: The next page to show; optional.
-    
-    
+
     Returns:
         None: To continue to the next page.
         error (str): To automatically transition to an error page.
@@ -353,12 +352,7 @@ def leave(action, new_page=None):
         # Hide the Delete button on other pages.
         displayer.set_visible('project_page__delete_button', False)
 
-        if model.project.iso_mount_point:
-            # Unmount the ISO image.
-            if iso_utilities.is_mounted(model.project.iso_mount_point):
-                iso_utilities.unmount(model.project.iso_mount_point)
-            # Delete the mount point.
-            file_utilities.delete_directory(model.project.iso_mount_point)
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
 
@@ -479,16 +473,18 @@ def leave(action, new_page=None):
         displayer.set_visible('project_page__header_bar_box', False)
         displayer.set_visible('project_page__delete_button', False)
 
-        if model.project.iso_mount_point:
-            # Unmount the ISO image.
-            if iso_utilities.is_mounted(model.project.iso_mount_point):
-                iso_utilities.unmount(model.project.iso_mount_point)
-            # Delete the mount point.
-            file_utilities.delete_directory(model.project.iso_mount_point)
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        displayer.set_visible('project_page__header_bar_box', False)
+        displayer.set_visible('project_page__delete_button', False)
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return 'unknown'
 
@@ -793,7 +789,7 @@ def initialize_custom_from_iso():
 #-----------------------------------------------------------------------
 
 
-def initialize_custom_from_version_number():
+def refresh_custom_using_version_number():
     """
     Initialize the following custom fields using the version number,
     and register the validators. All occurrences of the version number
@@ -813,11 +809,18 @@ def initialize_custom_from_version_number():
     # Update fields.
     # re.sub(search_string, replace_string, original_string)
     fields.iso_version_number.value = constructor.construct_custom_iso_version_number()
-    fields.iso_filename.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_filename.value)
-    fields.iso_directory.value = custom.iso_directory.value
-    fields.iso_volume_id.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_volume_id.value)[:32]
-    fields.iso_release_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_release_name.value)
-    fields.iso_disk_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_disk_name.value)
+    if custom.iso_version_number.value:
+        fields.iso_filename.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_filename.value)
+        fields.iso_directory.value = custom.iso_directory.value
+        fields.iso_volume_id.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_volume_id.value)[:32]
+        fields.iso_release_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_release_name.value)
+        fields.iso_disk_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_disk_name.value)
+    else:
+        fields.iso_filename.value = custom.iso_filename.value
+        fields.iso_directory.value = custom.iso_directory.value
+        fields.iso_volume_id.value = custom.iso_volume_id.value[:32]
+        fields.iso_release_name.value = custom.iso_release_name.value
+        fields.iso_disk_name.value = custom.iso_disk_name.value
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -835,7 +838,6 @@ def initialize_custom_from_version_number():
 #-----------------------------------------------------------------------
 
 
-# TODO: Add configuration.load() to configuration.py; remove from here.
 def initialize_original_from_model():
     """
     Initialize the following original fields from the model, and
@@ -919,7 +921,7 @@ def initialize_status_from_model():
       - is_success_extract
       - casper_directory
 
-    The following fields are not initialized from the model.    
+    The following fields are not initialized from the model.
       - iso_checksum = None
       - iso_checksum_filename = None
     """
@@ -1292,7 +1294,7 @@ def on_clicked__project_page__refresh_button(widget):
     if custom.is_valid and custom != custom_history.current():
         custom_history.insert(custom)
 
-    custom = initialize_custom_from_version_number()
+    custom = refresh_custom_using_version_number()
     display_custom_fields(custom)
     validate_page()
 

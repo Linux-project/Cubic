@@ -131,30 +131,9 @@ def enter(action, old_page=None):
 
 def leave(action, new_page=None):
 
-    if action == 'quit':
+    if action == 'back':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
-        # TODO: Is this necessary here, since it is done in navigation?
-        terminate_process()
-
-        if model.project.iso_mount_point:
-            # Unmount the ISO image.
-            if iso_utilities.is_mounted(model.project.iso_mount_point):
-                iso_utilities.unmount(model.project.iso_mount_point)
-            # Delete the mount point.
-            file_utilities.delete_directory(model.project.iso_mount_point)
-
-        configuration.save()
-
-        return
-
-    elif action == 'back':
-
-        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
-        # TODO: Is this necessary here, since it is done in navigation?
-        terminate_process()
 
         configuration.save()
 
@@ -164,14 +143,25 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # TODO: Is this necessary here, since it is done in navigation?
-        terminate_process()
+        configuration.save()
+
+        return
+
+    elif action == 'quit':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         configuration.save()
 
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        configuration.save()
 
         return 'unknown'
 

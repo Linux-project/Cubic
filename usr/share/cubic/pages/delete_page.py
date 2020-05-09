@@ -179,9 +179,15 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return 'unknown'
 

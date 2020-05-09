@@ -173,18 +173,15 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # TODO: When the original ISO image is unmounted we leave the
-        #       extract page, remove the following:
-        if model.project.iso_mount_point:
-            # Unmount the ISO image.
-            if iso_utilities.is_mounted(model.project.iso_mount_point):
-                iso_utilities.unmount(model.project.iso_mount_point)
-            # Delete the mount point.
-            file_utilities.delete_directory(model.project.iso_mount_point)
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return 'unknown'
 
@@ -526,6 +523,7 @@ def is_exists_filesystem_manifest_remove(filename):
 #       - packages_page
 #       - prepare_page
 def create_typical_removable_packages_list():
+
     logger.log_label('Create typical removable packages list')
 
     listore_name = 'packages_page__list_store'
@@ -549,6 +547,7 @@ def create_typical_removable_packages_list():
 #       - packages_page
 #       - prepare_page
 def create_minimal_removable_packages_list():
+
     logger.log_label('Create minimal removable packages list')
 
     listore_name = 'packages_page__list_store'
@@ -573,6 +572,7 @@ def create_minimal_removable_packages_list():
 #       - prepare_page
 # TODO: This function is not used.
 def create_removable_packages_list(listore_name, index):
+
     logger.log_label('Get removable packages list from user selections')
     logger.log_value('Get user selections from', listore_name)
     list_store = model.builder.get_object(listore_name)
@@ -591,6 +591,7 @@ def create_removable_packages_list(listore_name, index):
 
 
 def save_filesystem_manifest_remove_file(filename, removable_packages_list):
+
     logger.log_label('Create new filesystem manifest remove file')
 
     filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)

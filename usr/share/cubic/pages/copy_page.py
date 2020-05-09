@@ -30,6 +30,7 @@
 from constants import PERCENT_STOP
 
 from utilities import displayer
+from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 from utilities.progress import show_progress
@@ -132,9 +133,15 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return 'unknown'
 

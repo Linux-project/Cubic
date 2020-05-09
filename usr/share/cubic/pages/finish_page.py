@@ -138,35 +138,22 @@ def leave(action, new_page=None):
 
         displayer.set_sensitive('finish_page__delete_project_files_check_button', False)
 
-        #
-        # Unmount and delete the original ISO mount point.
-        #
-        is_error = unmount_original_iso()
+        # The original ISO is unmounted when leaving the Generate page,
+        # so there is no need to unmount it here.
+        # iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        #
         # Delete project files.
-        #
+
         check_button = model.builder.get_object('finish_page__delete_project_files_check_button')
         is_active = check_button.get_active()
         logger.log_value('Delete the project files?', is_active)
         if is_active:
-
             displayer.update_status('finish_page__delete_project_files', PROCESSING)
-
-            # Pause.
-            # sleep(1.00)
-
+            # sleep(0.500)
             delete_project_files()
-
             displayer.update_status('finish_page__delete_project_files', OK)
             # Pause to allow the user to see the result.
-            sleep(1.0)
-
-        # TODO: Is it appropriate to quit here, or must this be done in
-        #       navigation as a special case?
-        #
-        # displayer.main_quit()
-
+            sleep(1.000)
         return
 
     elif action == 'quit':
@@ -176,6 +163,8 @@ def leave(action, new_page=None):
         return
 
     else:
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return 'unknown'
 
@@ -232,7 +221,7 @@ def unmount_original_iso():
             logger.log_value('Delete the original ISO mount point', model.project.iso_mount_point)
             result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.iso_mount_point)
             if not signalstatus:
-                logger.log_value('Successfully deleted the original ISO mount point', model.project.iso_mount_point)
+                logger.log_value('Deleted the original ISO mount point', model.project.iso_mount_point)
                 pass
             else:
                 logger.log_value('Unable to delete the original ISO mount point', model.project.iso_mount_point)
