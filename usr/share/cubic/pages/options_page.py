@@ -27,18 +27,20 @@
 #                                                                      #
 ########################################################################
 
+from os import makedirs, remove
+from os.path import dirname, exists, join
+from re import fullmatch
+
 from utilities import displayer
-from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+########################################################################
+# References
+########################################################################
 
-import os
-import re
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -160,7 +162,7 @@ def leave(action, new_page=None):
             for filepath in model.delete_list:
                 try:
                     logger.log_value('Delete file', filepath)
-                    os.remove(filepath)
+                    remove(filepath)
                 except OSError as exception:
                     logger.log_value('Error deleting file', exception)
             model.delete_list = []
@@ -323,7 +325,7 @@ def on_clicked__options_page__create_button(widget):
 
     # Validate filename.
     pattern = r'[a-zA-Z0-9][a-zA-Z0-9\.\-_]*[a-zA-Z0-9]'
-    match = re.fullmatch(pattern, filename)
+    match = fullmatch(pattern, filename)
 
     if match:
 
@@ -331,7 +333,7 @@ def on_clicked__options_page__create_button(widget):
 
         stack_name = 'options_page__preseed_tab__stack'
         stack = model.builder.get_object(stack_name)
-        filepath = os.path.join(model.project.custom_disk_directory, 'preseed', filename)
+        filepath = join(model.project.custom_disk_directory, 'preseed', filename)
 
         scrolled_window = stack.get_child_by_name(filepath)
         if scrolled_window:
@@ -350,7 +352,7 @@ def on_clicked__options_page__create_button(widget):
             # Add a new item to the stack.
 
             logger.log_value('Add a new item to stack', stack_name)
-            title = '/%s' % os.path.join('preseed', filename)
+            title = '/%s' % join('preseed', filename)
             logger.log_value('The title is', title)
             logger.log_value('The name (filepath) is', filepath)
 
@@ -394,7 +396,7 @@ def on_clicked__options_page__delete_button(widget):
     logger.log_value('The name (filepath) is', filepath)
 
     # Only flag the file for deletion if it exits.
-    if os.path.exists(filepath):
+    if exists(filepath):
         model.delete_list.append(filepath)
     stack.remove(scrolled_window)
 
@@ -437,7 +439,7 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
     # 5: directory
     # 6: note
     # 7: is_selected
-    # 8: is_remove
+
     list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
 
     # Select clicked row, and unselect other rows.
@@ -540,8 +542,8 @@ def save_stack_buffers(stack_name):
 
         # Create the parent directories (/preseed, /boot/grub, /isolinux, etc.)
         # if they do not exist.
-        directory = os.path.dirname(filepath)
-        os.makedirs(directory, exist_ok=True)
+        directory = dirname(filepath)
+        makedirs(directory, exist_ok=True)
 
         # Write the file.
         with open(filepath, 'w') as file:

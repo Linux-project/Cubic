@@ -117,8 +117,6 @@
       <column type="gchararray"/>
       <!-- column-name Select -->
       <column type="gboolean"/>
-      <!-- column-name Remove -->
-      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkGrid" id="options_page">
@@ -135,11 +133,9 @@
         <property name="hexpand">True</property>
         <property name="label" translatable="yes">Make changes to advanced options on the tabs above, or proceed with default settings.
 Click the Generate button to begin creating the customized disk image.</property>
-        <property name="justify">fill</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
         <property name="xalign">0</property>
-        <property name="yalign">0.5</property>
         <attributes>
           <attribute name="scale" value="1.25"/>
         </attributes>
@@ -177,7 +173,6 @@ Click the Generate button to begin creating the customized disk image.</property
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
-                <property name="yalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -310,7 +305,6 @@ Click the Generate button to begin creating the customized disk image.</property
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
-                <property name="yalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -559,7 +553,6 @@ Click the Generate button to begin creating the customized disk image.</property
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
-                <property name="yalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>

@@ -27,8 +27,12 @@
 #                                                                      #
 ########################################################################
 
-from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+from getpass import getuser
+from os import system
+from os.path import exists, join
+from time import sleep
 
+from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
@@ -36,9 +40,11 @@ from utilities import logger
 from utilities import model
 from utilities.processor import execute_synchronous
 
-import getpass
-import os
-from time import sleep
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -117,6 +123,17 @@ def leave(action, new_page=None):
 
     elif action == 'next':
 
+        # The following fields must be set before leaving this page:
+        #
+        # 1. model.project.cubic_version
+        # 2. model.project.create_date
+        # 3. model.project.modify_date
+        # 4. model.project.directory
+        # 5. model.project.configuration_filepath
+        # 6. model.project.iso_mount_point
+        # 7. model.project.custom_root_directory
+        # 8. model.project.custom_disk_directory
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         is_error = migrate_configuration()
@@ -149,7 +166,7 @@ def leave(action, new_page=None):
 def on_clicked__migrate_page__project_directory_open_button(widget):
 
     command = 'xdg-open %s &' % model.project.directory
-    os.system(command)
+    system(command)
 
 
 ########################################################################
@@ -168,7 +185,7 @@ def migrate_configuration():
     logger.log_value('Update the configuration file to the current format', model.project.configuration_filepath)
 
     displayer.update_status('migrate_page__configuration', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
 
     try:
         configuration.save()
@@ -183,7 +200,7 @@ def migrate_configuration():
         is_error = True
 
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     return is_error
 
@@ -196,7 +213,7 @@ def migrate_custom_root():
     is_error = False
 
     # Create the custom root directory used by the old project structure.
-    source_path = os.path.join(model.project.directory, OLD_CUSTOM_ROOT_DIRECTORY)
+    source_path = join(model.project.directory, OLD_CUSTOM_ROOT_DIRECTORY)
 
     # The custom root directory for the new project structure was set on
     # the start page.
@@ -207,11 +224,11 @@ def migrate_custom_root():
     logger.log_value('To', target_path)
 
     displayer.update_status('migrate_page__custom_root', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
 
-    if os.path.exists(source_path):
+    if exists(source_path):
 
-        program = os.path.join(model.application.directory, 'commands', 'migrate-directory')
+        program = join(model.application.directory, 'commands', 'migrate-directory')
         command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
         result, exitstatus, signalstatus = execute_synchronous(command)
 
@@ -234,7 +251,7 @@ def migrate_custom_root():
         is_error = True
 
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     return is_error
 
@@ -247,7 +264,7 @@ def migrate_custom_disk():
     is_error = False
 
     # Create the custom disk directory used by the old project structure.
-    source_path = os.path.join(model.project.directory, OLD_CUSTOM_DISK_DIRECTORY)
+    source_path = join(model.project.directory, OLD_CUSTOM_DISK_DIRECTORY)
 
     # The custom disk directory for the new project structure was set on
     # the start page.
@@ -255,7 +272,7 @@ def migrate_custom_disk():
 
     # Get the current user to whom the ownership of the custom disk
     # directory will be recursively changed.
-    user = getpass.getuser()
+    user = getuser()
 
     logger.log_label('Migrate the customized disk')
     logger.log_value('From', source_path)
@@ -263,11 +280,11 @@ def migrate_custom_disk():
     logger.log_value('User', user)
 
     displayer.update_status('migrate_page__custom_disk', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
 
-    if os.path.exists(source_path):
+    if exists(source_path):
 
-        program = os.path.join(model.application.directory, 'commands', 'migrate-directory')
+        program = join(model.application.directory, 'commands', 'migrate-directory')
         command = 'pkexec "%s" "%s" "%s" "%s"' % (program, source_path, target_path, user)
         result, exitstatus, signalstatus = execute_synchronous(command)
 
@@ -290,6 +307,6 @@ def migrate_custom_disk():
         is_error = True
 
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     return is_error

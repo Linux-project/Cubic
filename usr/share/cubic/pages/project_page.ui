@@ -118,11 +118,9 @@
         <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="label" translatable="yes">Select the original disk image to customize.</property>
-        <property name="justify">fill</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
         <property name="xalign">0</property>
-        <property name="yalign">0.5</property>
         <attributes>
           <attribute name="scale" value="1.25"/>
         </attributes>
@@ -153,6 +151,7 @@
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">Original ISO...
 </property>
+            <property name="wrap">True</property>
             <property name="xalign">0</property>
             <attributes>
               <attribute name="weight" value="bold"/>
@@ -174,6 +173,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Filename</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -262,6 +262,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Directory</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -335,6 +336,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Volume ID</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -408,6 +410,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Release</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -480,6 +483,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Disk Name</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -548,6 +552,7 @@
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">Custom ISO...
 </property>
+            <property name="wrap">True</property>
             <property name="xalign">0</property>
             <attributes>
               <attribute name="weight" value="bold"/>
@@ -569,6 +574,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Version</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -654,6 +660,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Filename</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -722,6 +729,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Directory</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -809,6 +817,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Volume ID</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -878,6 +887,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Release</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>
@@ -947,6 +957,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Disk Name</property>
+                <property name="wrap">True</property>
                 <property name="xalign">1</property>
               </object>
               <packing>

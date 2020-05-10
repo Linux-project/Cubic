@@ -27,17 +27,22 @@
 #                                                                      #
 ########################################################################
 
-from constants import PERCENT_STOP
+from os.path import abspath, join
+from urllib.parse import urlparse, unquote
 
+from constants import PERCENT_STOP
+from utilities.console import get_current_directory
 from utilities import displayer
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 from utilities.progress import show_progress
-from utilities.console import get_current_directory
 
-import os
-from urllib.parse import urlparse, unquote
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -182,13 +187,13 @@ def copy_files(current_directory, uris):
     total_files = len(uris)
 
     # It is necessary to concatenate the custom root directory and
-    # the current directory using "+" because os.path.join() discards
+    # the current directory using "+" because join() discards
     # the current directory, which is considered an absolute path: "If a
     # component is an absolute path, all previous components are thrown
     # away and joining continues from the absolute path component."
     # (See https://docs.python.org/3/library/os.path.html).
     # TODO: consider using (a + '/' + b)
-    target_directory = os.path.abspath(model.project.custom_root_directory + current_directory)
+    target_directory = abspath(model.project.custom_root_directory + current_directory)
 
     logger.log_value('The current directory is', current_directory)
     logger.log_value('The custom root directory is', model.project.custom_root_directory)
@@ -220,7 +225,7 @@ def copy_file(filepath, file_number, directory, total_files):
     logger.log_value('The file is', filepath)
     logger.log_value('The target directory is', directory)
 
-    program = os.path.join(model.application.directory, 'commands', 'copy-file')
+    program = join(model.application.directory, 'commands', 'copy-file')
     command = 'pkexec "%s" "%s" "%s"' % (program, filepath, directory)
 
     # The progress callback function.
@@ -231,7 +236,7 @@ def copy_file(filepath, file_number, directory, total_files):
         displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
         displayer.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
         if total_percent % 10 == 0:
-            logger.log_value('• Completed', '%i%%' % total_percent)
+            logger.log_value('▹ Completed', '%i%%' % total_percent)
 
     show_progress(command, progress_callback)
 

@@ -30,6 +30,12 @@
 from utilities.fields import Fields
 
 ########################################################################
+# References
+########################################################################
+
+# N/A
+
+########################################################################
 # General
 ########################################################################
 
@@ -48,6 +54,8 @@ application.theme_variant = None
 
 project = Fields('project')
 project.cubic_version = None
+project.create_date = None
+project.modify_date = None
 project.directory = None
 project.configuration_filepath = None
 project.iso_mount_point = None
@@ -93,7 +101,6 @@ status.iso_checksum_filename = None
 ########################################################################
 
 # TODO: Consider moving this to "Status"
-
 options = Fields('options')
 options.boot_configurations = None
 

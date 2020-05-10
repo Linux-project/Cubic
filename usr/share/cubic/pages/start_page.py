@@ -27,16 +27,21 @@
 #                                                                      #
 ########################################################################
 
-from file_choosers import directory_chooser
+from os.path import isfile
 
 from constants import NEW_CUBIC_VERSION
+from file_choosers import directory_chooser
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
 from utilities import logger
 from utilities import model
 
-from os.path import isfile
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -69,33 +74,7 @@ def setup(action, old_page=None):
         displayer.update_label('start_page__version_label', 'Version %s' % display_version)
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
 
-        model.project.cubic_version = None
-        model.project.directory = None
-        model.project.configuration_filepath = None
-        model.project.iso_mount_point = None
-        model.project.custom_root_directory = None
-        model.project.custom_disk_directory = None
-
-        model.original.iso_filename = None
-        model.original.iso_directory = None
-        model.original.iso_volume_id = None
-        model.original.iso_release_name = None
-        model.original.iso_disk_name = None
-
-        model.custom.iso_version_number = None
-        model.custom.iso_filename = None
-        model.custom.iso_directory = None
-        model.custom.iso_volume_id = None
-        model.custom.iso_release_name = None
-        model.custom.iso_disk_name = None
-
-        model.status.is_success_copy = False
-        model.status.is_success_extract = False
-        model.status.casper_directory = None
-        model.status.iso_checksum = None
-        model.status.iso_checksum_filename = None
-
-        model.options.boot_configurations = None
+        model.project.cubic_version = model.application.cubic_version
 
         return
 
@@ -180,16 +159,21 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # The following fields must be set before leaving this page:
-        # 1. project.cubic_version
-        #    - Should be updated to application.cubic_version when the
-        #      configuration is saved.
-        # 2. project.directory
+        #
+        # 1. model.project.cubic_version
+        #    - Set to application.cubic_version in the setup() function.
+        # 2. model.project.create_date
+        #    - Loaded from an existing configuration, or current date
+        #      if the selected project directory changed.
+        # 3. model.project.modify_date
+        #    - Set to current date.
+        # 4. model.project.directory
         #    - Set in the selected_project_directory() function.
-        # 3. project.configuration_filepath
+        # 5. model.project.configuration_filepath
         #    - Set in the selected_project_directory() function.
-        # 4. project.iso_mount_point
-        # 5. project.custom_root_directory
-        # 6. project.custom_disk_directory
+        # 6. model.project.iso_mount_point
+        # 7. model.project.custom_root_directory
+        # 8. model.project.custom_disk_directory
 
         model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
         model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
@@ -202,16 +186,21 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # The following fields must be set before leaving this page:
-        # 1. project.cubic_version
-        #    - Should be updated to application.cubic_version when the
-        #      configuration is saved.
-        # 2. project.directory
+        #
+        # 1. model.project.cubic_version
+        #    - Set to application.cubic_version in the setup() function.
+        # 2. model.project.create_date
+        #    - Loaded from an existing configuration, or current date
+        #      if the selected project directory changed.
+        # 3. model.project.modify_date
+        #    - Set to current date.
+        # 4. model.project.directory
         #    - Set in the selected_project_directory() function.
-        # 3. project.configuration_filepath
+        # 5. model.project.configuration_filepath
         #    - Set in the selected_project_directory() function.
-        # 4. project.iso_mount_point
-        # 5. project.custom_root_directory
-        # 6. project.custom_disk_directory
+        # 6. model.project.iso_mount_point
+        # 7. model.project.custom_root_directory
+        # 8. model.project.custom_disk_directory
 
         model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
         model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
@@ -235,6 +224,13 @@ def leave(action, new_page=None):
 ########################################################################
 
 
+def on_clicked__start_page__project_directory_open_button(widget):
+
+    logger.log_title('Clicked project directory page project directory file chooser open button')
+
+    directory_chooser.open(selected_project_directory)
+
+
 def on_changed__start_page__project_directory_entry(widget):
 
     logger.log_label('Project directory changed')
@@ -242,17 +238,6 @@ def on_changed__start_page__project_directory_entry(widget):
     model.project.directory = widget.get_text()
 
     validate_page()
-
-
-def on_clicked__start_page__project_directory_open_button(widget):
-
-    logger.log_title('Clicked project directory page project directory file chooser open button')
-
-    directory_chooser.open(selected_project_directory)
-
-    # TODO: Remove
-    # if model.project.cubic_version < model.application.cubic_version:
-    #     displayer.update_label('start_page__project_directory_message', 'This project was created using an older version of Cubic.')
 
 
 ########################################################################
@@ -283,6 +268,9 @@ def selected_project_directory(directory):
 def validate_page():
 
     if model.project.directory:
+        current_date_time = constructor.get_current_date_time()
+        # Update the modify_date if the selected project has changed.
+        model.project.modify_date = current_date_time
         model.project.configuration_filepath = constructor.construct_configuration_filepath(model.project.directory)
         if isfile(model.project.configuration_filepath):
             configuration.load()
@@ -314,6 +302,9 @@ def validate_page():
                 displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
         else:
             configuration.initialize()
+            reset_model()
+            # This is a new project, so set the create date.
+            model.project.create_date = current_date_time
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -325,7 +316,7 @@ def validate_page():
                 next_button_style='suggested-action',
                 is_next_sensitive=True,
                 is_next_visible=True)
-            displayer.update_label('start_page__project_directory_message', 'A new cubic project will be created in this directory.')
+            displayer.update_label('start_page__project_directory_message', 'A new cubic project will be created using this directory.')
     else:
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -339,3 +330,36 @@ def validate_page():
             is_next_sensitive=False,
             is_next_visible=True)
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
+
+
+def reset_model():
+
+    # model.project.cubic_version = None
+    # model.project.create_date = None
+    # model.project.modify_date = None
+    # model.project.directory = None
+    # model.project.configuration_filepath = None
+    # model.project.iso_mount_point = None
+    # model.project.custom_root_directory = None
+    # model.project.custom_disk_directory = None
+
+    model.original.iso_filename = None
+    model.original.iso_directory = None
+    model.original.iso_volume_id = None
+    model.original.iso_release_name = None
+    model.original.iso_disk_name = None
+
+    model.custom.iso_version_number = None
+    model.custom.iso_filename = None
+    model.custom.iso_directory = None
+    model.custom.iso_volume_id = None
+    model.custom.iso_release_name = None
+    model.custom.iso_disk_name = None
+
+    model.status.is_success_copy = False
+    model.status.is_success_extract = False
+    model.status.casper_directory = None
+    model.status.iso_checksum = None
+    model.status.iso_checksum_filename = None
+
+    model.options.boot_configurations = None

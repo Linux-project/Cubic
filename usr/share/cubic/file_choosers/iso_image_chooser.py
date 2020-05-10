@@ -27,14 +27,28 @@
 #                                                                      #
 ########################################################################
 
+from os.path import isfile
+
 from utilities import displayer
 from utilities import logger
 from utilities import model
 
-import os
+########################################################################
+# References
+########################################################################
+
+# N/A
+
+########################################################################
+# Globals & Constants
+########################################################################
 
 name = 'iso_image_chooser'
 callback = None
+
+########################################################################
+# Functions
+########################################################################
 
 
 def open(calback):
@@ -75,7 +89,7 @@ def on_clicked__iso_image_chooser__select_button(widget):
     logger.log_title('Clicked ISO image chooser select button')
     filepath = get_selected_filepath()
     try:
-        os.path.isfile(filepath)
+        isfile(filepath)
         close()
         logger.log_value('The selected filepath is', filepath)
         callback(filepath)

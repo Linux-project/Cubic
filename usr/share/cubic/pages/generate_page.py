@@ -27,7 +27,13 @@
 #                                                                      #
 ########################################################################
 
-from constants import PERCENT_STOP
+from datetime import datetime
+from hashlib import md5
+from os import linesep, makedirs, remove, walk
+from os.path import dirname, exists, join, realpath, relpath
+from re import search
+from time import sleep
+
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
@@ -35,14 +41,14 @@ from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.processor import execute_synchronous, terminate_process
+from utilities.processor import execute_synchronous
 from utilities.progress import show_progress
 
-import datetime
-import hashlib
-import os
-import re
-from time import sleep
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -126,7 +132,7 @@ def enter(action, old_page=None):
         #
 
         displayer.update_status('generate_page__copy_boot_files', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = copy_boot_files()
         if not is_error:
             displayer.update_status('generate_page__copy_boot_files', displayer.OK)
@@ -135,14 +141,14 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
             add_message('\nError. Unable to copy all boot files.')
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Create squashfs.
         #
 
         displayer.update_status('generate_page__create_squashfs', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = create_squashfs()
         if not is_error:
             displayer.update_status('generate_page__create_squashfs', displayer.OK)
@@ -151,14 +157,14 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
             displayer.update_label('generate_page__create_squashfs_message', 'Error. Unable to create the compressed Linux file system.')
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Update filesystem size.
         #
 
         displayer.update_status('generate_page__update_filesystem_size', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = update_filesystem_size()
         # TODO: Update label for success and error "...message"
         if not is_error:
@@ -166,14 +172,14 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('generate_page__update_filesystem_size', displayer.ERROR)
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Update disk name and disk info.
         #
 
         displayer.update_status('generate_page__update_disk_name', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = update_disk_name_and_disk_info()
         # TODO: Update label for success and error "...message"
         if not is_error:
@@ -181,14 +187,14 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('generate_page__update_disk_name', displayer.ERROR)
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Update MD5 sums.
         #
 
         displayer.update_status('generate_page__update_checksums', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = update_checksums()
         # TODO: Update label for success and error "...message"
         if not is_error:
@@ -196,14 +202,14 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('generate_page__update_checksums', displayer.ERROR)
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Check ISO size and create ISO image.
         #
 
         displayer.update_status('generate_page__check_iso_size', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = check_iso_size()
         # TODO: Update label for success and error "...message"
         if not is_error:
@@ -211,14 +217,14 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('generate_page__check_iso_size', displayer.ERROR)
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Create ISO image.
         #
 
         displayer.update_status('generate_page__create_iso_image', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = create_iso_image()
         if not is_error:
             displayer.update_status('generate_page__create_iso_image', displayer.OK)
@@ -227,14 +233,14 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
             displayer.update_label('generate_page__create_iso_image_message', 'Success.')
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Calculate ISO image MD5 checksum.
         #
 
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         is_error = calculate_md5_hash_for_iso()
         # TODO: Update label for success and error "...message"
         if not is_error:
@@ -242,7 +248,7 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.ERROR)
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         # TODO: Only activate the next button if no error.
         # TODO: Double check page validators on other pages to ensure
@@ -346,8 +352,8 @@ def save_stack_buffers(stack_name):
 
         # Create the parent directories (/preseed, /boot/grub, /isolinux, etc.)
         # if they do not exist.
-        directory = os.path.dirname(filepath)
-        os.makedirs(directory, exist_ok=True)
+        directory = dirname(filepath)
+        makedirs(directory, exist_ok=True)
 
         # Write the file.
         # TODO: Use try except block.
@@ -355,7 +361,7 @@ def save_stack_buffers(stack_name):
             file.write(data)
         # file.flush()
 
-        sleep(0.50)
+        sleep(0.500)
 
     is_error = False
     return is_error
@@ -380,12 +386,12 @@ def copy_boot_files():
             logger.log_value('Delete file', filepath)
             # TODO: Make sure filepath is relative to project directory.
             add_message('Delete %s' % filepath)
-            os.remove(filepath)
+            remove(filepath)
         except OSError as exception:
             is_error = True
             logger.log_value('Error deleting file', exception)
             add_message('Error deleting preseed file %s' % filepath)
-        sleep(0.50)
+        sleep(0.500)
     model.delete_list = []
     if is_error: return True
 
@@ -395,7 +401,7 @@ def copy_boot_files():
 
     is_error = False
 
-    sleep(0.50)
+    sleep(0.500)
     logger.log_label('Save ISO boot configurations')
     is_error = save_stack_buffers('options_page__boot_configuration_tab__stack')
     if is_error: return True
@@ -410,9 +416,10 @@ def copy_boot_files():
 
     is_error = False
 
-    sleep(0.50)
+    sleep(0.500)
 
     logger.log_label('Update vmlinuz boot file.')
+
     # Get the selected kernel details.
     # 0: version_name
     # 1: vmlinuz_filename
@@ -422,7 +429,7 @@ def copy_boot_files():
     # 5: directory
     # 6: note
     # 7: is_selected
-    # 8: is_remove
+
     list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
     for selected_index, kernel_details in enumerate(list_store):
         if kernel_details[7]:
@@ -435,7 +442,7 @@ def copy_boot_files():
     source_directory = list_store[selected_index][5]
 
     # Get target directory.
-    target_directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
+    target_directory = join(model.project.custom_disk_directory, model.status.casper_directory)
 
     #
     # Vmlinuz
@@ -443,12 +450,12 @@ def copy_boot_files():
 
     logger.log_label('Update vmlinuz boot file.')
     source_filename = list_store[selected_index][1]
-    source_filepath = os.path.join(source_directory, source_filename)
+    source_filepath = join(source_directory, source_filename)
     target_filename = list_store[selected_index][2]
-    target_filepath = os.path.join(target_directory, target_filename)
+    target_filepath = join(target_directory, target_filename)
     add_message('Update /%s/%s' % (model.status.casper_directory, source_filename))
     # Delete existing vmlinuz* file(s) in target directory.
-    pattern = os.path.join(target_directory, 'vmlinuz*')
+    pattern = join(target_directory, 'vmlinuz*')
     file_utilities.delete_files_with_pattern(pattern)
     # Copy new vmlinuz file.
     command = 'rsync --archive "%s" "%s"' % (source_filepath, target_filepath)
@@ -457,7 +464,7 @@ def copy_boot_files():
     print('result=%s, exitstatus=%s, signalstatus=%s' % (result, exitstatus, signalstatus))
     if exitstatus:
         is_error = True
-    sleep(0.50)
+    sleep(0.500)
     if is_error: return True
 
     #
@@ -466,12 +473,12 @@ def copy_boot_files():
 
     logger.log_label('Update initrd boot file.')
     source_filename = list_store[selected_index][3]
-    source_filepath = os.path.join(source_directory, source_filename)
+    source_filepath = join(source_directory, source_filename)
     target_filename = list_store[selected_index][4]
-    target_filepath = os.path.join(target_directory, target_filename)
+    target_filepath = join(target_directory, target_filename)
     add_message('Update /%s/%s' % (model.status.casper_directory, source_filename))
     # Delete existing initrd* file in target directory
-    pattern = os.path.join(target_directory, 'initrd*')
+    pattern = join(target_directory, 'initrd*')
     file_utilities.delete_files_with_pattern(pattern)
     # Copy new initrd file.
     # Rsync returns an exitstatus = 0 when successful.
@@ -479,20 +486,10 @@ def copy_boot_files():
     result, exitstatus, signalstatus = execute_synchronous(command)
     if exitstatus:
         is_error = True
-    sleep(0.50)
+    sleep(0.500)
     if is_error: return True
 
     return is_error
-
-
-#
-# Create relative links
-#
-
-# TODO: Make sure the following *relative* links are created:
-#       - squashfs-root/initrd.img --> /boot/initrd.img-4.8.0-37-generic
-#       - squashfs-root/vmlinuz    --> /boot/vmlinuz-4.8.0-37-generic
-#       - Use the function: os.symlink(src, dst)
 
 
 def create_squashfs():
@@ -509,16 +506,16 @@ def _create_squashfs_TESTING_2():
 
     logger.log_label('Create squashfs (Testing)')
 
-    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
+    source_path = join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The source path is', source_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The target path is', target_path)
 
     # Copy the original filesystem.squashfs.
     file_utilities.copy_file(source_path, target_path)
 
-    if os.path.exists(target_path):
+    if exists(target_path):
         is_error = False
         logger.log_value('The file exists', target_path)
     else:
@@ -538,7 +535,7 @@ def _create_squashfs_TESTING_1():
     source_path = model.project.custom_root_directory
     logger.log_value('The source path is', source_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The target path is', target_path)
 
     is_error = False
@@ -553,13 +550,13 @@ def _create_squashfs():
     source_path = model.project.custom_root_directory
     logger.log_value('The source path is', source_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The target path is', target_path)
 
     # Create filesystem.squashfs.
 
     # Pkexec is required.
-    program = os.path.join(model.application.directory, 'commands', 'compress-root')
+    program = join(model.application.directory, 'commands', 'compress-root')
     command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
 
     # Show % in progress by setting text to None.
@@ -569,7 +566,7 @@ def _create_squashfs():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('▹ Completed', '%i%%' % percent)
 
     error = show_progress(command, progress_callback)
 
@@ -585,7 +582,7 @@ def _create_squashfs_ORIGINAL():
     source_path = model.project.custom_root_directory
     logger.log_value('The source path is', source_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The target path is', target_path)
 
     # https://catchchallenger.first-world.info/wiki/Quick_Benchmark:_Gzip_vs_Bzip2_vs_LZMA_vs_XZ_vs_LZ4_vs_LZO
@@ -614,7 +611,7 @@ def _create_squashfs_ORIGINAL():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('▹ Completed', '%i%%' % percent)
 
     error = show_progress(command, progress_callback)
 
@@ -630,13 +627,13 @@ def update_filesystem_size():
     is_error = False
 
     # Pkexec is required.
-    program = os.path.join(model.application.directory, 'commands', 'disk-usage')
+    program = join(model.application.directory, 'commands', 'disk-usage')
     command = 'pkexec "%s" "%s"' % (program, model.project.custom_root_directory)
     result, exitstatus, signalstatus = execute_synchronous(command)
 
     if not exitstatus and not signalstatus:
         try:
-            size_information = re.search(r'^([0-9]+)\s', result)
+            size_information = search(r'^([0-9]+)\s', result)
             size = int(size_information.group(1))
         except AttributeError as exception:
             is_error = True
@@ -653,7 +650,7 @@ def update_filesystem_size():
         else:
             logger.log_value('The file system size is', '%.2f GiB (%s bytes)' % ((size / 1073741824.0), size))
             if size > 0:
-                filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.size')
+                filepath = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.size')
                 logger.log_value('Write filesystem size to', filepath)
                 # TODO: Use try for all write operations.
                 try:
@@ -691,7 +688,7 @@ def update_disk_name():
     error = False
 
     try:
-        filepath = os.path.join(model.project.custom_disk_directory, 'README.diskdefines')
+        filepath = join(model.project.custom_disk_directory, 'README.diskdefines')
         search_text = r'^#define DISKNAME.*'
         replacement_text = '#define DISKNAME %s' % model.custom.iso_disk_name
         logger.log_value('Write disk name to', filepath)
@@ -713,8 +710,8 @@ def update_disk_info():
     error = False
 
     try:
-        filepath = os.path.join(model.project.custom_disk_directory, '.disk', 'info')
-        current_time = datetime.datetime.now()
+        filepath = join(model.project.custom_disk_directory, '.disk', 'info')
+        current_time = datetime.now()
         formatted_time = '{:%Y%m%d}'.format(current_time)
         text = '%s (%s)' % (model.custom.iso_disk_name, formatted_time)
         logger.log_value('Write custom ISO image disk name and release date', text)
@@ -734,7 +731,7 @@ def update_disk_info():
 
 
 def calculate_md5_hash_for_file(filepath, blocksize=2**20):
-    hash = hashlib.md5()
+    hash = md5()
     # TODO: Use try except block.
     with open(filepath, 'rb') as file:
         while True:
@@ -748,21 +745,21 @@ def calculate_md5_hash_for_file(filepath, blocksize=2**20):
 def update_checksums_WITHOUT_PROGRESS(checksums_filepath, start_directory, exclude_paths):
     logger.log_label('Update md5 sums')
     # TODO: Validate if we need realpath here?
-    checksums_filepath = os.path.realpath(checksums_filepath)
-    start_directory = os.path.realpath(start_directory)
-    exclude_paths = [os.path.realpath(path) for path in exclude_paths]
+    checksums_filepath = realpath(checksums_filepath)
+    start_directory = realpath(start_directory)
+    exclude_paths = [realpath(path) for path in exclude_paths]
     logger.log_value('Write md5 sums to', checksums_filepath)
     count = 0
     # TODO: Use try except block.
     with open(checksums_filepath, 'w') as file:
-        for directory, directory_names, filenames in os.walk(start_directory):
+        for directory, directory_names, filenames in walk(start_directory):
             if directory not in exclude_paths:
                 for filename in filenames:
-                    filepath = os.path.join(directory, filename)
+                    filepath = join(directory, filename)
                     if (filepath not in exclude_paths):
                         count += 1
                         hash = calculate_md5_hash_for_file(filepath)
-                        relative_filepath = os.path.relpath(filepath, start_directory)
+                        relative_filepath = relpath(filepath, start_directory)
                         file.write('%s  ./%s\n' % (hash, relative_filepath))
                         # logger.log_label('%s  ./%s' % (hash, relative_filepath))
     return count
@@ -775,23 +772,23 @@ def update_checksums():
 
     logger.log_label('Update MD5 checksums')
 
-    checksums_filepath = os.path.join(model.project.custom_disk_directory, 'md5sum.txt')
+    checksums_filepath = join(model.project.custom_disk_directory, 'md5sum.txt')
     start_directory = model.project.custom_disk_directory
-    exclude_paths = [os.path.join(model.project.custom_disk_directory, 'isolinux'), checksums_filepath]
+    exclude_paths = [join(model.project.custom_disk_directory, 'isolinux'), checksums_filepath]
 
     # TODO: Validate if we need realpath here?
-    # checksums_filepath = os.path.realpath(checksums_filepath)
-    # start_directory = os.path.realpath(start_directory)
-    # exclude_paths = [os.path.realpath(path) for path in exclude_paths]
+    # checksums_filepath = realpath(checksums_filepath)
+    # start_directory = realpath(start_directory)
+    # exclude_paths = [realpath(path) for path in exclude_paths]
 
     logger.log_value('Write MD5 checksums to', checksums_filepath)
 
     # Get filepaths.
     filepaths = []
-    for directory, directory_names, filenames in os.walk(start_directory):
+    for directory, directory_names, filenames in walk(start_directory):
         if directory not in exclude_paths:
             for filename in filenames:
-                filepath = os.path.join(directory, filename)
+                filepath = join(directory, filename)
                 if (filepath not in exclude_paths):
                     filepaths.append(filepath)
     filepaths.sort(key=lambda filepath: filepath.lower())
@@ -807,11 +804,11 @@ def update_checksums():
         for file_number, filepath in enumerate(filepaths, start=1):
             # displayer.update_label('generate_page__update_checksums_message', 'Calculating checksum for file %i of %i.' % (file_number, total_files))
             hash = calculate_md5_hash_for_file(filepath)
-            relative_filepath = os.path.relpath(filepath, start_directory)
+            relative_filepath = relpath(filepath, start_directory)
             file.write('%s  ./%s\n' % (hash, relative_filepath))
             displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 100 * file_number / total_files)
             displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', 'Calculating checksum for file %i of %i' % (file_number, total_files))
-            sleep(0.0025)
+            sleep(0.005)
 
     displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', '100%')
     displayer.update_label('generate_page__update_checksums_message', 'Calculated checksums for %i files.' % total_files)
@@ -843,9 +840,9 @@ def check_iso_size():
         displayer.update_label(
             'generate_page__check_iso_size_message',
             'The total size of all files is %.2f GiB (%i bytes).' % (directory_size_gib,
-                                                                     directory_size_bytes) + os.linesep + 'This is larger than the %.2f GiB (%i bytes) limit.' %
+                                                                     directory_size_bytes) + linesep + 'This is larger than the %.2f GiB (%i bytes) limit.' %
             (MAXIMUM_ISO_SIZE_GIB,
-             MAXIMUM_ISO_SIZE_BYTES) + os.linesep + 'Click the Back button, and reduce the size of the Linux file system.')
+             MAXIMUM_ISO_SIZE_BYTES) + linesep + 'Click the Back button, and reduce the size of the Linux file system.')
         logger.log_value(displayer.ERROR, 'Disk size exceeds maximum')
 
         error = True
@@ -863,17 +860,17 @@ def create_iso_image():
 
     logger.log_label('Create ISO image')
 
-    efi_image_filepath = os.path.join(model.project.custom_disk_directory, 'boot/grub/efi.img')
-    custom_iso_filepath = os.path.join(model.custom.iso_directory, model.custom.iso_filename)
+    efi_image_filepath = join(model.project.custom_disk_directory, 'boot/grub/efi.img')
+    custom_iso_filepath = join(model.custom.iso_directory, model.custom.iso_filename)
 
     # Bug #1623261
     # https://www.gnu.org/software/xorriso/man_1_xorrisofs.html
     # http://www.syslinux.org/wiki/index.php?title=Isohybrid
-    if os.path.exists('/usr/lib/ISOLINUX/isohdpfx.bin'):
+    if exists('/usr/lib/ISOLINUX/isohdpfx.bin'):
         # Ubuntu 15.04 uses isolinux (/usr/lib/ISOLINUX/isohdpfx.bin).
         logger.log_value('Use xorriso with isohybrid MBR', '/usr/lib/ISOLINUX/isohdpfx.bin')
 
-        if os.path.exists(efi_image_filepath):
+        if exists(efi_image_filepath):
             command = (
                 'xorriso'
                 ' -as mkisofs -r -V "%s" -cache-inodes -J -l'
@@ -903,11 +900,11 @@ def create_iso_image():
                 '  -boot-info-table'
                 ' -o "%s" .' % (model.custom.iso_volume_id,
                                 custom_iso_filepath))
-    elif os.path.exists('/usr/lib/syslinux/isohdpfx.bin'):
+    elif exists('/usr/lib/syslinux/isohdpfx.bin'):
         # Ubuntu 14.04 uses syslinux-common (/usr/lib/syslinux/isohdpfx.bin).
         logger.log_value('Use xorriso with isohybrid MBR', '/usr/lib/syslinux/isohdpfx.bin')
 
-        if os.path.exists(efi_image_filepath):
+        if exists(efi_image_filepath):
             command = (
                 'xorriso'
                 ' -as mkisofs -r -V "%s" -cache-inodes -J -l'
@@ -953,7 +950,7 @@ def create_iso_image():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('▹ Completed', '%i%%' % percent)
 
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
@@ -967,9 +964,9 @@ def create_iso_image():
 def calculate_md5_hash_for_iso():
     logger.log_label('Calculate md5 sum')
 
-    custom_iso_filepath = os.path.join(model.custom.iso_directory, model.custom.iso_filename)
+    custom_iso_filepath = join(model.custom.iso_directory, model.custom.iso_filename)
     model.status.iso_checksum_filename = constructor.construct_custom_iso_checksum_filename(model.custom.iso_filename)
-    custom_iso_checksum_filepath = os.path.join(model.custom.iso_directory, model.status.iso_checksum_filename)
+    custom_iso_checksum_filepath = join(model.custom.iso_directory, model.status.iso_checksum_filename)
 
     md5_sum = calculate_md5_hash_for_file(custom_iso_filepath)
     model.status.iso_checksum = md5_sum
@@ -980,7 +977,7 @@ def calculate_md5_hash_for_iso():
 
     # displayer.update_label('generate_page__calculate_iso_image_checksum_message', 'The checksum is %s.\nThe checksum file is %s.' % (model.status.iso_checksum, model.status.iso_checksum_filename))
     displayer.update_label('generate_page__calculate_iso_image_checksum_message', 'The checksum is %s.' % model.status.iso_checksum)
-    sleep(0.50)
+    sleep(0.500)
     displayer.update_label('generate_page__calculate_iso_image_checksum_message', 'The checksum is %s.\nThe checksum file is %s.' % (model.status.iso_checksum, model.status.iso_checksum_filename))
 
     return False

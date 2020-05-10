@@ -27,12 +27,19 @@
 #                                                                      #
 ########################################################################
 
-from constants import NEW_CUBIC_VERSION
+import configparser
+
 from constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
+from constants import NEW_CUBIC_VERSION
+from utilities import constructor
 from utilities import logger
 from utilities import model
 
-import configparser
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -41,7 +48,7 @@ import configparser
 config_parser = None
 
 ########################################################################
-# Support Functions
+# Functions
 ########################################################################
 
 
@@ -173,6 +180,8 @@ def _load_from_2020_layout():
 
     # Project
     # model.project.cubic_version = get_value('Project', 'cubic_version')
+    model.project.create_date = get_value('Project', 'create_date')
+    # model.project.modify_date = get_value('Project', 'modify_date')
     # model.project.directory = get_value('Project', 'directory')
 
     # Original
@@ -212,6 +221,8 @@ def _load_from_2019_layout():
 
     # General -> Project
     # model.project.cubic_version = get_value('General', 'cubic_version')
+    model.project.create_date = constructor.get_file_date_time(model.project.configuration_filepath)
+    # model.project.modify_date = get_value('General', 'modify_date')
     # model.project.directory = get_value('General', 'project_directory')
 
     # Original
@@ -254,11 +265,9 @@ def save():
     logger.log_label('Save configuration')
 
     if model.project.cubic_version < NEW_CUBIC_VERSION:
-        model.project.cubic_version = model.application.cubic_version
         _initialize_2020_layout()
         _save_using_2020_layout()
     else:
-        model.project.cubic_version = model.application.cubic_version
         _save_using_2020_layout()
 
 
@@ -316,6 +325,8 @@ def _save_using_2020_layout():
 
     # Save project values.
     config_parser.set('Project', 'cubic_version', model.project.cubic_version)
+    config_parser.set('Project', 'create_date', model.project.create_date)
+    config_parser.set('Project', 'modify_date', model.project.modify_date)
     config_parser.set('Project', 'directory', model.project.directory)
 
     # Save original values.

@@ -27,29 +27,38 @@
 #                                                                      #
 ########################################################################
 
+from glob import glob
+from os import mkdir, remove, walk
+from os.path import exists, getsize, join
+from re import sub
+from shutil import copy, rmtree
+
 from utilities import logger
 from utilities import model
 from utilities.processor import execute_synchronous
 
-import glob
-import os
-import re
-import shutil
-
 ########################################################################
-# File Functions
+# References
 ########################################################################
 
-#-----------------------------------------------------------------------
+# N/A
+
+########################################################################
+# Globals & Constants
+########################################################################
+
+# N/A
+
+########################################################################
 # Directory Functions
-#-----------------------------------------------------------------------
+########################################################################
 
 
 def make_directory(directory):
     logger.log_label('Create directory')
     logger.log_value('Directory', directory)
-    if not os.path.exists(directory):
-        os.mkdir(directory)
+    if not exists(directory):
+        mkdir(directory)
     else:
         logger.log_value('Cannot create directory', 'Directory already exists')
 
@@ -57,13 +66,13 @@ def make_directory(directory):
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_directory(directory):
     logger.log_value('Delete directory', directory)
-    if os.path.exists(directory):
+    if exists(directory):
         try:
             # TODO: Check if permissions prevent this operation?
             # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
-            # shutil.rmtree(path, ignore_errors=False, onerror=HANDLER)
+            # rmtree(path, ignore_errors=False, onerror=HANDLER)
             # TODO: Path must point to a directory (but not a symbolic link to a directory).
-            shutil.rmtree(directory)
+            rmtree(directory)
             result = 'Successfully deleted %s' % directory
             exitstatus = 0
             signalstatus = None
@@ -88,13 +97,13 @@ def delete_directory(directory):
 def delete_files_with_pattern(pattern):
     logger.log_value('Delete existing  files with pattern', pattern)
     # TODO: Make this code more clear.
-    [os.remove(delete_filepath) for delete_filepath in glob.glob(pattern)]
+    [remove(delete_filepath) for delete_filepath in glob(pattern)]
 
 
 # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
 def delete_path_as_root(filepath):
     logger.log_value('Delete file as root', filepath)
-    program = os.path.join(model.application.directory, 'commands', 'delete')
+    program = join(model.application.directory, 'commands', 'delete')
     command = 'pkexec "%s" "%s"' % (program, filepath)
     result, exitstatus, signalstatus = execute_synchronous(command)
     logger.log_value('The result is', result)
@@ -107,10 +116,10 @@ def get_directory_size(start_path):
     logger.log_label('Calculate directory size')
     logger.log_value('Directory', start_path)
     total_size = 0
-    for dirpath, dirnames, filenames in os.walk(start_path):
+    for dirpath, dirnames, filenames in walk(start_path):
         for filename in filenames:
-            filepath = os.path.join(dirpath, filename)
-            total_size += os.path.getsize(filepath)
+            filepath = join(dirpath, filename)
+            total_size += getsize(filepath)
 
     logger.log_value('Directory size is', total_size)
     return total_size
@@ -123,7 +132,7 @@ def get_directory_for_file(filename, start_path):
 
     # TODO" can we return None, instead of '' ?
     directory = ''
-    for dirpath, dirnames, filenames in os.walk(start_path):
+    for dirpath, dirnames, filenames in walk(start_path):
         if filename in filenames:
             directory = dirpath
 
@@ -133,9 +142,9 @@ def get_directory_for_file(filename, start_path):
         logger.log_value('%s is not in' % filename, directory)
 
 
-#-----------------------------------------------------------------------
+########################################################################
 # File Functions
-#-----------------------------------------------------------------------
+########################################################################
 
 
 def copy_file(source_path, target_path):
@@ -144,16 +153,16 @@ def copy_file(source_path, target_path):
     logger.log_value('Source file path', source_path)
     logger.log_value('Target file path', target_path)
 
-    shutil.copy(source_path, target_path)
+    copy(source_path, target_path)
 
 
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_file(filepath):
     logger.log_value('Delete file', filepath)
-    if os.path.exists(filepath):
+    if exists(filepath):
         try:
             # TODO: Check if permissions prevent this operation?
-            os.remove(filepath)
+            remove(filepath)
             result = 'Successfully deleted %s' % filepath
             exitstatus = 0
             signalstatus = None
@@ -187,7 +196,7 @@ def replace_text_in_file(filepath, search_text, replacement_text):
         logger.log_value('Cannot replace text', 'File not specified')
         return error
 
-    if not os.path.exists(filepath):
+    if not exists(filepath):
         logger.log_value('Cannot replace text', 'File %s does not exist' % filepath)
         return error
 
@@ -205,7 +214,7 @@ def replace_text_in_file(filepath, search_text, replacement_text):
 
     with open(filepath, 'r+') as file:
         file_contents = file.read()
-        file_contents = re.sub(search_text, replacement_text, file_contents)
+        file_contents = sub(search_text, replacement_text, file_contents)
         file.seek(0)
         file.truncate()
         file.write(file_contents)

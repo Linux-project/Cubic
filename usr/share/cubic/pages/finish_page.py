@@ -27,16 +27,22 @@
 #                                                                      #
 ########################################################################
 
-from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+from os import system
+from os.path import exists, isfile, join
+from time import sleep
 
+from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from utilities import displayer
 from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 
-import os
-from time import sleep
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -176,28 +182,28 @@ def leave(action, new_page=None):
 
 def on_clicked__finish_page__custom_iso_filename_open_button(widget):
 
-    if os.path.isfile('/bin/nautilus'):
-        filepath = os.path.join(model.custom.iso_directory, model.custom.iso_filename)
-        if not os.path.isfile(filepath):
+    if isfile('/bin/nautilus'):
+        filepath = join(model.custom.iso_directory, model.custom.iso_filename)
+        if not isfile(filepath):
             filepath = model.custom.iso_directory
         command = 'nautilus %s &' % filepath
-        os.system(command)
+        system(command)
     else:
         command = 'xdg-open %s &' % model.custom.iso_directory
-        os.system(command)
+        system(command)
 
 
 def on_clicked__finish_page__custom_iso_checksum_filename_open_button(widget):
 
-    if os.path.isfile('/bin/nautilus'):
-        filepath = os.path.join(model.custom.iso_directory, model.status.iso_checksum_filename)
-        if not os.path.isfile(filepath):
+    if isfile('/bin/nautilus'):
+        filepath = join(model.custom.iso_directory, model.status.iso_checksum_filename)
+        if not isfile(filepath):
             filepath = model.custom.iso_directory
         command = 'nautilus %s &' % filepath
-        os.system(command)
+        system(command)
     else:
         command = 'xdg-open %s &' % model.custom.iso_directory
-        os.system(command)
+        system(command)
 
 
 ########################################################################
@@ -213,7 +219,7 @@ def unmount_original_iso():
     # Unmount and delete the original ISO mount point.
     #
     logger.log_value('Unmount the original ISO and delete the mount point', model.project.iso_mount_point)
-    if os.path.exists(model.project.iso_mount_point):
+    if exists(model.project.iso_mount_point):
         # Unmount the original ISO disk image.
         result, exitstatus, signalstatus = iso_utilities.unmount(model.project.iso_mount_point)
         if not signalstatus:
@@ -243,8 +249,8 @@ def delete_project_files():
     # Delete the configuration file
     #
     logger.log_value('Delete the configuration file', model.project.configuration_filepath)
-    # sleep(1.00)
-    if os.path.exists(model.project.configuration_filepath):
+    # sleep(1.000)
+    if exists(model.project.configuration_filepath):
         result, exitstatus, signalstatus = file_utilities.delete_file(model.project.configuration_filepath)
         if not signalstatus:
             # OK
@@ -259,8 +265,8 @@ def delete_project_files():
     # Delete the custom root directory.
     #
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
-    # sleep(1.00)
-    if os.path.exists(model.project.custom_root_directory):
+    # sleep(1.000)
+    if exists(model.project.custom_root_directory):
         result, exitstatus, signalstatus = file_utilities.delete_path_as_root(model.project.custom_root_directory)
         if not signalstatus:
             # OK
@@ -275,8 +281,8 @@ def delete_project_files():
     # Delete the custom disk directory.
     #
     logger.log_value('Delete the custom ISO directory', model.project.custom_disk_directory)
-    # sleep(1.00)
-    if os.path.exists(model.project.custom_disk_directory):
+    # sleep(1.000)
+    if exists(model.project.custom_disk_directory):
         result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.custom_disk_directory)
         if not signalstatus:
             # OK
@@ -286,30 +292,6 @@ def delete_project_files():
     else:
         # Skip
         pass
-
-    # Reset the model.
-    # TODO: Reset these as the files are deleted.
-
-    model.status.is_success_copy = None
-    model.status.is_success_extract = None
-    model.status.casper_directory = None
-    model.status.iso_checksum = None
-    model.status.iso_checksum_filename = None
-
-    model.original.iso_filename = None
-    model.original.iso_directory = None
-    model.original.iso_volume_id = None
-    model.original.iso_release_name = None
-    model.original.iso_disk_name = None
-
-    model.custom.iso_version_number = None
-    model.custom.iso_filename = None
-    model.custom.iso_directory = None
-    model.custom.iso_volume_id = None
-    model.custom.iso_release_name = None
-    model.custom.iso_disk_name = None
-
-    model.options.boot_configurations = None
 
     return is_error
 

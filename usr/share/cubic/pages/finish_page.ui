@@ -82,6 +82,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Custom ISO</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -125,6 +126,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Directory</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -152,6 +154,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="wrap">True</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -165,6 +168,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Checksum</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -194,6 +198,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Checksum File</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -235,6 +240,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="wrap">True</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -248,6 +254,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Version</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -277,6 +284,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Volume ID</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -306,6 +314,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Release</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -335,6 +344,7 @@
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
             <property name="label" translatable="yes">Disk Name</property>
+            <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
           <packing>
@@ -362,6 +372,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="wrap">True</property>
           </object>
           <packing>
             <property name="left_attach">0</property>

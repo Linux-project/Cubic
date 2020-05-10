@@ -26,13 +26,28 @@
 # along with Cubic. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                      #
 ########################################################################
+"""
+The following fields must be set before entering this page:
 
-import navigator
+1. model.project.cubic_version
+2. model.project.create_date
+3. model.project.modify_date
+4. model.project.directory
+5. model.project.configuration_filepath
+6. model.project.iso_mount_point
+7. model.project.custom_root_directory
+8. model.project.custom_disk_directory
+"""
+
+from os.path import isdir, isfile, join, split
+from re import sub
 
 from constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from file_choosers import directory_chooser
 from file_choosers import iso_image_chooser
+from navigator import handle_navigation
+from utilities.fields import Fields, IsoFields, IsoFieldsHistory
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
@@ -40,19 +55,12 @@ from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.fields import Fields, IsoFields, IsoFieldsHistory
 
-from os.path import isdir, isfile, join, split
-import re
+########################################################################
+# References
+########################################################################
 
-# The following fields must be set before entering this page:
-#
-# 1. project.cubic_version
-# 2. project.directory
-# 3. project.configuration_filepath
-# 4. project.iso_mount_point
-# 5. project.custom_root_directory
-# 6. project.custom_disk_directory
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -91,8 +99,12 @@ def setup(action, old_page=None):
 
     if action == 'back':
 
+        # Set status from the model, because values may have changed on
+        # subsequent pages (Extract page, Options page).
+        status = initialize_status_from_model()
+
         # Navigation buttons are also set in the validate_page() function.
-        if model.status.casper_directory and model.status.is_success_extract and model.status.is_success_copy:
+        if status.casper_directory and status.is_success_extract and status.is_success_copy:
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -122,7 +134,8 @@ def setup(action, old_page=None):
         # Show the Delete button because the project already exists.
         displayer.set_visible('project_page__delete_button', True)
 
-        # Validation is not required since nothing has changed.
+        # Validation is not required since nothing except status may
+        # have changed.
         # validate_page()
 
         return
@@ -379,7 +392,9 @@ def leave(action, new_page=None):
         # Copy the values to the model.
 
         # Project
-        model.project.cubic_version = model.application.cubic_version
+        # model.project.cubic_version = model.application.cubic_version
+        # model.project.create_date = model.project.create_date
+        # model.project.modify_date = constructor.get_current_date_time()
         # model.project.directory = model.project.directory
 
         # Original
@@ -433,7 +448,9 @@ def leave(action, new_page=None):
         # Copy the values to the model.
 
         # Project
-        model.project.cubic_version = model.application.cubic_version
+        # model.project.cubic_version = model.application.cubic_version
+        # model.project.create_date = model.project.create_date
+        # model.project.modify_date = constructor.get_current_date_time()
         # model.project.directory = model.project.directory
 
         # Original
@@ -807,14 +824,14 @@ def refresh_custom_using_version_number():
     fields = IsoFields('custom')
 
     # Update fields.
-    # re.sub(search_string, replace_string, original_string)
+    # sub(search_string, replace_string, original_string)
     fields.iso_version_number.value = constructor.construct_custom_iso_version_number()
     if custom.iso_version_number.value:
-        fields.iso_filename.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_filename.value)
+        fields.iso_filename.value = sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_filename.value)
         fields.iso_directory.value = custom.iso_directory.value
-        fields.iso_volume_id.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_volume_id.value)[:32]
-        fields.iso_release_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_release_name.value)
-        fields.iso_disk_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_disk_name.value)
+        fields.iso_volume_id.value = sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_volume_id.value)[:32]
+        fields.iso_release_name.value = sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_release_name.value)
+        fields.iso_disk_name.value = sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_disk_name.value)
     else:
         fields.iso_filename.value = custom.iso_filename.value
         fields.iso_directory.value = custom.iso_directory.value
@@ -1160,7 +1177,7 @@ def unblock_custom_handlers():
 
 def on_clicked__project_page__delete_button(widget):
     logger.log_value('Clicked', 'Delete')
-    navigator.handle_navigation('delete')
+    handle_navigation('delete')
 
 
 #-----------------------------------------------------------------------

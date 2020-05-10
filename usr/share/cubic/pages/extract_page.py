@@ -27,17 +27,22 @@
 #                                                                      #
 ########################################################################
 
+from os import walk
+from os.path import join, relpath
+from time import sleep
+
 from utilities import configuration
 from utilities import displayer
-from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.processor import terminate_process
 from utilities.progress import show_progress
 
-import os
-from time import sleep
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -105,21 +110,21 @@ def enter(action, old_page=None):
         if not model.status.casper_directory:
             error = identify_casper_relative_directory()
             # Pause to allow the user to see the result.
-            sleep(1.00)
+            sleep(1.000)
             if error: return 'error'
 
         # Extract the Linux file system.
         if not model.status.is_success_extract:
             error = extract_squashfs()
             # Pause to allow the user to see the result.
-            sleep(1.00)
+            sleep(1.000)
             if error: return 'error'
 
         # Copy original ISO files.
         if not model.status.is_success_copy:
             error = copy_original_iso_files()
             # Pause to allow the user to see the result.
-            sleep(1.00)
+            sleep(1.000)
             if error: return 'error'
 
         return 'next'
@@ -189,7 +194,7 @@ def identify_casper_relative_directory():
 
     displayer.update_status('extract_page__casper_directory', displayer.PROCESSING)
 
-    sleep(1.00)
+    sleep(1.000)
 
     relative_directory = None
 
@@ -197,7 +202,7 @@ def identify_casper_relative_directory():
     if not relative_directory:
         try:
             directory = get_directory_for_file('filesystem.squashfs', model.project.iso_mount_point)
-            relative_directory = os.path.relpath(directory, model.project.iso_mount_point)
+            relative_directory = relpath(directory, model.project.iso_mount_point)
             logger.log_value('The compressed Linux file system directory is', relative_directory)
         except ValueError as exception:
             logger.log_value('Unable to find the compressed Linux file system in %s' % model.project.iso_mount_point, exception)
@@ -206,7 +211,7 @@ def identify_casper_relative_directory():
     if not relative_directory:
         try:
             directory = get_directory_for_file('filesystem.squashfs', model.project.custom_disk_directory)
-            relative_directory = os.path.relpath(directory, model.project.custom_disk_directory)
+            relative_directory = relpath(directory, model.project.custom_disk_directory)
             logger.log_value('The compressed Linux file system directory is', relative_directory)
         except ValueError as exception:
             logger.log_value('Unable to find the compressed Linux file system in %s' % model.project.custom_disk_directory, exception)
@@ -238,7 +243,7 @@ def get_directory_for_file(filename, start_path):
     logger.log_value('Get directory for %s in' % filename, start_path)
 
     directory = ''
-    for dirpath, dirnames, filenames in os.walk(start_path):
+    for dirpath, dirnames, filenames in walk(start_path):
         if filename in filenames:
             directory = dirpath
 
@@ -261,7 +266,7 @@ def extract_squashfs():
 
     displayer.update_status('extract_page__unsquashfs', displayer.PROCESSING)
 
-    # sleep(1.00)
+    # sleep(1.000)
 
     # Clear the terminal because the history will no longer be valid
     # when the new *.squashfs file is extracted.
@@ -274,19 +279,19 @@ def extract_squashfs():
     # Delete custom squashfs directory, if it exists.
     # file_utilities.delete_directory(target_path)
 
-    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
+    source_path = join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The source path is', source_path)
 
     # Extract filesystem.squashfs.
 
-    program = os.path.join(model.application.directory, 'commands', 'extract-root')
+    program = join(model.application.directory, 'commands', 'extract-root')
     command = 'pkexec "%s" "%s" "%s"' % (program, target_path, source_path)
 
     # The progress callback function.
     def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('▹ Completed', '%i%%' % percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_callback)
@@ -315,17 +320,17 @@ def copy_original_iso_files():
 
     displayer.update_status('extract_page__copy_original_iso_files', displayer.PROCESSING)
 
-    # sleep(1.00)
+    # sleep(1.000)
 
     # Add a "/" at the end of the path so rsync copies the contents
     # of the source directory to the target directory.
-    source_path = os.path.join(model.project.iso_mount_point, '')
+    source_path = join(model.project.iso_mount_point, '')
     logger.log_value('The source path is', source_path)
 
     # Add a "/" at the end of the path so rsync copies files into
     # the target directory. This is not required, but is consistent
     # with the source directory path above.
-    target_path = os.path.join(model.project.custom_disk_directory, '')
+    target_path = join(model.project.custom_disk_directory, '')
     logger.log_value('The target path is', target_path)
 
     # Copy files from the original iso.
@@ -378,7 +383,7 @@ def copy_original_iso_files():
     def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('• Completed', '%i%%' % percent)
+            logger.log_value('▹ Completed', '%i%%' % percent)
 
     # Error may be None or an exception.
     error = show_progress(command, progress_callback)
@@ -393,20 +398,3 @@ def copy_original_iso_files():
         displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
 
     return bool(error)
-
-
-'''
-# TODO: Set boot_configurations on a different page.
-from constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
-if model.status.is_success_copy:
-    # Options (configurations)
-    boot_configurations_string = DEFAULT_BOOT_CONFIGURATIONS_STRING
-    boot_configurations = []
-    for boot_configuration in boot_configurations_string.split(','):
-        boot_configuration = boot_configuration.strip(' ' + os.sep)
-        # Do not use the real path for model.project.custom_disk_directory.
-        filepath = os.path.join(model.project.custom_disk_directory, boot_configuration)
-        if os.path.exists(filepath):
-            boot_configurations.append(boot_configuration)
-    model.options.boot_configurations = boot_configurations
-'''

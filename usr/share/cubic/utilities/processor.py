@@ -27,16 +27,21 @@
 #                                                                      #
 ########################################################################
 
-from utilities import logger
-from utilities import model
-
-import os
+from os.path import join
 from pexpect import spawn, ExceptionPexpect
 from re import sub
 from signal import SIGTERM
-import sys
-import traceback
-from time import sleep
+from sys import stdout
+from traceback import format_exc
+
+from utilities import logger
+from utilities import model
+
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -108,10 +113,10 @@ def execute_synchronous(command, working_directory=None):
     except ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', traceback.format_exc())
+        logger.log_value('The tracekback is', format_exc())
 
     # Calling flush() seems to prevent the process from becoming a zombie.
-    sys.stdout.flush()
+    stdout.flush()
     process = None
 
     return result, exitstatus, signalstatus
@@ -147,10 +152,10 @@ def execute_synchronous_unregistered(command, working_directory=None):
     except ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', traceback.format_exc())
+        logger.log_value('The tracekback is', format_exc())
 
     # Calling flush() seems to prevent the process from becoming a zombie.
-    sys.stdout.flush()
+    stdout.flush()
     process = None
 
     return process_pid, result, exitstatus, signalstatus
@@ -183,16 +188,16 @@ def execute_asynchronous(command, working_directory=None):
     except ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', traceback.format_exc())
+        logger.log_value('The tracekback is', format_exc())
 
     # Calling flush() seems to prevent the process from becoming a zombie.
-    sys.stdout.flush()
+    stdout.flush()
 
     return process
 
 
 ########################################################################
-# Terminate Process Functions
+# Process Functions
 ########################################################################
 
 
@@ -211,17 +216,17 @@ def _terminate_user_process():
         process.kill(SIGTERM)
     except PermissionError as exception:
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', traceback.format_exc())
+        logger.log_value('The tracekback is', format_exc())
     except Exception as exception:
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', traceback.format_exc())
+        logger.log_value('The tracekback is', format_exc())
     # This returns the exit status and signal status of the running
     # process that was killed.
     logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
     logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
 
     # Calling flush() seems to prevent the process from becoming a zombie.
-    sys.stdout.flush()
+    stdout.flush()
     process = None
 
 
@@ -232,10 +237,10 @@ def _terminate_root_process():
     global process
     if process and process.isalive():
         logger.log_value('Terminate process', process.pid)
-        program = os.path.join(model.application.directory, 'commands', 'terminate-process')
+        program = join(model.application.directory, 'commands', 'terminate-process')
         command = 'pkexec "%s" "%s"' % (program, process.pid)
         terminate_process_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(command, model.application.directory)
-        # sleep(0.50)
+        # sleep(0.500)
         # This returns the exit status and signal status of the process
         # that killed the running process.
         # logger.log_value('The result is', result)
@@ -245,5 +250,5 @@ def _terminate_root_process():
         logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
 
     # Calling flush() seems to prevent the process from becoming a zombie.
-    sys.stdout.flush()
+    stdout.flush()
     process = None

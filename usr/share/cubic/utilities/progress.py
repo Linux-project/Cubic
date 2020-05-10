@@ -27,17 +27,22 @@
 #                                                                      #
 ########################################################################
 
-from constants import ZOOM, PERCENT_START, PERCENT_STOP, PROGRESS_START, PROGRESS_STOP, SLOW_INTERVAL, FAST_INTERVAL
-
-from utilities.processor import execute_asynchronous
-from utilities import logger
-
 from datetime import datetime
 from pexpect import TIMEOUT, EOF
-import re
+from re import search
 from threading import Event, Lock, Thread
 from time import sleep, time
-import traceback
+from traceback import format_exc
+
+from constants import ZOOM, PERCENT_START, PERCENT_STOP, PROGRESS_START, PROGRESS_STOP, SLOW_INTERVAL, FAST_INTERVAL
+from utilities import logger
+from utilities.processor import execute_asynchronous
+
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -324,7 +329,7 @@ def track_actual_progress(event, command, working_directory=None):
             line = process.read(80)
             # print('{:.<35s} {:}'.format('Line', line.strip()))
             # logger.log_value('Line', line.strip())
-            result = re.search(r'([0-9]{1,3})%', str(line))
+            result = search(r'([0-9]{1,3})%', str(line))
             if result:
 
                 # Get the new process progress.
@@ -365,26 +370,26 @@ def track_actual_progress(event, command, working_directory=None):
         logger.log_value('Exitstatus is', exception.exitstatus)
         # print('{:.<35s} {:}'.format('Signalstatus is', exception.signalstatus))
         logger.log_value('Signalstatus is', exception.signalstatus)
-        # print('{:.<35s} {:}'.format('The tracekback is', traceback.format_exc()))
-        logger.log_value('The tracekback is', traceback.format_exc())
+        # print('{:.<35s} {:}'.format('The tracekback is', format_exc()))
+        logger.log_value('The tracekback is', format_exc())
         event.update(actual_percent, process_error=exception)
     except TIMEOUT as exception:
         # print('{:.<35s} {:}'.format('Error', exception))
         logger.log_value('Error', exception)
-        # print('{:.<35s} {:}'.format('The tracekback is', traceback.format_exc()))
-        logger.log_value('The tracekback is', traceback.format_exc())
+        # print('{:.<35s} {:}'.format('The tracekback is', format_exc()))
+        logger.log_value('The tracekback is', format_exc())
         event.update(actual_percent, process_error=exception)
     except EOF as exception:
         # print('{:.<35s} {:}'.format('Error', exception))
         logger.log_value('Error', exception)
-        # print('{:.<35s} {:}'.format('The tracekback is', traceback.format_exc()))
-        logger.log_value('The tracekback is', traceback.format_exc())
+        # print('{:.<35s} {:}'.format('The tracekback is', format_exc()))
+        logger.log_value('The tracekback is', format_exc())
         event.update(actual_percent, process_error=exception)
     except Exception as exception:
         # print('{:.<35s} {:}'.format('Error', exception))
         logger.log_value('Error', exception)
-        # print('{:.<35s} {:}'.format('The tracekback is', traceback.format_exc()))
-        logger.log_value('The tracekback is', traceback.format_exc())
+        # print('{:.<35s} {:}'.format('The tracekback is', format_exc()))
+        logger.log_value('The tracekback is', format_exc())
         event.update(actual_percent, process_error=exception)
 
     # print('{:.<35s} {:5.1f}'.format('Final process percent', actual_percent))

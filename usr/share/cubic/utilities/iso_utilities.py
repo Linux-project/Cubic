@@ -27,13 +27,25 @@
 #                                                                      #
 ########################################################################
 
+from os.path import exists, ismount, join, realpath, relpath
+from re import DOTALL, escape, search, sub
+
 from utilities import file_utilities
 from utilities import logger
 from utilities import model
 from utilities.processor import execute_synchronous
 
-import os
-import re
+########################################################################
+# References
+########################################################################
+
+# N/A
+
+########################################################################
+# Globals & Constants
+########################################################################
+
+# N/A
 
 ########################################################################
 # ISO Mount / Unmount
@@ -46,7 +58,7 @@ def mount(iso_mount_point, iso_filepath):
     logger.log_value('The mount point is', iso_mount_point)
     logger.log_value('The iso filepath is', iso_mount_point)
 
-    program = os.path.join(model.application.directory, 'commands', 'mount')
+    program = join(model.application.directory, 'commands', 'mount')
     command = 'pkexec "%s" "%s" "%s"' % (program, iso_mount_point, iso_filepath)
     result, exitstatus, signalstatus = execute_synchronous(command)
 
@@ -60,7 +72,7 @@ def unmount(iso_mount_point):
 
     logger.log_value('Unmount iso', iso_mount_point)
 
-    program = os.path.join(model.application.directory, 'commands', 'unmount')
+    program = join(model.application.directory, 'commands', 'unmount')
     command = 'pkexec "%s" "%s"' % (program, iso_mount_point)
     result, exitstatus, signalstatus = execute_synchronous(command)
 
@@ -84,25 +96,25 @@ def _is_mounted_1(iso_mount_point, iso_filepath):
     logger.log_value('The mount point is', iso_mount_point)
     logger.log_value('The iso filepath is', iso_filepath)
 
-    # Realpath is necessary here.
+    # Real path is necessary here.
     # The the output of the mount command only includes real paths.
-    iso_mount_point_realpath = os.path.realpath(iso_mount_point)
-    iso_filepath_realpath = os.path.realpath(iso_filepath)
+    real_iso_mount_point = realpath(iso_mount_point)
+    real_iso_filepath = realpath(iso_filepath)
 
     # The function os.path.islink() can not be used because it only
     # checks if the last item in the path is a link.
-    if iso_mount_point != iso_mount_point_realpath:
-        iso_mount_point = iso_mount_point_realpath
+    if iso_mount_point != real_iso_mount_point:
+        iso_mount_point = real_iso_mount_point
         logger.log_value('The mount point is a link to', iso_mount_point)
-    if iso_filepath != iso_filepath_realpath:
-        iso_filepath = iso_filepath_realpath
+    if iso_filepath != real_iso_filepath:
+        iso_filepath = real_iso_filepath
         logger.log_value('The iso filepath is a link to', iso_filepath)
 
     command = 'mount'
     result, exitstatus, signalstatus = execute_synchronous(command)
     is_mounted = False
     if not exitstatus and not signalstatus:
-        mount_information = re.search(r'%s\s*on\s*%s' % (re.escape(iso_filepath), re.escape(iso_mount_point)), result)
+        mount_information = search(r'%s\s*on\s*%s' % (escape(iso_filepath), escape(iso_mount_point)), result)
         is_mounted = bool(mount_information)
 
     logger.log_value('Is mounted?', is_mounted)
@@ -118,13 +130,13 @@ def _is_mounted_2(iso_mount_point):
     # The link target is provided for information purposes only.
     # The function os.path.islink() can not be used because it only
     # checks if the last item in the path is a link.
-    iso_mount_point_realpath = os.path.realpath(iso_mount_point)
-    if iso_mount_point != iso_mount_point_realpath:
-        logger.log_value('The mount point is a link to', iso_mount_point_realpath)
+    real_iso_mount_point = realpath(iso_mount_point)
+    if iso_mount_point != real_iso_mount_point:
+        logger.log_value('The mount point is a link to', real_iso_mount_point)
 
     # Realpath is not necessary here, because the function
-    # os.path.ismount() also works for symlinks.
-    is_mounted = os.path.ismount(iso_mount_point)
+    # ismount() also works for symlinks.
+    is_mounted = ismount(iso_mount_point)
 
     logger.log_value('Is mounted?', is_mounted)
 
@@ -137,7 +149,7 @@ def unmount_iso_and_delete_mount_point(iso_mount_point):
     """
 
     logger.log_value('Unmount the ISO and delete the mount point', iso_mount_point)
-    if os.path.exists(iso_mount_point):
+    if exists(iso_mount_point):
         result, exitstatus, signalstatus = unmount(iso_mount_point)
         if not signalstatus:
             logger.log_value('Delete the mount point', iso_mount_point)
@@ -169,7 +181,7 @@ def get_iso_volume_id(iso_filepath):
     # iso_volume_id = 'Unknown iso image volume id'
     iso_volume_id = ''
     if not exitstatus and not signalstatus:
-        iso_volume_id = re.sub(r'.*Volume id:\s+(.*[^\n]).*Volume\s+set\s+id.*', r'\1', result, 0, re.DOTALL)[:32]
+        iso_volume_id = sub(r'.*Volume id:\s+(.*[^\n]).*Volume\s+set\s+id.*', r'\1', result, 0, DOTALL)[:32]
     logger.log_value('ISO image volume id', iso_volume_id)
     return iso_volume_id
 
@@ -180,13 +192,13 @@ def get_iso_release_name(iso_mount_point):
     logger.log_value('ISO image mount point', iso_mount_point)
 
     # Read the original ISO image README.diskdefines file.
-    command = 'cat "%s"' % os.path.join(iso_mount_point, 'README.diskdefines')
+    command = 'cat "%s"' % join(iso_mount_point, 'README.diskdefines')
     result, exitstatus, signalstatus = execute_synchronous(command)
     # Get the original ISO image release name.
     # iso_release_name = 'Unknown iso image release name'
     iso_release_name = ''
     if not exitstatus and not signalstatus:
-        iso_release_name_infromation = re.search(r'DISKNAME.*"(.*)"', result)
+        iso_release_name_infromation = search(r'DISKNAME.*"(.*)"', result)
         if iso_release_name_infromation:
             iso_release_name = iso_release_name_infromation.group(1)
     logger.log_value('ISO image release name', iso_release_name)
@@ -199,13 +211,13 @@ def get_iso_disk_name(iso_mount_point):
     logger.log_value('ISO image mount point', iso_mount_point)
 
     # Read the original ISO image README.diskdefines file.
-    command = 'cat "%s"' % os.path.join(iso_mount_point, 'README.diskdefines')
+    command = 'cat "%s"' % join(iso_mount_point, 'README.diskdefines')
     result, exitstatus, signalstatus = execute_synchronous(command)
     # Get the original ISO image disk name.
     # iso_disk_name = 'Unknown iso image disk name'
     iso_disk_name = ''
     if not exitstatus and not signalstatus:
-        iso_disk_name_information = re.search(r'DISKNAME *(.*)', result)
+        iso_disk_name_information = search(r'DISKNAME *(.*)', result)
         if iso_disk_name_information:
             iso_disk_name = iso_disk_name_information.group(1)
     logger.log_value('ISO image disk name', iso_disk_name)
@@ -223,7 +235,7 @@ def get_casper_directory(iso_mount_point):
 
     casper_directory = file_utilities.get_directory_for_file('filesystem.squashfs', iso_mount_point)
     if casper_directory:
-        casper_directory = os.path.relpath(casper_directory, iso_mount_point)
+        casper_directory = relpath(casper_directory, iso_mount_point)
     else:
         casper_directory = None
 

@@ -27,28 +27,33 @@
 #                                                                      #
 ########################################################################
 
+import gi
+
+gi.require_version('Gtk', '3.0')
+
+from collections import Counter
+from gi.repository import Gtk
+from glob import glob
+from os.path import abspath, basename, dirname, exists, join, realpath, relpath
+from pexpect import EOF, ExceptionPexpect, spawnu, TIMEOUT
+from platform import release
+from re import IGNORECASE, search, split
+from string import printable
+from time import sleep
+
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from utilities import constructor
 from utilities import displayer
-from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 from utilities.processor import execute_synchronous
 
-# TODO: Can this be moved to displayer?
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+########################################################################
+# References
+########################################################################
 
-from collections import Counter
-import glob
-import os
-import pexpect
-import platform
-import re
-from time import sleep
-import string
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -121,7 +126,7 @@ def enter(action, old_page=None):
         #
 
         displayer.update_status('prepare_page__iso_boot_kernels', PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         kernel_details_list = create_boot_kernel_details_list()
         if kernel_details_list:
             displayer.update_status('prepare_page__iso_boot_kernels', OK)
@@ -138,14 +143,14 @@ def enter(action, old_page=None):
             add_message_to_iso_boot_kernels_box(
                 'To correct this issue, click the Back button and install missing Linux kernel packages on the Terminal page, or select the original ISO image on the Project page.')
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Identify preseed files.
         #
 
         displayer.update_status('prepare_page__preseed_files', PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         preseed_file_list = create_preseed_file_list()
         if preseed_file_list:
             prepare_preseed(preseed_file_list)
@@ -159,14 +164,14 @@ def enter(action, old_page=None):
             logger.log_value('Alert. Number of preseed files found', 0)
             displayer.update_label('prepare_page__preseed_files_message', 'No preseed files found.')
             displayer.update_status('prepare_page__preseed_files', displayer.OPTIONAL)
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Identify ISO boot configurations.
         #
 
         displayer.update_status('prepare_page__iso_boot_configurations', PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         boot_configuration_list = create_boot_configuration_list(kernel_details_list)
         if boot_configuration_list and kernel_details_list:
             prepare_boot_configurations(boot_configuration_list, kernel_details_list)
@@ -181,14 +186,14 @@ def enter(action, old_page=None):
             displayer.update_label('prepare_page__iso_boot_configurations_message', 'Error. No ISO boot configuration files found.')
             displayer.update_status('prepare_page__iso_boot_configurations', displayer.ERROR)
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Identify installed packages.
         #
 
         displayer.update_status('prepare_page__installed_packages', PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         installed_packages_list = create_installed_packages_list()
         if installed_packages_list and kernel_details_list:
             count = len(installed_packages_list)
@@ -202,14 +207,14 @@ def enter(action, old_page=None):
             displayer.update_label('prepare_page__installed_packages_message', 'Error. No installed packages found.')
             displayer.update_status('prepare_page__installed_packages', displayer.ERROR)
             return 'error'
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Create the package manifest for a typical install.
         #
 
         displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         filename = 'filesystem.manifest-remove'
         is_exists = is_exists_filesystem_manifest_remove(filename)
         if is_exists:
@@ -224,14 +229,14 @@ def enter(action, old_page=None):
             removable_packages_list_1 = []
             displayer.update_status('prepare_page__package_manifest_1', OPTIONAL)
             displayer.update_label('prepare_page__package_manifest_1_message', 'This ISO does not have a list of packages to be removed after a typical install.')
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Create the package manifest for a minimal install.
         #
 
         displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         filename = 'filesystem.manifest-minimal-remove'
         is_exists = is_exists_filesystem_manifest_remove(filename)
         if is_exists:
@@ -246,14 +251,14 @@ def enter(action, old_page=None):
             removable_packages_list_2 = []
             displayer.update_status('prepare_page__package_manifest_2', OPTIONAL)
             displayer.update_label('prepare_page__package_manifest_2_message', 'This ISO does not have a list of packages to be removed after a minimal install.')
-        sleep(0.50)
+        sleep(0.500)
 
         #
         # Save the package manifests.
         #
 
         displayer.update_status('prepare_page__save_package_manifest', PROCESSING)
-        sleep(0.50)
+        sleep(0.500)
         package_details_list = create_package_details_list(installed_packages_list, removable_packages_list_1, removable_packages_list_2)
         if installed_packages_list:
             displayer.update_list_store('packages_page__list_store', package_details_list)
@@ -269,9 +274,9 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('prepare_page__save_package_manifest', ERROR)
             displayer.update_label('prepare_page__save_package_manifest_message', 'Unable to save the package manifest file.')
-        sleep(0.50)
+        sleep(0.500)
 
-        sleep(2.00)
+        sleep(2.000)
         return 'next'
 
 
@@ -342,8 +347,8 @@ def create_boot_kernel_details_list():
       2. source-disk/casper/vmlinuz.efi; initrd.lz
     """
 
-    directory_1 = os.path.join(model.project.custom_root_directory, 'boot')
-    directory_2 = os.path.join(model.project.iso_mount_point, model.status.casper_directory)
+    directory_1 = join(model.project.custom_root_directory, 'boot')
+    directory_2 = join(model.project.iso_mount_point, model.status.casper_directory)
     kernel_details_list = create_kernel_details_list(directory_1, directory_2)
 
     return kernel_details_list
@@ -382,7 +387,7 @@ def prepare_linux_kernels(kernel_details_list):
     # 5: directory
     # 6: note
     # 7: is_selected
-    # 8: is_remove
+
     displayer.update_list_store(
         'options_page__linux_kernels_tab__list_store',
         [
@@ -394,8 +399,7 @@ def prepare_linux_kernels(kernel_details_list):
                 kernel_details['new_initrd_filename'],
                 kernel_details['directory'],
                 kernel_details['note'],
-                kernel_details['is_selected'],
-                kernel_details['is_remove']
+                kernel_details['is_selected']
             ] for kernel_details in kernel_details_list
         ])
 
@@ -411,8 +415,8 @@ def create_kernel_details_list(*directories):
     # Create a consolidated vmlinuz details list.
     vmlinuz_details_list = []
     for directory in directories:
-        # Realpath is necessary here.
-        directory = os.path.realpath(directory)
+        # Real path is necessary here.
+        directory = realpath(directory)
         update_vmlinuz_details_list(directory, vmlinuz_details_list)
 
     # For debugging.
@@ -431,8 +435,8 @@ def create_kernel_details_list(*directories):
     initrd_details_list = []
     initrd_directory_counter = Counter()
     for directory in directories:
-        # Realpath is necessary here.
-        directory = os.path.realpath(directory)
+        # Real path is necessary here.
+        directory = realpath(directory)
         update_initrd_details_list(directory, initrd_details_list)
 
     # For debugging.
@@ -471,7 +475,6 @@ def _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kerne
 
     note = ''
     is_selected = False
-    is_remove = False
 
     for vmlinuz_details in vmlinuz_details_list:
 
@@ -498,7 +501,6 @@ def _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kerne
             # 6: directory
             # 7: note
             # 8: is_selected
-            # 9: is_remove
 
             if vmlinuz_directory == initrd_directory:
                 if vmlinuz_version_name and initrd_version_name:
@@ -512,8 +514,7 @@ def _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kerne
                             'new_initrd_filename': new_initrd_filename,
                             'directory': vmlinuz_directory,
                             'note': note,
-                            'is_selected': is_selected,
-                            'is_remove': is_remove
+                            'is_selected': is_selected
                         }
                         kernel_details_list.append(kernel_details)
                 elif vmlinuz_directory in directories_with_one_vmlinuz_and_initrd:
@@ -527,8 +528,7 @@ def _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kerne
                             'new_initrd_filename': new_initrd_filename,
                             'directory': vmlinuz_directory,
                             'note': note,
-                            'is_selected': is_selected,
-                            'is_remove': is_remove
+                            'is_selected': is_selected
                         }
                         kernel_details_list.append(kernel_details)
                     elif not vmlinuz_version_name and initrd_version_name:
@@ -541,8 +541,7 @@ def _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kerne
                             'new_initrd_filename': new_initrd_filename,
                             'directory': vmlinuz_directory,
                             'note': note,
-                            'is_selected': is_selected,
-                            'is_remove': is_remove
+                            'is_selected': is_selected
                         }
                         kernel_details_list.append(kernel_details)
                     else:
@@ -559,8 +558,7 @@ def _create_kernel_details_list(vmlinuz_details_list, initrd_details_list, kerne
                             'new_initrd_filename': new_initrd_filename,
                             'directory': vmlinuz_directory,
                             'note': note,
-                            'is_selected': is_selected,
-                            'is_remove': is_remove
+                            'is_selected': is_selected
                         }
                         kernel_details_list.append(kernel_details)
 
@@ -593,7 +591,7 @@ def update_kernel_details_list(kernel_details_list):
     # Set the notes, and update the selected index if necessary.
     current_kernel_release_name = get_current_kernel_release_name()
     current_kernel_version_name = get_current_kernel_version_name()
-    original_iso_image_directory = os.path.join(model.project.iso_mount_point, model.status.casper_directory)
+    original_iso_image_directory = join(model.project.iso_mount_point, model.status.casper_directory)
     for index, kernel_details in enumerate(kernel_details_list):
         note = ''
         version_name = kernel_details['version_name']
@@ -637,7 +635,6 @@ def update_kernel_details_list(kernel_details_list):
     # 5: directory
     # 6: note
     # 7: is_selected
-    # 8: is_remove
 
     # It is not necessary to remove the 1st column because because items
     # are selectively added to the list_store in the
@@ -656,21 +653,20 @@ def update_kernel_details_list(kernel_details_list):
     total = len(kernel_details_list)
     for index, kernel_details in enumerate(kernel_details_list):
         logger.log_value('Version', kernel_details['version_name'])
-        logger.log_value('• Index', '%s of %s' % (index + 1, total))
-        logger.log_value('• Vmlinuz filename', kernel_details['vmlinuz_filename'])
-        logger.log_value('• New vmlinuz filename', kernel_details['new_vmlinuz_filename'])
-        logger.log_value('• Initrd filename', kernel_details['initrd_filename'])
-        logger.log_value('• New initrd filename', kernel_details['new_initrd_filename'])
-        logger.log_value('• Directory', kernel_details['directory'])
-        logger.log_value('• Note', kernel_details['note'])
-        logger.log_value('• Is selected', kernel_details['is_selected'])
-        # logger.log_value('• Is remove', kernel_details['is_remove'])
+        logger.log_value('▹ Index', '%s of %s' % (index + 1, total))
+        logger.log_value('▹ Vmlinuz filename', kernel_details['vmlinuz_filename'])
+        logger.log_value('▹ New vmlinuz filename', kernel_details['new_vmlinuz_filename'])
+        logger.log_value('▹ Initrd filename', kernel_details['initrd_filename'])
+        logger.log_value('▹ New initrd filename', kernel_details['new_initrd_filename'])
+        logger.log_value('▹ Directory', kernel_details['directory'])
+        logger.log_value('▹ Note', kernel_details['note'])
+        logger.log_value('▹ Is selected', kernel_details['is_selected'])
 
 
 def get_current_kernel_version_name():
     version_name = None
     try:
-        version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+))', platform.release())
+        version_information = (r'(\d+\.\d+\.\d+(?:-\d+))', release())
         version_name = version_information.group(1)
     except AttributeError as exception:
         pass
@@ -679,7 +675,7 @@ def get_current_kernel_version_name():
 
 
 def get_current_kernel_release_name():
-    return platform.release()
+    return release()
 
 
 def is_server_image():
@@ -689,11 +685,11 @@ def is_server_image():
     # - original.iso_volume_id = Ubuntu-Server 18.04 LTS amd64
     # - original.iso_disk_name = Ubuntu-Server 18.04 LTS "Bionic Beaver" - Release amd64
 
-    if re.search('server', model.original.iso_filename, re.IGNORECASE):
+    if search('server', model.original.iso_filename, IGNORECASE):
         return True
-    if re.search('server', model.original.iso_volume_id, re.IGNORECASE):
+    if search('server', model.original.iso_volume_id, IGNORECASE):
         return True
-    if re.search('server', model.original.iso_disk_name, re.IGNORECASE):
+    if search('server', model.original.iso_disk_name, IGNORECASE):
         return True
 
     return False
@@ -707,69 +703,69 @@ def is_server_image():
 def update_vmlinuz_details_list(directory, details_list):
 
     logger.log_label('Create vmlinuz details list')
-    logger.log_value('• Search directory', directory)
+    logger.log_value('▹ Search directory', directory)
 
-    relative_directory = os.path.relpath(directory, model.project.directory)
+    relative_directory = relpath(directory, model.project.directory)
     add_message_to_iso_boot_kernels_box('Search for vmlinuz files in %s' % relative_directory)
 
     filepath_list = []
 
     # Replace simlinks with the actual filepath.
-    directory = os.path.realpath(directory)
-    filepath_pattern = os.path.join(directory, 'vmlinuz*')
-    for filepath in glob.glob(filepath_pattern):
+    directory = realpath(directory)
+    filepath_pattern = join(directory, 'vmlinuz*')
+    for filepath in glob(filepath_pattern):
         # Replace simlinks with the actual filepath.
-        realpath = os.path.realpath(filepath)
-        if not os.path.exists(realpath):
-            # The realpath may not exist because it may be relative to
+        real_path = realpath(filepath)
+        if not exists(real_path):
+            # The real path may not exist because it may be relative to
             # the root directory of the virtual environment. If this is
             # the case, the link will appear broken outside of the
             # virtual environment, because it will seem to point to the
             # root of the host system.
             # The following remedies this situation by appending the
-            # virtual environment's root directory to the realpath.
+            # virtual environment's root directory to the real path.
             # However, if another file with the same path actually
-            # exists on the host system, realpath will point to that
+            # exists on the host system, real path will point to that
             # file instead, and this 'if not' block will not be
             # executed. This is considered a negligable risk.
             # It is necessary to concatenate the directory and real path
-            # using "+" because os.path.join() discards the virtual
-            # environment's root directory, because the realpath may be
+            # using "+" because join() discards the virtual
+            # environment's root directory, because the real path may be
             # considered and absolute path: "If a component is an
             # absolute path, all previous components are thrown away and
             # joining continues from the absolute path component."
             # (See https://docs.python.org/3/library/os.path.html).
-            filepath = os.path.abspath(model.project.custom_root_directory + realpath)
+            filepath = abspath(model.project.custom_root_directory + real_path)
             # Replace simlinks with the actual filepath.
-            realpath = os.path.realpath(filepath)
+            real_path = realpath(filepath)
 
-        if os.path.exists(realpath):
-            filepath_list.append(realpath)
+        if exists(real_path):
+            filepath_list.append(real_path)
 
     filepath_list = list(set(filepath_list))
 
     count = len(filepath_list)
-    logger.log_value('• Number of vmlinuz files found', count)
+    logger.log_value('▹ Number of vmlinuz files found', count)
     number_text = constructor.number_as_text(count)
     plural_text = constructor.get_plural('file', 'files', count)
     add_message_to_iso_boot_kernels_box('Found %s vmlinuz %s' % (number_text, plural_text))
-    sleep(0.25)
+    sleep(0.250)
 
     for index, filepath in enumerate(filepath_list):
-        filename = os.path.basename(filepath)
-        directory = os.path.dirname(filepath)
+        filename = basename(filepath)
+        directory = dirname(filepath)
         version_name = get_vmlinuz_version_name(filepath)
         # if not version_name: version_name = '0.0.0-0'
-        logger.log_value('• The vmlinuz version is', version_name)
+        logger.log_value('▹ The vmlinuz version is', version_name)
         if version_name:
-            version_integers = tuple(map(int, re.split('[.-]', version_name)))
+            version_integers = tuple(map(int, split('[.-]', version_name)))
         else:
-            version_integers = tuple(map(int, re.split('[.-]', '0.0.0-0')))
+            version_integers = tuple(map(int, split('[.-]', '0.0.0-0')))
         new_filename = calculate_vmlinuz_filename(filepath)
 
         details = {'version_integers': version_integers, 'version_name': version_name, 'filename': filename, 'new_filename': new_filename, 'directory': directory}
         details_list.append(details)
-        sleep(0.25)
+        sleep(0.250)
 
 
 def calculate_vmlinuz_filename(filepath):
@@ -783,8 +779,8 @@ def calculate_vmlinuz_filename(filepath):
 def get_vmlinuz_version_name(filepath):
 
     # logger.log_value('Get vmlinuz version', filepath)
-    # relative_filepath = os.path.relpath(filepath, model.project.directory)
-    filename = os.path.basename(filepath)
+    # relative_filepath = relpath(filepath, model.project.directory)
+    filename = basename(filepath)
     add_message_to_iso_boot_kernels_box('Identify version for %s' % filename)
 
     version_name = (_get_vmlinuz_version_name_from_file_name(filepath) or _get_vmlinuz_version_name_from_file_type(filepath) or _get_vmlinuz_version_name_from_file_contents(filepath))
@@ -796,10 +792,10 @@ def get_vmlinuz_version_name(filepath):
 def _get_vmlinuz_version_name_from_file_name(filepath):
 
     logger.log_value('Get vmlinuz version name from file name', filepath)
-    filename = os.path.basename(filepath)
-    version_name = re.search(r'\d[\d\.-]*\d', filename)
+    filename = basename(filepath)
+    version_name = search(r'\d[\d\.-]*\d', filename)
     version_name = version_name.group(0) if version_name else None
-    logger.log_value('• The version name is', version_name)
+    logger.log_value('▹ The version name is', version_name)
 
     return version_name
 
@@ -811,10 +807,10 @@ def _get_vmlinuz_version_name_from_file_type(filepath):
     result, exitstatus, signalstatus = execute_synchronous(command)
     version_name = None
     if not exitstatus and not signalstatus:
-        version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+))', str(result))
+        version_information = search(r'(\d+\.\d+\.\d+(?:-\d+))', str(result))
         if version_information:
             version_name = version_information.group(1)
-    logger.log_value('• The version name is', version_name)
+    logger.log_value('▹ The version name is', version_name)
 
     return version_name
 
@@ -827,18 +823,18 @@ def _get_vmlinuz_version_name_from_file_contents(filepath):
         contents = file.read()
     candidate = ''
     for character in contents:
-        if character in string.printable:
+        if character in printable:
             candidate += character
         elif len(candidate) > 4:
             try:
-                version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+))', str(candidate))
+                version_information = search(r'(\d+\.\d+\.\d+(?:-\d+))', str(candidate))
                 version_name = version_information.group(1)
                 break
             except:
                 candidate = ''
         else:
             candidate = ''
-    logger.log_value('• The version name is', version_name)
+    logger.log_value('▹ The version name is', version_name)
 
     return version_name
 
@@ -851,69 +847,69 @@ def _get_vmlinuz_version_name_from_file_contents(filepath):
 def update_initrd_details_list(directory, details_list):
 
     logger.log_label('Create initrd details list')
-    logger.log_value('• Search directory', directory)
+    logger.log_value('▹ Search directory', directory)
 
-    relative_directory = os.path.relpath(directory, model.project.directory)
+    relative_directory = relpath(directory, model.project.directory)
     add_message_to_iso_boot_kernels_box('Search for initrd files in %s' % relative_directory)
 
     filepath_list = []
 
     # Replace simlinks with the actual filepath.
-    directory = os.path.realpath(directory)
-    filepath_pattern = os.path.join(directory, 'initrd*')
-    for filepath in glob.glob(filepath_pattern):
+    directory = realpath(directory)
+    filepath_pattern = join(directory, 'initrd*')
+    for filepath in glob(filepath_pattern):
         # Replace simlinks with the actual filepath.
-        realpath = os.path.realpath(filepath)
-        if not os.path.exists(realpath):
-            # The realpath may not exist because it may be relative to
+        real_path = realpath(filepath)
+        if not exists(real_path):
+            # The real path may not exist because it may be relative to
             # the root directory of the virtual environment. If this is
             # the case, the link will appear broken outside of the
             # virtual environment, because it will seem to point to the
             # root of the host system.
             # The following remedies this situation by appending the
-            # virtual environment's root directory to the realpath.
+            # virtual environment's root directory to the real path.
             # However, if another file with the same path actually
-            # exists on the host system, realpath will point to that
+            # exists on the host system, real path will point to that
             # file instead, and this 'if not' block will not be
             # executed. This is considered a negligable risk.
             # It is necessary to concatenate the directory and real path
-            # using "+" because os.path.join() discards the virtual
-            # environment's root directory, because the realpath may be
+            # using "+" because join() discards the virtual
+            # environment's root directory, because the real path may be
             # considered and absolute path: "If a component is an
             # absolute path, all previous components are thrown away and
             # joining continues from the absolute path component."
             # (See https://docs.python.org/3/library/os.path.html).
-            filepath = os.path.abspath(model.project.custom_root_directory + realpath)
+            filepath = abspath(model.project.custom_root_directory + real_path)
             # Replace simlinks with the actual filepath.
-            realpath = os.path.realpath(filepath)
+            real_path = realpath(filepath)
 
-        if os.path.exists(realpath):
-            filepath_list.append(realpath)
+        if exists(real_path):
+            filepath_list.append(real_path)
 
     filepath_list = list(set(filepath_list))
 
     count = len(filepath_list)
-    logger.log_value('• Number of initrd files found', count)
+    logger.log_value('▹ Number of initrd files found', count)
     number_text = constructor.number_as_text(count)
     plural_text = constructor.get_plural('file', 'files', count)
     add_message_to_iso_boot_kernels_box('Found %s initrd %s' % (number_text, plural_text))
-    sleep(0.25)
+    sleep(0.250)
 
     for index, filepath in enumerate(filepath_list):
-        filename = os.path.basename(filepath)
-        directory = os.path.dirname(filepath)
+        filename = basename(filepath)
+        directory = dirname(filepath)
         version_name = get_initrd_version_name(filepath)
         # if not version_name: version_name = '0.0.0-0'
-        logger.log_value('• The initrd version is', version_name)
+        logger.log_value('▹ The initrd version is', version_name)
         if version_name:
-            version_integers = tuple(map(int, re.split('[.-]', version_name)))
+            version_integers = tuple(map(int, split('[.-]', version_name)))
         else:
-            version_integers = tuple(map(int, re.split('[.-]', '0.0.0-0')))
+            version_integers = tuple(map(int, split('[.-]', '0.0.0-0')))
         new_filename = calculate_initrd_filename(filepath)
 
         details = {'version_integers': version_integers, 'version_name': version_name, 'filename': filename, 'new_filename': new_filename, 'directory': directory}
         details_list.append(details)
-        sleep(0.25)
+        sleep(0.250)
 
 
 def calculate_initrd_filename(filepath):
@@ -925,7 +921,7 @@ def calculate_initrd_filename(filepath):
     logger.log_value('The file type informaton is', result)
 
     compression = None
-    match = re.search(r':\s(.*)\scompressed data', result)
+    match = search(r':\s(.*)\scompressed data', result)
     if match: compression = match.group(1)
     else: logger.log_value('Compression for initrd not found in', filepath)
     logger.log_value('The compression for initrd is', compression)
@@ -949,7 +945,6 @@ def get_vmlinuz_version_from_kernel_details_list(kernel_details_list, directory)
     # 6: directory
     # 7: note
     # 8: is_selected
-    # 9: is_remove
 
     version_name = '0.0.0-0'
     for kernel_details in kernel_details_list:
@@ -963,9 +958,9 @@ def get_initrd_version_name(filepath):
 
     # logger.log_value('Get initrd version', filepath)
     # TODO: INVESTIGATE IF THIS RELATIVE FILEPATH SHOULD HAVE BEEN USED BELOW !!!
-    relative_filepath = os.path.relpath(filepath, model.project.directory)
-    # add_message_to_iso_boot_kernels_box('• Processing .../%s' % relative_filepath)
-    filename = os.path.basename(filepath)
+    relative_filepath = relpath(filepath, model.project.directory)
+    # add_message_to_iso_boot_kernels_box('▹ Processing .../%s' % relative_filepath)
+    filename = basename(filepath)
     add_message_to_iso_boot_kernels_box('Identify version for %s' % filename)
 
     version_name = (_get_initrd_version_name_from_file_name(filepath) or _get_initrd_version_name_from_file_contents(filepath) or _get_initrd_version_name_from_file_type(filepath))
@@ -977,8 +972,8 @@ def get_initrd_version_name(filepath):
 def _get_initrd_version_name_from_file_name(filepath):
 
     logger.log_value('Get initrd version name from file name', filepath)
-    filename = os.path.basename(filepath)
-    version_name = re.search(r'\d[\d\.-]*\d', filename)
+    filename = basename(filepath)
+    version_name = search(r'\d[\d\.-]*\d', filename)
     version_name = version_name.group(0) if version_name else None
 
     return version_name
@@ -991,10 +986,10 @@ def _get_initrd_version_name_from_file_type(filepath):
     result, exitstatus, signalstatus = execute_synchronous(command)
     version_name = None
     if not exitstatus and not signalstatus:
-        version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+))', str(result))
+        version_information = search(r'(\d+\.\d+\.\d+(?:-\d+))', str(result))
         if version_information:
             version_name = version_information.group(1)
-    logger.log_value('• The version name is', version_name)
+    logger.log_value('▹ The version name is', version_name)
 
     return version_name
 
@@ -1005,24 +1000,24 @@ def _get_initrd_version_name_from_file_contents(filepath):
     version_name = None
     try:
         command = 'lsinitramfs "%s"' % filepath
-        process = pexpect.spawnu(command, timeout=60)
+        process = spawnu(command, timeout=60)
         match = False
         while process.exitstatus is None and not match:
             line = process.readline()
             # print('%s' % line, end='')
-            match = re.search(r'lib/modules/(\d[\d\.-]*\d)', line)
+            match = search(r'lib/modules/(\d[\d\.-]*\d)', line)
             if ('cannot' in line or 'error' in line or 'premature' in line):
                 logger.log_value('Encountered exception while getting initrd version name from file contents', line)
         if match:
             process.terminate(True)
             version_name = match.group(1)
-    except pexpect.TIMEOUT as exception:
+    except TIMEOUT as exception:
         logger.log_value('Encountered exception while getting initrd version name from file contents', exception)
-    except pexpect.EOF as exception:
+    except EOF as exception:
         logger.log_value('Encountered exception while getting initrd version name from file contents', exception)
-    except pexpect.ExceptionPexpect as exception:
+    except ExceptionPexpect as exception:
         logger.log_value('Encountered exception while getting initrd version name from file contents', exception)
-    logger.log_value('• The version name is', version_name)
+    logger.log_value('▹ The version name is', version_name)
 
     return version_name
 
@@ -1089,8 +1084,8 @@ def create_preseed_file_list():
     model.delete_list = []
 
     # TODO: Only read text files.
-    search_filepath = os.path.join(model.project.custom_disk_directory, 'preseed', '*')
-    filepaths = glob.glob(search_filepath)
+    search_filepath = join(model.project.custom_disk_directory, 'preseed', '*')
+    filepaths = glob(search_filepath)
     filepaths.sort()
 
     return filepaths
@@ -1153,7 +1148,7 @@ def create_boot_configuration_list(kernel_details_list):
     filepaths = []
     if kernel_details_list:
         for boot_configuration in model.options.boot_configurations:
-            filepath = os.path.join(model.project.custom_disk_directory, boot_configuration)
+            filepath = join(model.project.custom_disk_directory, boot_configuration)
             filepaths.append(filepath)
     return filepaths
 
@@ -1219,14 +1214,14 @@ def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
 def is_exists_filesystem_manifest_remove(filename):
 
     # Check custom live iso directory
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)
+    filepath = join(model.project.custom_disk_directory, model.status.casper_directory, filename)
 
-    is_exists = os.path.exists(filepath)
+    is_exists = exists(filepath)
     if is_exists:
-        logger.log_value('%s found in' % filename, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
+        logger.log_value('%s found in' % filename, join(model.project.custom_disk_directory, model.status.casper_directory))
         return True
     else:
-        logger.log_value('%s not found in' % filename, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
+        logger.log_value('%s not found in' % filename, join(model.project.custom_disk_directory, model.status.casper_directory))
         return False
 
 
@@ -1238,7 +1233,7 @@ def create_installed_packages_list():
     # command = 'chroot "%s" dpkg-query --showformat="${Package}\t${Version}\n" --show' % model.project.custom_root_directory
     # command = 'chroot "%s" dpkg-query --show' % model.project.custom_root_directory
     # command = 'pkexec chroot "%s" dpkg-query --show' % model.project.custom_root_directory
-    dpkg_database_directory = os.path.join(model.project.custom_root_directory, '/var', 'lib', 'dpkg')
+    dpkg_database_directory = join(model.project.custom_root_directory, '/var', 'lib', 'dpkg')
     command = 'dpkg-query --show --admindir="%s"' % dpkg_database_directory
     result, exitstatus, signalstatus = execute_synchronous(command)
     installed_packages_list = result.splitlines()
@@ -1253,7 +1248,7 @@ def save_filesystem_manifest_file(installed_packages_list):
 
     logger.log_label('Create new filesystem manifest file')
 
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.manifest')
+    filepath = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.manifest')
     logger.log_value('Write filesystem manifest to', filepath)
     with open(filepath, 'w') as file:
         for line in installed_packages_list:
@@ -1264,7 +1259,7 @@ def get_removable_packages_list(filename):
 
     # Read filesystem.manifest-remove to get list of packages to remove.
     removable_packages_list = []
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)
+    filepath = join(model.project.custom_disk_directory, model.status.casper_directory, filename)
     logger.log_value('Read list of packages to remove from', filepath)
     with open(filepath, 'r') as file:
         removable_packages_list = file.read().splitlines()

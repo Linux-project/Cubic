@@ -27,27 +27,24 @@
 #                                                                      #
 ########################################################################
 
+import gi
+
+gi.require_version('GLib', '2.0')
+gi.require_version('Vte', '2.91')
+
+from gi.repository import GLib
+from gi.repository.Vte import PtyFlags, Pty
+from os import sep
+from os.path import join
+from pydbus import SystemBus
+from re import sub
+from sys import stdout
+from time import sleep
+
 from constants import BOLD_RED, BOLD_GREEN, BOLD_BLUE, BOLD_YELLOW, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
 from utilities import logger
 from utilities import model
 from utilities.processor import execute_synchronous, execute_synchronous_unregistered
-
-# TODO: Add to debian control file.
-# $ sudo apt install python3-pydbus
-import pydbus
-
-import gi
-
-gi.require_version('GLib', '2.0')
-from gi.repository import GLib
-
-gi.require_version('Vte', '2.91')
-from gi.repository.Vte import PtyFlags, Pty
-
-import os
-from re import sub
-import sys
-from time import sleep
 
 ########################################################################
 # References
@@ -106,7 +103,7 @@ def _enter_virtual_environment():
     logger.log_label('Enter virtual environment')
     logger.log_value('The virtual environment directory is', model.project.custom_root_directory)
 
-    program = os.path.join(model.application.directory, 'commands', 'start-virtual-environment')
+    program = join(model.application.directory, 'commands', 'start-virtual-environment')
     # The command must be a tuple, as required by spawn_async().
     command = ('pkexec', program, 'cubic', model.project.custom_root_directory)
 
@@ -226,7 +223,7 @@ def subscribe_virtual_environment_entered():
     global properties_changed_subscription
 
     if not properties_changed_subscription:
-        system_bus = pydbus.SystemBus()
+        system_bus = SystemBus()
         logger.log_value('System bus id', id(system_bus))
         properties_changed_subscription = system_bus.subscribe(
             sender='org.freedesktop.systemd1',
@@ -276,7 +273,7 @@ def entered_virtual_environment(sender, object_path, interface, signal, paramete
         job_status, job_path = parameter_b['Job']
         job_status = int(job_status)
 
-    if active_state == 'active' and sub_state == 'running' and job_status == 0 and job_path == os.sep:
+    if active_state == 'active' and sub_state == 'running' and job_status == 0 and job_path == sep:
         logger.log_label('Entered virtual environment')
         _entered_virtual_environment(active_state, sub_state, job_status, job_path)
     # else:
@@ -466,8 +463,7 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
         elif status >= 1 and status <= 255:
             # The process exited due to a signal.
             # Do not use GLib.idle_add().
-            if not reenter: send_message_to_terminal()
-            send_message_to_terminal(BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
+            send_message_to_terminal(NEW_LINE + BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
         elif status == 256:
             # The process was terminated by machinectl terminate.
             GLib.idle_add(send_message_to_terminal, BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
@@ -510,7 +506,7 @@ def exit_virtual_environment():
     global reenter
     reenter = False
     try:
-        sys.stdout.flush()
+        stdout.flush()
         exit_virtual_environment_using_kill()
     except Exception as exception:
         logger.log_value('Warning', exception)
@@ -522,16 +518,19 @@ def exit_virtual_environment_using_kill():
 
     terminal = model.builder.get_object('terminal_page__terminal')
     pseudo_terminal = terminal.get_pty()
-    if pseudo_terminal and pseudo_terminal.process_id:
-        # If the pseudo terminal does not have a process id, then the
-        # virtual environment already exited.
-        process_id = pseudo_terminal.process_id
-        program = os.path.join(model.application.directory, 'commands', 'terminate-process')
-        # TODO: Should we use execute_synchronous_unregistered() ?
-        command = 'pkexec "%s" "%s"' % (program, process_id)
-        result, exitstatus, signalstatus = execute_synchronous(command)
+    if pseudo_terminal:
+        if hasattr(pseudo_terminal, 'process_id'):
+            # If the pseudo terminal does not have a process id attribute,
+            # then the virtual environment has already exited.
+            process_id = pseudo_terminal.process_id
+            program = join(model.application.directory, 'commands', 'terminate-process')
+            # TODO: Should we use execute_synchronous_unregistered() ?
+            command = 'pkexec "%s" "%s"' % (program, process_id)
+            result, exitstatus, signalstatus = execute_synchronous(command)
+        else:
+            logger.log_value('There is no virtual environment to exit. The pseudo terminal is ', pseudo_terminal)
     else:
-        logger.log_value('There is no pseudo terminal to exit. The pseudo_terminal is ', pseudo_terminal)
+        logger.log_value('There is no virtual environment to exit. The pseudo terminal is ', pseudo_terminal)
 
 
 '''
@@ -551,7 +550,7 @@ def exit_virtual_environment_using_machinectl():
 
     logger.log_label('Exit virtual environment using machinectl')
 
-    program = os.path.join(model.application.directory, 'commands', 'stop-virtual-environment')
+    program = join(model.application.directory, 'commands', 'stop-virtual-environment')
     # TODO: Should we use execute_synchronous_unregistered() ?
     command = 'pkexec "%s" "%s"' % (program, 'cubic')
     result, exitstatus, signalstatus = execute_synchronous(command)
@@ -623,7 +622,7 @@ def get_current_directory():
     global pseudo_terminal
     bash_process_id = get_bash_process_id(pseudo_terminal.process_id)
 
-    program = os.path.join(model.application.directory, 'commands',
+    program = join(model.application.directory, 'commands',
         'current-directory')
     command = 'pkexec "%s" "%s"' % (program, bash_process_id)
     process_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(
@@ -648,7 +647,7 @@ def get_current_directory():
 
     global pseudo_terminal
     process_id = pseudo_terminal.process_id
-    program = os.path.join(model.application.directory, 'commands', 'current-directory')
+    program = join(model.application.directory, 'commands', 'current-directory')
     command = 'pkexec "%s" "%s"' % (program, process_id)
 
     process_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(command)

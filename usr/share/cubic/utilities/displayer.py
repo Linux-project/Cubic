@@ -25,30 +25,40 @@
 #                                                                      #
 ########################################################################
 
-from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
-from utilities import logger
-from utilities import model
 import gi
-from gi.repository import Gio
+
 gi.require_version('Gdk', '3.0')
 gi.require_version('GLib', '2.0')
-from gi.repository import GLib
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-from gi.repository import Pango
+
 try:
     gi.require_version('GtkSource', '4')
-    logger.log_value('Using GtkSource version', '4')
 except ValueError:
     gi.require_version('GtkSource', '3.0')
-    logger.log_value('Using GtkSource version', '3.0')
+
+from gi.repository import Gio
+from gi.repository import GLib
+from gi.repository import Gtk
 from gi.repository import GtkSource
-import os
+from gi.repository import Pango
+from os.path import exists, relpath
+
+from constants import OK, ERROR, BULLET, PROCESSING
+from utilities import logger
+from utilities import model
+
+logger.log_value('Using GtkSource version', GtkSource._version)
 
 ########################################################################
-# Constants
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
+# Globals & Constants
+########################################################################
+
 # Icons corresponding to status.
 # These can be referenced by constants: OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 # Update icon caches after changing icons.
@@ -551,8 +561,8 @@ def _add_to_stack(stack_name, filepaths, *search_replace_tuples):
     # Add new items to the stack.
     logger.log_value('Add new items to stack', stack_name)
     for filepath in filepaths:
-        title = '/%s' % os.path.relpath(filepath, model.project.custom_disk_directory)
-        if os.path.exists(filepath):
+        title = '/%s' % relpath(filepath, model.project.custom_disk_directory)
+        if exists(filepath):
             logger.log_value('Add %s from filepath' % title, filepath)
             # Add a new scrolled window to the stack.
             scrolled_window = add_source_view_to_stack(stack, title, filepath)

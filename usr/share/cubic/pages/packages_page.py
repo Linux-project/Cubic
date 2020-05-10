@@ -27,13 +27,18 @@
 #                                                                      #
 ########################################################################
 
+from os.path import exists, join
+
 from utilities import displayer
-from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 
-import os
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -203,7 +208,7 @@ def on_clicked__packages_page__revert_button(widget):
 
         displayer.select_tree_view_row('packages_page__treeview', row)
         # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
-        # sleep(0.25)
+        # sleep(0.250)
 
         # print(
         #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -266,7 +271,7 @@ def on_clicked__packages_page__undo_button(widget):
 
     displayer.select_tree_view_row('packages_page__treeview', row)
     # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
-    # sleep(0.25)
+    # sleep(0.250)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -327,7 +332,7 @@ def on_clicked__packages_page__redo_button(widget):
 
     displayer.select_tree_view_row('packages_page__treeview', row)
     # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
-    # sleep(0.25)
+    # sleep(0.250)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -508,14 +513,14 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 def is_exists_filesystem_manifest_remove(filename):
 
     # Check custom live iso directory
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)
+    filepath = join(model.project.custom_disk_directory, model.status.casper_directory, filename)
 
-    is_exists = os.path.exists(filepath)
+    is_exists = exists(filepath)
     if is_exists:
-        logger.log_value('%s found in' % filename, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
+        logger.log_value('%s found in' % filename, join(model.project.custom_disk_directory, model.status.casper_directory))
         return True
     else:
-        logger.log_value('%s not found in' % filename, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
+        logger.log_value('%s not found in' % filename, join(model.project.custom_disk_directory, model.status.casper_directory))
         return False
 
 
@@ -594,7 +599,7 @@ def save_filesystem_manifest_remove_file(filename, removable_packages_list):
 
     logger.log_label('Create new filesystem manifest remove file')
 
-    filepath = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, filename)
+    filepath = join(model.project.custom_disk_directory, model.status.casper_directory, filename)
     logger.log_value('Write filesystem manifest remove file to', filepath)
     with open(filepath, 'w') as file:
         first_line = True

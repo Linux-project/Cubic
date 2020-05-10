@@ -137,22 +137,27 @@ Summary
    'error_2', or 'error_3') with corresponding error pages.
 """
 
-from constants import BOLD_RED, BOLD_GREEN, BOLD_BLUE, BOLD_YELLOW, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
+from ctypes import c_long, py_object, pythonapi
+from importlib import import_module
+from os import system
+from re import sub
+from sys import stdout
+from threading import Thread
+from time import sleep
+
 from utilities import displayer
 from utilities import logger
 from utilities import model
 from utilities.processor import terminate_process
 
-import ctypes
-import importlib
-import os
-from re import sub
-from sys import stdout
-from threading import Thread, current_thread
-from time import sleep
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
-# Constants
+# Globals & Constants
 ########################################################################
 
 navigation_thread = None
@@ -226,7 +231,7 @@ def on_clicked_website_menu_button(button):
 
     url = 'https://launchpad.net/cubic'
     command = 'xdg-open "%s" &' % url
-    os.system(command)
+    system(command)
 
 
 def on_clicked_help_menu_button(button):
@@ -235,7 +240,7 @@ def on_clicked_help_menu_button(button):
 
     url = 'https://answers.launchpad.net/cubic'
     command = 'xdg-open "%s" &' % url
-    os.system(command)
+    system(command)
 
 
 def on_clicked_page_help_menu_button(button):
@@ -244,7 +249,7 @@ def on_clicked_page_help_menu_button(button):
 
     url = model.help_urls[model.page.name]
     command = 'xdg-open "%s" &' % url
-    os.system(command)
+    system(command)
 
 
 def on_clicked_donate_menu_button(button):
@@ -253,7 +258,7 @@ def on_clicked_donate_menu_button(button):
 
     url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5WJL2ZE3AWGQQ&currency_code=USD&source=url'
     command = 'xdg-open "%s" &' % url
-    os.system(command)
+    system(command)
 
 
 def on_clicked_about_menu_button(button):
@@ -344,9 +349,9 @@ def interrupt_navigation_thread():
         navigation_thread_id = navigation_thread.ident
         logger.log_value('Interrupt previous thread with id', navigation_thread_id)
 
-        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(navigation_thread_id), ctypes.py_object(InterruptException))
+        pythonapi.PyThreadState_SetAsyncExc(c_long(navigation_thread_id), py_object(InterruptException))
         navigation_thread.join()
-        sleep(0.50)
+        sleep(0.500)
 
         logger.log_value('Interrupted previous thread with id', navigation_thread_id)
 
@@ -469,7 +474,7 @@ def get_page(page_name):
 
     if page_name:
         try:
-            page = importlib.import_module('pages.%s' % page_name)
+            page = import_module('pages.%s' % page_name)
         except ModuleNotFoundError as exception:
             logger.log_value('Error', exception)
 

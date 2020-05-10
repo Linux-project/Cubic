@@ -27,8 +27,12 @@
 #                                                                      #
 ########################################################################
 
-from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+from glob import glob
+from os import system
+from os.path import exists, isfile, join
+from time import sleep
 
+from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from utilities import constructor
 from utilities import displayer
 from utilities import file_utilities
@@ -36,9 +40,11 @@ from utilities import iso_utilities
 from utilities import logger
 from utilities import model
 
-import glob
-import os
-from time import sleep
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -74,8 +80,8 @@ def setup(action, old_page=None):
         displayer.update_entry('delete_page__project_directory_entry', model.project.directory)
 
         # TODO: If custom.iso_filename does not exist, then display a message below the entry.
-        filepath = os.path.join(model.custom.iso_directory, model.custom.iso_filename)
-        if os.path.isfile(filepath):
+        filepath = join(model.custom.iso_directory, model.custom.iso_filename)
+        if isfile(filepath):
             displayer.update_entry('delete_page__custom_iso_filename_entry', model.custom.iso_filename)
         else:
             displayer.update_entry('delete_page__custom_iso_filename_entry', '(not available)')
@@ -100,11 +106,11 @@ def setup(action, old_page=None):
 
         displayer.update_status('delete_page__custom_iso_and_checksum', BULLET)
 
-        filepath_pattern = os.path.join(model.project.directory, '*.iso')
-        iso_filepath_list = glob.glob(filepath_pattern)
+        filepath_pattern = join(model.project.directory, '*.iso')
+        iso_filepath_list = glob(filepath_pattern)
 
-        filepath_pattern = os.path.join(model.project.directory, '*.md5')
-        iso_checksum_filepath_list = glob.glob(filepath_pattern)
+        filepath_pattern = join(model.project.directory, '*.md5')
+        iso_checksum_filepath_list = glob(filepath_pattern)
 
         # TOOD: Use constructor.get_plural and format on prepare_page.
 
@@ -162,17 +168,33 @@ def leave(action, new_page=None):
 
     elif action == 'delete':
 
+        # The following fields must be set before leaving this page:
+        #
+        # 1. model.project.cubic_version
+        # 2. model.project.create_date
+        # 3. model.project.modify_date
+        # 4. model.project.directory
+        # 5. model.project.configuration_filepath
+        # 6. model.project.iso_mount_point
+        # 7. model.project.custom_root_directory
+        # 8. model.project.custom_disk_directory
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         is_error = delete_project_files()
 
         if is_error:
+            # Stay on the page.
             return 'error'
-            # Wait before transitioning away from the page.
-            sleep(1.00)
         else:
-            # Wait before transitioning away from the page.
-            sleep(1.00)
+            # Reset the model.
+            reset_model()
+            # This is a new project, so set the create and modify dates.
+            current_date_time = constructor.get_current_date_time()
+            model.project.create_date = current_date_time
+            model.project.modify_date = current_date_time
+            # Pause to allow the user to see the results.
+            sleep(1.000)
             return
 
     elif action == 'quit':
@@ -200,20 +222,20 @@ def leave(action, new_page=None):
 def on_clicked__delete_page__project_directory_open_button(widget):
 
     command = 'xdg-open %s &' % model.project.directory
-    os.system(command)
+    system(command)
 
 
 def on_clicked__delete_page__custom_iso_filename_open_button(widget):
 
-    if os.path.isfile('/bin/nautilus'):
-        filepath = os.path.join(model.custom.iso_directory, model.custom.iso_filename)
-        if not os.path.isfile(filepath):
+    if isfile('/bin/nautilus'):
+        filepath = join(model.custom.iso_directory, model.custom.iso_filename)
+        if not isfile(filepath):
             filepath = model.custom.iso_directory
         command = 'nautilus %s &' % filepath
-        os.system(command)
+        system(command)
     else:
         command = 'xdg-open %s &' % model.custom.iso_directory
-        os.system(command)
+        system(command)
 
 
 ########################################################################
@@ -230,53 +252,53 @@ def delete_project_files_TEST():
     #
     logger.log_value('Unmount the original ISO and delete the mount point', model.project.iso_mount_point)
     displayer.update_status('delete_page__project_iso_mount_point', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
     displayer.update_status('delete_page__project_iso_mount_point', OK)
     displayer.update_label('delete_page__project_iso_mount_point_message', 'Testing testing testing.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the configuration file
     #
     logger.log_value('Delete the configuration file', model.project.configuration_filepath)
     displayer.update_status('delete_page__project_configuration_file', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
     displayer.update_status('delete_page__project_configuration_file', OK)
     displayer.update_label('delete_page__project_configuration_file_message', 'Testing testing testing.')
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the custom root directory.
     #
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
     displayer.update_status('delete_page__custom_root_directory', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
     displayer.update_status('delete_page__custom_root_directory', OK)
     displayer.update_label('delete_page__custom_root_directory_message', 'Testing testing testing.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the custom ISO directory.
     #
     logger.log_value('Delete the custom ISO directory', model.project.custom_disk_directory)
     displayer.update_status('delete_page__custom_disk_directory', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
     displayer.update_status('delete_page__custom_disk_directory', OK)
     displayer.update_label('delete_page__custom_disk_directory_message', 'Testing testing testing.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the custom ISO checksum files and the custom ISO files.
     #
     displayer.update_status('delete_page__custom_iso_and_checksum', PROCESSING)
-    sleep(1.00)
+    sleep(1.000)
     displayer.update_status('delete_page__custom_iso_and_checksum', OK)
     displayer.update_label('delete_page__custom_iso_and_checksum_message', 'Testing testing testing.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     return is_error
 
@@ -292,14 +314,14 @@ def delete_project_files():
     #
     logger.log_value('Unmount the original ISO and delete the mount point', model.project.iso_mount_point)
     displayer.update_status('delete_page__project_iso_mount_point', PROCESSING)
-    sleep(1.00)
-    if os.path.exists(model.project.iso_mount_point):
+    sleep(1.000)
+    if exists(model.project.iso_mount_point):
         # Unmount the original ISO disk image.
         result, exitstatus, signalstatus = iso_utilities.unmount(model.project.iso_mount_point)
         if not signalstatus:
             displayer.update_status('delete_page__project_iso_mount_point', OK)
             displayer.update_label('delete_page__project_iso_mount_point_message', '')
-            sleep(0.50)
+            sleep(0.500)
             # Delete the mount point.
             logger.log_value('Delete the original ISO mount point', model.project.iso_mount_point)
             result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.iso_mount_point)
@@ -318,15 +340,15 @@ def delete_project_files():
         displayer.update_status('delete_page__project_iso_mount_point', OK)
         displayer.update_label('delete_page__project_iso_mount_point_message', 'Nothing to unmount.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the configuration file
     #
     logger.log_value('Delete the configuration file', model.project.configuration_filepath)
     displayer.update_status('delete_page__project_configuration_file', PROCESSING)
-    sleep(1.00)
-    if os.path.exists(model.project.configuration_filepath):
+    sleep(1.000)
+    if exists(model.project.configuration_filepath):
         result, exitstatus, signalstatus = file_utilities.delete_file(model.project.configuration_filepath)
         if not signalstatus:
             displayer.update_status('delete_page__project_configuration_file', OK)
@@ -339,15 +361,15 @@ def delete_project_files():
         displayer.update_status('delete_page__project_configuration_file', OK)
         displayer.update_label('delete_page__project_configuration_file_message', 'Nothing to delete. This file does not exist.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the custom root directory.
     #
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
     displayer.update_status('delete_page__custom_root_directory', PROCESSING)
-    sleep(1.00)
-    if os.path.exists(model.project.custom_root_directory):
+    sleep(1.000)
+    if exists(model.project.custom_root_directory):
         result, exitstatus, signalstatus = file_utilities.delete_path_as_root(model.project.custom_root_directory)
         if not signalstatus:
             displayer.update_status('delete_page__custom_root_directory', OK)
@@ -360,7 +382,7 @@ def delete_project_files():
         displayer.update_status('delete_page__custom_root_directory', OK)
         displayer.update_label('delete_page__custom_root_directory_message', 'Nothing to delete. These files not exist.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the custom disk directory.
@@ -368,8 +390,8 @@ def delete_project_files():
     logger.log_value('Delete the custom ISO directory', model.project.custom_disk_directory)
     # displayer.update_label('delete_page__custom_disk_directory_message', model.project.custom_disk_directory)
     displayer.update_status('delete_page__custom_disk_directory', PROCESSING)
-    sleep(1.00)
-    if os.path.exists(model.project.custom_disk_directory):
+    sleep(1.000)
+    if exists(model.project.custom_disk_directory):
         result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.custom_disk_directory)
         if not signalstatus:
             displayer.update_status('delete_page__custom_disk_directory', OK)
@@ -382,7 +404,7 @@ def delete_project_files():
         displayer.update_status('delete_page__custom_disk_directory', OK)
         displayer.update_label('delete_page__custom_disk_directory_message', 'Nothing to delete. These files do not exist.')
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
     #
     # Delete the custom ISO checksum files and the custom ISO files.
@@ -394,13 +416,13 @@ def delete_project_files():
     if is_active:
 
         displayer.update_status('delete_page__custom_iso_and_checksum', PROCESSING)
-        sleep(1.00)
+        sleep(1.000)
 
-        filepath_pattern = os.path.join(model.project.directory, '*.md5')
-        iso_checksum_filepath_list = glob.glob(filepath_pattern)
+        filepath_pattern = join(model.project.directory, '*.md5')
+        iso_checksum_filepath_list = glob(filepath_pattern)
 
-        filepath_pattern = os.path.join(model.project.directory, '*.iso')
-        iso_filepath_list = glob.glob(filepath_pattern)
+        filepath_pattern = join(model.project.directory, '*.iso')
+        iso_filepath_list = glob(filepath_pattern)
 
         is_error_1 = False
         for filepath in iso_checksum_filepath_list:
@@ -428,16 +450,21 @@ def delete_project_files():
         displayer.update_status('delete_page__custom_iso_and_checksum', OK)
 
     # Pause to allow the user to see the result.
-    sleep(1.00)
+    sleep(1.000)
 
-    # Reset the model.
-    # TODO: reset these as the files are deleted.
+    return is_error
 
-    model.status.is_success_copy = None
-    model.status.is_success_extract = None
-    model.status.casper_directory = None
-    model.status.iso_checksum = None
-    model.status.iso_checksum_filename = None
+
+def reset_model():
+
+    # model.project.cubic_version = None
+    # model.project.create_date = None
+    # model.project.modify_date = None
+    # model.project.directory = None
+    # model.project.configuration_filepath = None
+    # model.project.iso_mount_point = None
+    # model.project.custom_root_directory = None
+    # model.project.custom_disk_directory = None
 
     model.original.iso_filename = None
     model.original.iso_directory = None
@@ -452,6 +479,10 @@ def delete_project_files():
     model.custom.iso_release_name = None
     model.custom.iso_disk_name = None
 
-    model.options.boot_configurations = None
+    model.status.is_success_copy = False
+    model.status.is_success_extract = False
+    model.status.casper_directory = None
+    model.status.iso_checksum = None
+    model.status.iso_checksum_filename = None
 
-    return is_error
+    model.options.boot_configurations = None

@@ -27,22 +27,28 @@
 #                                                                      #
 ########################################################################
 
-import navigator
-
-from utilities import displayer
-from file_choosers import copy_file_chooser
-from utilities import logger
-from utilities import iso_utilities
-from utilities import model
-from utilities import console
-
 import gi
+
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
+
 from gi.repository import Gdk
 from gi.repository import Gtk
-
 from time import sleep
+
+from file_choosers import copy_file_chooser
+from navigator import handle_navigation
+from utilities import console
+from utilities import displayer
+from utilities import iso_utilities
+from utilities import logger
+from utilities import model
+
+########################################################################
+# References
+########################################################################
+
+# N/A
 
 ########################################################################
 # Globals & Constants
@@ -296,7 +302,7 @@ def selected_filepaths(filepaths):
     # page. The pseudo terminal process must be explicitly killed by
     # executing the exit_virtual_environment() function of the
     # console module.
-    navigator.handle_navigation('copy')
+    handle_navigation('copy')
 
 
 ########################################################################
@@ -356,7 +362,7 @@ def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info,
         # page. The pseudo terminal process must be explicitly killed by
         # executing the exit_virtual_environment() function of the
         # console module.
-        navigator.handle_navigation('copy')
+        handle_navigation('copy')
 
 
 def on_button_press_event__terminal_page(widget, event):
@@ -439,7 +445,7 @@ def on_button_release_event__terminal_page__paste_file_menu_item(*args):
     # executing the exit_virtual_environment() function of the
     # console module.
 
-    navigator.handle_navigation('copy')
+    handle_navigation('copy')
 
 
 def on_button_release_event__terminal_page__paste_text_menu_item(*args):

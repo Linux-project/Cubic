@@ -30,28 +30,44 @@
 from utilities import logger
 logger.log_title('Cubic - Custom Ubuntu ISO Creator')
 
+import gi
+
+gi.require_version('Gdk', '3.0')
+gi.require_version('Gtk', '3.0')
+
+from gi.repository import Gdk
+from gi.repository import Gio
+from gi.repository import Gtk
+from gi.repository import Pango
+from glob import glob
+from os import chdir
+from os.path import dirname, realpath
+from traceback import format_exc
+
 import navigator
 
 from utilities import displayer
 from utilities import model
 from utilities import constructor
-
 from file_choosers import directory_chooser
 from file_choosers import iso_image_chooser
 from file_choosers import copy_file_chooser
 
-import gi
+########################################################################
+# References
+########################################################################
 
-from gi.repository import Gio
-gi.require_version('Gdk', '3.0')
-from gi.repository import Gdk
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-from gi.repository import Pango
+# N/A
 
-import glob
-import os
-import traceback
+########################################################################
+# Globals & Constants
+########################################################################
+
+# N/A
+
+########################################################################
+# Main Application
+########################################################################
 
 try:
 
@@ -61,9 +77,9 @@ try:
     # Initialize
     #-------------------------------------------------------------------
 
-    # Realpath is necessary here.
-    model.application.directory = os.path.dirname(os.path.realpath(__file__))
-    os.chdir(model.application.directory)
+    # Real path is necessary here.
+    model.application.directory = dirname(realpath(__file__))
+    chdir(model.application.directory)
 
     # TODO: FOR TESTING ONLY
     # model.application.cubic_version = '2020.05-01-release~202005010300~ubuntu19.10.1'
@@ -92,7 +108,7 @@ try:
 
     pages = model.builder.get_object('pages')
 
-    for file in sorted(glob.glob('pages/*_page.ui')):
+    for file in sorted(glob('pages/*_page.ui')):
         module_name = file[6:-3]
         logger.log_value('Setup', module_name.replace('_', ' '))
         module = navigator.get_page(module_name)
@@ -212,4 +228,4 @@ try:
 
 except Exception as exception:
     logger.log_value('Exception', exception)
-    logger.log_value('The tracekback is', traceback.format_exc())
+    logger.log_value('The tracekback is', format_exc())
