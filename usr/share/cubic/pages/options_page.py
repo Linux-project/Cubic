@@ -69,15 +69,16 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
+        # TODO: Uncomment the following two lines when undo/redo
+        #       functionality has been developed.
         # displayer.set_visible('options_page__header_bar_preseed_box_1', True)
         # displayer.set_visible('options_page__header_bar_box_2', True)
+
         displayer.set_visible('title_label', False)
         displayer.set_visible('stack_switcher', True)
 
-        # displayer.set_solid('packages_page__header_bar__box', False)
-        # displayer.set_solid('options_page__header_bar__box', False)
-        # # displayer.set_solid('options_page__stack_switcher', True)
-        # # displayer.set_solid('stack_switcher', True)
+        # displayer.set_solid('options_page__stack_switcher', True)
+        # displayer.set_solid('stack_switcher', True)
 
         return
 
@@ -95,14 +96,15 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
+        # TODO: Uncomment the following two lines when undo/redo
+        #       functionality has been developed.
         # displayer.set_visible('options_page__header_bar_preseed_box_1', True)
         # displayer.set_visible('options_page__header_bar_box_2', True)
+
         displayer.set_visible('title_label', False)
         displayer.set_visible('stack_switcher', True)
 
-        # displayer.set_solid('packages_page__header_bar__box', False)
-        # displayer.set_solid('options_page__header_bar__box', False)
-        # # displayer.set_solid('options_page__stack_switcher', True)
+        # displayer.set_solid('options_page__stack_switcher', True)
         # displayer.set_solid('stack_switcher', True)
 
         return
@@ -133,8 +135,11 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        # TODO: Uncomment the following two lines when undo/redo
+        #       functionality has been developed.
         # displayer.set_visible('options_page__header_bar_preseed_box_1', False)
         # displayer.set_visible('options_page__header_bar_box_2', False)
+
         displayer.set_visible('title_label', True)
         displayer.set_visible('stack_switcher', False)
 
@@ -142,45 +147,15 @@ def leave(action, new_page=None):
 
     elif action == 'generate':
 
-        displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        # TODO: Uncomment the following two lines when undo/redo
+        #       functionality has been developed.
         # displayer.set_visible('options_page__header_bar_preseed_box_1', False)
         # displayer.set_visible('options_page__header_bar_box_2', False)
+
         displayer.set_visible('title_label', True)
         displayer.set_visible('stack_switcher', False)
-
-        # Save preseed files.
-        # TODO: Remove this line when 14.04 is no longer supported.
-        # Bypass this functionality for Ubuntu 14.04.
-        if model.builder.get_object('options_page__preseed_tab__stack'):
-            logger.log_label('Save preseed files')
-            save_stack_buffers('options_page__preseed_tab__stack')
-
-        # Delete preseed files.
-        if model.delete_list:
-            logger.log_label('Delete preseed files')
-            for filepath in model.delete_list:
-                try:
-                    logger.log_value('Delete file', filepath)
-                    remove(filepath)
-                except OSError as exception:
-                    logger.log_value('Error deleting file', exception)
-            model.delete_list = []
-
-        # Save ISO boot configurations.
-        # TODO: Remove this line when 14.04 is no longer supported.
-        # Bypass this functionality for Ubuntu 14.04.
-        if model.builder.get_object('options_page__boot_configuration_tab__stack'):
-            logger.log_label('Save ISO boot configurations')
-            save_stack_buffers('options_page__boot_configuration_tab__stack')
-        else:
-            # TODO: Add this function.
-            update_and_save_boot_configurations()
-
-        # TODO: If either of the above fails, action should be 'error'
-        #       and we should navigate to an error page.
-
-        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
@@ -208,26 +183,31 @@ def leave(action, new_page=None):
 
 def on_clicked__options_page__boot_revert_button(widget):
 
+    # TODO
     print('TBD: on_clicked__options_page__boot_revert_button')
 
 
 def on_clicked__options_page__boot_undo_button(widget):
 
+    # TODO
     print('TBD: on_clicked__options_page__boot_undo_button')
 
 
 def on_clicked__options_page__boot_redo_button(widget):
 
+    # TODO
     print('TBD: on_clicked__options_page__boot_redo_button')
 
 
 def on_clicked__options_page__preseed_revert_button(widget):
 
+    # TODO
     print('TBD: on_clicked__options_page__preseed_revert_button')
 
 
 def on_clicked__options_page__preseed_undo_button(widget):
 
+    # TODO
     print('TBD: on_clicked__options_page__preseed_undo_button')
 
 
@@ -255,6 +235,7 @@ def on_toggled_create_or_delete_toggle_buttons(toggle_button_name):
     is_active_options_page__delete_button = options_page__delete_button.get_active()
 
     if is_active_options_page__create_button and not is_active_options_page__delete_button:
+
         # Create
         displayer.set_visible('options_page__preseed_tab__stack', False)
 
@@ -266,6 +247,7 @@ def on_toggled_create_or_delete_toggle_buttons(toggle_button_name):
         displayer.set_visible('options_page__preseed_tab__delete_grid', False)
 
     elif not is_active_options_page__create_button and is_active_options_page__delete_button:
+
         # Delete
         displayer.set_visible('options_page__preseed_tab__stack', False)
         displayer.set_visible('options_page__preseed_tab__create_grid', False)
@@ -280,6 +262,7 @@ def on_toggled_create_or_delete_toggle_buttons(toggle_button_name):
         displayer.set_visible('options_page__preseed_tab__delete_grid', True)
 
     elif not is_active_options_page__create_button and not is_active_options_page__delete_button:
+
         # Edit
         displayer.set_visible('options_page__preseed_tab__stack', True)
         displayer.set_visible('options_page__preseed_tab__create_grid', False)
@@ -514,38 +497,3 @@ def on_map__options_page__boot_configuration_tab(*args):
 def on_unmap__options_page__boot_configuration_tab(*args):
 
     displayer.set_visible('options_page__header_bar_boot_box', False)
-
-
-########################################################################
-# Support Functions
-########################################################################
-
-
-def save_stack_buffers(stack_name):
-
-    stack = model.builder.get_object(stack_name)
-    scrolled_windows = stack.get_children()
-
-    for scrolled_window in scrolled_windows:
-
-        filepath = stack.child_get_property(scrolled_window, 'name')
-        title = stack.child_get_property(scrolled_window, 'title')
-
-        logger.log_value('Write file', filepath)
-
-        # Get the updated text.
-        source_view = scrolled_window.get_child()
-        source_buffer = source_view.get_buffer()
-        start_iter = source_buffer.get_start_iter()
-        end_iter = source_buffer.get_end_iter()
-        data = source_buffer.get_text(start_iter, end_iter, True)
-
-        # Create the parent directories (/preseed, /boot/grub, /isolinux, etc.)
-        # if they do not exist.
-        directory = dirname(filepath)
-        makedirs(directory, exist_ok=True)
-
-        # Write the file.
-        with open(filepath, 'w') as file:
-            file.write(data)
-        # file.flush()

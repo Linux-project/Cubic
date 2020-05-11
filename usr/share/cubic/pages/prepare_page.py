@@ -274,7 +274,7 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('prepare_page__save_package_manifest', ERROR)
             displayer.update_label('prepare_page__save_package_manifest_message', 'Unable to save the package manifest file.')
-        sleep(0.500)
+        # sleep(0.500)
 
         sleep(2.000)
         return 'next'
@@ -1078,8 +1078,6 @@ def print_details_list(details_list, default_widths={}):
 
 def create_preseed_file_list():
 
-    # TODO: Should this be done on the Options page?
-    #       If so, this parameter can be removed from model.
     # Empty the list of preseed files to be deleted.
     model.delete_list = []
 

@@ -108,8 +108,23 @@ options.boot_configurations = None
 # Page Specific
 ########################################################################
 
+# Terminal Page --> Copy Page
+# Used to exchange information between the Terminal page and the Copy
+# page. This value is initialized whenever files are dragged onto the
+# terminal or whenever files are selected for copying from the Terminal
+# page.
 uris = None
-delete_list = []
+
+# Prepare Page --> Options Page --> Generate Page
+# Used to exchange information between the Prepare page, the Options
+# page and the Generate page to indicate which preseed files should be
+# deleted. This value is initialized to an empty list on the Prepare
+# page, when a new preseed file list is created.
+# TODO: Instead of initializing this value on the Prepare page, we could
+#  set this to [] in the Options page's setup function on action 'next',
+# since we are guaranteed that the preseed list is a new list, created
+# on the Prepare page.
+delete_list = None
 
 ########################################################################
 # Page Help

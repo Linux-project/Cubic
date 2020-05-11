@@ -59,11 +59,13 @@ logger.log_value('Using GtkSource version', GtkSource._version)
 # Globals & Constants
 ########################################################################
 
-# Icons corresponding to status.
-# These can be referenced by constants: OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+# Icons corresponding to status can be referenced using the constants:
+#     OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+#
 # Update icon caches after changing icons.
-# $ sudo gtk-update-icon-cache /usr/share/icons/hicolor/
-# $ grep -r cubic-round /usr/share/icons/hicolor/*
+#     $ sudo gtk-update-icon-cache /usr/share/icons/hicolor/
+#     $ grep -r cubic-round /usr/share/icons/hicolor/*
+
 icons = ['cubic-ok-symbolic', 'cubic-error-symbolic', 'cubic-optional-symbolic', 'cubic-bullet-symbolic', 'cubic-blank-symbolic', 'cubic-blank-symbolic']
 
 # Get the font.
@@ -82,340 +84,50 @@ language_name_manager = GtkSource.LanguageManager()
 language = language_name_manager.get_language(language_name)
 
 ########################################################################
-# Functions
+# General Functions
 ########################################################################
 
 
 def idle_add(callback):
+    """
+    This is used on the Project page.
+    The Console module calls GLib.idle_add() directly.
+    """
 
     GLib.idle_add(callback)
 
 
-def set_column_visible(widget_name, is_visible):
-
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.TreeViewColumn.set_visible, widget, is_visible)
-
-
-def show(widget_name):
-
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.Widget.show, widget)
+########################################################################
+# Page Functions
+########################################################################
 
 
-def hide(widget_name):
+def main_quit():
 
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.Widget.hide, widget)
-
-
-def show_all(widget_name):
-
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.Widget.show_all, widget)
+    GLib.idle_add(Gtk.main_quit)
 
 
-def set_visible(widget_name, is_visible):
+def transition(old_page, new_page):
 
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.Widget.set_visible, widget, is_visible)
-
-
-def set_solid(widget_name, is_solid):
-
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.Widget.set_opacity, widget, is_solid)
-
-
-def set_sensitive(widget_name, is_sensitive):
-
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.Widget.set_sensitive, widget, is_sensitive)
-
-
-def set_entry_error(widget_name, is_error):
-
-    # logger.log_value('Set error for entry %s' % widget_name, is_error)
-    entry = model.builder.get_object(widget_name)
-    context = entry.get_style_context()
-    if is_error:
-        GLib.idle_add(Gtk.StyleContext.add_class, context, 'error')
+    if old_page != new_page:
+        # Hide the current page.
+        if old_page:
+            logger.log_value('Hide old page', old_page.name.replace('_', ' '))
+            grid = model.builder.get_object(old_page.name)
+            GLib.idle_add(Gtk.Grid.set_visible, grid, False)
+        # Show the next page
+        if new_page:
+            logger.log_value('Show new page', new_page.name.replace('_', ' '))
+            grid = model.builder.get_object(new_page.name)
+            GLib.idle_add(Gtk.Grid.set_visible, grid, True)
     else:
-        GLib.idle_add(Gtk.StyleContext.remove_class, context, 'error')
+        # Stay on the current page.
+        logger.log_value('Stay on page', old_page.name.replace('_', ' '))
 
 
-def set_entry_editable(widget_name, is_editable):
-
-    # logger.log_value('Set name property to editable is "%s" for entry' % is_editable, widget_name)
-    entry = model.builder.get_object(widget_name)
-    # entry.set_editable(is_editable)
-    GLib.idle_add(Gtk.Entry.set_editable, entry, is_editable)
-
-
-def show_spinner():
-
-    grid = model.builder.get_object('pages')
-    GLib.idle_add(Gtk.Grid.set_sensitive, grid, False)
-    spinner = model.builder.get_object('window_spinner')
-    GLib.idle_add(Gtk.Spinner.start, spinner)
-    GLib.idle_add(Gtk.Spinner.set_visible, spinner, True)
-
-
-def hide_spinner():
-
-    spinner = model.builder.get_object('window_spinner')
-    GLib.idle_add(Gtk.Spinner.set_visible, spinner, False)
-    GLib.idle_add(Gtk.Spinner.stop, spinner)
-    grid = model.builder.get_object('pages')
-    GLib.idle_add(Gtk.Grid.set_sensitive, grid, True)
-
-
-def update_label(label_name, text):
-
-    # logger.log_value('Update label %s' % label_name, text)
-    label = model.builder.get_object(label_name)
-    GLib.idle_add(Gtk.Label.set_text, label, text)
-
-
-def update_entry(entry_name, text):
-
-    # logger.log_value('Update entry %s' % entry_name, text)
-    entry = model.builder.get_object(entry_name)
-    GLib.idle_add(Gtk.Entry.set_text, entry, text)
-
-
-def update_menu_item(menu_item_name, text):
-
-    menu_item = model.builder.get_object(menu_item_name)
-    GLib.idle_add(Gtk.MenuItem.set_label, menu_item, text)
-
-
-def update_progress_bar_percent(progress_bar_name, percent):
-
-    progress_bar = model.builder.get_object(progress_bar_name)
-    GLib.idle_add(Gtk.ProgressBar.set_fraction, progress_bar, float(percent) / 100.0)
-
-
-def update_progress_bar_text(progress_bar_name, text):
-
-    progress_bar = model.builder.get_object(progress_bar_name)
-    GLib.idle_add(Gtk.ProgressBar.set_text, progress_bar, text)
-
-
-def activate_toggle_button(toggle_button_name, is_active):
-
-    toggle_button = model.builder.get_object(toggle_button_name)
-    GLib.idle_add(Gtk.ToggleButton.set_active, toggle_button, is_active)
-
-
-def activate_radio_button(radio_button_name, is_active):
-
-    radio_button = model.builder.get_object(radio_button_name)
-    GLib.idle_add(Gtk.RadioButton.set_active, radio_button, is_active)
-
-
-def activate_check_button(check_button_name, is_active):
-
-    check_button = model.builder.get_object(check_button_name)
-    GLib.idle_add(Gtk.CheckButton.set_active, check_button, is_active)
-
-
-def empty_box(box_name):
-
-    box = model.builder.get_object(box_name)
-    for child in box.get_children():
-        # TODO: Do we need the logging here?
-        if isinstance(child, Gtk.Label):
-            logger.log_value('Removing label', child.get_text())
-        elif isinstance(child, Gtk.Button):
-            logger.log_value('Removing button', child.get_label())
-        else:
-            logger.log_value('Removing unknown type', child)
-        GLib.idle_add(Gtk.Box.remove, box, child)
-        GLib.idle_add(Gtk.Widget.destroy, child)
-
-
-def insert_box_label(box_name, text, opacity):
-
-    # Since label is not displayed, there is no need to call GLib.idle_add().
-    label = Gtk.Label(text)
-    label.set_halign(Gtk.Align.START)
-    label.set_visible(True)
-    label.set_opacity(opacity)
-
-    label.set_justify(Gtk.Justification.FILL)
-    label.set_line_wrap(True)
-    # label.set_max_width_chars(0)
-
-    box = model.builder.get_object(box_name)
-    GLib.idle_add(Gtk.Box.add, box, label)
-
-
-def scroll_view_port_to_bottom(view_port_name):
-
-    view_port = model.builder.get_object(view_port_name)
-    adjustment = view_port.get_vadjustment()
-    amount = adjustment.get_upper() - adjustment.get_page_size()
-    GLib.idle_add(Gtk.Adjustment.set_value, adjustment, amount)
-
-
-def insert_list_box_row_label(list_box_name, row_number, text, additional_height=0):
-
-    # Since label is not displayed, there is no need to call GLib.idle_add().
-    label = Gtk.Label(text)
-    label.set_halign(Gtk.Align.START)
-    label.set_visible(True)
-    preferred_height = label.get_preferred_height()[0]
-    label.set_size_request(-1, preferred_height + additional_height)
-    list_box = model.builder.get_object(list_box_name)
-    GLib.idle_add(Gtk.ListBox.insert, list_box, label, row_number)
-
-
-def insert_list_box_row_check_button(list_box_name, row_number, text, is_active, additional_height=0):
-
-    # Since check button is not displayed, there is no need to call GLib.idle_add().
-    check_button = Gtk.check_button(text)
-    check_button.set_halign(Gtk.Align.START)
-    check_button.set_visible(True)
-    check_button.set_active(is_active)
-    preferred_height = check_button.get_preferred_height()[0]
-    check_button.set_size_request(-1, preferred_height + additional_height)
-    list_box = model.builder.get_object(list_box_name)
-    GLib.idle_add(Gtk.ListBox.insert, list_box, check_button, row_number)
-
-
-def get_list_box_row_count(list_box_name):
-
-    list_box = model.builder.get_object(list_box_name)
-    return len(list_box.get_children())
-
-
-def get_list_box_row_widget(list_box_name, row_number):
-
-    list_box = model.builder.get_object(list_box_name)
-    list_box_row = list_box.get_row_at_index(row_number)
-    child = list_box_row.get_children()[0]
-    return child
-
-
-def scroll_to_tree_view_row(tree_view_name, row_number):
-
-    tree_view = model.builder.get_object(tree_view_name)
-    tree_path = Gtk.TreePath.new_from_string('%s' % row_number)
-    GLib.idle_add(Gtk.TreeView.scroll_to_cell, tree_view, tree_path, None, True, 0.5, 0.0)
-
-
-def select_tree_view_row(tree_view_name, row_number):
-
-    tree_view = model.builder.get_object(tree_view_name)
-    tree_path = Gtk.TreePath.new_from_string('%s' % row_number)
-    GLib.idle_add(Gtk.TreeView.set_cursor, tree_view, tree_path, None, False)
-
-
-def select_list_box_row(list_box_name, row_number):
-    """
-    This function is not used.
-    """
-
-    list_box = model.builder.get_object(list_box_name)
-    list_box_row = list_box.get_row_at_index(row_number)
-    GLib.idle_add(Gtk.ListBox.select_row, list_box, list_box_row)
-
-
-def update_list_box_row_label(list_box_name, row_number, text):
-
-    list_box = model.builder.get_object(list_box_name)
-    list_box_row = list_box.get_row_at_index(row_number)
-    label = list_box_row.get_children()[0]
-    GLib.idle_add(Gtk.Label.set_text, label, text)
-
-
-def empty_list_box(list_box_name):
-
-    list_box = model.builder.get_object(list_box_name)
-    for list_box_row in list_box.get_children():
-        child = list_box_row.get_children()[0]
-        if isinstance(child, Gtk.Label):
-            logger.log_value('Removing label', child.get_text())
-        elif isinstance(child, Gtk.Button):
-            logger.log_value('Removing button', child.get_label())
-        else:
-            logger.log_value('Removing unknown type', child)
-        GLib.idle_add(Gtk.ListBox.remove, list_box, list_box_row)
-        GLib.idle_add(Gtk.Widget.destroy, list_box_row)
-
-
-def update_list_store(list_store_name, data_list):
-
-    list_store = model.builder.get_object(list_store_name)
-    GLib.idle_add(_update_list_store_rows, list_store, data_list)
-
-
-def _update_list_store_rows(list_store, data_list):
-    """
-    Only invoke this function using GLib.idle_add().
-    """
-
-    list_store.clear()
-    for number, data in enumerate(data_list):
-        # logger.log_value('%i. Adding an item to the list' % (number+1), data)
-        list_store.append(data)
-
-
-def update_list_store_progress_bar_percent(list_store_name, path, percent):
-
-    list_store = model.builder.get_object(list_store_name)
-    GLib.idle_add(_update_list_store_progress_bar_percent, list_store, path, percent)
-
-
-def _update_list_store_progress_bar_percent(list_store, path, percent):
-    """
-    Only invoke this function using GLib.idle_add().
-    """
-
-    list_store[path][0] = percent
-
-
-def update_status_image(name, status):
-
-    image = model.builder.get_object(name)
-    # TODO: Use Gtk.Icontheme instead of Gtk.IconSize because Gtk.IconSize id deprecated.
-    #       https://lazka.github.io/pgi-docs/Gtk-3.0/enums.html#Gtk.IconSize
-    GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)
-
-
-def update_status(prefix, status):
-    """
-    The proper naming convention must be used.
-    Object ids must end in '_status' or '_spinner'.
-    Object ids ending in '_status' are always images in the *.ui file.
-    Object ids ending in '_spinner' are always spinners in the *.ui file.
-    """
-
-    # logger.log_value('Set status for entry %s_status' % prefix, status)
-    # TODO: Use Gtk.Icontheme instead of Gtk.IconSize because Gtk.IconSize id deprecated.
-    #       https://lazka.github.io/pgi-docs/Gtk-3.0/enums.html#Gtk.IconSize
-    # Valid icon sizes are:
-    #
-    #   0 = Gtk.IconSize.INVALID
-    #   1 = Gtk.IconSize.MENU
-    #   2 = Gtk.IconSize.SMALL_TOOLBAR
-    #   3 = Gtk.IconSize.LARGE_TOOLBAR
-    #   4 = Gtk.IconSize.BUTTON
-    #   5 = Gtk.IconSize.DND (Drag and Drop)
-    #   6 = Gtk.IconSize.DIALOG
-    image = model.builder.get_object('%s_status' % prefix)
-    GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)
-    spinner = model.builder.get_object('%s_spinner' % prefix)
-    if spinner:
-        if status == PROCESSING:
-            GLib.idle_add(Gtk.Spinner.set_visible, spinner, True)
-            # GLib.idle_add(Gtk.Spinner.set_opacity, spinner, True)
-            GLib.idle_add(Gtk.Spinner.start, spinner)
-        else:
-            GLib.idle_add(Gtk.Spinner.set_visible, spinner, False)
-            # GLib.idle_add(Gtk.Spinner.set_opacity, spinner, False)
-            GLib.idle_add(Gtk.Spinner.stop, spinner)
+########################################################################
+# Navigation Button Functions
+########################################################################
 
 
 # Button styles: text-button, suggested-action, destructive-action
@@ -449,15 +161,8 @@ def reset_buttons(
     # 2190 = ← Back
     # 2192 = → Next
 
-    # TODO: Set style for next button with default value?
     set_button('back_button', back_button_label, back_action, back_button_style, is_back_sensitive, is_back_visible)
     set_button('next_button', next_button_label, next_action, next_button_style, is_next_sensitive, is_next_visible)
-
-
-def update_check_button_label(name, label):
-
-    check_button = model.builder.get_object(name)
-    GLib.idle_add(Gtk.CheckButton.set_label, check_button, label)
 
 
 def set_button(name, label, action, style, is_sensitive, is_visible):
@@ -507,32 +212,310 @@ def update_button_style(name, style):
     #         GLib.idle_add(Gtk.StyleContext.add_class, context, 'text-button')
 
 
-def transition(old_page, new_page):
+########################################################################
+# Show / Hide Widget Functions
+########################################################################
 
-    if old_page != new_page:
-        # Hide the current page.
-        if old_page:
-            logger.log_value('Hide old page', old_page.name.replace('_', ' '))
-            grid = model.builder.get_object(old_page.name)
-            GLib.idle_add(Gtk.Grid.set_visible, grid, False)
-        # Show the next page
-        if new_page:
-            logger.log_value('Show new page', new_page.name.replace('_', ' '))
-            grid = model.builder.get_object(new_page.name)
-            GLib.idle_add(Gtk.Grid.set_visible, grid, True)
+
+def set_column_visible(widget_name, is_visible):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.TreeViewColumn.set_visible, widget, is_visible)
+
+
+def show(widget_name):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.Widget.show, widget)
+
+
+def hide(widget_name):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.Widget.hide, widget)
+
+
+def show_all(widget_name):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.Widget.show_all, widget)
+
+
+def set_visible(widget_name, is_visible):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.Widget.set_visible, widget, is_visible)
+
+
+def set_solid(widget_name, is_solid):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.Widget.set_opacity, widget, is_solid)
+
+
+def set_sensitive(widget_name, is_sensitive):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.Widget.set_sensitive, widget, is_sensitive)
+
+
+########################################################################
+# Label Functions
+########################################################################
+
+
+def update_label(label_name, text):
+
+    # logger.log_value('Update label %s' % label_name, text)
+    label = model.builder.get_object(label_name)
+    GLib.idle_add(Gtk.Label.set_text, label, text)
+
+
+########################################################################
+# Entry Functions
+########################################################################
+
+
+def update_entry(entry_name, text):
+
+    # logger.log_value('Update entry %s' % entry_name, text)
+    entry = model.builder.get_object(entry_name)
+    GLib.idle_add(Gtk.Entry.set_text, entry, text)
+
+
+def set_entry_error(widget_name, is_error):
+
+    # logger.log_value('Set error for entry %s' % widget_name, is_error)
+    entry = model.builder.get_object(widget_name)
+    context = entry.get_style_context()
+    if is_error:
+        GLib.idle_add(Gtk.StyleContext.add_class, context, 'error')
     else:
-        # Stay on the current page.
-        logger.log_value('Stay on page', old_page.name.replace('_', ' '))
+        GLib.idle_add(Gtk.StyleContext.remove_class, context, 'error')
 
 
-def show_page(page):
+def set_entry_editable(widget_name, is_editable):
+
+    # logger.log_value('Set name property to editable is "%s" for entry' % is_editable, widget_name)
+    entry = model.builder.get_object(widget_name)
+    # entry.set_editable(is_editable)
+    GLib.idle_add(Gtk.Entry.set_editable, entry, is_editable)
+
+
+########################################################################
+# Status Functions
+########################################################################
+
+
+def update_status(prefix, status):
     """
-    Show the next page.
+    The proper naming convention must be used.
+    Object ids must end in '_status' or '_spinner'.
+    Object ids ending in '_status' are always images in the *.ui file.
+    Object ids ending in '_spinner' are always spinners in the *.ui file.
     """
 
-    logger.log_value('Show new page', page.name.replace('_', ' '))
-    grid = model.builder.get_object(page.name)
-    GLib.idle_add(Gtk.Grid.set_visible, grid, True)
+    # logger.log_value('Set status for entry %s_status' % prefix, status)
+
+    # TODO: Use Gtk.Icontheme instead of Gtk.IconSize because Gtk.IconSize id deprecated.
+    #       https://lazka.github.io/pgi-docs/Gtk-3.0/enums.html#Gtk.IconSize
+
+    # Valid icon sizes are:
+    #
+    #   0 = Gtk.IconSize.INVALID
+    #   1 = Gtk.IconSize.MENU
+    #   2 = Gtk.IconSize.SMALL_TOOLBAR
+    #   3 = Gtk.IconSize.LARGE_TOOLBAR
+    #   4 = Gtk.IconSize.BUTTON
+    #   5 = Gtk.IconSize.DND (Drag and Drop)
+    #   6 = Gtk.IconSize.DIALOG
+
+    image = model.builder.get_object('%s_status' % prefix)
+    GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)
+    spinner = model.builder.get_object('%s_spinner' % prefix)
+    if spinner:
+        if status == PROCESSING:
+            GLib.idle_add(Gtk.Spinner.set_visible, spinner, True)
+            # GLib.idle_add(Gtk.Spinner.set_opacity, spinner, True)
+            GLib.idle_add(Gtk.Spinner.start, spinner)
+        else:
+            GLib.idle_add(Gtk.Spinner.set_visible, spinner, False)
+            # GLib.idle_add(Gtk.Spinner.set_opacity, spinner, False)
+            GLib.idle_add(Gtk.Spinner.stop, spinner)
+
+
+def update_status_image(name, status):
+    """
+    This is used on the Terminal page.
+    """
+
+    # TODO: Use Gtk.Icontheme instead of Gtk.IconSize because Gtk.IconSize id deprecated.
+    #       https://lazka.github.io/pgi-docs/Gtk-3.0/enums.html#Gtk.IconSize
+
+    image = model.builder.get_object(name)
+    GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)
+
+
+########################################################################
+# Progress Bar Functions
+########################################################################
+
+
+def update_progress_bar_percent(progress_bar_name, percent):
+
+    progress_bar = model.builder.get_object(progress_bar_name)
+    GLib.idle_add(Gtk.ProgressBar.set_fraction, progress_bar, float(percent) / 100.0)
+
+
+def update_progress_bar_text(progress_bar_name, text):
+
+    progress_bar = model.builder.get_object(progress_bar_name)
+    GLib.idle_add(Gtk.ProgressBar.set_text, progress_bar, text)
+
+
+########################################################################
+# Button Functions
+########################################################################
+
+
+def activate_toggle_button(toggle_button_name, is_active):
+    """
+    This is used on the Options page.
+    """
+
+    toggle_button = model.builder.get_object(toggle_button_name)
+    GLib.idle_add(Gtk.ToggleButton.set_active, toggle_button, is_active)
+
+
+def activate_check_button(check_button_name, is_active):
+    """
+    This is used on the Delete page and Finish page.
+    """
+
+    check_button = model.builder.get_object(check_button_name)
+    GLib.idle_add(Gtk.CheckButton.set_active, check_button, is_active)
+
+
+def update_check_button_label(name, label):
+    """
+    This is used on the Delete page.
+    """
+
+    check_button = model.builder.get_object(name)
+    GLib.idle_add(Gtk.CheckButton.set_label, check_button, label)
+
+
+########################################################################
+# Menu Functions
+########################################################################
+
+
+def update_menu_item(menu_item_name, text):
+    """
+    This is used on the Terminal page.
+    """
+
+    menu_item = model.builder.get_object(menu_item_name)
+    GLib.idle_add(Gtk.MenuItem.set_label, menu_item, text)
+
+
+########################################################################
+# Box Functions (Prepare page and Generate page)
+########################################################################
+
+
+def empty_box(box_name):
+
+    box = model.builder.get_object(box_name)
+    for child in box.get_children():
+        # TODO: Do we need the logging here?
+        if isinstance(child, Gtk.Label):
+            logger.log_value('Removing label', child.get_text())
+        elif isinstance(child, Gtk.Button):
+            logger.log_value('Removing button', child.get_label())
+        else:
+            logger.log_value('Removing unknown type', child)
+        GLib.idle_add(Gtk.Box.remove, box, child)
+        GLib.idle_add(Gtk.Widget.destroy, child)
+
+
+def insert_box_label(box_name, text, opacity):
+
+    # Since label is not displayed, there is no need to call GLib.idle_add().
+    label = Gtk.Label(text)
+    label.set_halign(Gtk.Align.START)
+    label.set_visible(True)
+    label.set_opacity(opacity)
+
+    label.set_justify(Gtk.Justification.FILL)
+    label.set_line_wrap(True)
+    # label.set_max_width_chars(0)
+
+    box = model.builder.get_object(box_name)
+    GLib.idle_add(Gtk.Box.add, box, label)
+
+
+def scroll_view_port_to_bottom(view_port_name):
+
+    view_port = model.builder.get_object(view_port_name)
+    adjustment = view_port.get_vadjustment()
+    amount = adjustment.get_upper() - adjustment.get_page_size()
+    GLib.idle_add(Gtk.Adjustment.set_value, adjustment, amount)
+
+
+########################################################################
+# Tree View and List Store Functions
+########################################################################
+
+
+def scroll_to_tree_view_row(tree_view_name, row_number):
+
+    tree_view = model.builder.get_object(tree_view_name)
+    tree_path = Gtk.TreePath.new_from_string('%s' % row_number)
+    GLib.idle_add(Gtk.TreeView.scroll_to_cell, tree_view, tree_path, None, True, 0.5, 0.0)
+
+
+def select_tree_view_row(tree_view_name, row_number):
+
+    tree_view = model.builder.get_object(tree_view_name)
+    tree_path = Gtk.TreePath.new_from_string('%s' % row_number)
+    GLib.idle_add(Gtk.TreeView.set_cursor, tree_view, tree_path, None, False)
+
+
+def update_list_store(list_store_name, data_list):
+
+    list_store = model.builder.get_object(list_store_name)
+    GLib.idle_add(_update_list_store_rows, list_store, data_list)
+
+
+def _update_list_store_rows(list_store, data_list):
+    """
+    Only invoke this function using GLib.idle_add().
+    """
+
+    list_store.clear()
+    for number, data in enumerate(data_list):
+        # logger.log_value('%i. Adding an item to the list' % (number+1), data)
+        list_store.append(data)
+
+
+def update_list_store_progress_bar_percent(list_store_name, path, percent):
+
+    list_store = model.builder.get_object(list_store_name)
+    GLib.idle_add(_update_list_store_progress_bar_percent, list_store, path, percent)
+
+
+def _update_list_store_progress_bar_percent(list_store, path, percent):
+    """
+    Only invoke this function using GLib.idle_add().
+    """
+
+    list_store[path][0] = percent
+
+
+########################################################################
+# Stack Functions
+########################################################################
 
 
 def add_to_stack(stack_name, filepaths, *search_replace_tuples):
@@ -585,38 +568,6 @@ def _add_to_stack(stack_name, filepaths, *search_replace_tuples):
             logger.log_value('Skip adding %s because the file does not exist' % title, filepath)
 
 
-# TODO: This should be called using idle add.
-def add_source_view_to_stack(stack, title, filepath):
-
-    # Create a new scrolled window.
-    builder_temp = Gtk.Builder.new_from_file('pages/source_view.ui')
-    scrolled_window = builder_temp.get_object('scrolled_window')
-    # Get the source buffer.
-    source_view = scrolled_window.get_child()
-    source_buffer = source_view.get_buffer()
-    # Set the font.
-    # settings = Gio.Settings.new('org.gnome.desktop.interface')
-    # font_name = settings.get_string('monospace-font-name')
-    # font = Pango.FontDescription(font_name)
-    logger.log_value('Set font', font_name)
-    source_view.override_font(font)
-    # Set the style scheme.
-    # scheme_name = 'tango'
-    # style_scheme_manager = GtkSource.StyleSchemeManager()
-    # style_scheme = style_scheme_manager.get_scheme(scheme_name)
-    logger.log_value('Set style scheme', scheme_name)
-    source_buffer.set_style_scheme(style_scheme)
-    # Set the style language.
-    # language_name = 'ini'
-    # language_name_manager = GtkSource.LanguageManager()
-    # language = language_name_manager.get_language(language_name)
-    logger.log_value('Set style language', language_name)
-    source_buffer.set_language(language)
-    # Add the new scrolled window to the stack.
-    stack.add_titled(scrolled_window, filepath, title)
-    return scrolled_window
-
-
 def replace_text_in_stack_buffer(stack_name, *search_replace_tuples):
     """
     This function blocks and does not use GLib.idle_add.
@@ -652,6 +603,177 @@ def replace_text_in_stack_buffer(stack_name, *search_replace_tuples):
     return total_replacement_count
 
 
-def main_quit():
+########################################################################
+# Source View Functions
+########################################################################
 
-    GLib.idle_add(Gtk.main_quit)
+
+# TODO: This should be called using idle add.
+def add_source_view_to_stack(stack, title, filepath):
+
+    # Create a new scrolled window.
+    builder_temp = Gtk.Builder.new_from_file('pages/source_view.ui')
+    scrolled_window = builder_temp.get_object('scrolled_window')
+    # Get the source buffer.
+    source_view = scrolled_window.get_child()
+    source_buffer = source_view.get_buffer()
+    # Set the font.
+    # settings = Gio.Settings.new('org.gnome.desktop.interface')
+    # font_name = settings.get_string('monospace-font-name')
+    # font = Pango.FontDescription(font_name)
+    logger.log_value('Set font', font_name)
+    source_view.override_font(font)
+    # Set the style scheme.
+    # scheme_name = 'tango'
+    # style_scheme_manager = GtkSource.StyleSchemeManager()
+    # style_scheme = style_scheme_manager.get_scheme(scheme_name)
+    logger.log_value('Set style scheme', scheme_name)
+    source_buffer.set_style_scheme(style_scheme)
+    # Set the style language.
+    # language_name = 'ini'
+    # language_name_manager = GtkSource.LanguageManager()
+    # language = language_name_manager.get_language(language_name)
+    logger.log_value('Set style language', language_name)
+    source_buffer.set_language(language)
+    # Add the new scrolled window to the stack.
+    stack.add_titled(scrolled_window, filepath, title)
+    return scrolled_window
+
+
+########################################################################
+# Unused Functions
+########################################################################
+
+
+def show_page(page):
+    """
+    This function is not used.
+    Show the next page.
+    """
+
+    logger.log_value('Show new page', page.name.replace('_', ' '))
+    grid = model.builder.get_object(page.name)
+    GLib.idle_add(Gtk.Grid.set_visible, grid, True)
+
+
+def show_spinner():
+    """
+    This function is not used.
+    """
+
+    grid = model.builder.get_object('pages')
+    GLib.idle_add(Gtk.Grid.set_sensitive, grid, False)
+    spinner = model.builder.get_object('window_spinner')
+    GLib.idle_add(Gtk.Spinner.start, spinner)
+    GLib.idle_add(Gtk.Spinner.set_visible, spinner, True)
+
+
+def hide_spinner():
+    """
+    This function is not used.
+    """
+
+    spinner = model.builder.get_object('window_spinner')
+    GLib.idle_add(Gtk.Spinner.set_visible, spinner, False)
+    GLib.idle_add(Gtk.Spinner.stop, spinner)
+    grid = model.builder.get_object('pages')
+    GLib.idle_add(Gtk.Grid.set_sensitive, grid, True)
+
+
+def activate_radio_button(radio_button_name, is_active):
+    """
+    This function is not used.
+    """
+
+    radio_button = model.builder.get_object(radio_button_name)
+    GLib.idle_add(Gtk.RadioButton.set_active, radio_button, is_active)
+
+
+def get_list_box_row_widget(list_box_name, row_number):
+    """
+    This function is not used.
+    """
+
+    list_box = model.builder.get_object(list_box_name)
+    list_box_row = list_box.get_row_at_index(row_number)
+    child = list_box_row.get_children()[0]
+    return child
+
+
+def insert_list_box_row_label(list_box_name, row_number, text, additional_height=0):
+    """
+    This function is not used.
+    """
+
+    # Since label is not displayed, there is no need to call GLib.idle_add().
+    label = Gtk.Label(text)
+    label.set_halign(Gtk.Align.START)
+    label.set_visible(True)
+    preferred_height = label.get_preferred_height()[0]
+    label.set_size_request(-1, preferred_height + additional_height)
+    list_box = model.builder.get_object(list_box_name)
+    GLib.idle_add(Gtk.ListBox.insert, list_box, label, row_number)
+
+
+def insert_list_box_row_check_button(list_box_name, row_number, text, is_active, additional_height=0):
+    """
+    This function is not used.
+    """
+
+    # Since check button is not displayed, there is no need to call GLib.idle_add().
+    check_button = Gtk.check_button(text)
+    check_button.set_halign(Gtk.Align.START)
+    check_button.set_visible(True)
+    check_button.set_active(is_active)
+    preferred_height = check_button.get_preferred_height()[0]
+    check_button.set_size_request(-1, preferred_height + additional_height)
+    list_box = model.builder.get_object(list_box_name)
+    GLib.idle_add(Gtk.ListBox.insert, list_box, check_button, row_number)
+
+
+def get_list_box_row_count(list_box_name):
+    """
+    This function is not used.
+    """
+
+    list_box = model.builder.get_object(list_box_name)
+    return len(list_box.get_children())
+
+
+def select_list_box_row(list_box_name, row_number):
+    """
+    This function is not used.
+    """
+
+    list_box = model.builder.get_object(list_box_name)
+    list_box_row = list_box.get_row_at_index(row_number)
+    GLib.idle_add(Gtk.ListBox.select_row, list_box, list_box_row)
+
+
+def update_list_box_row_label(list_box_name, row_number, text):
+    """
+    This function is not used.
+    """
+
+    list_box = model.builder.get_object(list_box_name)
+    list_box_row = list_box.get_row_at_index(row_number)
+    label = list_box_row.get_children()[0]
+    GLib.idle_add(Gtk.Label.set_text, label, text)
+
+
+def empty_list_box(list_box_name):
+    """
+    This function is not used.
+    """
+
+    list_box = model.builder.get_object(list_box_name)
+    for list_box_row in list_box.get_children():
+        child = list_box_row.get_children()[0]
+        if isinstance(child, Gtk.Label):
+            logger.log_value('Removing label', child.get_text())
+        elif isinstance(child, Gtk.Button):
+            logger.log_value('Removing button', child.get_label())
+        else:
+            logger.log_value('Removing unknown type', child)
+        GLib.idle_add(Gtk.ListBox.remove, list_box, list_box_row)
+        GLib.idle_add(Gtk.Widget.destroy, list_box_row)

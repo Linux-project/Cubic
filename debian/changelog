@@ -1,5 +1,22 @@
 cubic (2020.05) focal; urgency=low
 
+  * Fixed Bug #1877897, Copying vmlinuz fails on the Generate page when
+    kernel files (vmlinuz and initrd) from the customized Linux file
+    system have been selected instead of the kernel files from the
+    original ISO.
+
+  * Discontinued redundantly saving  preseed and boot configuration
+    files files upon leaving the Options page, because these files are
+    saved when entering the Generate page.
+
+  * Because preseed and boot configuration files are saved when entering
+    the Generate page, discontinued redundantly saving these files upon
+    leaving the Options page.
+
+  * Organized the constants and displayer modules.
+
+  * Issues fixed in version 2020.05-16:
+
   * Fixed an issue where the all three actions (locate, extract, copy)
     on the Extract page were always preformed, even if some of the
     actions were previously successful. This has the effect of
@@ -11,7 +28,7 @@ cubic (2020.05) focal; urgency=low
   * Organized imports and performed code clean-up.
 
   * Issues fixed in version 2020.05-15:
-    
+
   * Improved logic to print the "You have exited the virtual environment"
     message in the terminal based on signal status.
 
@@ -26,7 +43,7 @@ cubic (2020.05) focal; urgency=low
 
   * Fixed Bug #1877232, In Ubuntu 20.04, Vte crashes with a Segmentation
     fault when the user exits the terminal.
-    
+
   * Fixed issue where the message, "You have exited the virtual
     environment," is not consistently printed in the terminal.
 
@@ -37,9 +54,9 @@ cubic (2020.05) focal; urgency=low
 
   * Added support for symlinks for the project directory and for the
     original ISO image file.
-    
+
   * Improved the layout of the Generate page.
-  
+
   * Print log output for all progress bars in increments of 10%.
 
   * Issues fixed in version 2020.05-10:
@@ -141,4 +158,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 10 May 2020 01:54:29 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 10 May 2020 22:26:32 -0400

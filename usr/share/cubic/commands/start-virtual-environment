@@ -141,5 +141,6 @@ else
     --machine="${machine_name}"     \
     --directory="${directory_path}"
 fi
+exit_code=$?
 exit $exit_code
 

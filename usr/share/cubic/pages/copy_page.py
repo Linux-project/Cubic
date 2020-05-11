@@ -225,7 +225,7 @@ def copy_file(filepath, file_number, directory, total_files):
     logger.log_value('The file is', filepath)
     logger.log_value('The target directory is', directory)
 
-    program = join(model.application.directory, 'commands', 'copy-file')
+    program = join(model.application.directory, 'commands', 'copy-path')
     command = 'pkexec "%s" "%s" "%s"' % (program, filepath, directory)
 
     # The progress callback function.

@@ -28,16 +28,8 @@
 ########################################################################
 
 ########################################################################
-# Constants
+# Application
 ########################################################################
-
-# Status
-OK = 0
-ERROR = 1
-OPTIONAL = 2
-BULLET = 3
-PROCESSING = 4
-BLANK = 5
 
 NEW_CUBIC_VERSION = '2020.04'
 
@@ -45,8 +37,31 @@ ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
 
+# The maximum ISO size is 8 Tera bytes.
+MAXIMUM_ISO_SIZE_GIB = 8000.0
+MAXIMUM_ISO_SIZE_BYTES = MAXIMUM_ISO_SIZE_GIB * 1073741824.0
+
+########################################################################
+# Status
+########################################################################
+
+OK = 0
+ERROR = 1
+OPTIONAL = 2
+BULLET = 3
+PROCESSING = 4
+BLANK = 5
+
 # DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/isolinux.cfg,isolinux/txt.cfg'
 DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/txt.cfg'
+
+NUMBERS_LOWER_CASE = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
+NUMBERS_TITLE_CASE = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine']
+NUMBERS_UPPER_CASE = ['NO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE']
+
+########################################################################
+# Progress
+########################################################################
 
 ZOOM = 10
 PERCENT_START = 0
@@ -55,10 +70,6 @@ PROGRESS_START = PERCENT_START * ZOOM
 PROGRESS_STOP = PERCENT_STOP * ZOOM
 SLOW_INTERVAL = 0.5000 / ZOOM
 FAST_INTERVAL = 0.0100 / ZOOM
-
-NUMBERS_LOWER_CASE = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
-NUMBERS_TITLE_CASE = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine']
-NUMBERS_UPPER_CASE = ['NO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE']
 
 ########################################################################
 # Font Colors

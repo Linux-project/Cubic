@@ -28,12 +28,14 @@
 ########################################################################
 
 from datetime import datetime
+from getpass import getuser
 from hashlib import md5
 from os import linesep, makedirs, remove, walk
 from os.path import dirname, exists, join, realpath, relpath
 from re import search
 from time import sleep
 
+from constants import MAXIMUM_ISO_SIZE_GIB, MAXIMUM_ISO_SIZE_BYTES
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
@@ -55,15 +57,6 @@ from utilities.progress import show_progress
 ########################################################################
 
 name = 'generate_page'
-
-# Move these to the constants module.
-MAXIMUM_ISO_SIZE_GIB = 8000.0
-MAXIMUM_ISO_SIZE_BYTES = MAXIMUM_ISO_SIZE_GIB * 1073741824.0
-
-# TODO: These should not be global.
-#       Fix show_progress()'s callback to take these as parameters.
-total_files = 2
-file_number = 0
 
 ########################################################################
 # Navigation Functions
@@ -133,7 +126,7 @@ def enter(action, old_page=None):
 
         displayer.update_status('generate_page__copy_boot_files', displayer.PROCESSING)
         sleep(0.500)
-        is_error = copy_boot_files()
+        is_error = copy_preseed_and_boot_and_kernel_files()
         if not is_error:
             displayer.update_status('generate_page__copy_boot_files', displayer.OK)
             add_message('\nSuccess.')
@@ -328,7 +321,6 @@ def add_message(message):
     displayer.insert_box_label('generate_page__copy_boot_files_box', message, 0.50)
 
 
-# TODO: This function is in generate_page.py and options_page.py. Consider refactoring.
 # TODO: Add error checking to this function.
 def save_stack_buffers(stack_name):
 
@@ -356,7 +348,7 @@ def save_stack_buffers(stack_name):
         makedirs(directory, exist_ok=True)
 
         # Write the file.
-        # TODO: Use try except block.
+        # TODO: Use try for all write operations on all pages.
         with open(filepath, 'w') as file:
             file.write(data)
         # file.flush()
@@ -367,8 +359,156 @@ def save_stack_buffers(stack_name):
     return is_error
 
 
-def copy_boot_files():
+def copy_preseed_and_boot_and_kernel_files():
+    """
+    Copies the following files to the custom disk:
+      1. Preseed
+      2. ISO Boot Configurations
+      3. Vmlinuz & Initrd
+    """
 
+    # ------------------------------------------------------------------
+    # Preseed
+    # ------------------------------------------------------------------
+
+    is_error = False
+
+    logger.log_label('Save preseed files')
+    save_stack_buffers('options_page__preseed_tab__stack')
+
+    # Delete preseed files.
+
+    logger.log_label('Delete preseed files')
+    for filepath in model.delete_list:
+        try:
+            logger.log_value('Delete file', filepath)
+            # TODO: Make sure filepath is relative to project directory.
+            add_message('Delete %s' % filepath)
+            remove(filepath)
+        except OSError as exception:
+            is_error = True
+            logger.log_value('Error deleting file', exception)
+            add_message('Error deleting preseed file %s' % filepath)
+        sleep(0.500)
+    model.delete_list = []
+    if is_error: return True
+
+    # ------------------------------------------------------------------
+    # ISO Boot Configurations
+    # ------------------------------------------------------------------
+
+    is_error = False
+
+    sleep(0.500)
+    logger.log_label('Save ISO boot configurations')
+    is_error = save_stack_buffers('options_page__boot_configuration_tab__stack')
+    if is_error: return True
+
+    # ------------------------------------------------------------------
+    # Vmlinuz & Initrd
+    # ------------------------------------------------------------------
+
+    is_error = False
+
+    sleep(0.500)
+
+    logger.log_label('Update vmlinuz boot file.')
+
+    # Get the selected kernel.
+
+    # 0: version_name
+    # 1: vmlinuz_filename
+    # 2: new_vmlinuz_filename
+    # 3: initrd_filename
+    # 4: new_initrd_filename
+    # 5: directory
+    # 6: note
+    # 7: is_selected
+
+    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
+    for selected_index, kernel_details in enumerate(list_store):
+        if kernel_details[7]:
+            break
+    else:
+        selected_index = 0
+    logger.log_value('The selected kernel is index number', selected_index)
+
+    # Get the selected directory.
+    source_directory = list_store[selected_index][5]
+
+    # Get the target directory.
+    target_directory = join(model.project.custom_disk_directory, model.status.casper_directory)
+
+    # ------------------------------------------------------------------
+    # Vmlinuz
+    # ------------------------------------------------------------------
+
+    logger.log_label('Update vmlinuz boot file.')
+
+    source_filename = list_store[selected_index][1]
+    source_filepath = join(source_directory, source_filename)
+    target_filename = list_store[selected_index][2]
+    target_filepath = join(target_directory, target_filename)
+    user = getuser()
+
+    add_message('Update /%s/%s' % (model.status.casper_directory, target_filename))
+
+    # Delete existing vmlinuz* file(s) in the target directory.
+    pattern = join(target_directory, 'vmlinuz*')
+    file_utilities.delete_files_with_pattern(pattern)
+
+    # Copy the new vmlinuz file.
+    program = join(model.application.directory, 'commands', 'copy-path')
+    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, source_filepath, target_filepath, user)
+    result, exitstatus, signalstatus = execute_synchronous(command)
+    # TODO: How to check for errors?
+    # rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1207) [sender=3.1.3
+    print('*** result=%s, exitstatus=%s, signalstatus=%s' % (result, exitstatus, signalstatus))
+    if exitstatus:
+        is_error = True
+    sleep(0.500)
+    if is_error: return True
+
+    # ------------------------------------------------------------------
+    # Initrd
+    # ------------------------------------------------------------------
+
+    logger.log_label('Update initrd boot file.')
+
+    source_filename = list_store[selected_index][3]
+    source_filepath = join(source_directory, source_filename)
+    target_filename = list_store[selected_index][4]
+    target_filepath = join(target_directory, target_filename)
+    user = getuser()
+
+    add_message('Update /%s/%s' % (model.status.casper_directory, target_filename))
+
+    # Delete existing initrd* file in the target directory.
+    pattern = join(target_directory, 'initrd*')
+    file_utilities.delete_files_with_pattern(pattern)
+
+    # Copy the new initrd file.
+    program = join(model.application.directory, 'commands', 'copy-path')
+    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, source_filepath, target_filepath, user)
+    result, exitstatus, signalstatus = execute_synchronous(command)
+    # TODO: How to check for errors?
+    # rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1207) [sender=3.1.3
+    print('*** result=%s, exitstatus=%s, signalstatus=%s' % (result, exitstatus, signalstatus))
+    if exitstatus:
+        is_error = True
+    sleep(0.500)
+    if is_error: return True
+
+    return is_error
+
+
+def copy_preseed_and_boot_and_kernel_files_ORIGINAL():
+    """
+    Copies the following files to the custom disk:
+      1. Preseed
+      2. ISO Boot Configurations
+      3. Vmlinuz & Initrd
+    """
     #
     # Preseed
     #
@@ -608,6 +748,7 @@ def _create_squashfs_ORIGINAL():
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
 
+    # The progress callback function.
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
         if percent % 10 == 0:
@@ -652,9 +793,8 @@ def update_filesystem_size():
             if size > 0:
                 filepath = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.size')
                 logger.log_value('Write filesystem size to', filepath)
-                # TODO: Use try for all write operations.
+                # TODO: Use try for all write operations on all pages.
                 try:
-                    # TODO: Use try except block.
                     with open(filepath, 'w') as file:
                         file.write('%s' % size)
                     displayer.update_label('generate_page__update_filesystem_size_message', 'The file system size is %.2f GiB (%s bytes).' % ((size / 1073741824.0), size))
@@ -716,7 +856,7 @@ def update_disk_info():
         text = '%s (%s)' % (model.custom.iso_disk_name, formatted_time)
         logger.log_value('Write custom ISO image disk name and release date', text)
         logger.log_value('Write to', filepath)
-        # TODO: Use try except block.
+        # TODO: Use try for all write operations on all pages.
         with open(filepath, 'w') as file:
             file.write('%s' % text)
         # TODO: Correct the log message.
@@ -732,7 +872,7 @@ def update_disk_info():
 
 def calculate_md5_hash_for_file(filepath, blocksize=2**20):
     hash = md5()
-    # TODO: Use try except block.
+    # TODO: Use try for all write operations on all pages.
     with open(filepath, 'rb') as file:
         while True:
             buffer = file.read(blocksize)
@@ -750,7 +890,7 @@ def update_checksums_WITHOUT_PROGRESS(checksums_filepath, start_directory, exclu
     exclude_paths = [realpath(path) for path in exclude_paths]
     logger.log_value('Write md5 sums to', checksums_filepath)
     count = 0
-    # TODO: Use try except block.
+    # TODO: Use try for all write operations on all pages.
     with open(checksums_filepath, 'w') as file:
         for directory, directory_names, filenames in walk(start_directory):
             if directory not in exclude_paths:
@@ -799,7 +939,9 @@ def update_checksums():
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', None)
     # TODO: This doesn't use a pexpect process.
-    # TODO: Use try except block.
+    #       Consider adding functionality to progress.py that also shows
+    #       progress for non-pexpect functions.
+    # TODO: Use try for all write operations on all pages.
     with open(checksums_filepath, 'w') as file:
         for file_number, filepath in enumerate(filepaths, start=1):
             # displayer.update_label('generate_page__update_checksums_message', 'Calculating checksum for file %i of %i.' % (file_number, total_files))
@@ -947,6 +1089,7 @@ def create_iso_image():
             ' -o "%s" .' % (model.custom.iso_volume_id,
                             custom_iso_filepath))
 
+    # The progress callback function.
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', percent)
         if percent % 10 == 0:

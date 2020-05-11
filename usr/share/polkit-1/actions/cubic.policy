@@ -17,7 +17,7 @@
 		<annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/compress-root</annotate>
 	</action>
 
-	<action id="copy-file">
+	<action id="copy-path">
 		<description>Copy a file into the virtual environment</description>
 		<message>Enter the administrator password to copy a file into the virtual environment for Cubic.</message>
 		<icon_name>cubic</icon_name>
@@ -27,7 +27,7 @@
 			<allow_inactive>yes</allow_inactive>
 			<allow_active>yes</allow_active>
 		</defaults>
-		<annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/copy-file</annotate>
+		<annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/copy-path</annotate>
 	</action>
 
 	<action id="current-directory">
