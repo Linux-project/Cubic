@@ -1,5 +1,35 @@
 cubic (2020.05) focal; urgency=low
 
+  * Fixed Bug #1879190, Cubic sometimes generates an ISO that does not
+    boot.
+  - Added a new progressor module to replace the current progress
+    module. The new module uses a more elegant algorithm to accurately
+    report a process' progress up to 100% and ensures process are
+    complete before they are closed.
+  - Updated the Extract page to use the new progressor module.
+  - Updated the Generate page to use the new progressor module.
+
+  * Fixed Bug #1877232, In Ubuntu 19.10, Vte crashes with a Segmentation
+    fault when the user exits the terminal. (See similar Bug #1877232
+    for Ubuntu 20.04).
+
+  * Excluded the following directories from the generated ISO:
+    - \proc
+    - \tmp
+    Previously, all files inside \tmp were excluded, but it is simpler
+    to simply not include the entire directory, since it is recreated.
+
+  * Updated the extract-root command to only extract the Linux file
+    system if the existing custom-root folder has been successfully
+    deleted.
+
+  * Updated the terminate-process command to use negative pids so all
+    all child processes are killed.
+
+  * Added non-bold colored terminal font codes.
+
+  * Issues fixed in version 2020.05-17:
+
   * Fixed Bug #1877897, Copying vmlinuz fails on the Generate page when
     kernel files (vmlinuz and initrd) from the customized Linux file
     system have been selected instead of the kernel files from the
@@ -158,4 +188,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 10 May 2020 22:26:32 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 17 May 2020 17:43:08 -0400

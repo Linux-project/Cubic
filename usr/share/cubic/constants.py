@@ -63,6 +63,22 @@ NUMBERS_UPPER_CASE = ['NO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN
 # Progress
 ########################################################################
 
+START_PERCENT = 0  # %
+FINAL_PERCENT = 100  # %
+
+# The number of seconds to delay before incrementing one percent.
+DELAY_PER_PERCENT = 0.100  # seconds / percent
+
+# The scale factor defines the "resolution" for each step in the
+# progress. For example, a scale factor of 10 means that there are 1000
+# steps to reach 100% (100% × 10 scale factor = 1000 steps); in other
+# words, each progress step is 0.10% (1% ÷ 10 scale factor = 0.10%).
+SCALE_FACTOR = 10
+
+########################################################################
+# TODO: DELETE THESE WHEN progress is replaced with progressor.
+########################################################################
+
 ZOOM = 10
 PERCENT_START = 0
 PERCENT_STOP = 100
@@ -79,12 +95,21 @@ FAST_INTERVAL = 0.0100 / ZOOM
 
 # https://en.wikipedia.org/wiki/ANSI_escape_code
 # https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
+
+RED = '\033[0;31m'
+GREEN = '\033[0;32m'
+BLUE = '\033[0;34m'
+YELLOW = '\033[0;33m'
+MAGENTA = '\033[0;35m'
+CYAN = '\033[0;36m'
+
 BOLD_RED = '\033[1;31m'
 BOLD_GREEN = '\033[1;32m'
 BOLD_BLUE = '\033[1;34m'
-BOLD_YELLOW = '\033[1;33;1m'
-BOLD_MAGENTA = '\033[1;35;1m'
-BOLD_CYAN = '\033[1;36;1m'
+BOLD_YELLOW = '\033[1;33m'
+BOLD_MAGENTA = '\033[1;35m'
+BOLD_CYAN = '\033[1;36m'
+
 NORMAL = '\033[0m'
 
 # https://stackoverflow.com/questions/45065919/move-cursor-position-in-bash-at-specific-column

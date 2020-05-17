@@ -45,16 +45,17 @@ target_path=${2}
 # Command
 ########################################################################
 
+# unshare --fork --pid --kill-child -- \
 mksquashfs "${source_path}" "${target_path}" \
  -noappend \
  -comp gzip \
  -wildcards \
+ -e "proc" \
+ -e "tmp" \
  -e "root/.bash_history" \
  -e "root/.cache" \
  -e "root/.wget-hsts" \
  -e "home/*/.bash_history" \
  -e "home/*/.cache" \
- -e "home/*/.wget-hsts" \
- -e "tmp/*" \
- -e "tmp/.*"
+ -e "home/*/.wget-hsts"
  

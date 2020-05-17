@@ -28,12 +28,14 @@
 ########################################################################
 
 from datetime import datetime
+from pexpect import TIMEOUT, EOF, ExceptionPexpect
 from getpass import getuser
 from hashlib import md5
 from os import linesep, makedirs, remove, walk
 from os.path import dirname, exists, join, realpath, relpath
-from re import search
+from re import compile, search
 from time import sleep
+from traceback import format_exc
 
 from constants import MAXIMUM_ISO_SIZE_GIB, MAXIMUM_ISO_SIZE_BYTES
 from utilities import configuration
@@ -43,8 +45,8 @@ from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.processor import execute_synchronous
-from utilities.progress import show_progress
+from utilities.processor import execute_asynchronous, execute_synchronous, terminate_process
+from utilities.progressor import show_progress
 
 ########################################################################
 # References
@@ -85,6 +87,7 @@ def setup(action, old_page=None):
         displayer.update_status('generate_page__create_squashfs', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '')
+        displayer.update_label('generate_page__create_squashfs_message', '...')
 
         displayer.update_status('generate_page__update_filesystem_size', displayer.BULLET)
         displayer.update_label('generate_page__update_filesystem_size_message', '...')
@@ -93,9 +96,9 @@ def setup(action, old_page=None):
         displayer.update_label('generate_page__update_disk_name_message', '...')
 
         displayer.update_status('generate_page__update_checksums', displayer.BULLET)
-        displayer.update_label('generate_page__update_checksums_message', '...')
         displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', '')
+        displayer.update_label('generate_page__update_checksums_message', '...')
 
         displayer.update_status('generate_page__check_iso_size', displayer.BULLET)
         displayer.update_label('generate_page__check_iso_size_message', '...')
@@ -103,6 +106,7 @@ def setup(action, old_page=None):
         displayer.update_status('generate_page__create_iso_image', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '')
+        displayer.update_label('generate_page__create_iso_image_message', '')
 
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.BULLET)
         displayer.update_label('generate_page__calculate_iso_image_checksum_message', '...')
@@ -133,7 +137,7 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
             add_message('\nError. Unable to copy all boot files.')
-            return 'error'
+            return
         sleep(0.500)
 
         #
@@ -149,7 +153,7 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
             displayer.update_label('generate_page__create_squashfs_message', 'Error. Unable to create the compressed Linux file system.')
-            return 'error'
+            return
         sleep(0.500)
 
         #
@@ -164,7 +168,7 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__update_filesystem_size', displayer.OK)
         else:
             displayer.update_status('generate_page__update_filesystem_size', displayer.ERROR)
-            return 'error'
+            return
         sleep(0.500)
 
         #
@@ -179,7 +183,7 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__update_disk_name', displayer.OK)
         else:
             displayer.update_status('generate_page__update_disk_name', displayer.ERROR)
-            return 'error'
+            return
         sleep(0.500)
 
         #
@@ -194,11 +198,11 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__update_checksums', displayer.OK)
         else:
             displayer.update_status('generate_page__update_checksums', displayer.ERROR)
-            return 'error'
+            return
         sleep(0.500)
 
         #
-        # Check ISO size and create ISO image.
+        # Check ISO size.
         #
 
         displayer.update_status('generate_page__check_iso_size', displayer.PROCESSING)
@@ -209,7 +213,7 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__check_iso_size', displayer.OK)
         else:
             displayer.update_status('generate_page__check_iso_size', displayer.ERROR)
-            return 'error'
+            return
         sleep(0.500)
 
         #
@@ -224,8 +228,8 @@ def enter(action, old_page=None):
             displayer.update_label('generate_page__create_iso_image_message', 'Success.')
         else:
             displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
-            displayer.update_label('generate_page__create_iso_image_message', 'Success.')
-            return 'error'
+            displayer.update_label('generate_page__create_iso_image_message', 'Error. Unable to create the customized disk image.')
+            return
         sleep(0.500)
 
         #
@@ -240,7 +244,7 @@ def enter(action, old_page=None):
             displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.OK)
         else:
             displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.ERROR)
-            return 'error'
+            return
         sleep(0.500)
 
         # TODO: Only activate the next button if no error.
@@ -262,6 +266,14 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         configuration.save()
+
+        return
+
+    elif action == 'error':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        return
 
     elif action == 'finish':
 
@@ -310,10 +322,6 @@ def on_size_allocate__generate_page__copy_boot_files_view_port(widget, event, da
 # Support Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
-# Repackage Functions
-#-----------------------------------------------------------------------
-
 
 # TODO: Improve this function name.
 def add_message(message):
@@ -357,6 +365,11 @@ def save_stack_buffers(stack_name):
 
     is_error = False
     return is_error
+
+
+#-----------------------------------------------------------------------
+# Copy Boot Files Functions
+#-----------------------------------------------------------------------
 
 
 def copy_preseed_and_boot_and_kernel_files():
@@ -632,53 +645,16 @@ def copy_preseed_and_boot_and_kernel_files_ORIGINAL():
     return is_error
 
 
+#-----------------------------------------------------------------------
+# Create Squashfs Functions
+#-----------------------------------------------------------------------
+
+
 def create_squashfs():
 
     # return _create_squashfs_TESTING_2()
     # return _create_squashfs_TESTING_1()
     return _create_squashfs()
-
-
-def _create_squashfs_TESTING_2():
-    """
-    This function copies the original filesystem.squashfs file.
-    """
-
-    logger.log_label('Create squashfs (Testing)')
-
-    source_path = join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
-    logger.log_value('The source path is', source_path)
-
-    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
-    logger.log_value('The target path is', target_path)
-
-    # Copy the original filesystem.squashfs.
-    file_utilities.copy_file(source_path, target_path)
-
-    if exists(target_path):
-        is_error = False
-        logger.log_value('The file exists', target_path)
-    else:
-        logger.log_value('The file exists', target_path)
-        is_error = True
-
-    return is_error
-
-
-def _create_squashfs_TESTING_1():
-    """
-    This function does nothing.
-    """
-
-    logger.log_label('Create squashfs (Testing)')
-
-    source_path = model.project.custom_root_directory
-    logger.log_value('The source path is', source_path)
-
-    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
-    logger.log_value('The target path is', target_path)
-
-    is_error = False
 
 
 def _create_squashfs():
@@ -710,14 +686,24 @@ def _create_squashfs():
 
     error = show_progress(command, progress_callback)
 
+    # TODO: Are sync or sleep needed?
+    # sync()
+    # sleep(120)
+
     is_error = bool(error)
 
     return is_error
 
 
-def _create_squashfs_ORIGINAL():
+# TODO: DELETE
 
-    logger.log_label('Create squashfs')
+
+def _create_squashfs_TESTING_1():
+    """
+    This function does nothing.
+    """
+
+    logger.log_label('Create squashfs (Testing)')
 
     source_path = model.project.custom_root_directory
     logger.log_value('The source path is', source_path)
@@ -725,25 +711,154 @@ def _create_squashfs_ORIGINAL():
     target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The target path is', target_path)
 
-    # https://catchchallenger.first-world.info/wiki/Quick_Benchmark:_Gzip_vs_Bzip2_vs_LZMA_vs_XZ_vs_LZ4_vs_LZO
-    # Optionally use gzip (lower compression) or xz (higher compression).
-    # Originally added etc/ssh/ssh_host*to resolve Bug #1824715.
-    # Removed etc/ssh/ssh_host* due to Bug #1825566.
-    command = (
-        'mksquashfs "%s" "%s"'
-        ' -noappend'
-        # ' -comp xz'
-        ' -comp gzip'
-        ' -wildcards'
-        ' -e "root/.bash_history"'
-        ' -e "root/.cache"'
-        ' -e "root/.wget-hsts"'
-        ' -e "home/*/.bash_history"'
-        ' -e "home/*/.cache"'
-        ' -e "home/*/.wget-hsts"'
-        ' -e "tmp/*"'
-        ' -e "tmp/.*"' % (source_path,
-                          target_path))
+    is_error = False
+
+
+def _create_squashfs_TESTING_2():
+    """
+    This function copies the original filesystem.squashfs file.
+    """
+
+    logger.log_label('Create squashfs (Testing)')
+
+    source_path = join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The source path is', source_path)
+
+    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The target path is', target_path)
+
+    # Copy the original filesystem.squashfs.
+    file_utilities.copy_file(source_path, target_path)
+
+    if exists(target_path):
+        is_error = False
+        logger.log_value('The file exists', target_path)
+    else:
+        logger.log_value('The file exists', target_path)
+        is_error = True
+
+    return is_error
+
+
+#-----------------------------------------------------------------------
+# CREATE SQUASHFS EXPERIMENTS
+#-----------------------------------------------------------------------
+
+
+def _create_squashfs_WORKING():
+    """
+    This function does not use the progress utility.
+    """
+
+    logger.log_label('Compress the Linux file system.')
+
+    is_error = False
+
+    source_path = model.project.custom_root_directory
+    logger.log_value('The source path is', source_path)
+
+    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The target path is', target_path)
+
+    # Create filesystem.squashfs.
+
+    # Pkexec is required.
+    program = join(model.application.directory, 'commands', 'compress-root')
+    command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
+
+    # Show % in progress by setting text to None.
+    displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
+
+    # The progress callback function.
+    def progress_callback(percent):
+        displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
+        if percent % 10 == 0:
+            logger.log_value('▹ Completed', '%i%%' % percent)
+
+    error = _show_progress(command, progress_callback)
+
+    is_error = bool(error)
+
+    return is_error
+
+
+def _show_progress(command, progress_callback):
+
+    try:
+        pattern = compile(r'([0-9]{1,3})%')
+        process = execute_asynchronous(command)
+        percent = 0
+        while percent < 100:
+            process.expect(pattern)
+            percent = int((process.after)[:-1])
+            # logger.log_value('▹ Percent', '%i%%' % percent)
+            progress_callback(percent)
+    except TIMEOUT as exception:
+        logger.log_value('Error', 'A timeout exception occurred.')
+        # logger.log_value('Error', exception)
+        # logger.log_value('The tracekback is', format_exc())
+        return exception
+    except EOF as exception:
+        logger.log_value('Error', 'An end of file exception occurred.')
+        # logger.log_value('Error', exception)
+        # logger.log_value('The tracekback is', format_exc())
+        return exception
+    except Exception as exception:
+        logger.log_value('Error', exception)
+        # logger.log_value('The tracekback is', format_exc())
+        return exception
+
+    return
+
+
+def _show_progress_WORKING_2(command, progress_callback):
+
+    try:
+        pattern = compile(r'([0-9]{1,3})%')
+        process = execute_asynchronous(command)
+        percent = 0
+        while percent < 100:
+            process.expect(pattern)
+            percent = int((process.after)[:-1])
+            # logger.log_value('▹ Percent', '%i%%' % percent)
+            progress_callback(percent)
+    except TIMEOUT as exception:
+        logger.log_value('Error', exception)
+        logger.log_value('The tracekback is', format_exc())
+        # terminate_process()
+        return exception
+    except EOF as exception:
+        logger.log_value('Error', exception)
+        logger.log_value('The tracekback is', format_exc())
+        # terminate_process()
+        return exception
+    except Exception as exception:
+        logger.log_value('Error', exception)
+        logger.log_value('The tracekback is', format_exc())
+        # sterminate_process()
+        return exception
+
+    # Return no error.
+    return
+
+
+def _create_squashfs_WORKING_1():
+
+    logger.log_label('Compress the Linux file system.')
+
+    is_error = False
+
+    source_path = model.project.custom_root_directory
+    logger.log_value('The source path is', source_path)
+
+    target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The target path is', target_path)
+
+    # Create filesystem.squashfs.
+
+    # Pkexec is required.
+    program = join(model.application.directory, 'commands', 'compress-root')
+    command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
 
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
@@ -756,9 +871,17 @@ def _create_squashfs_ORIGINAL():
 
     error = show_progress(command, progress_callback)
 
+    # sync()
+    sleep(120)
+
     is_error = bool(error)
 
     return is_error
+
+
+#-----------------------------------------------------------------------
+# Update Filesystem Size Functions
+#-----------------------------------------------------------------------
 
 
 def update_filesystem_size():
@@ -815,6 +938,11 @@ def update_filesystem_size():
     return is_error
 
 
+#-----------------------------------------------------------------------
+# Update Disk Name and Disk Info Functions
+#-----------------------------------------------------------------------
+
+
 def update_disk_name_and_disk_info():
 
     # TODO: Use if statements.
@@ -868,6 +996,11 @@ def update_disk_info():
         error = True
 
     return error
+
+
+#-----------------------------------------------------------------------
+# Update MD5 Sums Functions
+#-----------------------------------------------------------------------
 
 
 def calculate_md5_hash_for_file(filepath, blocksize=2**20):
@@ -963,6 +1096,11 @@ def update_checksums():
     return is_error
 
 
+#-----------------------------------------------------------------------
+# Check ISO Size Functions
+#-----------------------------------------------------------------------
+
+
 def check_iso_size():
 
     directory_size_bytes = file_utilities.get_directory_size(model.project.custom_disk_directory)
@@ -996,6 +1134,11 @@ def check_iso_size():
         error = False
 
     return error
+
+
+#-----------------------------------------------------------------------
+# Create ISO Image Functions
+#-----------------------------------------------------------------------
 
 
 def create_iso_image():
@@ -1099,9 +1242,18 @@ def create_iso_image():
     displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
     error = show_progress(command, progress_callback, working_directory=model.project.custom_disk_directory)
 
+    # TODO: Are sync or sleep needed?
+    # sync()
+    # sleep(120)
+
     is_error = bool(error)
 
     return is_error
+
+
+#-----------------------------------------------------------------------
+# Calculate ISO Image MDS Checksum Functions
+#-----------------------------------------------------------------------
 
 
 def calculate_md5_hash_for_iso():

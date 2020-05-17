@@ -36,7 +36,7 @@ from utilities import displayer
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.progress import show_progress
+from utilities.progressor import show_progress
 
 ########################################################################
 # References
@@ -359,6 +359,8 @@ def copy_original_iso_files():
     #     -O --owner
     #     -D --devices --specials
 
+    # Use info=progress2 to get the total progress, instead of the
+    # progress for individual files.
     command = (
         'rsync'
         ' --info=progress2 "%s" "%s"'

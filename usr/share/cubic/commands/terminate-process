@@ -43,6 +43,8 @@ process_id=${1}
 # Command
 ########################################################################
 
-echo "kill -s SIGKILL ${process_id}"
-kill -s SIGKILL ${process_id}
+# The negative pid is used to kill all child processes.
+
+echo "kill -s SIGKILL -${process_id}"
+kill -s SIGKILL -${process_id}
 

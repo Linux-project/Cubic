@@ -132,16 +132,16 @@ def transition(old_page, new_page):
 
 # Button styles: text-button, suggested-action, destructive-action
 def reset_buttons(
-    back_button_label=None,
-    back_action=None,
-    back_button_style=None,
-    is_back_sensitive=None,
-    is_back_visible=None,
-    next_button_label=None,
-    next_action=None,
-    next_button_style=None,
-    is_next_sensitive=None,
-    is_next_visible=None):
+        back_button_label=None,
+        back_action=None,
+        back_button_style=None,
+        is_back_sensitive=None,
+        is_back_visible=None,
+        next_button_label=None,
+        next_action=None,
+        next_button_style=None,
+        is_next_sensitive=None,
+        is_next_visible=None):
 
     # 25C1 = ◁
     # 25B7 = ▷

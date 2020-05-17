@@ -147,6 +147,7 @@ def execute_synchronous_unregistered(command, working_directory=None):
         logger.log_value('The unregistered process id is', process.pid)
         result = process.read()
         result = result.strip() if result else None
+        process.close()
         exitstatus = process.exitstatus
         signalstatus = process.signalstatus
     except ExceptionPexpect as exception:

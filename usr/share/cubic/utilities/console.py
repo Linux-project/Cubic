@@ -397,16 +397,32 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
 
     logger.log_label('Exited virtual environment')
 
-    # Prevent the following message from being printed to the terminal:
+    # The following message is printed to the terminal when the virtual
+    # environment is exited using "sudo machinectl terminate cubic":
     #   "Container termination requested. Exiting.
     #    Container cubic terminated by signal KILL."
+    # To prevent this message from being displayed, the terminal's
+    # pseudo terminal can be reset.
+    #
     # In Ubuntu 20.04, Vte crashes with Segmentation fault when the
-    # terminal's Pty is set to None. Reference Bug #1877232
-    # (https://bugs.launchpad.net/cubic/+bug/1877232.
-    # An alternative that works sometimes is to set a new dummy Pty for
-    # the terminal.
-    terminal = model.builder.get_object('terminal_page__terminal')
-    terminal.set_pty(Pty())
+    # terminal's Pty is set to None. Reference Bug #1877232:
+    #   https://bugs.launchpad.net/cubic/+bug/1877232.
+    #
+    # Reset the terminal's Pty.
+    # terminal = model.builder.get_object('terminal_page__terminal')
+    # terminal.set_pty(None)
+    #
+    # In Ubuntu 19.10,  Vte crashes with Segmentation fault when the
+    # when the terminal's Pty is set to a new uninitialized Pty():
+    #   "VTE-CRITICAL **: 19:00:44.648: int vte_pty_get_fd(VtePty*):
+    #    assertion 'priv->pty_fd != -1' failed"
+    #
+    # Set a new dummy Pty for the terminal.
+    # terminal = model.builder.get_object('terminal_page__terminal')
+    # dummy_pseudo_terminal = Pty.new_sync(PtyFlags.DEFAULT)
+    # terminal.set_pty(dummy_pseudo_terminal)
+    #
+    # To avoid both issues above, do not reset the terminal's Pty.
 
     # The signal number that killed the process.
     signal = status % 256  # Gets the low byte.

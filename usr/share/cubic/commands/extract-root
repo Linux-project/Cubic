@@ -46,5 +46,6 @@ source_path=${2}
 ########################################################################
 
 rm -rf "${target_path}"
-unsquashfs -force -dest "${target_path}" "${source_path}"
+unsquashfs -dest "${target_path}" "${source_path}"
+# unsquashfs -force -dest "${target_path}" "${source_path}"
 
