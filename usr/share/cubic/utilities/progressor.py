@@ -67,7 +67,7 @@ DELAY = DELAY_PER_PERCENT / SCALE_FACTOR  # seconds / step
 # Exist status 0 indicates the process completed successfully.
 OK = 0
 
-is_debug = True
+is_debug = False
 
 ########################################################################
 # Classes
@@ -166,118 +166,6 @@ class ProgressThread(Thread):
 
         if is_debug: self.print_values(self.position, self.target_position, self.delay, self.is_blocked())
 
-    def update_OPTION_03(self, percent):
-        """
-        Option 3 [Selected]: Always use the computed delay.
-        """
-
-        previous_target_position = self.target_position
-        target_position = percent * SCALE_FACTOR
-
-        # Only update the target position and delay if the new target
-        # position is greater than the previous target position. The
-        # current position will always be less than or equal to the
-        # (previous) target position, because the run function blocks
-        # when the current position reaches the (previous) target
-        # position. Therefore, it is not necessary to check if the
-        # new target position is greater than the current position.
-
-        # if target_position > previous_target_position and
-        #    target_position > self.position:
-        if target_position > previous_target_position:
-            previous_time = self.time
-            self.time = time()
-            delta_time = self.time - previous_time
-            delta_target_position = target_position - previous_target_position
-            self.delay = delta_time / delta_target_position
-            self.target_position = target_position
-            self.block(False)
-        else:
-            self.block(True)
-            logger.log_label('Warning. Attempted to set an invalid target position.')
-            logger.log_value('The new target position is', target_position)
-            logger.log_value('The previous target position is', previous_target_position)
-
-        if is_debug: self.print_values(self.position, self.target_position, self.delay, self.is_blocked())
-
-    def update_OPTION_02(self, percent):
-        """
-        Option 2: If 100% has been reached, compare the computed delay
-                  with DELAY, and select the minimum value.
-        """
-
-        target_position = percent * SCALE_FACTOR
-        previous_target_position = self.target_position
-
-        # Only update the target position and delay if the new target
-        # position is greater than the previous target position. The
-        # current position will always be less than or equal to the
-        # (previous) target position, because the run function blocks
-        # when the current position reaches the (previous) target
-        # position. Therefore, it is not necessary to check if the
-        # new target position is greater than the current position.
-
-        # if target_position > previous_target_position and
-        #    target_position > self.position:
-        if target_position > previous_target_position:
-            current_time = time()
-            previous_time = self.time
-            delta_time = current_time - previous_time
-            delta_target_position = target_position - previous_target_position
-            delay = delta_time / delta_target_position
-            if target_position == FINAL_POSITION:
-                delay = min(delay, DELAY)
-            self.target_position = target_position
-            self.time = current_time
-            self.delay = delay
-            self.block(False)
-        else:
-            self.block(True)
-            logger.log_label('Warning. Attempted to set an invalid target position.')
-            logger.log_value('The new target position is', target_position)
-            logger.log_value('The previous target position is', previous_target_position)
-
-        if is_debug: self.print_values(self.position, self.target_position, self.delay, self.is_blocked())
-
-    def update_OPTION_01(self, percent):
-        """
-        Option 1: If 100% has been reached, always set delay to DELAY.
-        """
-
-        target_position = percent * SCALE_FACTOR
-        previous_target_position = self.target_position
-
-        # Only update the target position and delay if the new target
-        # position is greater than the previous target position. The
-        # current position will always be less than or equal to the
-        # (previous) target position, because the run function blocks
-        # when the current position reaches the (previous) target
-        # position. Therefore, it is not necessary to check if the
-        # new target position is greater than the current position.
-
-        # if target_position > previous_target_position and
-        #    target_position > self.position:
-        if target_position > previous_target_position:
-            current_time = time()
-            if target_position == FINAL_POSITION:
-                delay = DELAY
-            else:
-                previous_time = self.time
-                delta_time = current_time - previous_time
-                delta_target_position = target_position - previous_target_position
-                delay = delta_time / delta_target_position
-            self.target_position = target_position
-            self.time = current_time
-            self.delay = delay
-            self.block(False)
-        else:
-            self.block(True)
-            logger.log_label('Warning. Attempted to set an invalid target position.')
-            logger.log_value('The new target position is', target_position)
-            logger.log_value('The previous target position is', previous_target_position)
-
-        if is_debug: self.print_values(self.position, self.target_position, self.delay, self.is_blocked())
-
     def run(self):
 
         logger.log_value('Progress thread', 'Started')
@@ -367,6 +255,7 @@ def process_command(command, progress_thread, working_directory=None):
                 process.expect(pattern)
             except EOF as exception:
                 # Close the process to obtain the exit status.
+                process.wait()
                 process.close()
                 done = (process.exitstatus is OK)
                 if not done: raise exception

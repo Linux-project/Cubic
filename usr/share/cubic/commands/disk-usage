@@ -46,5 +46,5 @@ custom_squashfs_directory=${1}
 # Do not echo the command because the output is parsed. The expected
 # output format is: "<size>    <path>"
 
-du --summarize --one-file-system --block-size=1 ${custom_squashfs_directory}
+du --summarize --one-file-system --block-size=1 "${custom_squashfs_directory}"
 

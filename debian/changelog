@@ -1,5 +1,15 @@
 cubic (2020.05) focal; urgency=low
 
+  * Issues fixed in version 2020.05-19:
+
+  * Fixed an innocuous "End Of File (EOF)" error presented immediately
+    after the "Compress the customized Linux file system" step succeeds.
+
+  * Fixed Bug #1879208, Update the customized Linux file system size
+    fails with an error.
+
+  * Issues fixed in version 2020.05-18:
+
   * Fixed Bug #1879190, Cubic sometimes generates an ISO that does not
     boot.
   - Added a new progressor module to replace the current progress
@@ -9,7 +19,7 @@ cubic (2020.05) focal; urgency=low
   - Updated the Extract page to use the new progressor module.
   - Updated the Generate page to use the new progressor module.
 
-  * Fixed Bug #1877232, In Ubuntu 19.10, Vte crashes with a Segmentation
+  * Fixed Bug #1879191, In Ubuntu 19.10, Vte crashes with a Segmentation
     fault when the user exits the terminal. (See similar Bug #1877232
     for Ubuntu 20.04).
 
@@ -188,4 +198,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 17 May 2020 17:43:08 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 18 May 2020 00:44:21 -0400
