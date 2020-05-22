@@ -62,11 +62,11 @@
         <property name="valign">center</property>
         <property name="margin_left">24</property>
         <property name="margin_right">24</property>
-        <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="row_spacing">36</property>
+        <property name="row_spacing">24</property>
         <property name="column_spacing">24</property>
+        <property name="row_homogeneous">True</property>
         <property name="column_homogeneous">True</property>
         <child>
           <object class="GtkGrid">
@@ -150,6 +150,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">
+
 
 
 </property>
@@ -493,7 +494,7 @@
             <property name="row_spacing">12</property>
             <property name="column_spacing">12</property>
             <child>
-              <object class="GtkImage" id="generate_page__check_iso_size_status">
+              <object class="GtkImage" id="generate_page__check_custom_disk_size_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
@@ -505,7 +506,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinner" id="generate_page__check_iso_size_spinner">
+              <object class="GtkSpinner" id="generate_page__check_custom_disk_size_spinner">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
@@ -532,7 +533,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="generate_page__check_iso_size_message">
+              <object class="GtkLabel" id="generate_page__check_custom_disk_size_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="opacity">0.50196078431372548</property>
@@ -710,19 +711,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">
-
-
-</property>
-                <property name="wrap">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
-              </packing>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -750,8 +739,8 @@
       <widget name="generate_page__update_disk_name_spinner"/>
       <widget name="generate_page__update_checksums_status"/>
       <widget name="generate_page__update_checksums_spinner"/>
-      <widget name="generate_page__check_iso_size_status"/>
-      <widget name="generate_page__check_iso_size_spinner"/>
+      <widget name="generate_page__check_custom_disk_size_status"/>
+      <widget name="generate_page__check_custom_disk_size_spinner"/>
       <widget name="generate_page__create_iso_image_status"/>
       <widget name="generate_page__create_iso_image_spinner"/>
       <widget name="generate_page__calculate_iso_image_checksum_status"/>

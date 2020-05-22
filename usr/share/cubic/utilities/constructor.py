@@ -41,7 +41,7 @@ from utilities.processor import execute_synchronous
 # References
 ########################################################################
 
-# N/A
+# https://strftime.org/
 
 ########################################################################
 # Globals & Constants

@@ -37,9 +37,14 @@ ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
 
-# The maximum ISO size is 8 Tera bytes.
-MAXIMUM_ISO_SIZE_GIB = 8000.0
-MAXIMUM_ISO_SIZE_BYTES = MAXIMUM_ISO_SIZE_GIB * 1073741824.0
+KIB = 1024**1  # 1 kibibytes (KiB) =          1024 bytes
+MIB = 1024**2  # 1 mibibytes (MiB) =       1048576 bytes
+GIB = 1024**3  # 1 gibibytes (GiB) =    1073741824 bytes
+TIB = 1024**4  # 1 tebibytes (TiB) = 1099511627776 bytes
+
+# The maximum ISO size is 8 tebibytes.
+MAXIMUM_DISK_SIZE_BYTES = 8 * TIB
+MAXIMUM_DISK_SIZE_GIB = MAXIMUM_DISK_SIZE_BYTES / GIB
 
 ########################################################################
 # Status
@@ -63,17 +68,13 @@ NUMBERS_UPPER_CASE = ['NO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN
 # Progress
 ########################################################################
 
-START_PERCENT = 0  # %
-FINAL_PERCENT = 100  # %
-
-# The number of seconds to delay before incrementing one percent.
-DELAY_PER_PERCENT = 0.100  # seconds / percent
-
 # The scale factor defines the "resolution" for each step in the
 # progress. For example, a scale factor of 10 means that there are 1000
 # steps to reach 100% (100% × 10 scale factor = 1000 steps); in other
 # words, each progress step is 0.10% (1% ÷ 10 scale factor = 0.10%).
 SCALE_FACTOR = 10
+START_PERCENT = 0  # %
+FINAL_PERCENT = 100  # %
 
 ########################################################################
 # TODO: DELETE THESE WHEN progress is replaced with progressor.

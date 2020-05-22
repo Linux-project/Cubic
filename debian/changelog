@@ -1,5 +1,19 @@
 cubic (2020.05) focal; urgency=low
 
+  * Issues fixed in version 2020.05-20:
+
+  * Optimized the progressor module.
+
+  * Improved error handling on the Extract page and the Generate page.
+
+  * Fixed an issue where the application would continue running in the
+    background after exiting or would freeze when trying to exit after
+    an error.
+
+  * Improved application responsiveness during error scenarios and
+    during page interruptions (i.e., when clicking the Back button or
+    the window exit buttons).
+
   * Issues fixed in version 2020.05-19:
 
   * Fixed an innocuous "End Of File (EOF)" error presented immediately

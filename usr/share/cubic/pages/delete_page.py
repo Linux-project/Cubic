@@ -57,9 +57,6 @@ custom = None
 # Navigation Functions
 ########################################################################
 
-# TODO: .#custom-root.lck
-#       Perhaps always remove it after exiting the terminal page?
-
 
 def setup(action, old_page=None):
 

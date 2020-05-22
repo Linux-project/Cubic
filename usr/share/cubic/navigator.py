@@ -144,6 +144,7 @@ from re import sub
 from sys import stdout
 from threading import Thread
 from time import sleep
+from traceback import format_exc
 
 from utilities import displayer
 from utilities import logger
@@ -186,7 +187,7 @@ class InterruptException(Exception):
         """
         The string representation of this exception used for display
         purposes.
-        
+
         Returns:
             (str): 'Interrupt Exception'
         """
@@ -211,10 +212,10 @@ class InvalidActionException(Exception):
 def on_window_destroy(*args):
 
     logger.log_value('Clicked', 'Exit')
+
     # action = button.action
     action = 'quit'
     handle_navigation(action)
-    # displayer.main_quit()
 
 
 def on_clicked__navigation_button(button):
@@ -306,8 +307,8 @@ def handle_navigation(action):
         None
     """
 
-    page_display_name = get_page_display_name(model.page)
-    logger.log_title('Handle navigation from %s on %s action' % (page_display_name, action))
+    page_title = get_page_title(model.page)
+    logger.log_title('Handle navigation from %s on %s action' % (page_title, action))
 
     # Interrupt the previous navigation thread.
     interrupt_navigation_thread()
@@ -318,8 +319,12 @@ def handle_navigation(action):
 
     # Create and start a new navigation thread.
     global navigation_thread
-    navigation_thread = Thread(target=navigate, args=(action, page, new_page))
+    navigation_thread = Thread(target=navigate, args=(action, page, new_page), daemon=True)
     navigation_thread.start()
+
+    if action in ('quit', 'exit', 'close'):
+        navigation_thread.join()
+        displayer.main_quit()
 
 
 def interrupt_navigation_thread():
@@ -351,7 +356,7 @@ def interrupt_navigation_thread():
 
         pythonapi.PyThreadState_SetAsyncExc(c_long(navigation_thread_id), py_object(InterruptException))
         navigation_thread.join()
-        sleep(0.500)
+        # sleep(0.500)
 
         logger.log_value('Interrupted previous thread with id', navigation_thread_id)
 
@@ -389,25 +394,19 @@ def navigate(action, page, new_page):
         None
     """
 
-    page_display_name = get_page_display_name(page)
-    new_page_display_name = get_page_display_name(new_page)
+    page_title = get_page_title(page)
+    new_page_title = get_page_title(new_page)
 
-    logger.log_title('Navigate from %s to %s on %s action' % (page_display_name, new_page_display_name, action))
-
-    # Quit the application.
-
-    if action in ('quit', 'exit', 'close'):
-        page.leave(action, new_page)
-        displayer.main_quit()
-        return
+    logger.log_title('Navigate from %s to %s on %s action' % (page_title, new_page_title, action))
 
     # Leave the current page.
 
     try:
         result = page.leave(action, new_page) if page else None
     except InterruptException as exception:
-        logger.log_value('Error', exception)
-        # logger.log_value('The tracekback is', traceback.format_exc())
+        page_title = get_page_title(page)
+        logger.log_value('Error leaving %s' % page_title, exception)
+        # logger.log_value('The tracekback is', format_exc())
         return
     if result:
         # Navigate to an error page.
@@ -420,8 +419,9 @@ def navigate(action, page, new_page):
     try:
         result = new_page.setup(action, page) if new_page else None
     except InterruptException as exception:
-        logger.log_value('Error', exception)
-        # logger.log_value('The tracekback is', traceback.format_exc())
+        page_title = get_page_title(new_page)
+        logger.log_value('Error setting up %s' % page_title, exception)
+        # logger.log_value('The tracekback is', format_exc())
         return
     if result:
         # Navigate to an error page.
@@ -439,13 +439,12 @@ def navigate(action, page, new_page):
     try:
         result = new_page.enter(action, page) if new_page else None
     except InterruptException as exception:
-        logger.log_value('Error', exception)
-        # logger.log_value('The tracekback is', traceback.format_exc())
+        page_title = get_page_title(new_page)
+        logger.log_value('Error entering %s' % page_title, exception)
+        # logger.log_value('The tracekback is', format_exc())
         return
-
     page = new_page
     new_page = None
-
     if result:
         # Automatically navigate to another page, based on result.
         # If result is 'error', automatically navigate to an error page.
@@ -496,7 +495,7 @@ def get_page_name(page):
     return page.name if page else None
 
 
-def get_page_display_name(page):
+def get_page_title(page):
     """
     Get the displayable page name for the page.
     
@@ -549,8 +548,8 @@ def get_new_page(action, page):
 
     page_name = get_page_name(page)
 
-    page_display_name = get_page_display_name(page)
-    logger.log_value('Current page', page_display_name)
+    page_title = get_page_title(page)
+    logger.log_value('Current page', page_title)
     logger.log_value('Action', action)
 
     if page_name == None:
@@ -694,8 +693,8 @@ def get_new_page(action, page):
             invalid_action(action, page)
 
     new_page = get_page(new_page_name)
-    page_display_name = get_page_display_name(new_page)
-    logger.log_value('New page', page_display_name)
+    page_title = get_page_title(new_page)
+    logger.log_value('New page', page_title)
 
     return new_page
 
@@ -718,5 +717,5 @@ def invalid_action(action, page):
 
     """
 
-    page_display_name = get_page_display_name(page)
-    raise InvalidActionException('Action "%s" is invalid for %s.' % (action, page_display_name))
+    page_title = get_page_title(page)
+    raise InvalidActionException('Action "%s" is invalid for %s.' % (action, page_title))

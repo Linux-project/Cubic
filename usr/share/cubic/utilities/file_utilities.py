@@ -28,6 +28,7 @@
 ########################################################################
 
 from glob import glob
+from hashlib import md5
 from os import mkdir, remove, walk
 from os.path import exists, getsize, join
 from re import sub
@@ -145,6 +146,22 @@ def get_directory_for_file(filename, start_path):
 ########################################################################
 # File Functions
 ########################################################################
+
+
+def calculate_md5_hash(filepath, block_size=2**20):
+
+    md5_hash = md5()
+    try:
+        with open(filepath, 'rb') as file:
+            buffer = file.read(block_size)
+            while buffer:
+                md5_hash.update(buffer)
+                buffer = file.read(block_size)
+        return md5_hash.hexdigest()
+    except Exception as exception:
+        logger.log_value('Unable to calculate the md5 hash for file', filepath)
+        logger.log_value('The exception is', exception)
+        return None
 
 
 def copy_file(source_path, target_path):

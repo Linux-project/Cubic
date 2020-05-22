@@ -36,7 +36,7 @@ from utilities import displayer
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.progress import show_progress
+from utilities.progressor import show_progress
 
 ########################################################################
 # References
@@ -236,9 +236,9 @@ def copy_file(filepath, file_number, directory, total_files):
         displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
         displayer.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
         if total_percent % 10 == 0:
-            logger.log_value('▹ Completed', '%i%%' % total_percent)
+            logger.log_value('Completed', '%i%%' % total_percent)
 
-    show_progress(command, progress_callback)
+    exception, message = show_progress(command, progress_callback)
 
 
 ########################################################################

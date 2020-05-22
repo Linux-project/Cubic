@@ -27,11 +27,11 @@
 #                                                                      #
 ########################################################################
 
+from os import sync
 from os.path import join
 from pexpect import spawn, ExceptionPexpect
 from re import sub
 from signal import SIGTERM
-from sys import stdout
 from traceback import format_exc
 
 from utilities import logger
@@ -75,11 +75,15 @@ process = None
 # Exited Normally      0              None
 # Exited Abnormally    1 | Error #    None
 
+
 # TODO: Double check all invocations that use a command, because we
 #       should check for exit status > 0 to determine error.
-
-
 def execute_synchronous(command, working_directory=None):
+    """
+    Execute the specified command synchronously and register the
+    corresponding process so it can be terminated using the
+    terminate_process() function.
+    """
 
     display_command = sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
     # logger.log_label('Execute synchronously')
@@ -101,13 +105,12 @@ def execute_synchronous(command, working_directory=None):
         # pexpect.exceptions.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        # For Pexpect Pexpect 3.x
-        # process = spawnu(command, timeout=300, cwd=working_directory)
-        # For Pexpect 4.0
         process = spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
         logger.log_value('The process id is', process.pid)
         result = process.read()
         result = result.strip() if result else None
+        # Close the process to obtain the exit status.
+        process.close()
         exitstatus = process.exitstatus
         signalstatus = process.signalstatus
     except ExceptionPexpect as exception:
@@ -115,15 +118,18 @@ def execute_synchronous(command, working_directory=None):
         logger.log_value('The exception is', exception)
         logger.log_value('The tracekback is', format_exc())
 
-    # Calling flush() seems to prevent the process from becoming a zombie.
-    stdout.flush()
+    sync()  # Write data to disk.
     process = None
 
     return result, exitstatus, signalstatus
 
 
 def execute_synchronous_unregistered(command, working_directory=None):
-
+    """
+    Execute the specified command snchronously. The process is not
+    registered with this module, so it can not be terminated using the
+    terminate_process() function.
+    """
     display_command = sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
     # logger.log_label('Execute synchronously unregistered')
     # logger.log_value('Command', command))
@@ -139,14 +145,12 @@ def execute_synchronous_unregistered(command, working_directory=None):
         # pexpect.exceptions.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        # For Pexpect Pexpect 3.x
-        # process = spawnu(command, timeout=300, cwd=working_directory)
-        # For Pexpect 4.0
         process = spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
         process_pid = process.pid
         logger.log_value('The unregistered process id is', process.pid)
         result = process.read()
         result = result.strip() if result else None
+        # Close the process to obtain the exit status.
         process.close()
         exitstatus = process.exitstatus
         signalstatus = process.signalstatus
@@ -155,14 +159,24 @@ def execute_synchronous_unregistered(command, working_directory=None):
         logger.log_value('The exception is', exception)
         logger.log_value('The tracekback is', format_exc())
 
-    # Calling flush() seems to prevent the process from becoming a zombie.
-    stdout.flush()
+    sync()  # Write data to disk.
     process = None
 
     return process_pid, result, exitstatus, signalstatus
 
 
 def execute_asynchronous(command, working_directory=None):
+    """
+    Execute the specified command asynchronously and register the
+    corresponding process so it can be terminated. The calling
+    application must read the output stream until the end of file (EOF)
+    is reached, using expect(), expect_exact(), expect_list(), read(),
+    readline(), or read_nonblocking(). The application must explicitly
+    close the connection with the process to obtain the exit status:
+        process.close()
+        exitstatus = process.exitstatus
+        signalstatus = process.signalstatus
+    """
 
     display_command = sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
     # logger.log_label('Execute asynchronously')
@@ -181,18 +195,12 @@ def execute_asynchronous(command, working_directory=None):
         # pexpect.exceptions.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        # For Pexpect Pexpect 3.x
-        # process = spawnu(command, timeout=300, cwd=working_directory)
-        # For Pexpect 4.0
         process = spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
         logger.log_value('The process id is', process.pid)
     except ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
         logger.log_value('The tracekback is', format_exc())
-
-    # Calling flush() seems to prevent the process from becoming a zombie.
-    stdout.flush()
 
     return process
 
@@ -203,6 +211,9 @@ def execute_asynchronous(command, working_directory=None):
 
 
 def terminate_process():
+    """
+    Terminate the process registered with this module.
+    """
 
     _terminate_root_process()
 
@@ -226,8 +237,6 @@ def _terminate_user_process():
     logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
     logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
 
-    # Calling flush() seems to prevent the process from becoming a zombie.
-    stdout.flush()
     process = None
 
 
@@ -250,6 +259,4 @@ def _terminate_root_process():
         logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
         logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
 
-    # Calling flush() seems to prevent the process from becoming a zombie.
-    stdout.flush()
     process = None

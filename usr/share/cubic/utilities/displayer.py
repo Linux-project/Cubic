@@ -109,7 +109,7 @@ def main_quit():
 
 def transition(old_page, new_page):
 
-    if old_page != new_page:
+    if old_page != new_page and new_page:
         # Hide the current page.
         if old_page:
             logger.log_value('Hide old page', old_page.name.replace('_', ' '))
@@ -443,11 +443,12 @@ def insert_box_label(box_name, text, opacity):
 
     # Since label is not displayed, there is no need to call GLib.idle_add().
     label = Gtk.Label(text)
-    label.set_halign(Gtk.Align.START)
+    label.set_halign(Gtk.Align.FILL)
+    label.set_hexpand(False)
+    label.set_xalign(0.00)
     label.set_visible(True)
     label.set_opacity(opacity)
-
-    label.set_justify(Gtk.Justification.FILL)
+    label.set_justify(Gtk.Justification.LEFT)
     label.set_line_wrap(True)
     # label.set_max_width_chars(0)
 

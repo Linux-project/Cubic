@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# disk-usage                                                           #
+# file-size                                                            #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,17 +27,19 @@
 #                                                                      #
 ########################################################################
 
+# Get the size of a file or directory in bytes for Cubic.
+
 ########################################################################
 # Arguments
 ########################################################################
 
 program=${0}
 number_arguments=${#}
-custom_squashfs_directory=${1}
+file_path=${1}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
-# echo "custom squashfs directory... $custom_squashfs_directory"
+# echo "file path................... $file_path"
 
 ########################################################################
 # Command
@@ -46,5 +48,5 @@ custom_squashfs_directory=${1}
 # Do not echo the command because the output is parsed. The expected
 # output format is: "<size>    <path>"
 
-du --summarize --one-file-system --block-size=1 "${custom_squashfs_directory}"
+du --block-size=1 --summarize --one-file-system "${file_path}"
 
