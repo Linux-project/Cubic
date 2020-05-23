@@ -1231,7 +1231,7 @@ def create_installed_packages_list():
     # command = 'chroot "%s" dpkg-query --showformat="${Package}\t${Version}\n" --show' % model.project.custom_root_directory
     # command = 'chroot "%s" dpkg-query --show' % model.project.custom_root_directory
     # command = 'pkexec chroot "%s" dpkg-query --show' % model.project.custom_root_directory
-    dpkg_database_directory = join(model.project.custom_root_directory, '/var', 'lib', 'dpkg')
+    dpkg_database_directory = join(model.project.custom_root_directory, 'var', 'lib', 'dpkg')
     command = 'dpkg-query --show --admindir="%s"' % dpkg_database_directory
     result, exitstatus, signalstatus = execute_synchronous(command)
     installed_packages_list = result.splitlines()

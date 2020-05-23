@@ -1,5 +1,10 @@
 cubic (2020.05) focal; urgency=low
 
+  * Issues fixed in version 2020.05-21:
+
+  * Fixed Bug #1880272, The filesystem.manifest file lists packages installed on
+    the host system, instead of packages installed in the virtual environment.
+
   * Issues fixed in version 2020.05-20:
 
   * Optimized the progressor module.
@@ -212,4 +217,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 18 May 2020 00:44:21 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 23 May 2020 01:56:16 -0400
