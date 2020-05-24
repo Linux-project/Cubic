@@ -52,8 +52,13 @@ mksquashfs "${source_path}" "${target_path}" \
  -noappend \
  -comp gzip \
  -wildcards \
- -e "proc" \
- -e "tmp" \
+ -e "proc/*" \
+ -e "proc/.*" \
+ -e "run/*" \
+ -e "run/.*" \
+ -e "tmp/*" \
+ -e "tmp/.*" \
+ -e "swapfile" \
  -e "root/.bash_history" \
  -e "root/.cache" \
  -e "root/.wget-hsts" \
