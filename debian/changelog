@@ -1,15 +1,57 @@
-cubic (2020.05) focal; urgency=low
+cubic (2020.06) focal; urgency=low
+
+  * Summary of features in new version:
+
+  - Complete re-write of Cubic supports Ubuntu 18.04 Bionic and above.
+  - New rectangular layout neatly fits 1024x768 screens while providing
+    more information.
+  - Now works on Wayland, in addition to X-Org.
+  - Quicker page transitions for a more responsive "feel".
+  - No longer require admin password to run Cubic.
+  - Dynamic header bar exposes only page-specific actions and yields
+    extra vertical space for pages.
+  - Added an application menu with an About dialog, links to questions
+    and answers, links to page-specific help, and a donations button.
+  - Updated configuration file layout and project structure.
+  - Added Migrate page to automatically convert existing Cubic Classic
+    projects to the new version.
+  - Added redo, undo, and refresh version number capability for the
+    Project page.
+  - Added error messages for each field on the Project page.
+  - The original ISO is no longer required when updating existing
+    projects.
+  - Added a Prepare page after the Terminal page.
+  - Provide full isolation from the host system by using a container
+    instead of chroot on the Terminal page.
+  - Improved detection and automatic re-entry to the container when
+    exiting.
+  - Added Copy files button on Terminal page.
+  - Use solarized colors on the Terminal page for better readability.
+  - Use system configured mono-spaced font with Tango colors on the
+    Preseed and Boot Configurations tabs for better readability.
+  - Improved reliability when generating larger ISOs.
+  - Improved error handling and messaging on all pages, including the
+    Generate page.
+  - Improved accuracy of the progress bars and reliability of the
+    underlying processes.
+  - Show extra progress steps on the Prepare and Generate pages.
+  - Use icons from the user's current icon theme. Simplified switching
+    icons between light and dark variants when the theme variant
+    changes.
+  - Added open file buttons on the Migrate, Delete, and Finish pages.
+  - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
   * Issues fixed in version 2020.05-22:
 
-  * Fixed Bug #1880344, Ubiquity crashes during installation of a customized
-    ISO. Cubic now includes *empty* /proc, /tmp, and /run directories, and
-    excludes the /swapfile.
+  * Fixed Bug #1880344, Ubiquity crashes during installation of a
+    customized ISO. Cubic now includes *empty* /proc, /tmp, and /run
+    directories, and excludes the /swapfile.
 
   * Issues fixed in version 2020.05-21:
 
-  * Fixed Bug #1880272, The filesystem.manifest file lists packages installed on
-    the host system, instead of packages installed in the virtual environment.
+  * Fixed Bug #1880272, The filesystem.manifest file lists packages
+    installed on the host system, instead of packages installed in the
+    virtual environment.
 
   * Issues fixed in version 2020.05-20:
 
@@ -72,11 +114,7 @@ cubic (2020.05) focal; urgency=low
 
   * Discontinued redundantly saving  preseed and boot configuration
     files files upon leaving the Options page, because these files are
-    saved when entering the Generate page.
-
-  * Because preseed and boot configuration files are saved when entering
-    the Generate page, discontinued redundantly saving these files upon
-    leaving the Options page.
+    also saved when entering the Generate page.
 
   * Organized the constants and displayer modules.
 
@@ -223,4 +261,4 @@ cubic (2020.05) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 23 May 2020 22:17:06 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 31 May 2020 15:48:25 -0400
