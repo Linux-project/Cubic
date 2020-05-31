@@ -41,6 +41,11 @@ cubic (2020.06) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
+  * Issues fixed in version 2020.06-24:
+
+  * Fixed Bug #1881508, Error when trying to open a "Cubic Classic"
+    project that has been migrated.
+
   * Issues fixed in version 2020.05-22:
 
   * Fixed Bug #1880344, Ubiquity crashes during installation of a
@@ -261,4 +266,4 @@ cubic (2020.06) focal; urgency=low
   * Corrected an issue in Ubuntu 18.04 where the header bar title
     overlapped the tabs on the Options page.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 31 May 2020 15:48:25 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 31 May 2020 17:38:42 -0400

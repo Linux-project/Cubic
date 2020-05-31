@@ -188,6 +188,10 @@ def migrate_configuration():
     sleep(1.000)
 
     try:
+        # Update the Cubic version.
+        model.project.cubic_version = model.application.cubic_version
+        # Initialize the configuration to use the 2020 Layout.
+        configuration.initialize()
         configuration.save()
         logger.log_value('Migrated', model.project.configuration_filepath)
         displayer.update_status('migrate_page__configuration', OK)

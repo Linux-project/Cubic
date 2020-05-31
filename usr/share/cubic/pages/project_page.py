@@ -392,7 +392,7 @@ def leave(action, new_page=None):
         # Copy the values to the model.
 
         # Project
-        # model.project.cubic_version = model.application.cubic_version
+        model.project.cubic_version = model.application.cubic_version
         # model.project.create_date = model.project.create_date
         # model.project.modify_date = constructor.get_current_date_time()
         # model.project.directory = model.project.directory
@@ -448,7 +448,7 @@ def leave(action, new_page=None):
         # Copy the values to the model.
 
         # Project
-        # model.project.cubic_version = model.application.cubic_version
+        model.project.cubic_version = model.application.cubic_version
         # model.project.create_date = model.project.create_date
         # model.project.modify_date = constructor.get_current_date_time()
         # model.project.directory = model.project.directory
