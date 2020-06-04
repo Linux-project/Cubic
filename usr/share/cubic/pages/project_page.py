@@ -583,6 +583,7 @@ def selected_original_iso_filepath(original_iso_filepath):
                 status = initialize_status_from_model()
                 # Overwrite iso configuration and boot files.
                 status.is_success_copy = False
+                status.casper_directory = None
                 options = initialize_options()
 
                 original = initialize_original_from_iso(original_iso_filepath)

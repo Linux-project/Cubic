@@ -103,6 +103,7 @@ status.iso_checksum_filename = None
 # TODO: Consider moving this to "Status"
 options = Fields('options')
 options.boot_configurations = None
+options.compression = None
 
 ########################################################################
 # Page Specific
@@ -131,16 +132,17 @@ delete_list = None
 ########################################################################
 
 help_urls = {
-    'start_page': 'https://answers.launchpad.net/cubic/+faq/3230',
-    'migrate_page': 'https://answers.launchpad.net/cubic/+faq/3229',
-    'project_page': 'https://answers.launchpad.net/cubic/+faq/3228',
-    'delete_page': 'https://answers.launchpad.net/cubic/+faq/3227',
-    'extract_page': 'https://answers.launchpad.net/cubic/+faq/3226',
-    'terminal_page': 'https://answers.launchpad.net/cubic/+faq/3225',
-    'copy_page': 'https://answers.launchpad.net/cubic/+faq/3224',
-    'prepare_page': 'https://answers.launchpad.net/cubic/+faq/3223',
-    'packages_page': 'https://answers.launchpad.net/cubic/+faq/3222',
-    'options_page': 'https://answers.launchpad.net/cubic/+faq/3221',
+    'start_page': 'https://answers.launchpad.net/cubic/+faq/3232',
+    'migrate_page': 'https://answers.launchpad.net/cubic/+faq/3230',
+    'project_page': 'https://answers.launchpad.net/cubic/+faq/3229',
+    'delete_page': 'https://answers.launchpad.net/cubic/+faq/3228',
+    'extract_page': 'https://answers.launchpad.net/cubic/+faq/3227',
+    'terminal_page': 'https://answers.launchpad.net/cubic/+faq/3226',
+    'copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
+    'prepare_page': 'https://answers.launchpad.net/cubic/+faq/3224',
+    'packages_page': 'https://answers.launchpad.net/cubic/+faq/3223',
+    'options_page': 'https://answers.launchpad.net/cubic/+faq/3222',
+    'compression_page': 'https://answers.launchpad.net/cubic/+faq/3221',
     'generate_page': 'https://answers.launchpad.net/cubic/+faq/3220',
     'finish_page': 'https://answers.launchpad.net/cubic/+faq/3219'
 }

@@ -1,0 +1,4 @@
+<svg height="350" width="350">
+  <polygon points="0,0 350,350 0,350" style="fill:#f44800;stroke:#d35000;stroke-width:1" />
+  <polygon points="0,0 350,0 350,350" style="fill:#fb8b00;stroke:#d35000;stroke-width:1" />
+</svg>

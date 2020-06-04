@@ -1,8 +1,34 @@
 cubic (2020.06) focal; urgency=low
 
+  * Issues fixed in version 2020.06-25:
+
+  * Fixed Bug #1881962, Add support for other compression algorithms to
+    Cubic. Added a new Compression page with ability to select between
+    gzip, lz4, lzma, lzo, xz, and zstd compression algorithms.
+
+  * On the Generate page, display progress in increments of tenths of a
+    percent to provide additional visual feedback to the user:
+    - Compress the customized Linux file system
+    - Generate the customized disk image
+
+  * On the Generate page, display file sizes in MiB units when less than
+    one GiB, and display file sizes in GiB units when greater than or
+    equal to one GiB:
+    - Update the customized Linux file system size
+    - Check the total size of all files on the disk
+    - Generate the customized disk imaged
+
+  * Fixed an issue where Cubic does not attempt to identify the new
+    casper directory when a different ISO is selected for an existing
+    project on the Project page.
+
   * Summary of features in new version:
 
   - Complete re-write of Cubic supports Ubuntu 18.04 Bionic and above.
+
+  - Added a new Compression page with ability to select between gzip,
+    lz4, lzma, lzo, xz, and zstd compression algorithms.
+  - Display progress in tenths of a percent on the Generate page.
   - New rectangular layout neatly fits 1024x768 screens while providing
     more information.
   - Now works on Wayland, in addition to X-Org.
@@ -41,229 +67,4 @@ cubic (2020.06) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
-  * Issues fixed in version 2020.06-24:
-
-  * Fixed Bug #1881508, Error when trying to open a "Cubic Classic"
-    project that has been migrated.
-
-  * Issues fixed in version 2020.05-22:
-
-  * Fixed Bug #1880344, Ubiquity crashes during installation of a
-    customized ISO. Cubic now includes *empty* /proc, /tmp, and /run
-    directories, and excludes the /swapfile.
-
-  * Issues fixed in version 2020.05-21:
-
-  * Fixed Bug #1880272, The filesystem.manifest file lists packages
-    installed on the host system, instead of packages installed in the
-    virtual environment.
-
-  * Issues fixed in version 2020.05-20:
-
-  * Optimized the progressor module.
-
-  * Improved error handling on the Extract page and the Generate page.
-
-  * Fixed an issue where the application would continue running in the
-    background after exiting or would freeze when trying to exit after
-    an error.
-
-  * Improved application responsiveness during error scenarios and
-    during page interruptions (i.e., when clicking the Back button or
-    the window exit buttons).
-
-  * Issues fixed in version 2020.05-19:
-
-  * Fixed an innocuous "End Of File (EOF)" error presented immediately
-    after the "Compress the customized Linux file system" step succeeds.
-
-  * Fixed Bug #1879208, Update the customized Linux file system size
-    fails with an error.
-
-  * Issues fixed in version 2020.05-18:
-
-  * Fixed Bug #1879190, Cubic sometimes generates an ISO that does not
-    boot.
-  - Added a new progressor module to replace the current progress
-    module. The new module uses a more elegant algorithm to accurately
-    report a process' progress up to 100% and ensures process are
-    complete before they are closed.
-  - Updated the Extract page to use the new progressor module.
-  - Updated the Generate page to use the new progressor module.
-
-  * Fixed Bug #1879191, In Ubuntu 19.10, Vte crashes with a Segmentation
-    fault when the user exits the terminal. (See similar Bug #1877232
-    for Ubuntu 20.04).
-
-  * Excluded the following directories from the generated ISO:
-    - \proc
-    - \tmp
-    Previously, all files inside \tmp were excluded, but it is simpler
-    to simply not include the entire directory, since it is recreated.
-
-  * Updated the extract-root command to only extract the Linux file
-    system if the existing custom-root folder has been successfully
-    deleted.
-
-  * Updated the terminate-process command to use negative pids so all
-    all child processes are killed.
-
-  * Added non-bold colored terminal font codes.
-
-  * Issues fixed in version 2020.05-17:
-
-  * Fixed Bug #1877897, Copying vmlinuz fails on the Generate page when
-    kernel files (vmlinuz and initrd) from the customized Linux file
-    system have been selected instead of the kernel files from the
-    original ISO.
-
-  * Discontinued redundantly saving  preseed and boot configuration
-    files files upon leaving the Options page, because these files are
-    also saved when entering the Generate page.
-
-  * Organized the constants and displayer modules.
-
-  * Issues fixed in version 2020.05-16:
-
-  * Fixed an issue where the all three actions (locate, extract, copy)
-    on the Extract page were always preformed, even if some of the
-    actions were previously successful. This has the effect of
-    overwriting the user's customizations.
-
-  * Added project create date and project modify date to the cubic.conf
-    configuration file.
-
-  * Organized imports and performed code clean-up.
-
-  * Issues fixed in version 2020.05-15:
-
-  * Improved logic to print the "You have exited the virtual environment"
-    message in the terminal based on signal status.
-
-  * Fixed an issue where the original ISO was not unmounted when exiting
-    the application from various pages or when the next page is
-    undefined.
-
-  * Fixed drag-and-drop not working on the Terminal page to copy text or
-    files.
-
-  * Issues fixed in version 2020.05-14:
-
-  * Fixed Bug #1877232, In Ubuntu 20.04, Vte crashes with a Segmentation
-    fault when the user exits the terminal.
-
-  * Fixed issue where the message, "You have exited the virtual
-    environment," is not consistently printed in the terminal.
-
-  * Issues fixed in version 2020.05-12:
-
-  * Fixed Bug #1877193, The customized ISO always boots to the
-    gnome-initial-setup instead of the desktop.
-
-  * Added support for symlinks for the project directory and for the
-    original ISO image file.
-
-  * Improved the layout of the Generate page.
-
-  * Print log output for all progress bars in increments of 10%.
-
-  * Issues fixed in version 2020.05-10:
-
-  * Fixed Bug #1831859, Cubuc freeze after project directory selection
-    due to exception:
-  - If the original ISO is not available, but the necessary files have
-    already been copied to the custom disk, then Cubic will present a
-    warning on the Project page, yet will allow the user to continue.
-  - On the Prepare page, Cubic will attempt to locate the kernel files
-    on the original ISO (if available) and from the customized file
-    system.
-  - If valid kernel files (vmlinuz and initrd) can not be found after
-    searching these two locations, Cubic will present an error to the
-    user, asking the user to either install missing Linux image kernel
-    files on the Terminal page, or supply the original ISO image on the
-    Project page. In this case, Cubic will not allow the user to proceed
-    until the issue is corrected.
-
-  * Issues fixed in version 2020.04-9:
-
-  * Fixed Bug #1855153. Cubic will prevent the user from proceeding past
-    the Project page if the custom ISO directory is invalid.
-
-  * Issues fixed in version 2020.04-8:
-
-  * Fixed Bug #1876190, Cubic crashes with Failed to open file
-    "pages/source_view.ui" error. Added pages/source_view.ui file.
-
-  * Issues fixed in version 2020.04-7:
-
-  * Updated dependencies and versions. Fixes Bug #1876127.
-  - Added python3-pydbus and systemd-container.
-
-  * Set the style for the source views on the Preseed and ISO Boot tabs:
-  - The system mono spaced font from org.gnome.desktop.interface
-  - The Tango style scheme for colored fonts
-  - The ini language for context highlighting
-
-  * Removed prepare_utilities module and moved functions to prepare_page.
-
-  * Renamed modules:
-  - directory_file_chooser => directory_chooser
-  - filepath_file_chooser => iso_image_chooser
-  - constructors => constructor
-  - display => displayer
-  - navigation => navigator
-  - process_utilities => processor
-  - terminal_utilities => console
-
-  * Removed print statements.
-
-  * Issues fixed in version 2020.04-6:
-
-  * Removed icon theme related functions from display.py.
-
-  * Changed the original ISO mount point name from "original-iso" to
-    "source-disk" consistent  with the naming convention used with the
-    custom iso, "custom-disk".
-
-  * Adjusted the window dimensions to fit on 1024x768 screens. The pages
-    are 976 px wide to allow space for a 48 px wide vertical dock. Pages
-    use an aspect ratio of 3:2 for better readability. As a result, page
-    height is 650 px, leaving 118 px available for window's title bar
-    and horizontal docks of varying heights.
-
-  * Issues fixed in version 2020.04-5:
-
-  * Added missing exception type, ModuleNotFoundError, to navigation.py.
-
-  * Issues fixed in version 2020.04-4 and 2020.04-3:
-
-  * Corrected two errors ("TypeError: Argument 0 does not allow None as
-     a value") on the Prepare page.
-  * Moved cubic icons to /usr/share/icons/hicolor/scalable/status.
-    Removed /usr/share/icons/Adwaita/, since Cubic can access the icons
-    from hicolor for both light and dark theme variants. This aligns
-    with best practices, since it is not always guaranteed that the
-    Adwaita will be installed.
-  * On the Packages page, set both the package column and the version
-    column to expand.
-
-  * Issues fixed in version 2020.04-2 and 2020.04-1:
-
-  * Updated Cubic to use standard symbolic icons, which are responsive
-    to light and dark theme changes and automatically adapt to hybrid
-    header bars.
-  * Removed dark and light icons from the /usr/share/cubic directory.
-  * Added symbolic status icons in the Adwaita theme for cubic ok, cubic
-    error, cubic optional, cubic bullet, and cubic blank.
-  * Stopped monitoring style changes and dynamically updating the icon
-    search path for light and dark themes, since this is no longer
-    necessary.
-  * Removed the PayPal icon from the Donate button.
-  * Set the NEW_CUBIC_VERSION to '2020.04', so all projects created with
-    a Cubic release prior to April 2020 will be migrated.
-  * Corrected the Terminal Control Escape Sequence, used to reset the
-    cursor position, to not print corrupted characters in Ubuntu 18.04.
-  * Corrected an issue in Ubuntu 18.04 where the header bar title
-    overlapped the tabs on the Options page.
-
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 31 May 2020 17:38:42 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Wed, 03 Jun 2020 20:33:16 -0400

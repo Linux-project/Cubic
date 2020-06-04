@@ -209,6 +209,7 @@ def _load_from_2020_layout():
     # Options
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
     model.options.boot_configurations = [boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',')]
+    model.options.compression = get_value('Options', 'compression', default=None)
 
 
 def _load_from_2019_layout():
@@ -253,6 +254,7 @@ def _load_from_2019_layout():
     # Options
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
     model.options.boot_configurations = [boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',')]
+    model.options.compression = get_value('Options', 'compression', default=None)
 
 
 ########################################################################
@@ -301,15 +303,17 @@ def _save_using_2019_layout():
     config_parser.set('Status', 'is_success_copy', str(bool(model.status.is_success_copy)))
     config_parser.set('Status', 'is_success_extract', str(bool(model.status.is_success_extract)))
     # Not in the original 2019 layout.
-    config_parser.set('Status', 'casper_directory', str(model.status.casper_directory))
+    config_parser.set('Status', 'casper_directory', model.status.casper_directory)
     # Not in the original 2019 layout.
-    config_parser.set('Status', 'custom_iso_image_checksum', str(model.status.iso_checksum))
+    config_parser.set('Status', 'custom_iso_image_checksum', model.status.iso_checksum)
     # In the Custom section of the 2019 layout.
-    config_parser.set('Custom', 'custom_iso_image_md5_filename', str(model.status.iso_checksum_filename))
+    config_parser.set('Custom', 'custom_iso_image_md5_filename', model.status.iso_checksum_filename)
 
     # Save options values.
     boot_configurations_string = ','.join(boot_configuration.strip(' /') for boot_configuration in model.options.boot_configurations)
     config_parser.set('Options', 'boot_configurations', boot_configurations_string)
+    # Not in the original 2019 layout.
+    config_parser.set('Options', 'compression', model.options.compression)
 
     # Write the configuration file.
     with open(model.project.configuration_filepath, 'w') as configuration_file:
@@ -347,13 +351,14 @@ def _save_using_2020_layout():
     # Save status values.
     config_parser.set('Status', 'is_success_copy', str(bool(model.status.is_success_copy)))
     config_parser.set('Status', 'is_success_extract', str(bool(model.status.is_success_extract)))
-    config_parser.set('Status', 'casper_directory', str(model.status.casper_directory))
-    config_parser.set('Status', 'iso_checksum', str(model.status.iso_checksum))
-    config_parser.set('Status', 'iso_checksum_filename', str(model.status.iso_checksum_filename))
+    config_parser.set('Status', 'casper_directory', model.status.casper_directory)
+    config_parser.set('Status', 'iso_checksum', model.status.iso_checksum)
+    config_parser.set('Status', 'iso_checksum_filename', model.status.iso_checksum_filename)
 
     # Save options values.
     boot_configurations_string = ','.join(boot_configuration.strip(' /') for boot_configuration in model.options.boot_configurations)
     config_parser.set('Options', 'boot_configurations', boot_configurations_string)
+    config_parser.set('Options', 'compression', model.options.compression)
 
     # Write the configuration file.
     with open(model.project.configuration_filepath, 'w') as configuration_file:

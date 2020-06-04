@@ -34,7 +34,7 @@ from os.path import dirname, exists, join, relpath
 from re import search
 from time import sleep
 
-from constants import GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
+from constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
@@ -518,17 +518,21 @@ def _create_squashfs():
     target_path = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
     logger.log_value('The target path is', target_path)
 
+    displayer.update_label('generate_page__create_squashfs_message', 'Using %s compression.' % model.options.compression)
+
     # Create filesystem.squashfs.
 
     # Pkexec is required.
     program = join(model.application.directory, 'commands', 'compress-root')
-    command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
+    command = 'pkexec "%s" "%s" "%s" %s' % (program, source_path, target_path, model.options.compression)
 
     # Show % in progress by setting text to None.
-    displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
+    # displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
+    displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '0.0 %')
 
     # The progress callback function.
     def progress_callback(percent):
+        displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '%.1f %%' % float(percent))
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
         if percent % 10 == 0:
             logger.log_value('Completed', '%i%%' % percent)
@@ -612,6 +616,7 @@ def update_filesystem_size():
         result, exitstatus, signalstatus = execute_synchronous(command)
         size_information = search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
+        size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
         logger.log_value('The file system size is', '%.2f GiB (%s bytes)' % (size_in_gib, size_in_bytes))
         filepath = join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.size')
@@ -625,7 +630,10 @@ def update_filesystem_size():
         displayer.update_status('generate_page__update_filesystem_size', displayer.ERROR)
         is_error = True
     else:
-        displayer.update_label('generate_page__update_filesystem_size_message', 'The file system size is %.2f GiB (%s bytes).' % (size_in_gib, size_in_bytes))
+        if size_in_bytes > GIB:
+            displayer.update_label('generate_page__update_filesystem_size_message', 'The file system size is %.2f GiB (%s bytes).' % (size_in_gib, size_in_bytes))
+        else:
+            displayer.update_label('generate_page__update_filesystem_size_message', 'The file system size is %.2f MiB (%s bytes).' % (size_in_mib, size_in_bytes))
         displayer.update_status('generate_page__update_filesystem_size', displayer.OK)
         is_error = False
     return is_error
@@ -780,6 +788,7 @@ def check_custom_directory_size():
         result, exitstatus, signalstatus = execute_synchronous(command)
         size_information = search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
+        size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
     except Exception as exception:
         logger.log_value('Unable to get the total size', model.project.custom_disk_directory)
@@ -801,7 +810,10 @@ def check_custom_directory_size():
             displayer.update_status('generate_page__check_custom_disk_size', displayer.ERROR)
             is_error = True
         else:
-            displayer.update_label('generate_page__check_custom_disk_size_message', 'The total size of all files is %.2f GiB (%s bytes).' % (size_in_gib, size_in_bytes))
+            if size_in_bytes > GIB:
+                displayer.update_label('generate_page__check_custom_disk_size_message', 'The total size of all files is %.2f GiB (%s bytes).' % (size_in_gib, size_in_bytes))
+            else:
+                displayer.update_label('generate_page__check_custom_disk_size_message', 'The total size of all files is %.2f MiB (%s bytes).' % (size_in_mib, size_in_bytes))
             displayer.update_status('generate_page__check_custom_disk_size', displayer.OK)
             is_error = False
     return is_error
@@ -904,11 +916,13 @@ def create_iso_image():
                             custom_iso_filepath))
 
     # Show % in progress by setting text to None.
-    displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
+    # displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
+    displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '0.0 %')
 
     # The progress callback function.
     def progress_callback(percent):
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', percent)
+        displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '%.1f %%' % float(percent))
         if percent % 10 == 0:
             logger.log_value('Completed', '%i%%' % percent)
 
@@ -939,6 +953,7 @@ def create_iso_image():
         result, exitstatus, signalstatus = execute_synchronous(command)
         size_information = search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
+        size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
     except Exception as exception:
         logger.log_value('Unable to get the size of the custom ISO', custom_iso_filepath)
@@ -947,9 +962,12 @@ def create_iso_image():
         displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
         is_error = True
     else:
-        logger.log_value('The size of the custom ISO is', '%.2f GiB (%i bytes)' % (size_in_gib, size_in_bytes))
-        # displayer.update_label('generate_page__create_iso_image_message', 'Successfully created ISO (%.2f GiB, %s bytes):\n%s' % (size_in_gib, size_in_bytes, model.custom.iso_filename))
-        displayer.update_label('generate_page__create_iso_image_message', 'Successfully created ISO (%.2f GiB):\n%s' % (size_in_gib, model.custom.iso_filename))
+        if size_in_bytes > GIB:
+            logger.log_value('The size of the custom ISO is', '%.2f MiB (%i bytes)' % (size_in_gib, size_in_bytes))
+            displayer.update_label('generate_page__create_iso_image_message', 'Successfully created the %.2f GiB disk image,\n%s.' % (size_in_gib, model.custom.iso_filename))
+        else:
+            logger.log_value('The size of the custom ISO is', '%.2f MiB (%i bytes)' % (size_in_mib, size_in_bytes))
+            displayer.update_label('generate_page__create_iso_image_message', 'Successfully created the %.2f MiB disk image,\n%s.' % (size_in_mib, model.custom.iso_filename))
         displayer.update_status('generate_page__create_iso_image', displayer.OK)
         is_error = False
 

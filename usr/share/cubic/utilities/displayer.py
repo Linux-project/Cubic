@@ -132,16 +132,16 @@ def transition(old_page, new_page):
 
 # Button styles: text-button, suggested-action, destructive-action
 def reset_buttons(
-        back_button_label=None,
-        back_action=None,
-        back_button_style=None,
-        is_back_sensitive=None,
-        is_back_visible=None,
-        next_button_label=None,
-        next_action=None,
-        next_button_style=None,
-        is_next_sensitive=None,
-        is_next_visible=None):
+    back_button_label=None,
+    back_action=None,
+    back_button_style=None,
+    is_back_sensitive=None,
+    is_back_visible=None,
+    next_button_label=None,
+    next_action=None,
+    next_button_style=None,
+    is_next_sensitive=None,
+    is_next_visible=None):
 
     # 25C1 = ◁
     # 25B7 = ▷
@@ -364,7 +364,7 @@ def update_status_image(name, status):
 def update_progress_bar_percent(progress_bar_name, percent):
 
     progress_bar = model.builder.get_object(progress_bar_name)
-    GLib.idle_add(Gtk.ProgressBar.set_fraction, progress_bar, float(percent) / 100.0)
+    GLib.idle_add(Gtk.ProgressBar.set_fraction, progress_bar, float(percent) / 100.00)
 
 
 def update_progress_bar_text(progress_bar_name, text):
@@ -682,9 +682,6 @@ def hide_spinner():
 
 
 def activate_radio_button(radio_button_name, is_active):
-    """
-    This function is not used.
-    """
 
     radio_button = model.builder.get_object(radio_button_name)
     GLib.idle_add(Gtk.RadioButton.set_active, radio_button, is_active)

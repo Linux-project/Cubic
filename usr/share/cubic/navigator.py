@@ -667,6 +667,16 @@ def get_new_page(action, page):
     elif page_name == 'options_page':
         if action == 'back':
             new_page_name = 'packages_page'
+        elif action == 'next':
+            new_page_name = 'compression_page'
+        elif action == 'quit':
+            new_page_name = None
+        else:
+            invalid_action(action, page)
+
+    elif page_name == 'compression_page':
+        if action == 'back':
+            new_page_name = 'options_page'
         elif action == 'generate':
             new_page_name = 'generate_page'
         elif action == 'quit':
@@ -676,7 +686,7 @@ def get_new_page(action, page):
 
     elif page_name == 'generate_page':
         if action == 'back':
-            new_page_name = 'options_page'
+            new_page_name = 'compression_page'
         elif action == 'finish':
             new_page_name = 'finish_page'
         elif action == 'quit':

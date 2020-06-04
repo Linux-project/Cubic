@@ -37,11 +37,13 @@ program=${0}
 number_arguments=${#}
 source_path=${1}
 target_path=${2}
+compression=${3}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
 # echo "source path................. ${source_path}."
 # echo "target path................. ${target_path}."
+# echo "compression................. ${compression}."
 
 ########################################################################
 # Command
@@ -50,7 +52,7 @@ target_path=${2}
 # unshare --fork --pid --kill-child -- \
 mksquashfs "${source_path}" "${target_path}" \
  -noappend \
- -comp gzip \
+ -comp ${compression} \
  -wildcards \
  -e "proc/*" \
  -e "proc/.*" \
@@ -65,4 +67,4 @@ mksquashfs "${source_path}" "${target_path}" \
  -e "home/*/.bash_history" \
  -e "home/*/.cache" \
  -e "home/*/.wget-hsts"
- 
+

@@ -63,8 +63,8 @@ def setup(action, old_page=None):
             back_button_style=None,
             is_back_sensitive=True,
             is_back_visible=True,
-            next_button_label='Generate❭',
-            next_action='generate',
+            next_button_label='Next❭',
+            next_action='next',
             next_button_style='suggested-action',
             is_next_sensitive=True,
             is_next_visible=True)
@@ -90,8 +90,8 @@ def setup(action, old_page=None):
             back_button_style=None,
             is_back_sensitive=True,
             is_back_visible=True,
-            next_button_label='Generate❭',
-            next_action='generate',
+            next_button_label='Next❭',
+            next_action='next',
             next_button_style='suggested-action',
             is_next_sensitive=True,
             is_next_visible=True)
@@ -145,7 +145,7 @@ def leave(action, new_page=None):
 
         return
 
-    elif action == 'generate':
+    elif action == 'next':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
