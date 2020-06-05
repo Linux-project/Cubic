@@ -185,23 +185,45 @@ try:
 
     # Set Terminal Colors
 
-    settings = Gio.Settings.new_with_path('org.gnome.Terminal.Legacy.Profile', '/org/gnome/terminal/legacy/')
-    fg_rgb_color = None
-    bg_rgb_color = None
-    hex_palette = settings.get_value('palette')
-    if not hex_palette:
-        # Use custom foreground and background colors.
-        fg_rgb_color = Gdk.RGBA()
-        fg_rgb_color.parse('#e5e5e5')
-        bg_rgb_color = Gdk.RGBA()
-        bg_rgb_color.parse('#191919')
-        hex_palette = ['#073642', '#DC322F', '#859900', '#B58900', '#268BD2', '#D33682', '#2AA198', '#EEE8D5', '#002B36', '#CB4B16', '#586E75', '#657B83', '#839496', '#6C71C4', '#93A1A1', '#FDF6E3']
-    rgb_palette = []
-    for hex_color in hex_palette:
-        rgb_color = Gdk.RGBA()
-        rgb_color.parse(hex_color)
-        rgb_palette.append(rgb_color)
-    terminal.set_colors(fg_rgb_color, bg_rgb_color, rgb_palette)
+    schemas = Gio.Settings.list_relocatable_schemas()
+    if 'org.gnome.Terminal.Legacy.Profile' in schemas:
+        logger.log_value('Set terminal colors?', 'Yes')
+        settings = Gio.Settings.new_with_path('org.gnome.Terminal.Legacy.Profile', '/org/gnome/terminal/legacy/')
+        fg_rgb_color = None
+        bg_rgb_color = None
+        hex_palette = settings.get_value('palette')
+        if not hex_palette:
+            # Use custom foreground and background colors.
+            fg_rgb_color = Gdk.RGBA()
+            fg_rgb_color.parse('#e5e5e5')
+            bg_rgb_color = Gdk.RGBA()
+            bg_rgb_color.parse('#191919')
+            hex_palette = [
+                '#073642',
+                '#DC322F',
+                '#859900',
+                '#B58900',
+                '#268BD2',
+                '#D33682',
+                '#2AA198',
+                '#EEE8D5',
+                '#002B36',
+                '#CB4B16',
+                '#586E75',
+                '#657B83',
+                '#839496',
+                '#6C71C4',
+                '#93A1A1',
+                '#FDF6E3'
+            ]
+        rgb_palette = []
+        for hex_color in hex_palette:
+            rgb_color = Gdk.RGBA()
+            rgb_color.parse(hex_color)
+            rgb_palette.append(rgb_color)
+        terminal.set_colors(fg_rgb_color, bg_rgb_color, rgb_palette)
+    else:
+        logger.log_value('Set terminal colors?', 'Skip')
 
     # Allow Drag and Drop in the Terminal
 

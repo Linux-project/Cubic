@@ -1643,25 +1643,25 @@ def validate_original_iso_filename(fields):
             # The original ISO is required; display an error because it is
             # not available.
             is_valid = False
-            message = 'Error. The original ISO image is required to copy important files and extract the Linux file system, but it is unavailable.'
+            message = 'Error. The original ISO image is required to copy important files and extract the Linux file system, but it is not available.'
             status = ERROR
         elif not model.status.is_success_copy:
             # The original ISO is required; display an error because it is
             # not available.
             is_valid = False
-            message = 'Error. The original ISO image is required to copy important files, but it is unavailable.'
+            message = 'Error. The original ISO image is required to copy important files, but it is not available.'
             status = ERROR
         elif not model.status.is_success_extract:
             # The original ISO is required; display an error because it is
             # not available.
             is_valid = False
-            message = 'Error. The original ISO image is required to extract the Linux file system, but it is unavailable.'
+            message = 'Error. The original ISO image is required to extract the Linux file system, but it is not available.'
             status = ERROR
         else:
             # The original ISO is optional; display a warning because it is
             # not available. Set True because this is an optional value.
             is_valid = True
-            message = 'Warning. The original ISO image is unavailable.'
+            message = 'Warning. The original ISO image is not available.'
             status = OPTIONAL
     return is_valid, status, message
 
@@ -1711,7 +1711,7 @@ def validate_original_iso_release_name(fields):
         if is_valid:
             message = None
         else:
-            message = 'Release is an optional field.'
+            message = 'The original release is not available.'
         # Set True because this is an optional field.
         is_valid = True
     return is_valid, status, message
@@ -1725,11 +1725,13 @@ def validate_original_iso_disk_name(fields):
         status = BLANK
     else:
         is_valid = bool(fields.iso_disk_name.value)
-        status = OK if is_valid else ERROR
+        status = OK if is_valid else OPTIONAL
         if is_valid:
             message = None
         else:
-            message = 'Error. Disk name is a required field.'
+            message = 'The original disk name not available.'
+        # Set True because this is an optional field.
+        is_valid = True
     return is_valid, status, message
 
 

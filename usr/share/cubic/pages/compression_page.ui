@@ -203,13 +203,12 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Larger Size  ⊳</property>
-            <property name="angle">90</property>
+            <property name="label" translatable="yes">⊲  Lower Compression</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
             <property name="top_attach">0</property>
-            <property name="height">8</property>
+            <property name="width">8</property>
           </packing>
         </child>
         <child>
@@ -228,17 +227,26 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="opacity">0.5</property>
-            <property name="label" translatable="yes">
-Slower</property>
-            <property name="justify">center</property>
-            <property name="angle">45</property>
+            <property name="label" translatable="yes">Larger Size  ⊳</property>
+            <property name="angle">90</property>
           </object>
           <packing>
-            <property name="left_attach">6</property>
-            <property name="top_attach">6</property>
-            <property name="width">2</property>
-            <property name="height">2</property>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+            <property name="height">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Smaller Size  ⊳</property>
+            <property name="angle">270</property>
+          </object>
+          <packing>
+            <property name="left_attach">7</property>
+            <property name="top_attach">0</property>
+            <property name="height">8</property>
           </packing>
         </child>
         <child>
@@ -263,25 +271,17 @@ Slower</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">⊲  Lower Compression</property>
+            <property name="opacity">0.5</property>
+            <property name="label" translatable="yes">
+Slower</property>
+            <property name="justify">center</property>
+            <property name="angle">45</property>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-            <property name="width">8</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Smaller Size  ⊳</property>
-            <property name="angle">270</property>
-          </object>
-          <packing>
-            <property name="left_attach">7</property>
-            <property name="top_attach">0</property>
-            <property name="height">8</property>
+            <property name="left_attach">6</property>
+            <property name="top_attach">6</property>
+            <property name="width">2</property>
+            <property name="height">2</property>
           </packing>
         </child>
       </object>

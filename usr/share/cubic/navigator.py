@@ -237,7 +237,7 @@ def on_clicked_website_menu_button(button):
 
 def on_clicked_help_menu_button(button):
 
-    logger.log_title('Cclicked help menu button')
+    logger.log_title('Clicked help menu button')
 
     url = 'https://answers.launchpad.net/cubic'
     command = 'xdg-open "%s" &' % url
@@ -246,7 +246,7 @@ def on_clicked_help_menu_button(button):
 
 def on_clicked_page_help_menu_button(button):
 
-    logger.log_title('Cclicked help menu button')
+    logger.log_title('Clicked help menu button')
 
     url = model.help_urls[model.page.name]
     command = 'xdg-open "%s" &' % url

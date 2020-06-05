@@ -671,10 +671,22 @@ def update_disk_name():
     logger.log_label('Update the disk name')
 
     filepath = join(model.project.custom_disk_directory, 'README.diskdefines')
-    search_text = r'^#define DISKNAME.*'
-    replacement_text = '#define DISKNAME %s' % model.custom.iso_disk_name
-    logger.log_value('Write the disk name to', filepath)
-    is_error = file_utilities.replace_text_in_file(filepath, search_text, replacement_text)
+    if exists(filepath):
+        search_text = r'^#define DISKNAME.*'
+        replacement_text = '#define DISKNAME %s' % model.custom.iso_disk_name
+        logger.log_value('Write the disk name to', filepath)
+        is_error = file_utilities.replace_text_in_file(filepath, search_text, replacement_text)
+    else:
+        try:
+            with open(filepath, 'w') as file:
+                file.write('#define DISKNAME %s' % model.custom.iso_disk_name)
+        except Exception as exception:
+            logger.log_value('Unable to update the disk information in', filepath)
+            logger.log_value('The exception is', exception)
+            is_error = True
+        else:
+            is_error = False
+
     return is_error
 
 

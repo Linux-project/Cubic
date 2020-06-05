@@ -1,5 +1,19 @@
 cubic (2020.06) focal; urgency=low
 
+  * Issues fixed in version 2020.06-26:
+
+  * Fixed Bug #1882074, Cubic crashes while trying to set the terminal
+    colors on systems where Gnome Terminal is not installed. Cubic will
+    only set the terminal colors if the org.gnome.Terminal gsettings
+    schema is available.
+
+  * Fixed Bug #1882077, "Disk name" field empty after selecting ISO.
+    Cubic no longer requires the "README.diskdefines" file to be present
+    on the original ISO.
+
+  * Possible fix for Bug #1882147, Terminal doesn't open after important
+    files copied to project.
+
   * Issues fixed in version 2020.06-25:
 
   * Fixed Bug #1881962, Add support for other compression algorithms to
@@ -67,4 +81,4 @@ cubic (2020.06) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Wed, 03 Jun 2020 20:33:16 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 04 Jun 2020 21:26:40 -0400

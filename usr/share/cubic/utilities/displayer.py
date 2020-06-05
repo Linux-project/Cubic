@@ -69,6 +69,8 @@ logger.log_value('Using GtkSource version', GtkSource._version)
 icons = ['cubic-ok-symbolic', 'cubic-error-symbolic', 'cubic-optional-symbolic', 'cubic-bullet-symbolic', 'cubic-blank-symbolic', 'cubic-blank-symbolic']
 
 # Get the font.
+# schemas = Gio.Settings.list_schemas()
+# if 'org.gnome.desktop.interface' in schemas:
 settings = Gio.Settings.new('org.gnome.desktop.interface')
 font_name = settings.get_string('monospace-font-name')
 font = Pango.FontDescription(font_name)

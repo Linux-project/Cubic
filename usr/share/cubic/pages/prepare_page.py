@@ -163,7 +163,7 @@ def enter(action, old_page=None):
         else:
             logger.log_value('Alert. Number of preseed files found', 0)
             displayer.update_label('prepare_page__preseed_files_message', 'No preseed files found.')
-            displayer.update_status('prepare_page__preseed_files', displayer.OPTIONAL)
+            displayer.update_status('prepare_page__preseed_files', OPTIONAL)
         sleep(0.500)
 
         #
@@ -184,7 +184,7 @@ def enter(action, old_page=None):
         else:
             logger.log_value('Error. Number of iso boot configuration files found', 0)
             displayer.update_label('prepare_page__iso_boot_configurations_message', 'Error. No ISO boot configuration files found.')
-            displayer.update_status('prepare_page__iso_boot_configurations', displayer.ERROR)
+            displayer.update_status('prepare_page__iso_boot_configurations', ERROR)
             return 'error'
         sleep(0.500)
 
@@ -205,7 +205,7 @@ def enter(action, old_page=None):
         else:
             logger.log_value('Error. Number of installed packages found', 0)
             displayer.update_label('prepare_page__installed_packages_message', 'Error. No installed packages found.')
-            displayer.update_status('prepare_page__installed_packages', displayer.ERROR)
+            displayer.update_status('prepare_page__installed_packages', ERROR)
             return 'error'
         sleep(0.500)
 
