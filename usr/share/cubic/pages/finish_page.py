@@ -160,6 +160,7 @@ def leave(action, new_page=None):
             displayer.update_status('finish_page__delete_project_files', OK)
             # Pause to allow the user to see the result.
             sleep(1.000)
+
         return
 
     elif action == 'quit':

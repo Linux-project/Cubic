@@ -36,6 +36,10 @@ try:
 except ValueError:
     gi.require_version('GtkSource', '3.0')
 
+# The following is necessary to avoid the error...
+# "Gtk-ERROR **: failed to add UI: source_view.ui:39:1 Invalid object type 'GtkSourceView'"
+from gi.repository.GtkSource import View
+
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import Gtk
@@ -69,7 +73,8 @@ logger.log_value('Using GtkSource version', GtkSource._version)
 icons = ['cubic-ok-symbolic', 'cubic-error-symbolic', 'cubic-optional-symbolic', 'cubic-bullet-symbolic', 'cubic-blank-symbolic', 'cubic-blank-symbolic']
 
 # Get the font.
-# schemas = Gio.Settings.list_schemas()
+# schema_source = Gio.SettingsSchemaSource.get_default()
+# schemas, _ = schema_source.list_schemas(True)
 # if 'org.gnome.desktop.interface' in schemas:
 settings = Gio.Settings.new('org.gnome.desktop.interface')
 font_name = settings.get_string('monospace-font-name')

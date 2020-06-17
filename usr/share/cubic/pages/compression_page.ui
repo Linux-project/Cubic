@@ -70,6 +70,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Fast compression algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
             <property name="margin_left">17</property>
@@ -91,6 +92,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Lempel–Ziv–Oberhumer algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
             <property name="margin_left">17</property>
@@ -111,6 +113,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">GNU DEFLATE algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
             <property name="margin_left">17</property>
@@ -130,6 +133,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Zstandard algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
             <property name="margin_left">17</property>
@@ -150,6 +154,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Deprecated Lempel–Ziv–Markov chain algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
             <property name="margin_left">17</property>
@@ -170,6 +175,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Lempel–Ziv–Markov chain algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
             <property name="margin_left">17</property>

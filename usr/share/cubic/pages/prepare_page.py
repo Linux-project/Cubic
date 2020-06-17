@@ -44,6 +44,7 @@ from time import sleep
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from utilities import constructor
 from utilities import displayer
+from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
@@ -152,18 +153,56 @@ def enter(action, old_page=None):
         displayer.update_status('prepare_page__preseed_files', PROCESSING)
         sleep(0.500)
         preseed_file_list = create_preseed_file_list()
+
+        # Always add the preseed list to the stack, even if it is empty,
+        # in order to overwrite the previous preseed list in the stack.
+        # TODO: Should we save preseed files when we create them or when
+        #       we leave the page (back, next, quit). Alternatively,
+        #       should we append the preseed list to the stack so the
+        #       new preseed files added by the user are not lost?
+        displayer.add_to_stack('options_page__preseed_tab__stack', preseed_file_list)
+
         if preseed_file_list:
-            prepare_preseed(preseed_file_list)
+
+            # Stack area
+            displayer.set_visible('options_page__preseed_tab__stack', True)
+            displayer.set_visible('options_page__preseed_tab__create_grid', False)
+            displayer.set_visible('options_page__preseed_tab__delete_grid', False)
+
+            # Stack create toggle button
+            displayer.activate_toggle_button('options_page__create_button', False)
+            displayer.set_sensitive('options_page__create_button', True)
+
+            # Stack delete toggle button
+            displayer.activate_toggle_button('options_page__delete_button', False)
+            displayer.set_sensitive('options_page__delete_button', True)
+
             count = len(preseed_file_list)
             logger.log_value('Number of preseed files found', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('file', 'files', count)
             displayer.update_label('prepare_page__preseed_files_message', 'Found %s preseed %s.' % (number_text, plural_text))
             displayer.update_status('prepare_page__preseed_files', OK)
+
         else:
+
+            # Stack area
+            displayer.set_visible('options_page__preseed_tab__stack', False)
+            displayer.set_visible('options_page__preseed_tab__create_grid', True)
+            displayer.set_visible('options_page__preseed_tab__delete_grid', False)
+
+            # Stack create toggle button
+            displayer.activate_toggle_button('options_page__create_button', True)
+            displayer.set_sensitive('options_page__create_button', False)
+
+            # Stack delete toggle button
+            displayer.activate_toggle_button('options_page__delete_button', False)
+            displayer.set_sensitive('options_page__delete_button', False)
+
             logger.log_value('Alert. Number of preseed files found', 0)
             displayer.update_label('prepare_page__preseed_files_message', 'No preseed files found.')
             displayer.update_status('prepare_page__preseed_files', OPTIONAL)
+
         sleep(0.500)
 
         #
@@ -1082,58 +1121,14 @@ def create_preseed_file_list():
     model.delete_list = []
 
     # TODO: Only read text files.
-    search_filepath = join(model.project.custom_disk_directory, 'preseed', '*')
-    filepaths = glob(search_filepath)
+    # search_filepath = join(model.project.custom_disk_directory, 'preseed', '*')
+    # filepaths = glob(search_filepath)
+
+    search_filepath = join(model.project.custom_disk_directory, 'preseed')
+    filepaths = file_utilities.get_text_file_paths(search_filepath)
     filepaths.sort()
 
     return filepaths
-
-
-def prepare_preseed(preseed_file_list):
-
-    displayer.add_to_stack('options_page__preseed_tab__stack', preseed_file_list)
-
-    if preseed_file_list:
-
-        # Stack create button
-        displayer.set_sensitive('options_page__create_button', True)
-
-        # Stack delete button
-        displayer.set_sensitive('options_page__delete_button', True)
-
-        # Stack
-        displayer.set_visible('options_page__preseed_tab__stack', True)
-
-        # Create box
-        # displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
-        # displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__create_grid', False)
-
-        # Delete box
-        # displayer.update_entry('options_page__preseed_tab__delete_grid__entry', '')
-        # displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
-
-    else:
-
-        # Stack create button
-        displayer.set_sensitive('options_page__create_button', True)
-
-        # Stack delete button
-        displayer.set_sensitive('options_page__delete_button', False)
-
-        # Stack
-        displayer.set_visible('options_page__preseed_tab__stack', False)
-
-        # Create box
-        displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
-        displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__create_grid', True)
-
-        # Delete box
-        # displayer.update_entry('options_page__preseed_tab__delete_grid__entry', '')
-        # displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
-        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
 
 
 ########################################################################
@@ -1339,7 +1334,6 @@ def create_typical_removable_packages_list():
         package_name = list_store.get_value(item, 4)
         if flag: removable_packages_list.append(package_name)
         item = list_store.iter_next(item)
-    removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
     return removable_packages_list
@@ -1361,7 +1355,6 @@ def create_minimal_removable_packages_list():
         package_name = list_store.get_value(item, 4)
         if flag: removable_packages_list.append(package_name)
         item = list_store.iter_next(item)
-    removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
     return removable_packages_list
@@ -1382,7 +1375,6 @@ def create_removable_packages_list(listore_name, index):
         package_name = list_store.get_value(item, 2)
         if flag: removable_packages_list.append(package_name)
         item = list_store.iter_next(item)
-    removable_packages_list
     logger.log_value('New number of packages to be removed', len(removable_packages_list))
 
     return removable_packages_list

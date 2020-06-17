@@ -1,5 +1,15 @@
 cubic (2020.06) focal; urgency=low
 
+  * Issues fixed in version 2020.06-27:
+
+  * Fixed Bug #1883801, Cannot Add Sub-Folder into Preseed Folder.
+
+  * Fixed Bug #1882310, When there are no preseed files, the "Create"
+    button is shown, but can not be clicked.
+
+  * Fixed Bug #1882322, Spinner is not shown on the Finish page when
+    "Delete all project files" check box is selected. 
+
   * Issues fixed in version 2020.06-26:
 
   * Fixed Bug #1882074, Cubic crashes while trying to set the terminal
@@ -81,4 +91,4 @@ cubic (2020.06) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 04 Jun 2020 21:26:40 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Tue, 16 Jun 2020 21:02:39 -0400

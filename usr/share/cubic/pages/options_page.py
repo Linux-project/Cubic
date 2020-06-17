@@ -267,15 +267,21 @@ def on_toggled_create_or_delete_toggle_buttons(toggle_button_name):
         displayer.set_visible('options_page__preseed_tab__stack', True)
         displayer.set_visible('options_page__preseed_tab__create_grid', False)
         displayer.set_visible('options_page__preseed_tab__delete_grid', False)
+
     elif toggle_button_name == 'options_page__create_button':
+
         # Create
         displayer.activate_toggle_button('options_page__create_button', True)
         displayer.activate_toggle_button('options_page__delete_button', False)
+
     elif toggle_button_name == 'options_page__delete_button':
+
         # Delete
         displayer.activate_toggle_button('options_page__create_button', False)
         displayer.activate_toggle_button('options_page__delete_button', True)
+
     else:
+
         print('NO MATCH')
 
 

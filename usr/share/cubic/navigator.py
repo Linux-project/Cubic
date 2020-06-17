@@ -168,15 +168,6 @@ navigation_thread = None
 ########################################################################
 
 
-class ModuleNotFoundError(Exception):
-    """
-    Exception raised by the get_page() function when page module does
-    not exist.
-    """
-
-    pass
-
-
 class InterruptException(Exception):
     """
     Exception used by the interrupt_navigation_thread() function to
@@ -197,11 +188,20 @@ class InterruptException(Exception):
 
 class InvalidActionException(Exception):
     """
-    Exception raised by the get_new_page() function when an action has
-    not been configured for the current page.
+    Exception raised by the get_new_page() function to indicate that the
+    specified action has not been configured for the current page.
     """
 
-    pass
+    def __init__(self, action, page):
+        """
+        Args:
+            action (str): The action.
+            page (module): The page module.
+        """
+
+        page_title = get_page_title(page)
+        message = 'Action "%s" is invalid for %s.' % (action, page_title)
+        super().__init__(message)
 
 
 ########################################################################
@@ -322,10 +322,6 @@ def handle_navigation(action):
     navigation_thread = Thread(target=navigate, args=(action, page, new_page), daemon=True)
     navigation_thread.start()
 
-    if action in ('quit', 'exit', 'close'):
-        navigation_thread.join()
-        displayer.main_quit()
-
 
 def interrupt_navigation_thread():
     """
@@ -356,7 +352,6 @@ def interrupt_navigation_thread():
 
         pythonapi.PyThreadState_SetAsyncExc(c_long(navigation_thread_id), py_object(InterruptException))
         navigation_thread.join()
-        # sleep(0.500)
 
         logger.log_value('Interrupted previous thread with id', navigation_thread_id)
 
@@ -412,6 +407,10 @@ def navigate(action, page, new_page):
         # Navigate to an error page.
         new_page = get_new_page(result, page)
         navigate(result, page, new_page)
+        return
+
+    if action in ('quit', 'exit', 'close'):
+        displayer.main_quit()
         return
 
     # Setup the new page.
@@ -476,6 +475,7 @@ def get_page(page_name):
             page = import_module('pages.%s' % page_name)
         except ModuleNotFoundError as exception:
             logger.log_value('Error', exception)
+            raise exception
 
     return page
 
@@ -556,7 +556,7 @@ def get_new_page(action, page):
         if action == 'open':
             new_page_name = 'start_page'
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'start_page':
         if action == 'next':
@@ -566,7 +566,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'migrate_page':
         if action == 'back':
@@ -578,7 +578,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'project_page':
         if action == 'back':
@@ -592,7 +592,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'delete_page':
         if action == 'cancel':
@@ -606,7 +606,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'extract_page':
         if action == 'back':
@@ -618,7 +618,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'terminal_page':
         if action == 'back':
@@ -630,7 +630,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'copy_page':
         if action == 'cancel':
@@ -640,7 +640,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'prepare_page':
         if action == 'back':
@@ -652,7 +652,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'packages_page':
         if action == 'back':
@@ -662,7 +662,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'options_page':
         if action == 'back':
@@ -672,7 +672,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'compression_page':
         if action == 'back':
@@ -682,7 +682,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'generate_page':
         if action == 'back':
@@ -692,7 +692,7 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     elif page_name == 'finish_page':
         if action == 'close':
@@ -700,32 +700,10 @@ def get_new_page(action, page):
         elif action == 'quit':
             new_page_name = None
         else:
-            invalid_action(action, page)
+            raise InvalidActionException(action, page)
 
     new_page = get_page(new_page_name)
     page_title = get_page_title(new_page)
     logger.log_value('New page', page_title)
 
     return new_page
-
-
-def invalid_action(action, page):
-    """
-    Raise an InvalidActionException to indicate that the specified
-    action has not been configured for the specified page. This function
-    is used by the get_new_page() function.
-
-    Args:
-        action (str): The action.
-        page (module): The page module.
-
-    Returns:
-        This function always raises an exception.
-
-    Raises:
-        InvalidActionException: When this function is invoked.
-
-    """
-
-    page_title = get_page_title(page)
-    raise InvalidActionException('Action "%s" is invalid for %s.' % (action, page_title))

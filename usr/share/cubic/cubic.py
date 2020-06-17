@@ -185,6 +185,8 @@ try:
 
     # Set Terminal Colors
 
+    schema_source = Gio.SettingsSchemaSource.get_default()
+    _, schemas = schema_source.list_schemas(True)
     schemas = Gio.Settings.list_relocatable_schemas()
     if 'org.gnome.Terminal.Legacy.Profile' in schemas:
         logger.log_value('Set terminal colors?', 'Yes')

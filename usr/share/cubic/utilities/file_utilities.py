@@ -143,6 +143,32 @@ def get_directory_for_file(filename, start_path):
         logger.log_value('%s is not in' % filename, directory)
 
 
+def get_filepaths(start_path):
+    logger.log_value('Get all file paths in the directory', start_path)
+    filepaths = []
+    for dirpath, dirnames, filenames in walk(start_path):
+        for filename in filenames:
+            filepath = join(dirpath, filename)
+            filepaths.append(filepath)
+    return filepaths
+
+
+def get_text_file_paths(start_path):
+    logger.log_value('Get all text file paths in the directory', start_path)
+    filepaths = []
+    for dirpath, dirnames, filenames in walk(start_path):
+        for filename in filenames:
+            filepath = join(dirpath, filename)
+            try:
+                with open(filepath, 'r') as file:
+                    file.read()
+            except UnicodeDecodeError:
+                pass
+            else:
+                filepaths.append(filepath)
+    return filepaths
+
+
 ########################################################################
 # File Functions
 ########################################################################
