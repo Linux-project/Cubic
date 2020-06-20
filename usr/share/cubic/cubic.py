@@ -27,6 +27,12 @@
 #                                                                      #
 ########################################################################
 
+from os import getuid
+if getuid() == 0:
+    print('Error. Cubic (Custom Ubuntu ISO Creator) is a graphical user interface application and may not be run using sudo or as root. See "man cubic" for more information.')
+    print()
+    exit()
+
 from utilities import logger
 logger.log_title('Cubic - Custom Ubuntu ISO Creator')
 

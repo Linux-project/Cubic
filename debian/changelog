@@ -1,5 +1,34 @@
 cubic (2020.06) focal; urgency=low
 
+  * Issues fixed in version 2020.06-28:
+
+  * Fixed Bug #1884066, ISO generation fails due to Permission not
+    granted error.
+  - Updated the copy process to not use ephemeral files.
+  - Improved the efficiency of copying the vmlinuz and initrd files when
+    files with the same name already exist.
+  - Added code to remove existing temporary .vmlinuz and .initrd files
+    in order to clean up superfluous artifacts resulting from this bug.
+    (This code will be removed in a future release, since the copy
+    process no longer uses ephemeral files).
+
+  * On the Generate page, display an appropriate error message if the
+    disk runs out of space during the "Update the checksums for all
+    files on the disk" step.
+
+  * On the Prepare page, use the processor module when determining the
+    initrd version from the file contents.
+
+  * Improved the processor module to always close synchronous processes,
+    even after an exception. Improved error handling while attempting
+    terminate a process that may have completed during termination.
+
+  * Prevent Cubic from being executed using sudo or as root.
+
+  * Removed the progress module since it is no longer used.
+
+  * Updated the cubic man page.
+
   * Issues fixed in version 2020.06-27:
 
   * Fixed Bug #1883801, Cannot Add Sub-Folder into Preseed Folder.
@@ -91,4 +120,4 @@ cubic (2020.06) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 16 Jun 2020 21:02:39 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 19 Jun 2020 20:59:32 -0400

@@ -35,9 +35,8 @@ from collections import Counter
 from gi.repository import Gtk
 from glob import glob
 from os.path import abspath, basename, dirname, exists, join, realpath, relpath
-from pexpect import EOF, ExceptionPexpect, spawnu, TIMEOUT
 from platform import release
-from re import IGNORECASE, search, split
+from re import compile, IGNORECASE, search, split
 from string import printable
 from time import sleep
 
@@ -48,7 +47,7 @@ from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
-from utilities.processor import execute_synchronous
+from utilities.processor import execute_synchronous, execute_asynchronous
 
 ########################################################################
 # References
@@ -61,6 +60,8 @@ from utilities.processor import execute_synchronous
 ########################################################################
 
 name = 'prepare_page'
+
+INITRAMFS_VERSION_PATTERN = compile(r'lib/modules/(\d[\d\.-]*\d)')
 
 ########################################################################
 # Navigation Functions
@@ -1039,23 +1040,17 @@ def _get_initrd_version_name_from_file_contents(filepath):
     version_name = None
     try:
         command = 'lsinitramfs "%s"' % filepath
-        process = spawnu(command, timeout=60)
-        match = False
-        while process.exitstatus is None and not match:
-            line = process.readline()
-            # print('%s' % line, end='')
-            match = search(r'lib/modules/(\d[\d\.-]*\d)', line)
-            if ('cannot' in line or 'error' in line or 'premature' in line):
-                logger.log_value('Encountered exception while getting initrd version name from file contents', line)
-        if match:
-            process.terminate(True)
-            version_name = match.group(1)
-    except TIMEOUT as exception:
-        logger.log_value('Encountered exception while getting initrd version name from file contents', exception)
-    except EOF as exception:
-        logger.log_value('Encountered exception while getting initrd version name from file contents', exception)
-    except ExceptionPexpect as exception:
-        logger.log_value('Encountered exception while getting initrd version name from file contents', exception)
+        process = execute_asynchronous(command)
+        process.expect(INITRAMFS_VERSION_PATTERN)
+        # Close the process to obtain the exit status, if needed.
+        process.close()
+        version_name = process.match.group(1)
+    except Exception as exception:
+        # Exceptions include TIMEOUT, EOF, ExceptionPexpect, or IndexError.
+        # Close the process to obtain the exit status, if needed.
+        process.close()
+        logger.log_value('Encountered an exception while getting initrd version name from file contents', exception)
+
     logger.log_value('▹ The version name is', version_name)
 
     return version_name

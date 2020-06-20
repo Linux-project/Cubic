@@ -29,8 +29,8 @@
 
 from datetime import datetime
 from getpass import getuser
-from os import linesep, makedirs, remove, walk
-from os.path import dirname, exists, join, relpath
+from os import linesep, listdir, makedirs, remove, walk
+from os.path import dirname, exists, isfile, join, relpath
 from re import search
 from time import sleep
 
@@ -435,9 +435,14 @@ def copy_preseed_and_boot_and_kernel_files():
 
     add_message('Update /%s/%s' % (model.status.casper_directory, target_filename))
 
-    # Delete existing vmlinuz* file(s) in the target directory.
-    pattern = join(target_directory, 'vmlinuz*')
-    file_utilities.delete_files_with_pattern(pattern)
+    # Delete existing vmlinuz* files in the target directory. Do not
+    # remove a file if it matches the target file name, because it will
+    # be efficiently updated by rsync.
+    filenames = listdir(target_directory)
+    for filename in filenames:
+        if filename.startswith('vmlinuz') and filename != target_filename:
+            filepath = join(target_directory, filename)
+            if isfile(filepath): file_utilities.delete_file(filepath)
 
     # Copy the new vmlinuz file.
     program = join(model.application.directory, 'commands', 'copy-path')
@@ -445,6 +450,16 @@ def copy_preseed_and_boot_and_kernel_files():
     result, exitstatus, signalstatus = execute_synchronous(command)
     logger.log_value('The result is', result)
     logger.log_value('The exit status, signal status is', '%s, %s' % (exitstatus, signalstatus))
+
+    # TODO: Remove the following eight lines in a future release.
+    #       As of version 2020.06-28, the copy-path command will not use
+    #       temporary files, so this code is no longer needed.
+    # Delete ephemeral .vmlinuz* files created by rsync in the target directory.
+    filenames = listdir(target_directory)
+    for filename in filenames:
+        if filename.startswith('.vmlinuz'):
+            filepath = join(target_directory, filename)
+            if isfile(filepath): file_utilities.delete_path_as_root(filepath)
 
     is_error = (exitstatus is not OK or signalstatus)
     if is_error:
@@ -469,19 +484,33 @@ def copy_preseed_and_boot_and_kernel_files():
 
     add_message('Update /%s/%s' % (model.status.casper_directory, target_filename))
 
-    # Delete existing initrd* file in the target directory.
-    pattern = join(target_directory, 'initrd*')
-    file_utilities.delete_files_with_pattern(pattern)
+    # Delete existing initrd* files in the target directory. Do not
+    # remove a file if it matches the target file name, because it will
+    # be efficiently updated by rsync.
+    filenames = listdir(target_directory)
+    for filename in filenames:
+        if filename.startswith('initrd') and filename != target_filename:
+            filepath = join(target_directory, filename)
+            if isfile(filepath): file_utilities.delete_file(filepath)
 
     # Copy the new initrd file.
     program = join(model.application.directory, 'commands', 'copy-path')
     command = 'pkexec "%s" "%s" "%s" "%s"' % (program, source_filepath, target_filepath, user)
     result, exitstatus, signalstatus = execute_synchronous(command)
-
-    is_error = (exitstatus is not OK or signalstatus)
     logger.log_value('The result is', result)
     logger.log_value('The exit status, signal status is', '%s, %s' % (exitstatus, signalstatus))
 
+    # TODO: Remove the following eight lines in a future release.
+    #       As of version 2020.06-28, the copy-path command will not use
+    #       temporary files, so this code is no longer needed.
+    # Delete ephemeral .initrd* files created by rsync in the target directory.
+    filenames = listdir(target_directory)
+    for filename in filenames:
+        if filename.startswith('.initrd'):
+            filepath = join(target_directory, filename)
+            if isfile(filepath): file_utilities.delete_path_as_root(filepath)
+
+    is_error = (exitstatus is not OK or signalstatus)
     if is_error:
         add_message('\nError. Unable to update the initrd boot file.')
         displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
@@ -772,7 +801,10 @@ def update_checksums():
     except Exception as exception:
         logger.log_value('Unable to update checksums', checksums_filepath)
         logger.log_value('The exception is', exception)
-        displayer.update_label('generate_page__update_checksums_message', 'Error. Unable to calculate checksums.')
+        if 'No space left on device' in str(exception):
+            displayer.update_label('generate_page__update_checksums_message', 'Error. Not enough space on the disk.')
+        else:
+            displayer.update_label('generate_page__update_checksums_message', 'Error. Unable to calculate checksums.')
         displayer.update_status('generate_page__update_checksums', displayer.ERROR)
         return True
 

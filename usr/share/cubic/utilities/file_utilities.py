@@ -174,15 +174,19 @@ def get_text_file_paths(start_path):
 ########################################################################
 
 
-def calculate_md5_hash(filepath, block_size=2**20):
+def calculate_md5_hash(filepath, buffer_size=2**20):
+    """
+    Calculate the md5 hash by reading a file into a buffer. The default buffer
+    size is 2^20 bytes = 1048576 bytes = 1 MiB (Mebibytes).
+    """
 
     md5_hash = md5()
     try:
         with open(filepath, 'rb') as file:
-            buffer = file.read(block_size)
-            while buffer:
-                md5_hash.update(buffer)
-                buffer = file.read(block_size)
+            data = file.read(buffer_size)
+            while data:
+                md5_hash.update(data)
+                data = file.read(buffer_size)
         return md5_hash.hexdigest()
     except Exception as exception:
         logger.log_value('Unable to calculate the md5 hash for file', filepath)

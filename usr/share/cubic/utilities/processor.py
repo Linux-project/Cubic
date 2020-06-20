@@ -114,6 +114,8 @@ def execute_synchronous(command, working_directory=None):
         exitstatus = process.exitstatus
         signalstatus = process.signalstatus
     except ExceptionPexpect as exception:
+        # Close the process to obtain the exit status.
+        if process: process.close()
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
         logger.log_value('The tracekback is', format_exc())
@@ -220,43 +222,50 @@ def terminate_process():
 
 def _terminate_user_process():
 
+    # Store a reference to the global process, in case the execute_synchronous()
+    # function completes and sets the current process to None before it is
+    # terminated.
     global process
-
-    logger.log_value('Terminate process', process.pid)
-
-    try:
-        process.kill(SIGTERM)
-    except PermissionError as exception:
-        logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', format_exc())
-    except Exception as exception:
-        logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', format_exc())
-    # This returns the exit status and signal status of the running
-    # process that was killed.
-    logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
-    logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
-
-    process = None
+    current_process = process
+    if current_process and current_process.isalive():
+        logger.log_value('Terminate process', current_process.pid)
+        try:
+            current_process.kill(SIGTERM)
+            # Get the exit status and signal status of the process that was killed.
+            logger.log_value('The exit status of process %s is' % current_process.pid, current_process.exitstatus)
+            logger.log_value('The signal status of process %s is' % current_process.pid, current_process.signalstatus)
+            # Set the global process to None.
+            process = None
+        except PermissionError as exception:
+            logger.log_value('The exception is', exception)
+            logger.log_value('The tracekback is', format_exc())
+        except Exception as exception:
+            logger.log_value('The exception is', exception)
+            logger.log_value('The tracekback is', format_exc())
 
 
 def _terminate_root_process():
 
-    exitstatus = None
-    signalstatus = None
+    # Store a reference to the global process, in case the execute_synchronous()
+    # function completes and sets the current process to None before it is
+    # terminated.
     global process
-    if process and process.isalive():
-        logger.log_value('Terminate process', process.pid)
-        program = join(model.application.directory, 'commands', 'terminate-process')
-        command = 'pkexec "%s" "%s"' % (program, process.pid)
-        terminate_process_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(command, model.application.directory)
-        # sleep(0.500)
-        # This returns the exit status and signal status of the process
-        # that killed the running process.
-        # logger.log_value('The result is', result)
-        logger.log_value('The exit status of terminate process %s is' % terminate_process_pid, exitstatus)
-        logger.log_value('The signal status of terminate process %s is' % terminate_process_pid, signalstatus)
-        logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
-        logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
-
-    process = None
+    current_process = process
+    if current_process and current_process.isalive():
+        logger.log_value('Terminate process', current_process.pid)
+        try:
+            program = join(model.application.directory, 'commands', 'terminate-process')
+            command = 'pkexec "%s" "%s"' % (program, current_process.pid)
+            # Get the exit status and signal status of the terminator process.
+            terminator_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(command, model.application.directory)
+            # Set the global process to None.
+            process = None
+            # logger.log_value('The result is', result)
+            logger.log_value('The exit status of terminator process %s is' % terminator_pid, exitstatus)
+            logger.log_value('The signal status of terminator process %s is' % terminator_pid, signalstatus)
+            # Get the exit status and signal status of the process that was killed.
+            logger.log_value('The exit status of process %s is' % current_process.pid, current_process.exitstatus)
+            logger.log_value('The signal status of process %s is' % current_process.pid, current_process.signalstatus)
+        except Exception as exception:
+            logger.log_value('The exception is', exception)
+            logger.log_value('The tracekback is', format_exc())

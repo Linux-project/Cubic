@@ -51,8 +51,8 @@ user=${3}
 
 # If a user was supplied, change ownership.
 if [[ ${user} ]]; then
-    rsync --archive --info=progress2 --chown=${user}:${user} "${source_path}" "${target_path}"
+    rsync --archive --inplace --info=progress2 --chown=${user}:${user} "${source_path}" "${target_path}"
 else
-    rsync --archive --info=progress2 "${source_path}" "${target_path}"
+    rsync --archive --inplace --info=progress2 "${source_path}" "${target_path}"
 fi
 
