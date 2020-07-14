@@ -33,7 +33,7 @@
     <property name="icon_name">edit-delete-symbolic</property>
   </object>
   <object class="GtkButton" id="project_page__delete_button">
-    <property name="can_focus">True</property>
+    <property name="can_focus">False</property>
     <property name="receives_default">True</property>
     <property name="tooltip_text" translatable="yes">Delete this project</property>
     <property name="image">project_page__delete_image</property>
@@ -66,7 +66,7 @@
       <object class="GtkButton" id="project_page__undo_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Undo changes to the custom ISO values</property>
         <property name="image">project_page__undo_image</property>
@@ -83,7 +83,7 @@
       <object class="GtkButton" id="project_page__redo_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Redo changes to the custom ISO values</property>
         <property name="image">project_page__redo_image</property>

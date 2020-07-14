@@ -48,5 +48,6 @@ filepath=${1}
 # Do not echo the command because the output is parsed. The expected
 # output format is: "<size>    <path>"
 
-du --block-size=1 --summarize --one-file-system "${filepath}"
+# du --block-size=1 --summarize --one-file-system "${filepath}"
+du --block-size=1 --summarize "${filepath}"
 

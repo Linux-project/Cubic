@@ -28,7 +28,7 @@
 ########################################################################
 
 from datetime import datetime
-from os.path import getctime, join
+from os.path import exists, getctime, join
 from re import search, sub
 from time import localtime, strftime
 
@@ -68,6 +68,45 @@ def number_as_text(number, title_case=False):
 def get_plural(singular_text, plural_text, count):
 
     return singular_text if count == 1 else plural_text
+
+
+def get_distribution():
+    """
+    Read the value of ID from '/etc/os-release'
+    """
+
+    distribution = None
+    file_path = '/etc/os-release'
+    if exists(file_path):
+        with open(file_path, 'r') as file:
+            for line in file:
+                key, value = line.split('=')
+                key = key.upper() if key else None
+                if key == 'ID':
+                    distribution = value.rstrip().lower() if value else None
+                    break
+
+    return distribution
+
+
+def os_is_elementary_based():
+    """
+    Read the value of ID or ID_LIKE from '/etc/os-release'
+    """
+
+    is_elementary_based = False
+    file_path = '/etc/os-release'
+    if exists(file_path):
+        with open(file_path, 'r') as file:
+            for line in file:
+                key, value = line.split('=')
+                key = key.upper() if key else None
+                value = value.rstrip().lower() if value else None
+                if (key == 'ID' or key == 'ID_LIKE') and 'elementary' in value:
+                    is_elementary_based = True
+                    break
+
+    return is_elementary_based
 
 
 def get_kernel_version():

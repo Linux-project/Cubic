@@ -2,7 +2,7 @@
 
 <!--
 
-  iso_image_chooser.ui
+  iso_image_chooser.elementary.ui
 
   Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>
 
@@ -45,41 +45,7 @@
     <property name="filter">file_filter_iso_file</property>
     <signal name="delete-event" handler="on_delete_event__iso_image_chooser" swapped="no"/>
     <child type="titlebar">
-      <object class="GtkHeaderBar" id="iso_image_chooser__header_bar">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="title">Cubic - Select ISO Disk Image</property>
-        <property name="spacing">18</property>
-        <child>
-          <object class="GtkButton" id="iso_image_chooser__cancel_button">
-            <property name="label" translatable="yes">Cancel</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <signal name="clicked" handler="on_clicked__iso_image_chooser__cancel_button" swapped="no"/>
-            <style>
-              <class name="destructive-action"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="iso_image_chooser__select_button">
-            <property name="label" translatable="yes">Select</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="image_position">right</property>
-            <signal name="clicked" handler="on_clicked__iso_image_chooser__select_button" swapped="no"/>
-            <style>
-              <class name="suggested-action"/>
-            </style>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
+      <placeholder/>
     </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="iso_image_chooser__box">
@@ -89,13 +55,39 @@
           <object class="GtkButtonBox" id="iso_image_chooser__button_box">
             <property name="can_focus">False</property>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="iso_image_chooser__cancel_button">
+                <property name="label" translatable="yes">Cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_clicked__iso_image_chooser__cancel_button" swapped="no"/>
+                <style>
+                  <class name="destructive-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
+              <object class="GtkButton" id="iso_image_chooser__select_button">
+                <property name="label" translatable="yes">Select</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image_position">right</property>
+                <signal name="clicked" handler="on_clicked__iso_image_chooser__select_button" swapped="no"/>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -103,9 +95,6 @@
             <property name="fill">False</property>
             <property name="position">0</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>

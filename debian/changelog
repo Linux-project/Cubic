@@ -1,4 +1,14 @@
-cubic (2020.06) focal; urgency=low
+cubic (2020.07) focal; urgency=low
+
+  * Issues fixed in version 2020.07-29:
+
+  * Fixed Bug #1885464, Linux Mint 20 install disc bootup loops count
+    when attempts are made to start it.
+
+  * Fixed Bug #1887219, Project directory selection not working in
+    Elementary OS.
+
+  * Fixed Bug #1887582, Customized Linux file system size is zero.
 
   * Issues fixed in version 2020.06-28:
 
@@ -120,4 +130,4 @@ cubic (2020.06) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Fri, 19 Jun 2020 20:59:32 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Tue, 14 Jul 2020 18:45:34 -0400

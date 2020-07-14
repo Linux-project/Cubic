@@ -48,7 +48,7 @@
       <object class="GtkButton" id="options_page__boot_revert_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Revert</property>
         <property name="image">options_page__boot_revert_image</property>
@@ -65,7 +65,7 @@
       <object class="GtkButton" id="options_page__boot_undo_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Undo</property>
         <property name="image">options_page__boot_undo_image</property>
@@ -82,7 +82,7 @@
       <object class="GtkButton" id="options_page__boot_redo_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Redo</property>
         <property name="image">options_page__boot_redo_image</property>
@@ -640,7 +640,7 @@ Click the Generate button to begin creating the customized disk image.</property
     <child>
       <object class="GtkToggleButton" id="options_page__create_button">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Add a new preseed file</property>
         <property name="image">options_page__preseed_new_image</property>
@@ -656,7 +656,7 @@ Click the Generate button to begin creating the customized disk image.</property
     <child>
       <object class="GtkToggleButton" id="options_page__delete_button">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Delete the preseed file</property>
         <property name="image">options_page__preseed_delete_image</property>
@@ -694,7 +694,7 @@ Click the Generate button to begin creating the customized disk image.</property
       <object class="GtkButton" id="options_page__preseed_revert_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Revert</property>
         <property name="image">options_page__preseed_revert_image</property>
@@ -711,7 +711,7 @@ Click the Generate button to begin creating the customized disk image.</property
       <object class="GtkButton" id="options_page__preseed_undo_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Undo</property>
         <property name="image">options_page__preseed_undo_image</property>
@@ -728,7 +728,7 @@ Click the Generate button to begin creating the customized disk image.</property
       <object class="GtkButton" id="options_page__preseed_redo_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Redo</property>
         <property name="image">options_page__preseed_redo_image</property>

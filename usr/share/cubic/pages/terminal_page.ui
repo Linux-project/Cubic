@@ -158,7 +158,7 @@
   </object>
   <object class="GtkButton" id="terminal_page__copy_button">
     <property name="visible">True</property>
-    <property name="can_focus">True</property>
+    <property name="can_focus">False</property>
     <property name="receives_default">True</property>
     <property name="tooltip_text" translatable="yes">Copy files into the current directory</property>
     <property name="image">terminal_page__copy_image</property>

@@ -87,8 +87,6 @@ try:
     model.application.directory = dirname(realpath(__file__))
     chdir(model.application.directory)
 
-    # TODO: FOR TESTING ONLY
-    # model.application.cubic_version = '2020.05-01-release~202005010300~ubuntu19.10.1'
     model.application.cubic_version = constructor.get_package_version('cubic')
     model.application.kernel_version = constructor.get_kernel_version()
 
@@ -99,14 +97,26 @@ try:
     # File Choosers
     #-------------------------------------------------------------------
 
-    model.builder.add_from_file('file_choosers/directory_chooser.ui')
-    model.builder.connect_signals(directory_chooser)
-
-    model.builder.add_from_file('file_choosers/iso_image_chooser.ui')
-    model.builder.connect_signals(iso_image_chooser)
-
-    model.builder.add_from_file('file_choosers/copy_file_chooser.ui')
-    model.builder.connect_signals(copy_file_chooser)
+    # Workaround for Bug #1887219: Project directory selection not
+    # working in Elementary OS.
+    distribution = constructor.get_distribution()
+    logger.log_value('Distribution', distribution)
+    is_elementary_based = constructor.os_is_elementary_based()
+    if is_elementary_based:
+        logger.log_value('The OS is elementary based', 'Use elementary style file choosers')
+        model.builder.add_from_file('file_choosers/directory_chooser.elementary.ui')
+        model.builder.connect_signals(directory_chooser)
+        model.builder.add_from_file('file_choosers/iso_image_chooser.elementary.ui')
+        model.builder.connect_signals(iso_image_chooser)
+        model.builder.add_from_file('file_choosers/copy_file_chooser.elementary.ui')
+        model.builder.connect_signals(copy_file_chooser)
+    else:
+        model.builder.add_from_file('file_choosers/directory_chooser.ui')
+        model.builder.connect_signals(directory_chooser)
+        model.builder.add_from_file('file_choosers/iso_image_chooser.ui')
+        model.builder.connect_signals(iso_image_chooser)
+        model.builder.add_from_file('file_choosers/copy_file_chooser.ui')
+        model.builder.connect_signals(copy_file_chooser)
 
     #-------------------------------------------------------------------
     # Pages
