@@ -499,11 +499,11 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
     # search_text_1 = r'\s+boot\s*=\s*casper'
     search_text_1 = r' boot=casper'
     replacement_text_1 = r''
-    search_text_2 = r'%s/vmlinuz\S*' % model.status.casper_directory
+    search_text_2 = r'%s\S*/vmlinuz\S*' % model.status.casper_directory
     replacement_text_2 = r'%s/%s boot=casper' % (model.status.casper_directory, list_store[selected_index][2])
 
     # initrd
-    search_text_3 = r'%s/initrd\S*' % model.status.casper_directory
+    search_text_3 = r'%s\S*/initrd\S*' % model.status.casper_directory
     replacement_text_3 = r'%s/%s' % (model.status.casper_directory, list_store[selected_index][4])
 
     # Search and replace text.

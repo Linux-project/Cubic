@@ -1288,11 +1288,11 @@ def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
     # search_text_1 = r'\s+boot\s*=\s*casper'
     search_text_1 = r' boot=casper'
     replacement_text_1 = r''
-    search_text_2 = r'%s/vmlinuz\S*' % model.status.casper_directory
+    search_text_2 = r'%s\S*/vmlinuz\S*' % model.status.casper_directory
     replacement_text_2 = r'%s/%s boot=casper' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_filename'])
 
     # initrd
-    search_text_3 = r'%s/initrd\S*' % model.status.casper_directory
+    search_text_3 = r'%s\S*/initrd\S*' % model.status.casper_directory
     replacement_text_3 = r'%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_initrd_filename'])
 
     # Search and replace text.

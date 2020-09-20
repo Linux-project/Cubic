@@ -1,5 +1,11 @@
 cubic (2020.09) focal; urgency=low
 
+  * Issues fixed in version 2020.09-31:
+
+  * Fixed Bug #1895770, Pop!_OS expects the initramfs bootstrap file to
+    be explicitly named "initrd.gz". Improved matching for "vmlinuz" and
+    "initrd" files in the boot configurations.
+
   * Issues fixed in version 2020.09-30:
 
   * Fixed Bug #1895770, Pop!_OS expects the initramfs bootstrap file to
@@ -151,4 +157,4 @@ cubic (2020.09) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 19 Sep 2020 23:07:31 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 20 Sep 2020 00:11:46 -0400
