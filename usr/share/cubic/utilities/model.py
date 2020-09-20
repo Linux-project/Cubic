@@ -36,17 +36,17 @@ from utilities.fields import Fields
 # N/A
 
 ########################################################################
-# General
+# Application
 ########################################################################
 
 builder = None
 page = None
 
 application = Fields('application')
+application.directory = None
+application.user_home = None
 application.cubic_version = None
 application.kernel_version = None
-application.directory = None
-application.theme_variant = None
 
 ########################################################################
 # Project

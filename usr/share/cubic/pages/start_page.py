@@ -228,7 +228,7 @@ def on_clicked__start_page__project_directory_open_button(widget):
 
     logger.log_title('Clicked project directory page project directory file chooser open button')
 
-    directory_chooser.open(selected_project_directory)
+    directory_chooser.open(selected_project_directory, model.project.directory)
 
 
 def on_changed__start_page__project_directory_entry(widget):

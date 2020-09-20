@@ -29,6 +29,8 @@ Build-Depends:
                     coreutils (>=8.28),
 #                   Required for lsinitramfs; usually preinstalled
                     initramfs-tools (>=0.130),
+#                   Required for binwalk
+                    binwalk (>=2.1.1),
 #                   Required for mkisofs; usually preinstalled
                     genisoimage (>=9:1.1.11),
 #                   Required for mount, umount; usually preinstalled
@@ -71,6 +73,8 @@ Depends:
                     coreutils (>=8.28),
 #                   Required for lsinitramfs; usually preinstalled
                     initramfs-tools (>=0.130),
+#                   Required for binwalk
+                    binwalk (>=2.1.1),
 #                   Required for mkisofs; usually preinstalled
                     genisoimage (>=9:1.1.11),
 #                   Required for mount, umount; usually preinstalled

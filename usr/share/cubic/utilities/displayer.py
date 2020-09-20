@@ -310,6 +310,30 @@ def set_entry_editable(widget_name, is_editable):
 
 
 ########################################################################
+# File Chooser Functions
+########################################################################
+
+
+def show_filechooser(widget_name, filepath):
+
+    filechooser = model.builder.get_object(widget_name)
+    GLib.idle_add(_show_filechooser, filechooser, filepath)
+
+
+def _show_filechooser(filechooser, filepath):
+    """
+    Only invoke this function using GLib.idle_add().
+    """
+
+    # If the file does not exist, set_filename() will open the parent
+    # directory and not select any file, but select_filename() will
+    # will open the parent directory and select the next file in the
+    # list.
+    filechooser.set_filename(filepath)
+    filechooser.show_all()
+
+
+########################################################################
 # Status Functions
 ########################################################################
 

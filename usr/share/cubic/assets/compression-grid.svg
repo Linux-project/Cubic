@@ -1,0 +1,26 @@
+<svg height="360" width="360">
+
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="100%" x2="50%" y2="50%" spreadMethod="pad">
+      <stop offset="0%"   stop-color="#5d5d5c" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#eae9e7" stop-opacity="0.50"/>
+    </linearGradient>
+  </defs>
+
+  <polygon points="0,0 360,360 0,360" fill="url(#gradient)"/>
+
+  <line stroke-dasharray="1,4" x1="000" y1="030" x2="360" y2="030" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="000" y1="090" x2="360" y2="090" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="000" y1="150" x2="360" y2="150" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="000" y1="210" x2="360" y2="210" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="000" y1="270" x2="360" y2="270" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="000" y1="330" x2="360" y2="330" style="stroke:#aea79f;stroke-width:1"/>
+
+  <line stroke-dasharray="1,4" x1="030" y1="000" x2="030" y2="360" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="090" y1="000" x2="090" y2="360" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="150" y1="000" x2="150" y2="360" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="210" y1="000" x2="210" y2="360" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="270" y1="000" x2="270" y2="360" style="stroke:#aea79f;stroke-width:1"/>
+  <line stroke-dasharray="1,4" x1="330" y1="000" x2="330" y2="360" style="stroke:#aea79f;stroke-width:1"/>
+
+</svg>

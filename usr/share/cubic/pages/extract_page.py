@@ -333,6 +333,7 @@ def copy_original_iso_files():
     # Exclude or copy the following files as indicated.
     #
     # do not copy: /md5sum.txt
+    # do not copy: /MD5SUMS (for Linux Mint)
     # do not copy: /casper/filesystem.manifest
     # ~ ~ ~  copy: /casper/filesystem.manifest-remove
     # ~ ~ ~  copy: /casper/filesystem.manifest-minimal-remove
@@ -365,6 +366,7 @@ def copy_original_iso_files():
         ' --links'
         ' --chmod=u+rwX'
         ' --exclude="md5sum.txt"'
+        ' --exclude="MD5SUMS"'
         ' --exclude="/%s/filesystem.manifest"'
         ' --exclude="/%s/filesystem.size"'
         ' --exclude="/%s/filesystem.squashfs"'

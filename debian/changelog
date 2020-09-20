@@ -1,4 +1,25 @@
-cubic (2020.07) focal; urgency=low
+cubic (2020.09) focal; urgency=low
+
+  * Issues fixed in version 2020.09-30:
+
+  * Fixed Bug #1895770, Pop!_OS expects the initramfs bootstrap file to
+    be explicitly named "initrd.gz".
+
+  * Fixed Bug #1895904, File choosers open the application path.
+
+  * Fixed Bug #1895911, External files copied on the Terminal page do
+    not have root ownership.
+
+  * Fixed Bug #1895913, "Questions" is misspelled in the application
+    menu.
+
+  * Fixed Bug #1895915, In Linux Mint, the old MD5SUMS file appears on
+    the customized ISO.
+
+  * Fixed Bug #1896155, The Options page instructions reference the
+    "Generate" button, but this button is on the Compression page.
+
+  * Added a graph pattern on the Compression page.
 
   * Issues fixed in version 2020.07-29:
 
@@ -130,4 +151,4 @@ cubic (2020.07) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 14 Jul 2020 18:45:34 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 19 Sep 2020 23:07:31 -0400

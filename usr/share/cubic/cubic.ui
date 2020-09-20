@@ -113,7 +113,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="text" translatable="yes">Quetions &amp; Answers</property>
+            <property name="text" translatable="yes">Questions &amp; Answers</property>
             <signal name="clicked" handler="on_clicked_help_menu_button" swapped="no"/>
           </object>
           <packing>

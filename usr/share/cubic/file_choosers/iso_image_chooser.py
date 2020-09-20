@@ -51,10 +51,13 @@ callback = None
 ########################################################################
 
 
-def open(calback):
+def open(calback, filepath=None):
 
     displayer.set_sensitive('window', False)
-    displayer.show_all(name)
+    if filepath:
+        displayer.show_filechooser(name, filepath)
+    else:
+        displayer.show_filechooser(name, model.application.user_home)
     set_callback(calback)
 
 

@@ -415,7 +415,7 @@ def on_clicked__options_page__delete_button(widget):
         displayer.set_sensitive('options_page__delete_button', False)
 
 
-def on_toggled__options_page__kernels_radio_button(widget, row):
+def on_toggled__options_page__kernels_radio_button_ORIGINAL(widget, row):
 
     selected_index = int(row)
     logger.log_value('The selected kernel is item number', selected_index)
@@ -437,10 +437,6 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
 
     # Search and replace text.
     stack_name = 'options_page__boot_configuration_tab__stack'
-
-    # The contents of the boot configurations files is also replaced in
-    # transitions._transition__from__project_page__to__unsquashfs_page()
-    # and utilities.update_and_save_boot_configurations().
 
     # search_text_1 = r'/vmlinuz\S*'
     # replacement_text_1 = '/%s' % list_store[selected_index][2]
@@ -474,6 +470,45 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
          replacement_text_4),
         (search_text_5,
          replacement_text_5))
+
+
+def on_toggled__options_page__kernels_radio_button(widget, row):
+
+    # The contents of the boot configurations files is also replaced in
+    # prepare_page.prepare_boot_configurations().
+
+    # 0: version_name
+    # 1: vmlinuz_filename
+    # 2: new_vmlinuz_filename
+    # 3: initrd_filename
+    # 4: new_initrd_filename
+    # 5: directory
+    # 6: note
+    # 7: is_selected
+
+    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
+
+    selected_index = int(row)
+    # Select clicked row, and unselect other rows.
+    for number, item in enumerate(list_store):
+        list_store[number][7] = (number == selected_index)
+
+    logger.log_value('The selected kernel is index number', selected_index)
+
+    # vmlinuz & boot=casper
+    # search_text_1 = r'\s+boot\s*=\s*casper'
+    search_text_1 = r' boot=casper'
+    replacement_text_1 = r''
+    search_text_2 = r'%s/vmlinuz\S*' % model.status.casper_directory
+    replacement_text_2 = r'%s/%s boot=casper' % (model.status.casper_directory, list_store[selected_index][2])
+
+    # initrd
+    search_text_3 = r'%s/initrd\S*' % model.status.casper_directory
+    replacement_text_3 = r'%s/%s' % (model.status.casper_directory, list_store[selected_index][4])
+
+    # Search and replace text.
+    stack_name = 'options_page__boot_configuration_tab__stack'
+    displayer.replace_text_in_stack_buffer(stack_name, (search_text_1, replacement_text_1), (search_text_2, replacement_text_2), (search_text_3, replacement_text_3))
 
 
 def on_map__options_page__preseed_tab(*args):

@@ -1190,7 +1190,14 @@ def on_clicked__project_page__original_iso_filename_open_button(widget):
 
     logger.log_title('Clicked project page original iso image filepath file chooser open button')
 
-    iso_image_chooser.open(selected_original_iso_filepath)
+    if original.iso_directory.value:
+        if original.iso_filename.value:
+            original_iso_filepath = join(original.iso_directory.value, original.iso_filename.value)
+        else:
+            original_iso_filepath = join(original.iso_directory.value, '*')
+    else:
+        original_iso_filepath = None
+    iso_image_chooser.open(selected_original_iso_filepath, original_iso_filepath)
 
 
 def on_changed__project_page__original_iso_filename_entry(widget):
@@ -1321,7 +1328,11 @@ def on_clicked__project_page__custom_iso_directory_open_button(widget):
 
     logger.log_title('Clicked project page custom iso image directory file chooser open button')
 
-    directory_chooser.open(selected_custom_iso_directory)
+    if custom.iso_directory.value:
+        custom_iso_directory = custom.iso_directory.value
+    else:
+        custom_iso_directory = None
+    directory_chooser.open(selected_custom_iso_directory, custom_iso_directory)
 
 
 def on_changed__project_page__custom_iso_version_number_entry(widget):

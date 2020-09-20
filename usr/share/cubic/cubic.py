@@ -47,7 +47,7 @@ from gi.repository import Gtk
 from gi.repository import Pango
 from glob import glob
 from os import chdir
-from os.path import dirname, realpath
+from os.path import dirname, expanduser, join, realpath
 from traceback import format_exc
 
 import navigator
@@ -86,6 +86,8 @@ try:
     # Real path is necessary here.
     model.application.directory = dirname(realpath(__file__))
     chdir(model.application.directory)
+
+    model.application.user_home = expanduser(join('~', '*'))
 
     model.application.cubic_version = constructor.get_package_version('cubic')
     model.application.kernel_version = constructor.get_kernel_version()

@@ -93,8 +93,6 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        print('*** SETUP NEXT: model.options.compression = %s' % model.options.compression)
-
         return
 
     else:

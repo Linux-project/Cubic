@@ -63,6 +63,11 @@ name = 'prepare_page'
 
 INITRAMFS_VERSION_PATTERN = compile(r'lib/modules/(\d[\d\.-]*\d)')
 
+# Valid compression formats are gzip, bzip2, lz4, lzma, lzop, or xz,
+# ignoring case. (See /etc/initramfs-tools/initramfs.conf).
+INITRAMFS_COMPRESSION_PATTERN = compile(r'(?i).*(gzip|bzip2|lz4|lzma|lzop|xz).*')
+COMPRESSION_EXTENSIONS = {'gzip': 'gz', 'bzip2': 'bz', 'lz4': 'lz', 'lzma': 'lz', 'lzop': 'lz', 'xz': 'xz'}
+
 ########################################################################
 # Navigation Functions
 ########################################################################
@@ -954,23 +959,88 @@ def update_initrd_details_list(directory, details_list):
 
 def calculate_initrd_filename(filepath):
 
-    # Determine extension for initrd file.
-    # Use initrd.lz, initrd.gz, or initrd depending on the compression type.
-    command = 'file "%s"' % filepath
-    result, exitstatus, signalstatus = execute_synchronous(command)
-    logger.log_value('The file type informaton is', result)
+    # logger.log_value('Calculate initrd file name', filepath)
 
-    compression = None
-    match = search(r':\s(.*)\scompressed data', result)
-    if match: compression = match.group(1)
-    else: logger.log_value('Compression for initrd not found in', filepath)
-    logger.log_value('The compression for initrd is', compression)
-
-    if compression == 'LZMA': filename = 'initrd.lz'
-    elif compression == 'gzip': filename = 'initrd.gz'
-    else: filename = 'initrd'
+    compression_format = get_initrd_compression_format(filepath)
+    compression_extension = COMPRESSION_EXTENSIONS.get(compression_format)
+    if compression_extension:
+        filename = 'initrd.' + compression_extension
+    else:
+        filename = 'initrd'
 
     return filename
+
+
+def get_initrd_compression_format(filepath):
+
+    # logger.log_value('Get initrd compression format', filepath)
+
+    filename = basename(filepath)
+    add_message_to_iso_boot_kernels_box('Identify correct compression format for %s' % filename)
+
+    compression_format = (_get_initrd_compression_format_from_file_type(filepath) or _get_initrd_compression_format_from_file_contents(filepath))
+
+    logger.log_value('The compression format is', compression_format)
+
+    return compression_format
+
+
+def _get_initrd_compression_format_from_file_type(filepath):
+    """
+    Get the compression format in lower case.
+    Valid compression formats are 'gzip', 'bzip2', 'lz4', 'lzma', 'lzop', and 'xz'.
+    """
+
+    logger.log_value('Get initrd compression format from file type', filepath)
+
+    command = 'file "%s"' % filepath
+    result, exitstatus, signalstatus = execute_synchronous(command)
+    logger.log_value('The initrd file type information is', result)
+
+    compression_format = None
+    match = search(r':\s(.*)\scompressed data', result)
+    if match:
+        compression_format = match.group(1).lower()
+        logger.log_value('Initrd compression format found?', 'Yes')
+    else:
+        logger.log_value('Initrd compression format found?', 'No')
+
+    return compression_format
+
+
+def _get_initrd_compression_format_from_file_contents(filepath):
+    """
+    Get the compression format in lower case.
+    Valid compression formats are 'gzip', 'bzip2', 'lz4', 'lzma', 'lzop', and 'xz'.
+    """
+
+    logger.log_value('Get initrd compression format from file contents', filepath)
+    compression_format = None
+    try:
+        # Only show results that match "compressed data"
+        command = 'binwalk --include="compressed data" "%s"' % filepath
+        process = execute_asynchronous(command)
+
+        # Assume the first occurrence "compressed data" contains the
+        # compression format used. This immediately follows the line:
+        # ASCII cpio archive (SVR4 with no CRC), file name: "TRAILER!!!"
+        process.expect(INITRAMFS_COMPRESSION_PATTERN)
+        # Close the process to obtain the exit status, if needed.
+        process.close()
+        logger.log_value('The initrd file contents information is', process.match.group(0))
+        compression_format = process.match.group(1).lower()
+        logger.log_value('Initrd compression format found?', 'Yes')
+    except IndexError as exception:
+        process.close()
+        logger.log_value('Initrd compression format found?', 'No')
+    except Exception as exception:
+        # Exceptions include TIMEOUT, EOF, ExceptionPexpect, or IndexError.
+        # Close the process to obtain the exit status, if needed.
+        process.close()
+        logger.log_value('Initrd compression format found?', 'No')
+        logger.log_value('Encountered an exception while getting initrd compression format from file contents', exception)
+
+    return compression_format
 
 
 def get_vmlinuz_version_from_kernel_details_list(kernel_details_list, directory):
@@ -1141,7 +1211,7 @@ def create_boot_configuration_list(kernel_details_list):
     return filepaths
 
 
-def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
+def prepare_boot_configurations_ORIGINAL(boot_configuration_list, kernel_details_list):
 
     # Get the selected kernel.
     for selected_index, kernel_details in enumerate(kernel_details_list):
@@ -1189,6 +1259,45 @@ def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
          replacement_text_4),
         (search_text_5,
          replacement_text_5))
+
+
+def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
+
+    # The contents of the boot configurations files is also replaced in
+    # options_page.on_toggled__options_page__kernels_radio_button().
+
+    # 0: version_name
+    # 1: vmlinuz_filename
+    # 2: new_vmlinuz_filename
+    # 3: initrd_filename
+    # 4: new_initrd_filename
+    # 5: directory
+    # 6: note
+    # 7: is_selected
+
+    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
+
+    # Get the selected kernel.
+    for selected_index, kernel_details in enumerate(kernel_details_list):
+        if kernel_details['is_selected']: break
+    else: selected_index = 0
+
+    logger.log_value('The selected kernel is index number', selected_index)
+
+    # vmlinuz & boot=casper
+    # search_text_1 = r'\s+boot\s*=\s*casper'
+    search_text_1 = r' boot=casper'
+    replacement_text_1 = r''
+    search_text_2 = r'%s/vmlinuz\S*' % model.status.casper_directory
+    replacement_text_2 = r'%s/%s boot=casper' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_filename'])
+
+    # initrd
+    search_text_3 = r'%s/initrd\S*' % model.status.casper_directory
+    replacement_text_3 = r'%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_initrd_filename'])
+
+    # Search and replace text.
+    stack_name = 'options_page__boot_configuration_tab__stack'
+    displayer.add_to_stack(stack_name, boot_configuration_list, (search_text_1, replacement_text_1), (search_text_2, replacement_text_2), (search_text_3, replacement_text_3))
 
 
 ########################################################################
