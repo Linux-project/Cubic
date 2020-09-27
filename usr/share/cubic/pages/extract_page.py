@@ -244,6 +244,28 @@ def get_directory_for_file(filename, start_path):
     for dirpath, dirnames, filenames in walk(start_path):
         if filename in filenames:
             directory = dirpath
+            break
+
+    if directory:
+        logger.log_value('%s is in' % filename, directory)
+    else:
+        logger.log_value('%s is not in' % filename, directory)
+
+    return directory
+
+
+def get_directory_for_file_PROPOSED(filename, start_path):
+
+    # TODO: Consider using this version which allows the casper
+    #       directory to be a symlink.
+
+    logger.log_value('Get directory for %s in' % filename, start_path)
+
+    directory = ''
+    for dirpath, dirnames, filenames in walk(start_path, followlinks=True):
+        if filename in filenames:
+            directory = dirpath
+            break
 
     if directory:
         logger.log_value('%s is in' % filename, directory)

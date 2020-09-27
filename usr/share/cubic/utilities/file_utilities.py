@@ -29,6 +29,7 @@
 
 from glob import glob
 from hashlib import md5
+from os import access, F_OK, R_OK, W_OK, X_OK
 from os import mkdir, remove, walk
 from os.path import exists, getsize, join
 from re import sub
@@ -126,6 +127,13 @@ def get_directory_size(start_path):
     return total_size
 
 
+def directory_is_writable(directory):
+    logger.log_value('Check if directory is writable', directory)
+    is_writable = access(directory, R_OK | W_OK | X_OK)
+    logger.log_value('Directory is writable?', is_writable)
+    return is_writable
+
+
 def get_directory_for_file(filename, start_path):
     logger.log_label('Get directory for file')
     logger.log_value('Filename', filename)
@@ -172,6 +180,19 @@ def get_text_file_paths(start_path):
 ########################################################################
 # File Functions
 ########################################################################
+
+
+def get_filesystem_type(filepath):
+
+    # ext, ext2, ext3, ext4, nfs, ntfs, vfat, zfs
+    logger.log_value('Get file system type', filepath)
+    command = 'df --output=fstype "%s"' % filepath
+    result, exitstatus, signalstatus = execute_synchronous(command)
+    filesystem_type = None
+    if not exitstatus and not signalstatus:
+        filesystem_type = result.splitlines()[1].upper()
+    logger.log_value('The file system type is', filesystem_type)
+    return filesystem_type
 
 
 def calculate_md5_hash(filepath, buffer_size=2**20):

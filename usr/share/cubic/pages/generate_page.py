@@ -31,7 +31,7 @@ from datetime import datetime
 from getpass import getuser
 from os import linesep, listdir, makedirs, remove, walk
 from os.path import dirname, exists, isfile, join, relpath
-from re import search
+from re import search, sub
 from time import sleep
 
 from constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
@@ -697,24 +697,98 @@ def update_disk_name_and_disk_info():
 
 def update_disk_name():
 
+    # https://docs.python.org/3/library/functions.html#open
+    #
+    # r   Open text file for reading. The stream is positioned at the
+    #     beginning of the file.
+    #
+    # r+  Open for reading and writing. The stream is positioned at the
+    #     beginning of the file.
+    #
+    # w   Truncate file to zero length or create text file for writing.
+    #     The stream is positioned at the beginning of the file.
+    #
+    # w+  Open for reading and writing. The file is created if it does
+    #     not exist, otherwise it is truncated. The stream is positioned
+    #     at the beginning of the file.
+    #
+    # a   Open for writing. The file is created if it does not exist.
+    #     The stream is positioned at the end of the file.  Subsequent
+    #     writes to the file will always end up at the then current end
+    #     of file, irrespective of any intervening fseek(3) or similar.
+    #
+    # a+  Open for reading and writing. The file is created if it does
+    #     not exist. The stream is positioned at the end of the file.
+    #     Subsequent writes to the file will always end up at the then
+    #     current end of file, irrespective of any intervening fseek(3)
+    #     or similar.
+
     logger.log_label('Update the disk name')
 
-    filepath = join(model.project.custom_disk_directory, 'README.diskdefines')
-    if exists(filepath):
-        search_text = r'^#define DISKNAME.*'
-        replacement_text = '#define DISKNAME %s' % model.custom.iso_disk_name
-        logger.log_value('Write the disk name to', filepath)
-        is_error = file_utilities.replace_text_in_file(filepath, search_text, replacement_text)
-    else:
-        try:
-            with open(filepath, 'w') as file:
-                file.write('#define DISKNAME %s' % model.custom.iso_disk_name)
-        except Exception as exception:
-            logger.log_value('Unable to update the disk information in', filepath)
-            logger.log_value('The exception is', exception)
-            is_error = True
+    try:
+
+        filepath = join(model.project.custom_disk_directory, 'README.diskdefines')
+
+        if isfile(filepath):
+            logger.log_value('Update the existing file', filepath)
+            mode = 'r+'
         else:
-            is_error = False
+            logger.log_value('Create a new file', filepath)
+            mode = 'w+'
+
+        with open(filepath, mode) as file:
+
+            file_contents = file.read()
+
+            # Update disk name.
+            search_text = r'#define DISKNAME.*'
+            replacement_text = '#define DISKNAME %s' % model.custom.iso_disk_name
+            if search(search_text, file_contents):
+                logger.log_value('Update disk name', replacement_text)
+                file_contents = sub(search_text, replacement_text, file_contents)
+            else:
+                logger.log_value('Append disk name', replacement_text)
+                if not file_contents:
+                    file_contents = replacement_text
+                elif file_contents[-1] == '\n':
+                    file_contents = file_contents + replacement_text
+                else:
+                    file_contents = file_contents + '\n' + replacement_text
+
+            # Update cubic information.
+            search_text = r'#define CUBIC_INFO.*'
+            display_version = constructor.get_major_minor_version(model.application.cubic_version)
+            date_time = datetime.now().strftime('%d/%m/%Y %I:%M %p')
+            replacement_text = '#define CUBIC_INFO Generated using Cubic version %s on %s based on %s' % (display_version, date_time, model.original.iso_filename)
+            if search(search_text, file_contents):
+                logger.log_value('Update cubic information', replacement_text)
+                file_contents = sub(search_text, replacement_text, file_contents)
+            else:
+                logger.log_value('Append cubic information', replacement_text)
+                if not file_contents:
+                    file_contents = replacement_text
+                elif file_contents[-1] == '\n':
+                    file_contents = file_contents + replacement_text
+                else:
+                    file_contents = file_contents + '\n' + replacement_text
+
+            # Update file.
+            file.seek(0)
+            file.truncate()
+            file.write(file_contents)
+
+    except IOError as exception:
+        logger.log_value('Unable to update the disk information in', filepath)
+        logger.log_value('The exception is', exception)
+        is_error = True
+
+    except Exception as exception:
+        logger.log_value('Unable to update the disk information in', filepath)
+        logger.log_value('The exception is', exception)
+        is_error = True
+
+    else:
+        is_error = False
 
     return is_error
 

@@ -1793,9 +1793,14 @@ def validate_custom_iso_directory(fields):
         status = BLANK
     elif bool(fields.iso_directory.value):
         if isdir(fields.iso_directory.value):
-            is_valid = True
-            message = None
-            status = OK
+            if file_utilities.directory_is_writable(fields.iso_directory.value):
+                is_valid = True
+                message = None
+                status = OK
+            else:
+                is_valid = False
+                message = 'Error. Cannot access directory.'
+                status = ERROR
         else:
             is_valid = False
             message = 'Error. Directory not found.'

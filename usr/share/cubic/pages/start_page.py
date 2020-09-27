@@ -29,11 +29,12 @@
 
 from os.path import isfile
 
-from constants import NEW_CUBIC_VERSION
+from constants import OK, ERROR, EXCLUDED_FILESYSTEM_TYPES, NEW_CUBIC_VERSION
 from file_choosers import directory_chooser
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
+from utilities import file_utilities
 from utilities import logger
 from utilities import model
 
@@ -268,25 +269,61 @@ def selected_project_directory(directory):
 def validate_page():
 
     if model.project.directory:
-        current_date_time = constructor.get_current_date_time()
-        # Update the modify_date if the selected project has changed.
-        model.project.modify_date = current_date_time
-        model.project.configuration_filepath = constructor.construct_configuration_filepath(model.project.directory)
-        if isfile(model.project.configuration_filepath):
-            configuration.load()
-            if model.project.cubic_version < NEW_CUBIC_VERSION:
-                displayer.reset_buttons(
-                    back_button_label='❬Back',
-                    back_action='back',
-                    back_button_style=None,
-                    is_back_sensitive=False,
-                    is_back_visible=False,
-                    next_button_label='Next❭',
-                    next_action='migrate',
-                    next_button_style='suggested-action',
-                    is_next_sensitive=True,
-                    is_next_visible=True)
-                displayer.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
+        if file_utilities.directory_is_writable(model.project.directory):
+            filesystem_type = file_utilities.get_filesystem_type(model.project.directory)
+            if filesystem_type not in EXCLUDED_FILESYSTEM_TYPES:
+                current_date_time = constructor.get_current_date_time()
+                # Update the modify_date if the selected project has changed.
+                model.project.modify_date = current_date_time
+                model.project.configuration_filepath = constructor.construct_configuration_filepath(model.project.directory)
+                if isfile(model.project.configuration_filepath):
+                    configuration.load()
+                    if model.project.cubic_version < NEW_CUBIC_VERSION:
+                        displayer.reset_buttons(
+                            back_button_label='❬Back',
+                            back_action='back',
+                            back_button_style=None,
+                            is_back_sensitive=False,
+                            is_back_visible=False,
+                            next_button_label='Next❭',
+                            next_action='migrate',
+                            next_button_style='suggested-action',
+                            is_next_sensitive=True,
+                            is_next_visible=True)
+                        displayer.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
+                        displayer.set_entry_error('start_page__project_directory_entry', OK)
+                    else:
+                        displayer.reset_buttons(
+                            back_button_label='❬Back',
+                            back_action='back',
+                            back_button_style=None,
+                            is_back_sensitive=False,
+                            is_back_visible=False,
+                            next_button_label='Next❭',
+                            next_action='next',
+                            next_button_style='suggested-action',
+                            is_next_sensitive=True,
+                            is_next_visible=True)
+                        displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
+                        displayer.set_entry_error('start_page__project_directory_entry', OK)
+                else:
+                    configuration.initialize()
+                    reset_model()
+                    # This is a new project, so set the create date.
+                    model.project.create_date = current_date_time
+                    displayer.reset_buttons(
+                        back_button_label='❬Back',
+                        back_action='back',
+                        back_button_style=None,
+                        is_back_sensitive=False,
+                        is_back_visible=False,
+                        next_button_label='Next❭',
+                        next_action='next',
+                        next_button_style='suggested-action',
+                        is_next_sensitive=True,
+                        is_next_visible=True)
+                    displayer.update_label('start_page__project_directory_message', 'A new cubic project will be created using this directory.')
+                    displayer.set_entry_error('start_page__project_directory_entry', OK)
             else:
                 displayer.reset_buttons(
                     back_button_label='❬Back',
@@ -297,14 +334,11 @@ def validate_page():
                     next_button_label='Next❭',
                     next_action='next',
                     next_button_style='suggested-action',
-                    is_next_sensitive=True,
+                    is_next_sensitive=False,
                     is_next_visible=True)
-                displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
+                displayer.update_label('start_page__project_directory_message', 'Error. Cannot customize Linux on the %s file system.' % filesystem_type)
+                displayer.set_entry_error('start_page__project_directory_entry', ERROR)
         else:
-            configuration.initialize()
-            reset_model()
-            # This is a new project, so set the create date.
-            model.project.create_date = current_date_time
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -314,9 +348,10 @@ def validate_page():
                 next_button_label='Next❭',
                 next_action='next',
                 next_button_style='suggested-action',
-                is_next_sensitive=True,
+                is_next_sensitive=False,
                 is_next_visible=True)
-            displayer.update_label('start_page__project_directory_message', 'A new cubic project will be created using this directory.')
+            displayer.update_label('start_page__project_directory_message', 'Error. Cannot access directory.')
+            displayer.set_entry_error('start_page__project_directory_entry', ERROR)
     else:
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -330,6 +365,7 @@ def validate_page():
             is_next_sensitive=False,
             is_next_visible=True)
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
+        displayer.set_entry_error('start_page__project_directory_entry', OK)
 
 
 def reset_model():

@@ -37,6 +37,10 @@ ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
 
+# Excluded file system types.
+# ext, ext2, ext3, ext4, nfs, ntfs, vfat, zfs; FAT16, FAT32, and exFAT
+EXCLUDED_FILESYSTEM_TYPES = ['FAT', 'FAT16', 'FAT32', 'NTFS', 'VFAT']
+
 KIB = 1024**1  # 1 kibibytes (KiB) =          1024 bytes
 MIB = 1024**2  # 1 mibibytes (MiB) =       1048576 bytes
 GIB = 1024**3  # 1 gibibytes (GiB) =    1073741824 bytes
@@ -78,18 +82,6 @@ NUMBERS_UPPER_CASE = ['NO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN
 SCALE_FACTOR = 10
 START_PERCENT = 0  # %
 FINAL_PERCENT = 100  # %
-
-########################################################################
-# TODO: DELETE THESE WHEN progress is replaced with progressor.
-########################################################################
-
-ZOOM = 10
-PERCENT_START = 0
-PERCENT_STOP = 100
-PROGRESS_START = PERCENT_START * ZOOM
-PROGRESS_STOP = PERCENT_STOP * ZOOM
-SLOW_INTERVAL = 0.5000 / ZOOM
-FAST_INTERVAL = 0.0100 / ZOOM
 
 ########################################################################
 # Font Colors

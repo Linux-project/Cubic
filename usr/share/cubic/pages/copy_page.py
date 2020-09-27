@@ -30,7 +30,6 @@
 from os.path import abspath, join
 from urllib.parse import urlparse, unquote
 
-from constants import PERCENT_STOP
 from utilities.console import get_current_directory
 from utilities import displayer
 from utilities import iso_utilities
@@ -53,6 +52,8 @@ name = 'copy_page'
 current_directory = None
 total_files = 0
 file_number = 0
+
+PERCENT_STOP = 100
 
 ########################################################################
 # Navigation Functions
