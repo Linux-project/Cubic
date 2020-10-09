@@ -224,6 +224,23 @@ def get_iso_disk_name(iso_mount_point):
     return iso_disk_name
 
 
+def get_iso_release_notes_url(directory):
+
+    logger.log_label('Get ISO image release notes URL')
+    logger.log_value('ISO image mount point', directory)
+
+    # Read the original ISO image release_notes_url file.
+    command = 'cat "%s"' % join(directory, '.disk', 'release_notes_url')
+    result, exitstatus, signalstatus = execute_synchronous(command)
+    # Get the original ISO image release notes URL.
+    # iso_release_notes_url = 'Unknown iso image release notes URL'
+    iso_release_notes_url = ''
+    if not exitstatus and not signalstatus:
+        iso_release_notes_url = result
+    logger.log_value('ISO image release notes URL', iso_release_notes_url)
+    return iso_release_notes_url
+
+
 # TODO: the argument can also be: custom_disk_directory
 # filesystem.squashfs may not have been generated in custom_disk_directory, yet.
 # Therefore, how to determine the casper_directory ?

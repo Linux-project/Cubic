@@ -29,7 +29,7 @@
 
 from datetime import datetime
 from getpass import getuser
-from os import linesep, listdir, makedirs, remove, walk
+from os import linesep, listdir, makedirs, remove, symlink, walk
 from os.path import dirname, exists, isfile, join, relpath
 from re import search, sub
 from time import sleep
@@ -438,11 +438,8 @@ def copy_preseed_and_boot_and_kernel_files():
     # Delete existing vmlinuz* files in the target directory. Do not
     # remove a file if it matches the target file name, because it will
     # be efficiently updated by rsync.
-    filenames = listdir(target_directory)
-    for filename in filenames:
-        if filename.startswith('vmlinuz') and filename != target_filename:
-            filepath = join(target_directory, filename)
-            if isfile(filepath): file_utilities.delete_file(filepath)
+    filepath_pattern = join(target_directory, 'vmlinuz*')
+    file_utilities.delete_files_with_pattern(filepath_pattern, [target_filepath])
 
     # Copy the new vmlinuz file.
     program = join(model.application.directory, 'commands', 'copy-path')
@@ -450,6 +447,15 @@ def copy_preseed_and_boot_and_kernel_files():
     result, exitstatus, signalstatus = execute_synchronous(command)
     logger.log_value('The result is', result)
     logger.log_value('The exit status, signal status is', '%s, %s' % (exitstatus, signalstatus))
+
+    # Create a symlink from vmlinuz.eft to vmlinuz.
+    source_filename = target_filename
+    target_filename = 'vmlinuz.efi'
+    target_filepath = join(target_directory, target_filename)
+    if source_filename != target_filename and not exists(target_filepath):
+        logger.log_value('Create symlink', 'from %s to %s' % (source_filename, target_filename))
+        add_message('Create symlink %s to %s' % (target_filename, source_filename))
+        symlink(source_filename, target_filepath)
 
     # TODO: Remove the following eight lines in a future release.
     #       As of version 2020.06-28, the copy-path command will not use
@@ -487,11 +493,8 @@ def copy_preseed_and_boot_and_kernel_files():
     # Delete existing initrd* files in the target directory. Do not
     # remove a file if it matches the target file name, because it will
     # be efficiently updated by rsync.
-    filenames = listdir(target_directory)
-    for filename in filenames:
-        if filename.startswith('initrd') and filename != target_filename:
-            filepath = join(target_directory, filename)
-            if isfile(filepath): file_utilities.delete_file(filepath)
+    filepath_pattern = join(target_directory, 'initrd*')
+    file_utilities.delete_files_with_pattern(filepath_pattern, [target_filepath])
 
     # Copy the new initrd file.
     program = join(model.application.directory, 'commands', 'copy-path')

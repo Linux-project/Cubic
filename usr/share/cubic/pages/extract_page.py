@@ -389,6 +389,7 @@ def copy_original_iso_files():
         ' --chmod=u+rwX'
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
+        ' --exclude=".disk/release_notes_url"'
         ' --exclude="/%s/filesystem.manifest"'
         ' --exclude="/%s/filesystem.size"'
         ' --exclude="/%s/filesystem.squashfs"'

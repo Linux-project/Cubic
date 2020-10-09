@@ -31,7 +31,7 @@ from glob import glob
 from hashlib import md5
 from os import access, F_OK, R_OK, W_OK, X_OK
 from os import mkdir, remove, walk
-from os.path import exists, getsize, join
+from os.path import exists, getsize, islink, join
 from re import sub
 from shutil import copy, rmtree
 
@@ -68,7 +68,7 @@ def make_directory(directory):
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_directory(directory):
     logger.log_value('Delete directory', directory)
-    if exists(directory):
+    if exists(directory) or islink(filepath):
         try:
             # TODO: Check if permissions prevent this operation?
             # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
@@ -96,10 +96,14 @@ def delete_directory(directory):
     return result, exitstatus, signalstatus
 
 
-def delete_files_with_pattern(pattern):
-    logger.log_value('Delete existing  files with pattern', pattern)
-    # TODO: Make this code more clear.
-    [remove(delete_filepath) for delete_filepath in glob(pattern)]
+def delete_files_with_pattern(pattern, exclusion_list=None):
+    if exclusion_list:
+        logger.log_value('Delete existing files with pattern', pattern)
+        logger.log_value('Keep files', exclusion_list)
+        [remove(delete_filepath) for delete_filepath in glob(pattern) if delete_filepath not in exclusion_list]
+    else:
+        logger.log_value('Delete existing files with pattern', pattern)
+        [remove(delete_filepath) for delete_filepath in glob(pattern)]
 
 
 # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
@@ -227,7 +231,7 @@ def copy_file(source_path, target_path):
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_file(filepath):
     logger.log_value('Delete file', filepath)
-    if exists(filepath):
+    if exists(filepath) or islink(filepath):
         try:
             # TODO: Check if permissions prevent this operation?
             remove(filepath)

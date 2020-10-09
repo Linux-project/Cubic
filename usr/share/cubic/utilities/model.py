@@ -72,6 +72,7 @@ original.iso_directory = None
 original.iso_volume_id = None
 original.iso_release_name = None
 original.iso_disk_name = None
+original.iso_release_notes_url = None
 
 ########################################################################
 # Custom
@@ -84,6 +85,7 @@ custom.iso_directory = None
 custom.iso_volume_id = None
 custom.iso_release_name = None
 custom.iso_disk_name = None
+custom.iso_release_notes_url = None
 
 ########################################################################
 # Status

@@ -39,6 +39,7 @@ The following fields must be set before entering this page:
 8. model.project.custom_disk_directory
 """
 
+from os import makedirs
 from os.path import isdir, isfile, join, split
 from re import sub
 
@@ -80,7 +81,7 @@ custom_history = IsoFieldsHistory()
 
 def setup(action, old_page=None):
     """
-    Prepare this page for displayer. This function is executed while the
+    Prepare this page for display. This function is executed while the
     previous page is still shown.
 
     Args
@@ -232,6 +233,13 @@ def setup(action, old_page=None):
             configured_original_iso_filepath = join(model.original.iso_directory, model.original.iso_filename)
             mount_original_iso(configured_original_iso_filepath)
 
+            # Set the original and custom iso release notes urls on the
+            # model. Because the original iso release notes url can only
+            # be set after the original iso is mounted, both of these
+            # values are not set on the Start page.
+            model.original.iso_release_notes_url = iso_utilities.get_iso_release_notes_url(model.project.iso_mount_point)
+            model.custom.iso_release_notes_url = iso_utilities.get_iso_release_notes_url(model.project.custom_disk_directory)
+
             # Set status before initializing original because filename
             # validator requires is_success_copy and is_success_extract.
             status = initialize_status_from_model()
@@ -255,6 +263,11 @@ def setup(action, old_page=None):
 
             # Hide the Delete button because the project does not exist.
             displayer.set_visible('project_page__delete_button', False)
+
+            # Set the original and custom iso release notes urls on the
+            # model.
+            model.original.iso_release_notes_url = None
+            model.custom.iso_release_notes_url = None
 
             # Set status before initializing original because filename
             # validator requires is_success_copy and is_success_extract.
@@ -403,6 +416,7 @@ def leave(action, new_page=None):
         model.original.iso_volume_id = original.iso_volume_id.value
         model.original.iso_release_name = original.iso_release_name.value
         model.original.iso_disk_name = original.iso_disk_name.value
+        model.original.iso_release_notes_url = original.iso_release_notes_url.value
 
         # Custom
         model.custom.iso_version_number = custom.iso_version_number.value
@@ -411,6 +425,7 @@ def leave(action, new_page=None):
         model.custom.iso_volume_id = custom.iso_volume_id.value
         model.custom.iso_release_name = custom.iso_release_name.value
         model.custom.iso_disk_name = custom.iso_disk_name.value
+        model.custom.iso_release_notes_url = custom.iso_release_notes_url.value
 
         # Status
         model.status.is_success_copy = status.is_success_copy
@@ -423,7 +438,7 @@ def leave(action, new_page=None):
         model.options.boot_configurations = options.boot_configurations
 
         # Save the model values.
-        configuration.save()
+        save_model_values()
 
         if custom.is_valid and custom != custom_history.current():
             custom_history.insert(custom)
@@ -459,6 +474,7 @@ def leave(action, new_page=None):
         model.original.iso_volume_id = original.iso_volume_id.value
         model.original.iso_release_name = original.iso_release_name.value
         model.original.iso_disk_name = original.iso_disk_name.value
+        model.original.iso_release_notes_url = original.iso_release_notes_url.value
 
         # Custom
         model.custom.iso_version_number = custom.iso_version_number.value
@@ -467,6 +483,7 @@ def leave(action, new_page=None):
         model.custom.iso_volume_id = custom.iso_volume_id.value
         model.custom.iso_release_name = custom.iso_release_name.value
         model.custom.iso_disk_name = custom.iso_disk_name.value
+        model.custom.iso_release_notes_url = custom.iso_release_notes_url.value
 
         # Status
         model.status.is_success_copy = status.is_success_copy
@@ -479,7 +496,7 @@ def leave(action, new_page=None):
         model.options.boot_configurations = options.boot_configurations
 
         # Save the model values.
-        configuration.save()
+        save_model_values()
 
         return
 
@@ -674,6 +691,7 @@ def initialize_original():
     fields.iso_volume_id.validator = validate_original_iso_volume_id
     fields.iso_release_name.validator = validate_original_iso_release_name
     fields.iso_disk_name.validator = validate_original_iso_disk_name
+    fields.iso_release_notes_url.validator = validate_original_iso_release_notes_url
 
     return fields
 
@@ -691,6 +709,7 @@ def initialize_custom():
     fields.iso_volume_id.validator = validate_custom_iso_volume_id
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
+    fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
 
     return fields
 
@@ -735,6 +754,7 @@ def initialize_original_from_iso(original_iso_filepath):
       - iso_volume_id
       - iso_release_name
       - iso_disk_name
+      - iso_release_notes_url
     The original iso does not have an iso_version_number, so the
     iso_version_number value and validator are not set. The
     iso_version_number value defaults to None, and the is_valid property
@@ -752,6 +772,7 @@ def initialize_original_from_iso(original_iso_filepath):
     fields.iso_volume_id.value = iso_utilities.get_iso_volume_id(original_iso_filepath)
     fields.iso_release_name.value = iso_utilities.get_iso_release_name(model.project.iso_mount_point)
     fields.iso_disk_name.value = iso_utilities.get_iso_disk_name(model.project.iso_mount_point)
+    fields.iso_release_notes_url.value = iso_utilities.get_iso_release_notes_url(model.project.iso_mount_point)
 
     # Add validators.
     # Do not add a validator to iso_version_number, because the original
@@ -764,6 +785,7 @@ def initialize_original_from_iso(original_iso_filepath):
     fields.iso_volume_id.validator = validate_original_iso_volume_id
     fields.iso_release_name.validator = validate_original_iso_release_name
     fields.iso_disk_name.validator = validate_original_iso_disk_name
+    fields.iso_release_notes_url.validator = validate_original_iso_release_notes_url
 
     return fields
 
@@ -778,6 +800,7 @@ def initialize_custom_from_iso():
       - iso_volume_id
       - iso_release_name
       - iso_disk_name
+      - iso_release_notes_url
     """
     logger.log_label('Initialize the custom fields from the iso')
 
@@ -790,6 +813,7 @@ def initialize_custom_from_iso():
     fields.iso_volume_id.value = constructor.construct_custom_iso_volume_id(original.iso_volume_id.value, fields.iso_version_number.value)
     fields.iso_release_name.value = constructor.construct_custom_iso_release_name(original.iso_release_name.value)
     fields.iso_disk_name.value = constructor.construct_custom_iso_disk_name(fields.iso_volume_id.value, fields.iso_release_name.value)
+    fields.iso_release_notes_url.value = original.iso_release_notes_url.value
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -798,6 +822,7 @@ def initialize_custom_from_iso():
     fields.iso_volume_id.validator = validate_custom_iso_volume_id
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
+    fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
 
     return fields
 
@@ -818,6 +843,7 @@ def refresh_custom_using_version_number():
       - iso_volume_id
       - iso_release_name
       - iso_disk_name
+      - iso_release_notes_url
     """
 
     logger.log_label('Initialize the custom fields using the version number')
@@ -833,12 +859,14 @@ def refresh_custom_using_version_number():
         fields.iso_volume_id.value = sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_volume_id.value)[:32]
         fields.iso_release_name.value = sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_release_name.value)
         fields.iso_disk_name.value = sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_disk_name.value)
+        fields.iso_release_notes_url.value = custom.iso_release_notes_url.value
     else:
         fields.iso_filename.value = custom.iso_filename.value
         fields.iso_directory.value = custom.iso_directory.value
         fields.iso_volume_id.value = custom.iso_volume_id.value[:32]
         fields.iso_release_name.value = custom.iso_release_name.value
         fields.iso_disk_name.value = custom.iso_disk_name.value
+        fields.iso_release_notes_url.value = custom.iso_release_notes_url.value
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -847,6 +875,7 @@ def refresh_custom_using_version_number():
     fields.iso_volume_id.validator = validate_custom_iso_volume_id
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
+    fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
 
     return fields
 
@@ -865,6 +894,7 @@ def initialize_original_from_model():
       - iso_volume_id
       - iso_release_name
       - iso_disk_name
+      - iso_release_notes_url
     The original iso does not have an iso_version_number, so the
     iso_version_number value and validator are not set. The
     iso_version_number value defaults to None, and the is_valid property
@@ -881,6 +911,7 @@ def initialize_original_from_model():
     fields.iso_volume_id.value = model.original.iso_volume_id
     fields.iso_release_name.value = model.original.iso_release_name
     fields.iso_disk_name.value = model.original.iso_disk_name
+    fields.iso_release_notes_url.value = model.original.iso_release_notes_url
 
     # Add validators.
     # Do not add a validator to iso_version_number, because the original
@@ -893,6 +924,7 @@ def initialize_original_from_model():
     fields.iso_volume_id.validator = validate_original_iso_volume_id
     fields.iso_release_name.validator = validate_original_iso_release_name
     fields.iso_disk_name.validator = validate_original_iso_disk_name
+    fields.iso_release_notes_url.validator = validate_original_iso_release_notes_url
 
     return fields
 
@@ -907,6 +939,7 @@ def initialize_custom_from_model():
       - iso_volume_id
       - iso_release_name
       - iso_disk_name
+      - iso_release_notes_url
     """
 
     logger.log_label('Initialize the custom fields from the model')
@@ -920,6 +953,7 @@ def initialize_custom_from_model():
     fields.iso_volume_id.value = model.custom.iso_volume_id
     fields.iso_release_name.value = model.custom.iso_release_name
     fields.iso_disk_name.value = model.custom.iso_disk_name
+    fields.iso_release_notes_url.value = model.custom.iso_release_notes_url
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -928,6 +962,7 @@ def initialize_custom_from_model():
     fields.iso_volume_id.validator = validate_custom_iso_volume_id
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
+    fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
 
     return fields
 
@@ -1022,6 +1057,11 @@ def display_original_fields(fields):
     displayer.set_entry_error('project_page__original_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
     displayer.update_label('project_page__original_iso_disk_name_message', fields.iso_disk_name.message)
 
+    displayer.update_entry('project_page__original_iso_release_notes_url_entry', fields.iso_release_notes_url.value)
+    displayer.update_status('project_page__original_iso_release_notes_url', fields.iso_release_notes_url.status)
+    displayer.set_entry_error('project_page__original_iso_release_notes_url_entry', fields.iso_release_notes_url.status == ERROR)
+    displayer.update_label('project_page__original_iso_release_notes_url_message', fields.iso_release_notes_url.message)
+
     # Unblock handlers.
     displayer.idle_add(unblock_original_handlers)
 
@@ -1046,6 +1086,9 @@ def block_original_handlers():
     entry = model.builder.get_object('project_page__original_iso_disk_name_entry')
     entry.handler_block_by_func(on_changed__project_page__original_iso_disk_name_entry)
 
+    entry = model.builder.get_object('project_page__original_iso_release_notes_url_entry')
+    entry.handler_block_by_func(on_changed__project_page__original_iso_release_notes_url_entry)
+
 
 def unblock_original_handlers():
     """
@@ -1066,6 +1109,9 @@ def unblock_original_handlers():
 
     entry = model.builder.get_object('project_page__original_iso_disk_name_entry')
     entry.handler_unblock_by_func(on_changed__project_page__original_iso_disk_name_entry)
+
+    entry = model.builder.get_object('project_page__original_iso_release_notes_url_entry')
+    entry.handler_unblock_by_func(on_changed__project_page__original_iso_release_notes_url_entry)
 
 
 #-----------------------------------------------------------------------
@@ -1115,6 +1161,11 @@ def display_custom_fields(fields):
     displayer.set_entry_error('project_page__custom_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
     displayer.update_label('project_page__custom_iso_disk_name_message', fields.iso_disk_name.message)
 
+    displayer.update_entry('project_page__custom_iso_release_notes_url_entry', fields.iso_release_notes_url.value)
+    displayer.update_status('project_page__custom_iso_release_notes_url', fields.iso_release_notes_url.status)
+    displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', fields.iso_release_notes_url.status == ERROR)
+    displayer.update_label('project_page__custom_iso_release_notes_url_message', fields.iso_release_notes_url.message)
+
     # Unblock handlers.
     displayer.idle_add(unblock_custom_handlers)
 
@@ -1142,6 +1193,9 @@ def block_custom_handlers():
     entry = model.builder.get_object('project_page__custom_iso_disk_name_entry')
     entry.handler_block_by_func(on_changed__project_page__custom_iso_disk_name_entry)
 
+    entry = model.builder.get_object('project_page__custom_iso_release_notes_url_entry')
+    entry.handler_block_by_func(on_changed__project_page__custom_iso_release_notes_url_entry)
+
 
 def unblock_custom_handlers():
     """
@@ -1165,6 +1219,9 @@ def unblock_custom_handlers():
 
     entry = model.builder.get_object('project_page__custom_iso_disk_name_entry')
     entry.handler_unblock_by_func(on_changed__project_page__custom_iso_disk_name_entry)
+
+    entry = model.builder.get_object('project_page__custom_iso_release_notes_url_entry')
+    entry.handler_unblock_by_func(on_changed__project_page__custom_iso_release_notes_url_entry)
 
 
 ########################################################################
@@ -1271,6 +1328,19 @@ def on_changed__project_page__original_iso_disk_name_entry(widget):
     displayer.update_status('project_page__original_iso_disk_name', original.iso_disk_name.status)
     displayer.set_entry_error('project_page__original_iso_disk_name_entry', original.iso_disk_name.status == ERROR)
     displayer.update_label('project_page__original_iso_disk_name_message', original.iso_disk_name.message)
+
+    validate_page()
+
+
+def on_changed__project_page__original_iso_release_notes_url_entry(widget):
+
+    logger.log_label('Original iso release notes url changed')
+
+    original.iso_release_notes_url.value = widget.get_text()
+
+    displayer.update_status('project_page__original_iso_release_notes_url', original.iso_release_notes_url.status)
+    displayer.set_entry_error('project_page__original_iso_release_notes_url_entry', original.iso_release_notes_url.status == ERROR)
+    displayer.update_label('project_page__original_iso_release_notes_url_message', original.iso_release_notes_url.message)
 
     validate_page()
 
@@ -1449,6 +1519,19 @@ def on_changed__project_page__custom_iso_disk_name_entry(widget):
     validate_page()
 
 
+def on_changed__project_page__custom_iso_release_notes_url_entry(widget):
+
+    logger.log_label('Custom iso release notes url changed')
+
+    custom.iso_release_notes_url.value = widget.get_text()
+
+    displayer.update_status('project_page__custom_iso_release_notes_url', custom.iso_release_notes_url.status)
+    displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', custom.iso_release_notes_url.status == ERROR)
+    displayer.update_label('project_page__custom_iso_release_notes_url_message', custom.iso_release_notes_url.message)
+
+    validate_page()
+
+
 ########################################################################
 # Validation Functions
 ########################################################################
@@ -1523,6 +1606,7 @@ def set_sensitive_original_section(is_valid):
     displayer.set_sensitive('project_page__original_iso_volume_id_entry', is_valid)
     displayer.set_sensitive('project_page__original_iso_release_name_entry', is_valid)
     displayer.set_sensitive('project_page__original_iso_disk_name_entry', is_valid)
+    displayer.set_sensitive('project_page__original_iso_release_notes_url_entry', is_valid)
 
 
 #-----------------------------------------------------------------------
@@ -1544,6 +1628,7 @@ def set_editable_custom_section(is_valid):
     displayer.set_entry_editable('project_page__custom_iso_volume_id_entry', is_valid)
     displayer.set_entry_editable('project_page__custom_iso_release_name_entry', is_valid)
     displayer.set_entry_editable('project_page__custom_iso_disk_name_entry', is_valid)
+    displayer.set_entry_editable('project_page__custom_iso_release_notes_url_entry', is_valid)
 
 
 def set_sensitive_custom_section(is_valid):
@@ -1559,6 +1644,7 @@ def set_sensitive_custom_section(is_valid):
     displayer.set_sensitive('project_page__custom_iso_volume_id_entry', is_valid)
     displayer.set_sensitive('project_page__custom_iso_release_name_entry', is_valid)
     displayer.set_sensitive('project_page__custom_iso_disk_name_entry', is_valid)
+    displayer.set_sensitive('project_page__custom_iso_release_notes_url_entry', is_valid)
 
 
 def validate_custom_iso_undo_button():
@@ -1689,7 +1775,7 @@ def validate_original_iso_directory(fields):
         if is_valid:
             message = None
         else:
-            message = 'Error. Directory is a required field.'
+            message = 'Error. The original ISO directory is required.'
     return is_valid, status, message
 
 
@@ -1706,7 +1792,7 @@ def validate_original_iso_volume_id(fields):
             # message = '%s of 32 characters left.' % (32 - len(fields.iso_volume_id.value))
             message = None
         else:
-            message = 'Error. Volume id is a required field.'
+            message = 'Error. The original volume ID is required.'
     return is_valid, status, message
 
 
@@ -1740,7 +1826,25 @@ def validate_original_iso_disk_name(fields):
         if is_valid:
             message = None
         else:
-            message = 'The original disk name not available.'
+            message = 'The original disk name is not available.'
+        # Set True because this is an optional field.
+        is_valid = True
+    return is_valid, status, message
+
+
+def validate_original_iso_release_notes_url(fields):
+
+    if not fields.iso_filename.is_valid:
+        is_valid = False
+        message = None
+        status = BLANK
+    else:
+        is_valid = bool(fields.iso_release_notes_url.value)
+        status = OK if is_valid else OPTIONAL
+        if is_valid:
+            message = None
+        else:
+            message = 'The original release URL is not available.'
         # Set True because this is an optional field.
         is_valid = True
     return is_valid, status, message
@@ -1763,7 +1867,7 @@ def validate_custom_iso_version_number(fields):
         if is_valid:
             message = None
         else:
-            message = 'Version is an optional field.'
+            message = 'Version is optional.'
         # Set True because this is an optional field.
         is_valid = True
     return is_valid, status, message
@@ -1781,7 +1885,7 @@ def validate_custom_iso_filename(fields):
         if is_valid:
             message = None
         else:
-            message = 'Error. Filename is a required field.'
+            message = 'Error. Filename is required.'
     return is_valid, status, message
 
 
@@ -1808,7 +1912,7 @@ def validate_custom_iso_directory(fields):
     else:
         is_valid = False
         status = ERROR
-        message = 'Error. Directory is a required field.'
+        message = 'Error. Directory is required.'
     return is_valid, status, message
 
 
@@ -1824,7 +1928,7 @@ def validate_custom_iso_volume_id(fields):
         if is_valid:
             message = '%s of 32 characters left.' % (32 - len(fields.iso_volume_id.value))
         else:
-            message = 'Error. Volume id is a required field.'
+            message = 'Error. Volume ID is required.'
     return is_valid, status, message
 
 
@@ -1840,7 +1944,7 @@ def validate_custom_iso_release_name(fields):
         if is_valid:
             message = None
         else:
-            message = 'Release is an optional field.'
+            message = 'Release is optional.'
         # Set True because this is an optional field.
         is_valid = True
     return is_valid, status, message
@@ -1858,5 +1962,71 @@ def validate_custom_iso_disk_name(fields):
         if is_valid:
             message = None
         else:
-            message = 'Error. Disk name is a required field.'
+            message = 'Error. Disk name is required.'
     return is_valid, status, message
+
+
+def validate_custom_iso_release_notes_url(fields):
+
+    if not original or not original.iso_filename.is_valid:
+        is_valid = False
+        message = None
+        status = BLANK
+    elif bool(fields.iso_release_notes_url.value):
+        is_valid = is_url(fields.iso_release_notes_url.value)
+        if is_valid:
+            message = None
+            status = OK
+        else:
+            message = 'Error. Invalid URL format.'
+            status = ERROR
+    else:
+        # Set True because this is an optional field.
+        is_valid = True
+        message = 'Release URL is optional.'
+        status = OPTIONAL
+    return is_valid, status, message
+
+
+from urllib.parse import urlparse
+
+
+def is_url(url):
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
+
+
+########################################################################
+# Save Functions
+########################################################################
+
+
+def save_model_values():
+
+    configuration.save()
+    save_iso_release_notes_url()
+
+
+def save_iso_release_notes_url():
+
+    logger.log_label('Update the custom iso release notes url')
+
+    directory = join(model.project.custom_disk_directory, '.disk')
+    filepath = join(directory, 'release_notes_url')
+    try:
+        makedirs(directory, exist_ok=True)
+        logger.log_value('Write the custom iso release notes url to %s.', filepath)
+        logger.log_value('The custom iso release notes url is', model.custom.iso_release_notes_url)
+        with open(filepath, 'w') as file:
+            file.write('%s' % model.custom.iso_release_notes_url)
+    except Exception as exception:
+        logger.log_value('Unable to write the custom iso release notes url to %s.', filepath)
+        logger.log_value('The exception is', exception)
+        is_error = True
+    else:
+        is_error = False
+
+    return is_error

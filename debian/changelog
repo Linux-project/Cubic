@@ -1,4 +1,11 @@
-cubic (2020.09) focal; urgency=low
+cubic (2020.10) focal; urgency=low
+
+  * Issues fixed in version 2020.10-33:
+
+  * Fixed #1898749, Pop!_OS expects vmlinuz on the iso to have the *.efi
+    extension.
+
+  * Fixed Bug #1898763, Add the ability to update the release notes url.
 
   * Issues fixed in version 2020.09-32:
 
@@ -168,4 +175,4 @@ cubic (2020.09) focal; urgency=low
   - Added open file buttons on the Migrate, Delete, and Finish pages.
   - Updated package dependencies for Ubuntu 18.04 Bionic and above.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 27 Sep 2020 09:32:13 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 09 Oct 2020 18:14:06 -0400

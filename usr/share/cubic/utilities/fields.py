@@ -198,8 +198,8 @@ class IsoField:
                 # In order to ensure that the validator is not invoked
                 # during IsoField.__init__() using an incomplete
                 # IsoFields object, check if the last value,
-                # iso_disk_name, has been assigned.
-                if self.validator and self.iso_fields.iso_disk_name:
+                # iso_release_notes_url, has been assigned.
+                if self.validator and self.iso_fields.iso_release_notes_url:
                     # If a validator is available, validate the fields.
                     is_valid, status, message = self.validator(self.iso_fields)
                     self.is_valid = is_valid
@@ -243,8 +243,8 @@ class IsoField:
                 # In order to ensure that the validator is not invoked
                 # during IsoField.__init__() using an incomplete
                 # IsoFields object, check if the last value,
-                # iso_disk_name, has been assigned.
-                if self.validator and self.iso_fields.iso_disk_name:
+                # iso_release_notes_url, has been assigned.
+                if self.validator and self.iso_fields.iso_release_notes_url:
                     # if is_log:
                     #     logger.log_value(
                     #         'Set %s %s %s' %
@@ -297,6 +297,7 @@ class IsoFields:
             super().__setattr__('iso_volume_id', IsoField(iso_fields.iso_volume_id, self))
             super().__setattr__('iso_release_name', IsoField(iso_fields.iso_release_name, self))
             super().__setattr__('iso_disk_name', IsoField(iso_fields.iso_disk_name, self))
+            super().__setattr__('iso_release_notes_url', IsoField(iso_fields.iso_release_notes_url, self))
         else:
             super().__setattr__('iso_version_number', IsoField('iso_version_number', self))
             super().__setattr__('iso_filename', IsoField('iso_filename', self))
@@ -304,6 +305,7 @@ class IsoFields:
             super().__setattr__('iso_volume_id', IsoField('iso_volume_id', self))
             super().__setattr__('iso_release_name', IsoField('iso_release_name', self))
             super().__setattr__('iso_disk_name', IsoField('iso_disk_name', self))
+            super().__setattr__('iso_release_notes_url', IsoField('iso_release_notes_url', self))
 
     def __eq__(self, iso_fields):
         """
@@ -316,16 +318,18 @@ class IsoFields:
         - iso_volume_id.value
         - iso_release_name.value
         - iso_disk_name.value
+        - iso_release_notes_url.value
         """
 
         return (
-            iso_fields                                                   \
-            and self.iso_version_number == iso_fields.iso_version_number \
-            and self.iso_filename == iso_fields.iso_filename             \
-            and self.iso_directory == iso_fields.iso_directory           \
-            and self.iso_volume_id == iso_fields.iso_volume_id           \
-            and self.iso_release_name == iso_fields.iso_release_name     \
-            and self.iso_disk_name == iso_fields.iso_disk_name)
+            iso_fields                                                          \
+            and self.iso_version_number == iso_fields.iso_version_number        \
+            and self.iso_filename == iso_fields.iso_filename                    \
+            and self.iso_directory == iso_fields.iso_directory                  \
+            and self.iso_volume_id == iso_fields.iso_volume_id                  \
+            and self.iso_release_name == iso_fields.iso_release_name            \
+            and self.iso_disk_name == iso_fields.iso_disk_name                  \
+            and self.iso_release_notes_url == iso_fields.iso_release_notes_url)
 
     def __getattr__(self, key):
         """
@@ -334,12 +338,13 @@ class IsoFields:
 
         if key == 'is_valid':
             return (
-                self.iso_version_number.is_valid   \
-                and self.iso_filename.is_valid     \
-                and self.iso_directory.is_valid    \
-                and self.iso_volume_id.is_valid    \
-                and self.iso_release_name.is_valid \
-                and self.iso_disk_name.is_valid)
+                self.iso_version_number.is_valid         \
+                and self.iso_filename.is_valid           \
+                and self.iso_directory.is_valid          \
+                and self.iso_volume_id.is_valid          \
+                and self.iso_release_name.is_valid       \
+                and self.iso_disk_name.is_valid          \
+                and self.iso_release_notes_url.is_valid)
 
     def __repr__(self):
         """

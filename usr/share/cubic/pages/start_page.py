@@ -384,6 +384,7 @@ def reset_model():
     model.original.iso_volume_id = None
     model.original.iso_release_name = None
     model.original.iso_disk_name = None
+    model.original.iso_release_notes_url = None
 
     model.custom.iso_version_number = None
     model.custom.iso_filename = None
@@ -391,6 +392,7 @@ def reset_model():
     model.custom.iso_volume_id = None
     model.custom.iso_release_name = None
     model.custom.iso_disk_name = None
+    model.custom.iso_release_notes_url = None
 
     model.status.is_success_copy = False
     model.status.is_success_extract = False
