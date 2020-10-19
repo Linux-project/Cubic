@@ -1211,7 +1211,7 @@ def create_boot_configuration_list(kernel_details_list):
     return filepaths
 
 
-def prepare_boot_configurations_ORIGINAL(boot_configuration_list, kernel_details_list):
+def prepare_boot_configurations_ORIGINAL_1(boot_configuration_list, kernel_details_list):
 
     # Get the selected kernel.
     for selected_index, kernel_details in enumerate(kernel_details_list):
@@ -1261,7 +1261,7 @@ def prepare_boot_configurations_ORIGINAL(boot_configuration_list, kernel_details
          replacement_text_5))
 
 
-def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
+def prepare_boot_configurations_ORIGINAL_2(boot_configuration_list, kernel_details_list):
 
     # The contents of the boot configurations files is also replaced in
     # options_page.on_toggled__options_page__kernels_radio_button().
@@ -1298,6 +1298,72 @@ def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
     # Search and replace text.
     stack_name = 'options_page__boot_configuration_tab__stack'
     displayer.add_to_stack(stack_name, boot_configuration_list, (search_text_1, replacement_text_1), (search_text_2, replacement_text_2), (search_text_3, replacement_text_3))
+
+
+def prepare_boot_configurations(boot_configuration_list, kernel_details_list):
+
+    # The contents of the boot configurations files is also replaced in
+    # options_page.on_toggled__options_page__kernels_radio_button().
+
+    # 0: version_name
+    # 1: vmlinuz_filename
+    # 2: new_vmlinuz_filename
+    # 3: initrd_filename
+    # 4: new_initrd_filename
+    # 5: directory
+    # 6: note
+    # 7: is_selected
+
+    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
+
+    # Get the selected kernel.
+    for selected_index, kernel_details in enumerate(kernel_details_list):
+        if kernel_details['is_selected']: break
+    else: selected_index = 0
+
+    logger.log_value('The selected kernel is index number', selected_index)
+
+    # Remove all existing boot=casper; this will be added below.
+    search_text_1 = r'\s*boot=casper\s*'
+    replacement_text_1 = r' '
+
+    # Handle files like /boot/grub/grub.cfg and /boot/grub/loopback.cfg
+    # that have /casper/vmlinuz and boot=casper on the same line.
+
+    # linux + /casper/vmlinuz + boot=casper
+    search_text_2 = r'^(\s*linux\s+.*)/%s\S*/vmlinuz\S*' % model.status.casper_directory
+    replacement_text_2 = r'\1/%s/%s boot=casper' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_filename'])
+
+    # Handle files like /isolinux/txt.cfg
+    # that have /casper/vmlinuz and boot=casper on separate lines.
+
+    # kernel + /casper/vmlinuz
+    search_text_3 = r'^(\s*kernel\s+.*)/%s\S*/vmlinuz\S*' % model.status.casper_directory
+    replacement_text_3 = r'\1/%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_filename'])
+
+    # append + boot=casper
+    search_text_4 = r'(^\s*append\s+)(.*)'
+    replacement_text_4 = r'\1boot=casper \2'
+
+    # initrd
+    search_text_5 = r'%s\S*/initrd\S*' % model.status.casper_directory
+    replacement_text_5 = r'%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_initrd_filename'])
+
+    # Search and replace text.
+    stack_name = 'options_page__boot_configuration_tab__stack'
+    displayer.add_to_stack(
+        stack_name,
+        boot_configuration_list,
+        (search_text_1,
+         replacement_text_1),
+        (search_text_2,
+         replacement_text_2),
+        (search_text_3,
+         replacement_text_3),
+        (search_text_4,
+         replacement_text_4),
+        (search_text_5,
+         replacement_text_5))
 
 
 ########################################################################
