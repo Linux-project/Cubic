@@ -99,11 +99,9 @@ try:
     # File Choosers
     #-------------------------------------------------------------------
 
-    # Workaround for Bug #1887219: Project directory selection not
-    # working in Elementary OS.
-    distribution = constructor.get_distribution()
-    logger.log_value('Distribution', distribution)
-    is_elementary_based = constructor.os_is_elementary_based()
+    # Workaround for Bug #1887219, "Project directory selection not
+    # working in Elementary OS."
+    is_elementary_based = constructor.os_is_distribution('elementary')
     if is_elementary_based:
         logger.log_value('The OS is elementary based', 'Use elementary style file choosers')
         model.builder.add_from_file('file_choosers/directory_chooser.elementary.ui')

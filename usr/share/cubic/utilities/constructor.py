@@ -70,13 +70,18 @@ def get_plural(singular_text, plural_text, count):
     return singular_text if count == 1 else plural_text
 
 
-def get_distribution():
+def get_os_distribution(root_directory='/'):
     """
     Read the value of ID from '/etc/os-release'
+    Arguments:
+    root_directory - The root directory of the OS.
+                     May be '/' to get the distribution of the host OS.
+                     May be model.project.custom_disk_directory to get
+                     the distribution of the custom OS.
     """
 
     distribution = None
-    file_path = '/etc/os-release'
+    file_path = join(root_directory, 'etc/os-release')
     if exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
@@ -89,24 +94,44 @@ def get_distribution():
     return distribution
 
 
-def os_is_elementary_based():
+def os_is_distribution(distribution, root_directory='/'):
     """
-    Read the value of ID or ID_LIKE from '/etc/os-release'
+    Read the value of ID from '/etc/os-release'
+    Arguments:
+    root_directory - The root directory of the OS.
+                     May be '/' to get the distribution of the host OS.
+                     May be model.project.custom_root_directory to get
+                     the distribution of the custom OS.
+    distribution   - The distribution to check, for example, 'pop' for
+                     Pop!_OS or 'elementary' for Elementary.
     """
-
-    is_elementary_based = False
-    file_path = '/etc/os-release'
+    is_distribution = False
+    distribution = distribution.lower()
+    file_path = join(root_directory, 'etc/os-release')
     if exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
                 key, value = line.split('=')
                 key = key.upper() if key else None
                 value = value.rstrip().lower() if value else None
-                if (key == 'ID' or key == 'ID_LIKE') and 'elementary' in value:
-                    is_elementary_based = True
-                    break
+                if key == 'ID':
+                    if root_directory == '/':
+                        logger.log_value('The host OS distribution is', value)
+                    else:
+                        logger.log_value('The custom OS distribution is', value)
+                    if distribution in value:
+                        is_distribution = True
+                        break
+                elif key == 'ID_LIKE':
+                    if root_directory == '/':
+                        logger.log_value('The host OS distribution like is', value)
+                    else:
+                        logger.log_value('The custom OS distribution like is', value)
+                    if distribution in value:
+                        is_distribution = True
+                        break
 
-    return is_elementary_based
+    return is_distribution
 
 
 def get_kernel_version():

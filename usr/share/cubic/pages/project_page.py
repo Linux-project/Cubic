@@ -901,7 +901,7 @@ def initialize_original_from_model():
     is set to True to compensate for the unregistered validator.
     """
 
-    logger.log_label('Initialize the original fields from the mode')
+    logger.log_label('Initialize the original fields from the model')
 
     fields = IsoFields('original')
 
@@ -2018,12 +2018,12 @@ def save_iso_release_notes_url():
     filepath = join(directory, 'release_notes_url')
     try:
         makedirs(directory, exist_ok=True)
-        logger.log_value('Write the custom iso release notes url to %s.', filepath)
+        logger.log_value('Write the custom iso release notes url to', filepath)
         logger.log_value('The custom iso release notes url is', model.custom.iso_release_notes_url)
         with open(filepath, 'w') as file:
             file.write('%s' % model.custom.iso_release_notes_url)
     except Exception as exception:
-        logger.log_value('Unable to write the custom iso release notes url to %s.', filepath)
+        logger.log_value('Unable to write the custom iso release notes url to', filepath)
         logger.log_value('The exception is', exception)
         is_error = True
     else:

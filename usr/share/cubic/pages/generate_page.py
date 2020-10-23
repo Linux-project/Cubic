@@ -449,13 +449,21 @@ def copy_preseed_and_boot_and_kernel_files():
     logger.log_value('The exit status, signal status is', '%s, %s' % (exitstatus, signalstatus))
 
     # Create a symlink from vmlinuz.eft to vmlinuz.
-    source_filename = target_filename
-    target_filename = 'vmlinuz.efi'
-    target_filepath = join(target_directory, target_filename)
-    if source_filename != target_filename and not exists(target_filepath):
-        logger.log_value('Create symlink', 'from %s to %s' % (source_filename, target_filename))
-        add_message('Create symlink %s to %s' % (target_filename, source_filename))
-        symlink(source_filename, target_filepath)
+    # Workaround for Bug #1900917, "Kernel Panic on Boot After
+    # Installation (No initrd in grub.cfg)."
+    # Reference Bug #1898749, "Pop!_OS expects vmlinuz on the iso to
+    # have the *.efi extension."
+    # Reference Bug #1895770, "Pop!_OS expects the initramfs bootstrap
+    # file to be explicitly named "initrd.gz"
+    is_pop_os_based = constructor.os_is_distribution('pop', model.project.custom_root_directory)
+    if is_pop_os_based:
+        source_filename = target_filename
+        target_filename = 'vmlinuz.efi'
+        target_filepath = join(target_directory, target_filename)
+        if source_filename != target_filename and not exists(target_filepath):
+            logger.log_value('For Pop!_OS, create symlink', 'from %s to %s' % (source_filename, target_filename))
+            add_message('For Pop!_OS, create symlink %s to %s' % (target_filename, source_filename))
+            symlink(source_filename, target_filepath)
 
     # TODO: Remove the following eight lines in a future release.
     #       As of version 2020.06-28, the copy-path command will not use
