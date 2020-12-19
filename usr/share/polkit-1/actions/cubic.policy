@@ -47,7 +47,7 @@
       <allow_inactive>yes</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/delete</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/delete-path</annotate>
   </action>
   <action id="directory-usage">
     <description>Get directory usage (used, available, and used %) in bytes for Cubic.</description>
@@ -85,19 +85,7 @@
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/file-size</annotate>
   </action>
-  <action id="migrate-directory">
-    <description>Migrate a directory for Cubic.</description>
-    <message>Enter the administrator password to migrate a directory for Cubic.</message>
-    <icon_name>cubic</icon_name>
-    <defaults>
-      <!-- auth_admin or yes -->
-      <allow_any>yes</allow_any>
-      <allow_inactive>yes</allow_inactive>
-      <allow_active>yes</allow_active>
-    </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/migrate-directory</annotate>
-  </action>
-  <action id="mount">
+  <action id="mount-iso">
     <description>Mount an ISO for Cubic.</description>
     <message>Enter the administrator password to mount an ISO for Cubic.</message>
     <icon_name>cubic</icon_name>
@@ -107,9 +95,33 @@
       <allow_inactive>yes</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/mount</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/mount-iso</annotate>
   </action>
-  <action id="start-virtual-environment">
+  <action id="move-path">
+    <description>Move a file or directory for Cubic.</description>
+    <message>Enter the administrator password to move a file or directory for Cubic.</message>
+    <icon_name>cubic</icon_name>
+    <defaults>
+      <!-- auth_admin or yes -->
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/move-path</annotate>
+  </action>
+  <action id="replace-text">
+    <description>Replace text in a file for Cubic.</description>
+    <message>Enter the administrator password to replace text in a file for Cubic.</message>
+    <icon_name>cubic</icon_name>
+    <defaults>
+      <!-- auth_admin or yes -->
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/replace-text</annotate>
+  </action>
+  <action id="start-console">
     <description>Start the virtual environment for Cubic.</description>
     <message>Enter the administrator password to start the virtual environment for Cubic.</message>
     <icon_name>cubic</icon_name>
@@ -119,9 +131,9 @@
       <allow_inactive>yes</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/start-virtual-environment</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/start-console</annotate>
   </action>
-  <action id="stop-virtual-environment">
+  <action id="stop-console">
     <description>Stop the virtual environment for Cubic.</description>
     <message>Enter the administrator password to stop the virtual environment for Cubic.</message>
     <icon_name>cubic</icon_name>
@@ -131,9 +143,9 @@
       <allow_inactive>yes</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/stop-virtual-environment</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/stop-console</annotate>
   </action>
-  <action id="terminate-process">
+  <action id="stop-process">
     <description>Terminate a process for Cubic.</description>
     <message>Enter the administrator password to terminate a process for Cubic.</message>
     <icon_name>cubic</icon_name>
@@ -143,7 +155,7 @@
       <allow_inactive>yes</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/terminate-process</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/stop-process</annotate>
   </action>
   <action id="test-command">
     <description>Run the test command for Cubic.</description>
@@ -157,7 +169,7 @@
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/test-command</annotate>
   </action>
-  <action id="unmount">
+  <action id="unmount-iso">
     <description>Unmount an ISO for Cubic.</description>
     <message>Enter the administrator password to unmount an ISO for Cubic.</message>
     <icon_name>cubic</icon_name>
@@ -167,6 +179,6 @@
       <allow_inactive>yes</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/unmount</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cubic/commands/unmount-iso</annotate>
   </action>
 </policyconfig>

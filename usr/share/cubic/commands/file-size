@@ -35,11 +35,11 @@
 
 program=${0}
 number_arguments=${#}
-filepath=${1}
+file_path=${1}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
-# echo "file path................... $filepath"
+# echo "file path................... $file_path"
 
 ########################################################################
 # Command
@@ -48,6 +48,6 @@ filepath=${1}
 # Do not echo the command because the output is parsed. The expected
 # output format is: "<size>    <path>"
 
-# du --block-size=1 --summarize --one-file-system "${filepath}"
-du --block-size=1 --summarize "${filepath}"
+# du --block-size=1 --summarize --one-file-system "${file_path}"
+du --block-size=1 --summarize "${file_path}"
 

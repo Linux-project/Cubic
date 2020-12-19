@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 ########################################################################
 #                                                                      #
 # displayer.py                                                         #
@@ -6,6 +7,7 @@
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
 ########################################################################
+
 ########################################################################
 #                                                                      #
 # This file is part of Cubic - Custom Ubuntu ISO Creator.              #
@@ -25,6 +27,16 @@
 #                                                                      #
 ########################################################################
 
+########################################################################
+# References
+########################################################################
+
+# N/A
+
+########################################################################
+# Imports
+########################################################################
+
 import gi
 
 gi.require_version('Gdk', '3.0')
@@ -36,8 +48,8 @@ try:
 except ValueError:
     gi.require_version('GtkSource', '3.0')
 
-# The following is necessary to avoid the error...
-# "Gtk-ERROR **: failed to add UI: source_view.ui:39:1 Invalid object type 'GtkSourceView'"
+# The following is necessary to avoid the error: "Gtk-ERROR **: failed
+# to add UI: source_view.ui:39:1 Invalid object type 'GtkSourceView'"
 from gi.repository.GtkSource import View
 
 from gi.repository import Gio
@@ -45,7 +57,6 @@ from gi.repository import GLib
 from gi.repository import Gtk
 from gi.repository import GtkSource
 from gi.repository import Pango
-from os.path import exists, relpath
 
 from constants import OK, ERROR, BULLET, PROCESSING
 from utilities import logger
@@ -54,41 +65,32 @@ from utilities import model
 logger.log_value('Using GtkSource version', GtkSource._version)
 
 ########################################################################
-# References
+# Global Variables & Constants
 ########################################################################
 
-# N/A
-
-########################################################################
-# Globals & Constants
-########################################################################
-
-# Icons corresponding to status can be referenced using the constants:
-#     OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
-#
-# Update icon caches after changing icons.
-#     $ sudo gtk-update-icon-cache /usr/share/icons/hicolor/
-#     $ grep -r cubic-round /usr/share/icons/hicolor/*
-
+# Status icons may be referenced using the constants:
+# OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 icons = ['cubic-ok-symbolic', 'cubic-error-symbolic', 'cubic-optional-symbolic', 'cubic-bullet-symbolic', 'cubic-blank-symbolic', 'cubic-blank-symbolic']
 
-# Get the font.
-# schema_source = Gio.SettingsSchemaSource.get_default()
-# schemas, _ = schema_source.list_schemas(True)
-# if 'org.gnome.desktop.interface' in schemas:
+# Get the system mono-spaced font.
 settings = Gio.Settings.new('org.gnome.desktop.interface')
 font_name = settings.get_string('monospace-font-name')
-font = Pango.FontDescription(font_name)
+MONOSPACE_FONT = Pango.FontDescription(font_name)
 
-# Get the style scheme.
-scheme_name = 'tango'
-style_scheme_manager = GtkSource.StyleSchemeManager()
-style_scheme = style_scheme_manager.get_scheme(scheme_name)
-
-# Get the language.
+# Get the source view language for ini files.
 language_name = 'ini'
 language_name_manager = GtkSource.LanguageManager()
-language = language_name_manager.get_language(language_name)
+SOURCE_LANGUAGE = language_name_manager.get_language(language_name)
+
+# Get the source view style for Tango.
+scheme_name = 'tango'
+style_scheme_manager = GtkSource.StyleSchemeManager()
+SOURCE_STYLE_SCHEME = style_scheme_manager.get_scheme(scheme_name)
+
+# Transition Effects
+SLIDE_NONE = Gtk.StackTransitionType.NONE
+SLIDE_LEFT = Gtk.StackTransitionType.SLIDE_LEFT
+SLIDE_RIGHT = Gtk.StackTransitionType.SLIDE_RIGHT
 
 ########################################################################
 # General Functions
@@ -114,19 +116,23 @@ def main_quit():
     GLib.idle_add(Gtk.main_quit)
 
 
-def transition(old_page, new_page):
+def transition(old_page, new_page, effect):
+    """
+    Transition the to a new page in the Gtk.Stack using the specified
+    Gtk.StackTransitionType effect. All pages must have the 'visible'
+    property set to True in the *.ui file.
+    """
 
-    if old_page != new_page and new_page:
-        # Hide the current page.
+    if old_page != new_page:
+        # Get the Gtk.Stack.
+        pages = model.builder.get_object('pages')
         if old_page:
+            # Print a message.
             logger.log_value('Hide old page', old_page.name.replace('_', ' '))
-            grid = model.builder.get_object(old_page.name)
-            GLib.idle_add(Gtk.Grid.set_visible, grid, False)
-        # Show the next page
         if new_page:
+            # Show the next page
             logger.log_value('Show new page', new_page.name.replace('_', ' '))
-            grid = model.builder.get_object(new_page.name)
-            GLib.idle_add(Gtk.Grid.set_visible, grid, True)
+            GLib.idle_add(Gtk.Stack.set_visible_child_full, pages, new_page.name, effect)
     else:
         # Stay on the current page.
         logger.log_value('Stay on page', old_page.name.replace('_', ' '))
@@ -220,14 +226,28 @@ def update_button_style(name, style):
 
 
 ########################################################################
-# Show / Hide Widget Functions
+# Container Functions
 ########################################################################
 
 
-def set_column_visible(widget_name, is_visible):
+def attach(grid, widget, x, y, width, height):
 
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.TreeViewColumn.set_visible, widget, is_visible)
+    GLib.idle_add(Gtk.Grid.attach, grid, widget, x, y, width, height)
+
+
+def add_named(stack, page, name):
+
+    GLib.idle_add(Gtk.Stack.add_named, stack, page, name)
+
+
+def set_visible_child(stack, page):
+
+    GLib.idle_add(Gtk.Stack.set_visible_child, stack, page)
+
+
+########################################################################
+# Show / Hide Functions
+########################################################################
 
 
 def show(widget_name):
@@ -260,6 +280,12 @@ def set_solid(widget_name, is_solid):
     GLib.idle_add(Gtk.Widget.set_opacity, widget, is_solid)
 
 
+def set_opacity(widget_name, percent):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.Widget.set_opacity, widget, percent / 100.0)
+
+
 def set_sensitive(widget_name, is_sensitive):
 
     widget = model.builder.get_object(widget_name)
@@ -275,7 +301,7 @@ def update_label(label_name, text):
 
     # logger.log_value('Update label %s' % label_name, text)
     label = model.builder.get_object(label_name)
-    GLib.idle_add(Gtk.Label.set_text, label, text)
+    GLib.idle_add(Gtk.Label.set_markup, label, text)
 
 
 ########################################################################
@@ -314,23 +340,23 @@ def set_entry_editable(widget_name, is_editable):
 ########################################################################
 
 
-def show_filechooser(widget_name, filepath):
+def show_file_chooser(widget_name, file_path):
 
-    filechooser = model.builder.get_object(widget_name)
-    GLib.idle_add(_show_filechooser, filechooser, filepath)
+    file_chooser = model.builder.get_object(widget_name)
+    GLib.idle_add(_show_file_chooser, file_chooser, file_path)
 
 
-def _show_filechooser(filechooser, filepath):
+def _show_file_chooser(file_chooser, file_path):
     """
     Only invoke this function using GLib.idle_add().
     """
 
     # If the file does not exist, set_filename() will open the parent
-    # directory and not select any file, but select_filename() will
+    # directory and not select any file, but select_file_name() will
     # will open the parent directory and select the next file in the
     # list.
-    filechooser.set_filename(filepath)
-    filechooser.show_all()
+    file_chooser.set_filename(file_path)
+    file_chooser.show_all()
 
 
 ########################################################################
@@ -436,6 +462,12 @@ def update_check_button_label(name, label):
     GLib.idle_add(Gtk.CheckButton.set_label, check_button, label)
 
 
+def activate_radio_button(radio_button_name, is_active):
+
+    radio_button = model.builder.get_object(radio_button_name)
+    GLib.idle_add(Gtk.RadioButton.set_active, radio_button, is_active)
+
+
 ########################################################################
 # Menu Functions
 ########################################################################
@@ -496,8 +528,14 @@ def scroll_view_port_to_bottom(view_port_name):
 
 
 ########################################################################
-# Tree View and List Store Functions
+# Tree View Functions
 ########################################################################
+
+
+def set_column_visible(widget_name, is_visible):
+
+    widget = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.TreeViewColumn.set_visible, widget, is_visible)
 
 
 def scroll_to_tree_view_row(tree_view_name, row_number):
@@ -514,6 +552,11 @@ def select_tree_view_row(tree_view_name, row_number):
     GLib.idle_add(Gtk.TreeView.set_cursor, tree_view, tree_path, None, False)
 
 
+########################################################################
+# List Store Functions
+########################################################################
+
+
 def update_list_store(list_store_name, data_list):
 
     list_store = model.builder.get_object(list_store_name)
@@ -527,7 +570,7 @@ def _update_list_store_rows(list_store, data_list):
 
     list_store.clear()
     for number, data in enumerate(data_list):
-        # logger.log_value('%i. Adding an item to the list' % (number+1), data)
+        # logger.log_value('%i. Adding an item to the list' % (number + 1), data)
         list_store.append(data)
 
 
@@ -543,266 +586,3 @@ def _update_list_store_progress_bar_percent(list_store, path, percent):
     """
 
     list_store[path][0] = percent
-
-
-########################################################################
-# Stack Functions
-########################################################################
-
-
-def add_to_stack(stack_name, filepaths, *search_replace_tuples):
-
-    GLib.idle_add(_add_to_stack, stack_name, filepaths, *search_replace_tuples)
-
-
-# TODO: Some of this should happen on the Prepare Page.
-def _add_to_stack(stack_name, filepaths, *search_replace_tuples):
-    """
-    Only invoke this function using GLib.idle_add().
-    The argument *search_replace_tuples is an optional list of tuples.
-    Each tuple must contain a search_text and a replacement_text.
-    """
-
-    stack = model.builder.get_object(stack_name)
-    # Remove all items from the stack.
-    logger.log_value('Remove all items from the stack', stack_name)
-    scrolled_windows = stack.get_children()
-    for scrolled_window in scrolled_windows:
-        stack.remove(scrolled_window)
-    # Prepare search settings.
-    search_settings = GtkSource.SearchSettings()
-    search_settings.set_regex_enabled(True)
-    search_settings.set_wrap_around(True)
-    # Add new items to the stack.
-    logger.log_value('Add new items to stack', stack_name)
-    for filepath in filepaths:
-        title = '/%s' % relpath(filepath, model.project.custom_disk_directory)
-        if exists(filepath):
-            logger.log_value('Add %s from filepath' % title, filepath)
-            # Add a new scrolled window to the stack.
-            scrolled_window = add_source_view_to_stack(stack, title, filepath)
-            # Read the file, and add it to the source buffer.
-            # Get the source buffer.
-            source_view = scrolled_window.get_child()
-            source_buffer = source_view.get_buffer()
-            with open(filepath, 'r') as file:
-                data = file.read()
-                source_buffer.set_text(data)
-            # Optionally replace text.
-            for search_replace_tuple in search_replace_tuples:
-                search_text, replacement_text = search_replace_tuple
-                logger.log_value('Search and replace', '%s ⊳ %s' % (search_text, replacement_text))
-                search_settings.set_search_text(search_text)
-                search_context = GtkSource.SearchContext.new(source_buffer, search_settings)
-                replacement_count = search_context.replace_all(replacement_text, -1)
-                logger.log_value('Number of matches', replacement_count)
-        else:
-            logger.log_value('Skip adding %s because the file does not exist' % title, filepath)
-
-
-def replace_text_in_stack_buffer(stack_name, *search_replace_tuples):
-    """
-    This function blocks and does not use GLib.idle_add.
-    The argument *search_replace_tuples is an optional list of tuples.
-    Each tuple must contain a search_text and a replacement_text.
-    """
-
-    stack = model.builder.get_object(stack_name)
-    # TODO: Remove this line when 14.04 is no longer supported.
-    # Bypass this functionality for Ubuntu 14.04.
-    # Thsis is necessary because Gtk 3.10 in Ubuntu 14.04 does not support
-    # Gtk.Stack or Gtk.StackSidebar.
-    if not stack:
-        return
-    logger.log_value('Search and replace in stack', stack_name)
-    # Prepare search settings.
-    search_settings = GtkSource.SearchSettings()
-    search_settings.set_regex_enabled(True)
-    search_settings.set_wrap_around(True)
-    scrolled_windows = stack.get_children()
-    for scrolled_window in scrolled_windows:
-        source_view = scrolled_window.get_child()
-        source_buffer = source_view.get_buffer()
-        total_replacement_count = 0
-        for search_replace_tuple in search_replace_tuples:
-            search_text, replacement_text = search_replace_tuple
-            logger.log_value('Search and replace', '%s ⊳ %s' % (search_text, replacement_text))
-            search_settings.set_search_text(search_text)
-            search_context = GtkSource.SearchContext.new(source_buffer, search_settings)
-            replacement_count = search_context.replace_all(replacement_text, -1)
-            logger.log_value('Number of matches', replacement_count)
-            total_replacement_count += replacement_count
-    return total_replacement_count
-
-
-########################################################################
-# Source View Functions
-########################################################################
-
-
-# TODO: This should be called using idle add.
-def add_source_view_to_stack(stack, title, filepath):
-
-    # Create a new scrolled window.
-    builder_temp = Gtk.Builder.new_from_file('pages/source_view.ui')
-    scrolled_window = builder_temp.get_object('scrolled_window')
-    # Get the source buffer.
-    source_view = scrolled_window.get_child()
-    source_buffer = source_view.get_buffer()
-    # Set the font.
-    # settings = Gio.Settings.new('org.gnome.desktop.interface')
-    # font_name = settings.get_string('monospace-font-name')
-    # font = Pango.FontDescription(font_name)
-    logger.log_value('Set font', font_name)
-    source_view.override_font(font)
-    # Set the style scheme.
-    # scheme_name = 'tango'
-    # style_scheme_manager = GtkSource.StyleSchemeManager()
-    # style_scheme = style_scheme_manager.get_scheme(scheme_name)
-    logger.log_value('Set style scheme', scheme_name)
-    source_buffer.set_style_scheme(style_scheme)
-    # Set the style language.
-    # language_name = 'ini'
-    # language_name_manager = GtkSource.LanguageManager()
-    # language = language_name_manager.get_language(language_name)
-    logger.log_value('Set style language', language_name)
-    source_buffer.set_language(language)
-    # Add the new scrolled window to the stack.
-    stack.add_titled(scrolled_window, filepath, title)
-    return scrolled_window
-
-
-########################################################################
-# Unused Functions
-########################################################################
-
-
-def show_page(page):
-    """
-    This function is not used.
-    Show the next page.
-    """
-
-    logger.log_value('Show new page', page.name.replace('_', ' '))
-    grid = model.builder.get_object(page.name)
-    GLib.idle_add(Gtk.Grid.set_visible, grid, True)
-
-
-def show_spinner():
-    """
-    This function is not used.
-    """
-
-    grid = model.builder.get_object('pages')
-    GLib.idle_add(Gtk.Grid.set_sensitive, grid, False)
-    spinner = model.builder.get_object('window_spinner')
-    GLib.idle_add(Gtk.Spinner.start, spinner)
-    GLib.idle_add(Gtk.Spinner.set_visible, spinner, True)
-
-
-def hide_spinner():
-    """
-    This function is not used.
-    """
-
-    spinner = model.builder.get_object('window_spinner')
-    GLib.idle_add(Gtk.Spinner.set_visible, spinner, False)
-    GLib.idle_add(Gtk.Spinner.stop, spinner)
-    grid = model.builder.get_object('pages')
-    GLib.idle_add(Gtk.Grid.set_sensitive, grid, True)
-
-
-def activate_radio_button(radio_button_name, is_active):
-
-    radio_button = model.builder.get_object(radio_button_name)
-    GLib.idle_add(Gtk.RadioButton.set_active, radio_button, is_active)
-
-
-def get_list_box_row_widget(list_box_name, row_number):
-    """
-    This function is not used.
-    """
-
-    list_box = model.builder.get_object(list_box_name)
-    list_box_row = list_box.get_row_at_index(row_number)
-    child = list_box_row.get_children()[0]
-    return child
-
-
-def insert_list_box_row_label(list_box_name, row_number, text, additional_height=0):
-    """
-    This function is not used.
-    """
-
-    # Since label is not displayed, there is no need to call GLib.idle_add().
-    label = Gtk.Label(text)
-    label.set_halign(Gtk.Align.START)
-    label.set_visible(True)
-    preferred_height = label.get_preferred_height()[0]
-    label.set_size_request(-1, preferred_height + additional_height)
-    list_box = model.builder.get_object(list_box_name)
-    GLib.idle_add(Gtk.ListBox.insert, list_box, label, row_number)
-
-
-def insert_list_box_row_check_button(list_box_name, row_number, text, is_active, additional_height=0):
-    """
-    This function is not used.
-    """
-
-    # Since check button is not displayed, there is no need to call GLib.idle_add().
-    check_button = Gtk.check_button(text)
-    check_button.set_halign(Gtk.Align.START)
-    check_button.set_visible(True)
-    check_button.set_active(is_active)
-    preferred_height = check_button.get_preferred_height()[0]
-    check_button.set_size_request(-1, preferred_height + additional_height)
-    list_box = model.builder.get_object(list_box_name)
-    GLib.idle_add(Gtk.ListBox.insert, list_box, check_button, row_number)
-
-
-def get_list_box_row_count(list_box_name):
-    """
-    This function is not used.
-    """
-
-    list_box = model.builder.get_object(list_box_name)
-    return len(list_box.get_children())
-
-
-def select_list_box_row(list_box_name, row_number):
-    """
-    This function is not used.
-    """
-
-    list_box = model.builder.get_object(list_box_name)
-    list_box_row = list_box.get_row_at_index(row_number)
-    GLib.idle_add(Gtk.ListBox.select_row, list_box, list_box_row)
-
-
-def update_list_box_row_label(list_box_name, row_number, text):
-    """
-    This function is not used.
-    """
-
-    list_box = model.builder.get_object(list_box_name)
-    list_box_row = list_box.get_row_at_index(row_number)
-    label = list_box_row.get_children()[0]
-    GLib.idle_add(Gtk.Label.set_text, label, text)
-
-
-def empty_list_box(list_box_name):
-    """
-    This function is not used.
-    """
-
-    list_box = model.builder.get_object(list_box_name)
-    for list_box_row in list_box.get_children():
-        child = list_box_row.get_children()[0]
-        if isinstance(child, Gtk.Label):
-            logger.log_value('Removing label', child.get_text())
-        elif isinstance(child, Gtk.Button):
-            logger.log_value('Removing button', child.get_label())
-        else:
-            logger.log_value('Removing unknown type', child)
-        GLib.idle_add(Gtk.ListBox.remove, list_box, list_box_row)
-        GLib.idle_add(Gtk.Widget.destroy, list_box_row)

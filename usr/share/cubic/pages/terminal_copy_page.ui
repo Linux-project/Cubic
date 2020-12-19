@@ -2,7 +2,7 @@
 
 <!--
 
-  copy_page.ui
+  terminal_copy_page.ui
 
   Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>
 
@@ -27,7 +27,7 @@
 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkListStore" id="copy_page__file_details__list_store">
+  <object class="GtkListStore" id="terminal_copy_page__file_details__list_store">
     <columns>
       <!-- column-name Progress -->
       <column type="gint"/>
@@ -35,11 +35,12 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkGrid" id="copy_page">
-    <property name="height_request">650</property>
+  <object class="GtkGrid" id="terminal_copy_page">
+    <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
       <object class="GtkLabel">
+        <property name="width_request">894</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">24</property>
@@ -47,6 +48,7 @@
         <property name="margin_top">18</property>
         <property name="margin_bottom">18</property>
         <property name="label" translatable="yes">Click the Copy button to copy the files listed below into the virtual environment, or click the Cancel button.</property>
+        <property name="justify">fill</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
         <property name="xalign">0</property>
@@ -60,13 +62,14 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="copy_page__progress_label">
+      <object class="GtkLabel" id="terminal_copy_page__progress_label">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">24</property>
         <property name="margin_right">24</property>
         <property name="margin_bottom">6</property>
         <property name="label" translatable="yes">...</property>
+        <property name="use_markup">True</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
         <property name="xalign">0</property>
@@ -77,13 +80,12 @@
       </packing>
     </child>
     <child>
-      <object class="GtkProgressBar" id="copy_page__copy_files_progress_bar">
+      <object class="GtkProgressBar" id="terminal_copy_page__copy_files_progress_bar">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">24</property>
         <property name="margin_right">24</property>
         <property name="margin_bottom">18</property>
-        <property name="hexpand">True</property>
         <property name="show_text">True</property>
       </object>
       <packing>
@@ -92,38 +94,34 @@
       </packing>
     </child>
     <child>
-      <object class="GtkScrolledWindow" id="copy_page__scrolled_window">
-        <property name="width_request">922</property>
+      <object class="GtkScrolledWindow" id="terminal_copy_page__scrolled_window">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="margin_left">1</property>
-        <property name="margin_right">1</property>
-        <property name="margin_bottom">1</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
         <property name="hscrollbar_policy">never</property>
         <property name="shadow_type">in</property>
         <child>
-          <object class="GtkTreeView" id="copy_page__treeview">
+          <object class="GtkTreeView" id="terminal_copy_page__tree_view">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
-            <property name="model">copy_page__file_details__list_store</property>
+            <property name="model">terminal_copy_page__file_details__list_store</property>
             <property name="search_column">1</property>
             <property name="hover_selection">True</property>
             <child internal-child="selection">
-              <object class="GtkTreeSelection" id="copy_page__treeselection"/>
+              <object class="GtkTreeSelection" id="terminal_copy_page__treeselection"/>
             </child>
             <child>
-              <object class="GtkTreeViewColumn" id="copy_page__status_treeviewcolumn">
+              <object class="GtkTreeViewColumn" id="terminal_copy_page__status_tree_view_column">
                 <property name="sizing">autosize</property>
                 <property name="min_width">10</property>
                 <property name="title" translatable="yes">Progress</property>
                 <property name="clickable">True</property>
                 <property name="sort_column_id">0</property>
                 <child>
-                  <object class="GtkCellRendererProgress" id="copy_page__status_cellrendererprogress"/>
+                  <object class="GtkCellRendererProgress" id="terminal_copy_page__status_cellrendererprogress"/>
                   <attributes>
                     <attribute name="value">0</attribute>
                   </attributes>
@@ -131,12 +129,12 @@
               </object>
             </child>
             <child>
-              <object class="GtkTreeViewColumn" id="copy_page__file_treeviewcolumn">
+              <object class="GtkTreeViewColumn" id="terminal_copy_page__file_tree_view_column">
                 <property name="title" translatable="yes">File</property>
                 <property name="clickable">True</property>
                 <property name="sort_column_id">1</property>
                 <child>
-                  <object class="GtkCellRendererText" id="copy_page__file_cellrenderertext"/>
+                  <object class="GtkCellRendererText" id="terminal_copy_page__file_cellrenderertext"/>
                   <attributes>
                     <attribute name="text">1</attribute>
                   </attributes>

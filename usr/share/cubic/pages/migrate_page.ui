@@ -33,11 +33,12 @@
     <property name="icon_name">folder-symbolic</property>
   </object>
   <object class="GtkGrid" id="migrate_page">
-    <property name="height_request">650</property>
+    <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="orientation">vertical</property>
+    <property name="margin_bottom">18</property>
     <child>
       <object class="GtkLabel">
+        <property name="width_request">894</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">24</property>
@@ -45,6 +46,7 @@
         <property name="margin_top">18</property>
         <property name="margin_bottom">18</property>
         <property name="label" translatable="yes">This project was created using a previous version of Cubic. Click the Migrate button to update it.</property>
+        <property name="justify">fill</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
         <property name="xalign">0</property>
@@ -59,14 +61,11 @@
     </child>
     <child>
       <object class="GtkGrid">
-        <property name="width_request">616</property>
+        <property name="width_request">596</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
-        <property name="margin_left">154</property>
-        <property name="margin_right">154</property>
-        <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
         <property name="row_spacing">6</property>
@@ -149,6 +148,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Open the project directory</property>
             <property name="image">migrate_page__directory_image</property>
             <property name="always_show_image">True</property>
             <signal name="clicked" handler="on_clicked__migrate_page__project_directory_open_button" swapped="no"/>

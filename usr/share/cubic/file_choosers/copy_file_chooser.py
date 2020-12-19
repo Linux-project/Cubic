@@ -27,10 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from utilities import displayer
-from utilities import logger
-from utilities import model
-
 ########################################################################
 # References
 ########################################################################
@@ -38,7 +34,15 @@ from utilities import model
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+from utilities import displayer
+from utilities import logger
+from utilities import model
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'copy_file_chooser'
@@ -49,13 +53,13 @@ callback = None
 ########################################################################
 
 
-def open(calback, filepath=None):
+def open(calback, file_path=None):
 
     displayer.set_sensitive('window', False)
-    if filepath:
-        displayer.show_filechooser(name, filepath)
+    if file_path:
+        displayer.show_file_chooser(name, file_path)
     else:
-        displayer.show_filechooser(name, model.application.user_home)
+        displayer.show_file_chooser(name, model.application.user_home)
     set_callback(calback)
 
 
@@ -72,11 +76,20 @@ def set_callback(new_callback):
     callback = new_callback
 
 
-def get_selected_filepaths():
+def get_selected_file_paths():
 
     dialog = model.builder.get_object(name)
-    filepaths = dialog.get_filenames()
-    return filepaths
+    file_paths = dialog.get_filenames()
+
+    return file_paths
+
+
+def get_selected_uris():
+
+    dialog = model.builder.get_object(name)
+    uris = dialog.get_uris()
+
+    return uris
 
 
 def on_clicked__copy_file_chooser__cancel_button(widget):
@@ -90,9 +103,18 @@ def on_clicked__copy_file_chooser__select_button(widget):
     logger.log_title('Clicked copy file chooser select button')
     close()
 
-    filepaths = get_selected_filepaths()
-    logger.log_value('The selected filepaths are', filepaths)
-    callback(filepaths)
+    uris = get_selected_uris()
+    callback(uris)
+
+
+def on_map__copy_file_chooser__header_bar(header_bar):
+
+    is_visible = header_bar.is_visible()
+    button_box = model.builder.get_object('copy_file_chooser__button_box')
+
+    # Do not use GLib.idle_add because hiding the button_box must be
+    # immediate.
+    button_box.set_visible(not is_visible)
 
 
 def on_delete_event__copy_file_chooser(widget, event):

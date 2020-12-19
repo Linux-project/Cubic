@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# terminate-process                                                    #
+# replace-text                                                         #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,7 +27,8 @@
 #                                                                      #
 ########################################################################
 
-# Terminate a process for Cubic.
+# Replace text in a file for Cubic.
+# Do not use arguments containing double quote characters.
 
 ########################################################################
 # Arguments
@@ -35,18 +36,18 @@
 
 program=${0}
 number_arguments=${#}
-process_id=${1}
+search_text=${1}
+replace_text=${2}
+target_path=${3}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
-# echo "process id.................. $process_id"
+# echo "search_text................. ${search_text}"
+# echo "replace_text................ ${replace_text}"
+# echo "target_path................. ${target_path}"
 
 ########################################################################
 # Command
 ########################################################################
 
-# The negative pid is used to kill all child processes.
-
-echo "kill -s SIGKILL -${process_id}"
-kill -s SIGKILL -${process_id}
-
+sed -i "s|${search_text}|${replace_text}|g" "${target_path}"

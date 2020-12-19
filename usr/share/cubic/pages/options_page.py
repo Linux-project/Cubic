@@ -27,14 +27,11 @@
 #                                                                      #
 ########################################################################
 
-from os import makedirs, remove
-from os.path import dirname, exists, join
-from re import fullmatch
-
-from utilities import displayer
-from utilities import iso_utilities
-from utilities import logger
-from utilities import model
+# TODO: Explicitly set model.options.boot_configurations to the default
+#       value if it is None or empty (usually due to an exception).
+# TODO: Set header widgets visible or hidden for all actions in the
+#       start(), enter(), and leave() functions, and in all map and
+#       unmap functions.
 
 ########################################################################
 # References
@@ -43,10 +40,29 @@ from utilities import model
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import os
+
+from pages.boot_tab import IsoBootTab
+from pages.kernel_tab import IsoKernelTab
+from pages.preseed_tab import PreseedTab
+from utilities import configuration
+from utilities import displayer
+from utilities import iso_utilities
+from utilities import logger
+from utilities import model
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'options_page'
+
+kernel_tab = None
+preseed_tab = None
+boot_tab = None
 
 ########################################################################
 # Navigation Functions
@@ -69,16 +85,71 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        # TODO: Uncomment the following two lines when undo/redo
-        #       functionality has been developed.
-        # displayer.set_visible('options_page__header_bar_preseed_box_1', True)
-        # displayer.set_visible('options_page__header_bar_box_2', True)
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        return
+
+    if action == 'cancel':
+
+        # Do not assume the virtual environment is running.
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=True,
+            is_next_visible=True)
 
         displayer.set_visible('title_label', False)
-        displayer.set_visible('stack_switcher', True)
+        displayer.set_visible('options_page__stack_switcher', True)
 
-        # displayer.set_solid('options_page__stack_switcher', True)
-        # displayer.set_solid('stack_switcher', True)
+        return
+
+    if action == 'copy-preseed':
+
+        # Do not assume the virtual environment is running.
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        return
+
+    if action == 'copy-boot-configuration':
+
+        # Do not assume the virtual environment is running.
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
 
         return
 
@@ -96,16 +167,79 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        # TODO: Uncomment the following two lines when undo/redo
-        #       functionality has been developed.
-        # displayer.set_visible('options_page__header_bar_preseed_box_1', True)
-        # displayer.set_visible('options_page__header_bar_box_2', True)
-
         displayer.set_visible('title_label', False)
-        displayer.set_visible('stack_switcher', True)
+        displayer.set_visible('options_page__stack_switcher', True)
 
-        # displayer.set_solid('options_page__stack_switcher', True)
-        # displayer.set_solid('stack_switcher', True)
+        header_bar = model.builder.get_object('header_bar')
+
+        global kernel_tab
+        if not kernel_tab:
+
+            # Load the user interface.
+            model.builder.add_from_file('pages/kernel_tab.ui')
+            grid = model.builder.get_object('options_page__kernel_tab__grid')
+            scrolled_window = model.builder.get_object('kernel_tab__scrolled_window')
+            displayer.attach(grid, scrolled_window, 0, 1, 1, 1)
+
+            # Connect the signals to handlers in the associated module.
+            kernel_tab = IsoKernelTab()
+
+            # Add previously loaded widgets to the header bar.
+            # box = model.builder.get_object('kernel_tab__header_box')
+            # header_bar.add(box)
+            # displayer.set_visible('kernel_tab__header_box', False)
+
+        kernel_tab.create_linux_kernels_list()
+
+        global preseed_tab
+        if not preseed_tab:
+
+            # Load the user interface.
+            model.builder.add_from_file('pages/preseed_tab.ui')
+            grid = model.builder.get_object('options_page__preseed_tab__grid')
+            panes = model.builder.get_object('preseed_tab__panes')
+            displayer.attach(grid, panes, 0, 1, 1, 1)
+
+            # Connect the signals to handlers in the associated module.
+            preseed_tab = PreseedTab()
+
+            # Add previously loaded widgets to the header bar.
+            box = model.builder.get_object('preseed_tab__header_box')
+            header_bar.add(box)
+            displayer.set_visible('preseed_tab__header_box', False)
+
+        # If the preseed directory does not exist, create it.
+        file_path = os.path.join(model.project.custom_disk_directory, 'preseed')
+        # TODO: Use file_utilities.make_directory() or os.makedirs ?
+        # file_utilities.make_directory(file_path)
+        os.makedirs(file_path, exist_ok=True)
+        preseed_tab.create_tree(['preseed'])
+
+        global boot_tab
+        if not boot_tab:
+
+            # Load the user interface.
+            model.builder.add_from_file('pages/boot_tab.ui')
+            grid = model.builder.get_object('options_page__boot_tab__grid')
+            panes = model.builder.get_object('boot_tab__panes')
+            displayer.attach(grid, panes, 0, 1, 1, 1)
+
+            # Connect the signals to handlers in the associated module.
+            boot_tab = IsoBootTab()
+
+            # Add previously loaded widgets to the header bar.
+            box = model.builder.get_object('boot_tab__header_box')
+            header_bar.add(box)
+            displayer.set_visible('boot_tab__header_box', False)
+
+        # Assume the boot/grub directory exists.
+        boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)
+
+        # Save the selected kernel in the model.
+        model.selected_kernel_index = kernel_tab.selected_kernel_index
+
+        # Update the boot configurations based on the selected kernel.
+        update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
 
         return
 
@@ -117,6 +251,18 @@ def setup(action, old_page=None):
 def enter(action, old_page=None):
 
     if action == 'back':
+
+        return
+
+    elif action == 'cancel':
+
+        return
+
+    elif action == 'copy-preseed':
+
+        return
+
+    elif action == 'copy-boot-configuration':
 
         return
 
@@ -135,13 +281,42 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # TODO: Uncomment the following two lines when undo/redo
-        #       functionality has been developed.
-        # displayer.set_visible('options_page__header_bar_preseed_box_1', False)
-        # displayer.set_visible('options_page__header_bar_box_2', False)
+        displayer.set_visible('title_label', True)
+        displayer.set_visible('options_page__stack_switcher', False)
+
+        # displayer.set_visible('kernel_tab__header_box', False)
+        displayer.set_visible('preseed_tab__header_box', False)
+        displayer.set_visible('boot_tab__header_box', False)
+
+        model.options.boot_configurations = boot_tab.get_required_file_paths()
+        configuration.save()
+
+        preseed_tab.remove_tree()
+        boot_tab.remove_tree()
+
+        return
+
+    elif action == 'copy-preseed':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         displayer.set_visible('title_label', True)
-        displayer.set_visible('stack_switcher', False)
+        displayer.set_visible('options_page__stack_switcher', False)
+
+        model.options.boot_configurations = boot_tab.get_required_file_paths()
+        configuration.save()
+
+        return
+
+    elif action == 'copy-boot-configuration':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        displayer.set_visible('title_label', True)
+        displayer.set_visible('options_page__stack_switcher', False)
+
+        model.options.boot_configurations = boot_tab.get_required_file_paths()
+        configuration.save()
 
         return
 
@@ -149,19 +324,27 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # TODO: Uncomment the following two lines when undo/redo
-        #       functionality has been developed.
-        # displayer.set_visible('options_page__header_bar_preseed_box_1', False)
-        # displayer.set_visible('options_page__header_bar_box_2', False)
-
         displayer.set_visible('title_label', True)
-        displayer.set_visible('stack_switcher', False)
+        displayer.set_visible('options_page__stack_switcher', False)
+
+        # displayer.set_visible('kernel_tab__header_box', False)
+        displayer.set_visible('preseed_tab__header_box', False)
+        displayer.set_visible('boot_tab__header_box', False)
+
+        model.options.boot_configurations = boot_tab.get_required_file_paths()
+        configuration.save()
 
         return
 
     elif action == 'quit':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        model.options.boot_configurations = boot_tab.get_required_file_paths()
+        configuration.save()
+
+        preseed_tab.remove_tree()
+        boot_tab.remove_tree()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -172,6 +355,9 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        model.options.boot_configurations = boot_tab.get_required_file_paths()
+        configuration.save()
 
         return 'unknown'
 
@@ -181,356 +367,79 @@ def leave(action, new_page=None):
 ########################################################################
 
 
-def on_clicked__options_page__boot_revert_button(widget):
+def on_map__options_page__kernel_tab(*args):
 
-    # TODO
-    print('TBD: on_clicked__options_page__boot_revert_button')
+    logger.log_label('Show Options page, Kernel tab')
+    # displayer.set_visible('kernel_tab__header_box', True)
 
+    # displayer.set_visible('kernel_tab__header_box', False)
+    displayer.set_visible('preseed_tab__header_box', False)
+    displayer.set_visible('boot_tab__header_box', False)
 
-def on_clicked__options_page__boot_undo_button(widget):
 
-    # TODO
-    print('TBD: on_clicked__options_page__boot_undo_button')
+def on_unmap__options_page__kernel_tab(*args):
 
+    logger.log_value('Leave', 'Options page Kernel tab')
+    # displayer.set_visible('kernel_tab__header_box', False)
 
-def on_clicked__options_page__boot_redo_button(widget):
+    # Update the boot configurations if the selected kernel has changed.
+    if kernel_tab.selected_kernel_index != model.selected_kernel_index:
 
-    # TODO
-    print('TBD: on_clicked__options_page__boot_redo_button')
+        # Save the selected kernel in the model.
+        model.selected_kernel_index = kernel_tab.selected_kernel_index
 
+        # Update the boot configurations based on the selected kernel.
+        update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
 
-def on_clicked__options_page__preseed_revert_button(widget):
 
-    # TODO
-    print('TBD: on_clicked__options_page__preseed_revert_button')
+def on_map__options_page__preseed_tab(*args):
 
+    logger.log_label('Show Options page, Preseed tab')
 
-def on_clicked__options_page__preseed_undo_button(widget):
+    # displayer.set_visible('kernel_tab__header_box', False)
+    displayer.set_visible('preseed_tab__header_box', True)
+    displayer.set_visible('boot_tab__header_box', False)
 
-    # TODO
-    print('TBD: on_clicked__options_page__preseed_undo_button')
 
+def on_unmap__options_page__preseed_tab(*args):
 
-def on_clicked__options_page__preseed_redo_button(widget):
+    logger.log_value('Leave', 'Options page Preseed tab')
 
-    print('TBD: on_clicked__options_page__preseed_redo_button')
+    displayer.set_visible('preseed_tab__header_box', False)
 
 
-def on_toggled__options_page__create_button(widget):
+def on_map__options_page__boot_tab(*args):
 
-    on_toggled_create_or_delete_toggle_buttons('options_page__create_button')
+    logger.log_label('Show Options page, Boot tab')
 
+    # displayer.set_visible('kernel_tab__header_box', False)
+    displayer.set_visible('preseed_tab__header_box', False)
+    displayer.set_visible('boot_tab__header_box', True)
 
-def on_toggled__options_page__delete_button(widget):
 
-    on_toggled_create_or_delete_toggle_buttons('options_page__delete_button')
+def on_unmap__options_page__boot_tab(*args):
 
+    logger.log_value('Leave', 'Options page Boot tab')
 
-def on_toggled_create_or_delete_toggle_buttons(toggle_button_name):
+    displayer.set_visible('boot_tab__header_box', False)
 
-    options_page__create_button = model.builder.get_object('options_page__create_button')
-    is_active_options_page__create_button = options_page__create_button.get_active()
 
-    options_page__delete_button = model.builder.get_object('options_page__delete_button')
-    is_active_options_page__delete_button = options_page__delete_button.get_active()
+########################################################################
+# Support Functions
+########################################################################
 
-    if is_active_options_page__create_button and not is_active_options_page__delete_button:
 
-        # Create
-        displayer.set_visible('options_page__preseed_tab__stack', False)
+def update_boot_configurations(file_paths, kernel_details_list, selected_index):
+    """
+    Update the boot configuration files, replacing references to vmlinuz
+    and initrd with the correct file names based on the currently
+    selected kernel.
 
-        # Reset the name of the file to create and reset the error message.
-        displayer.update_entry('options_page__preseed_tab__create_grid__entry', '')
-        displayer.update_label('options_page__preseed_tab__create_grid__error_label', '')
+    The contents of the boot configurations files is also replaced in
+    kernel_tab.on_toggled__kernel_tab__kernels_radio_button().
+    """
 
-        displayer.set_visible('options_page__preseed_tab__create_grid', True)
-        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
-
-    elif not is_active_options_page__create_button and is_active_options_page__delete_button:
-
-        # Delete
-        displayer.set_visible('options_page__preseed_tab__stack', False)
-        displayer.set_visible('options_page__preseed_tab__create_grid', False)
-
-        # Get the name of the file to delete and reset the error message.
-        stack = model.builder.get_object('options_page__preseed_tab__stack')
-        scrolled_window = stack.get_visible_child()
-        title = stack.child_get_property(scrolled_window, 'title')
-        displayer.update_entry('options_page__preseed_tab__delete_grid__entry', title)
-        displayer.update_label('options_page__preseed_tab__delete_grid__error_label', '')
-
-        displayer.set_visible('options_page__preseed_tab__delete_grid', True)
-
-    elif not is_active_options_page__create_button and not is_active_options_page__delete_button:
-
-        # Edit
-        displayer.set_visible('options_page__preseed_tab__stack', True)
-        displayer.set_visible('options_page__preseed_tab__create_grid', False)
-        displayer.set_visible('options_page__preseed_tab__delete_grid', False)
-
-    elif toggle_button_name == 'options_page__create_button':
-
-        # Create
-        displayer.activate_toggle_button('options_page__create_button', True)
-        displayer.activate_toggle_button('options_page__delete_button', False)
-
-    elif toggle_button_name == 'options_page__delete_button':
-
-        # Delete
-        displayer.activate_toggle_button('options_page__create_button', False)
-        displayer.activate_toggle_button('options_page__delete_button', True)
-
-    else:
-
-        print('NO MATCH')
-
-
-def on_event__options_page__preseed_tab__stack_sidebar(widget, event):
-
-    stack = model.builder.get_object('options_page__preseed_tab__stack')
-
-    # Show or hide widgets, as necessary.
-
-    scrolled_window = stack.get_visible_child()
-    # scrolled_windows = stack.get_children()
-    if scrolled_window:
-
-        # Toggle buttons
-        displayer.activate_toggle_button('options_page__create_button', False)
-        displayer.activate_toggle_button('options_page__delete_button', False)
-
-    else:
-
-        # Toggle buttons
-        displayer.activate_toggle_button('options_page__create_button', True)
-        displayer.activate_toggle_button('options_page__delete_button', False)
-
-
-def on_clicked__options_page__create_button(widget):
-
-    # Get new item name.
-    entry = model.builder.get_object('options_page__preseed_tab__create_grid__entry')
-    filename = entry.get_text()
-
-    # Validate filename.
-    pattern = r'[a-zA-Z0-9][a-zA-Z0-9\.\-_]*[a-zA-Z0-9]'
-    match = fullmatch(pattern, filename)
-
-    if match:
-
-        # New filename is valid.
-
-        stack_name = 'options_page__preseed_tab__stack'
-        stack = model.builder.get_object(stack_name)
-        filepath = join(model.project.custom_disk_directory, 'preseed', filename)
-
-        scrolled_window = stack.get_child_by_name(filepath)
-        if scrolled_window:
-
-            # Item already exists in the stack.
-
-            logger.log_value('Item already exists in the stack', stack_name)
-            title = stack.child_get_property(scrolled_window, 'title')
-            logger.log_value('The title is', title)
-            logger.log_value('The name (filepath) is', filepath)
-            label = model.builder.get_object('options_page__preseed_tab__create_grid__error_label')
-            label.set_text('Error. A file with this name already exists.')
-
-        else:
-
-            # Add a new item to the stack.
-
-            logger.log_value('Add a new item to stack', stack_name)
-            title = '/%s' % join('preseed', filename)
-            logger.log_value('The title is', title)
-            logger.log_value('The name (filepath) is', filepath)
-
-            # Ensure the file is not flaged for deletion.
-            if filepath in model.delete_list:
-                model.delete_list.remove(filepath)
-
-            # Add a new scrolled window to the stack.
-            scrolled_window = displayer.add_source_view_to_stack(stack, title, filepath)
-
-            # Show or hide widgets, as necessary.
-            stack.set_visible_child(scrolled_window)
-
-            # Toggle buttons
-
-            displayer.activate_toggle_button('options_page__create_button', False)
-            displayer.set_sensitive('options_page__create_button', True)
-
-            displayer.activate_toggle_button('options_page__delete_button', False)
-            displayer.set_sensitive('options_page__delete_button', True)
-
-    else:
-
-        # New filename is not valid.
-
-        label = model.builder.get_object('options_page__preseed_tab__create_grid__error_label')
-        label.set_text('Error. Invalid file name. Valid file names contain alpha-numeric characters, dashes, underscores, or periods.')
-
-
-def on_clicked__options_page__delete_button(widget):
-
-    stack_name = 'options_page__preseed_tab__stack'
-    stack = model.builder.get_object(stack_name)
-
-    scrolled_window = stack.get_visible_child()
-    title = stack.child_get_property(scrolled_window, 'title')
-    filepath = stack.child_get_property(scrolled_window, 'name')
-
-    logger.log_value('Remove item from stack', stack_name)
-    logger.log_value('The title is', title)
-    logger.log_value('The name (filepath) is', filepath)
-
-    # Only flag the file for deletion if it exits.
-    if exists(filepath):
-        model.delete_list.append(filepath)
-    stack.remove(scrolled_window)
-
-    # Show or hide widgets, as necessary.
-
-    scrolled_window = stack.get_visible_child()
-    # scrolled_windows = stack.get_children()
-
-    if scrolled_window:
-
-        # Toggle buttons
-
-        displayer.activate_toggle_button('options_page__create_button', False)
-        displayer.set_sensitive('options_page__create_button', True)
-
-        displayer.activate_toggle_button('options_page__delete_button', False)
-        displayer.set_sensitive('options_page__delete_button', True)
-
-    else:
-
-        # Toggle buttons
-
-        displayer.activate_toggle_button('options_page__create_button', True)
-        displayer.set_sensitive('options_page__create_button', False)
-
-        displayer.activate_toggle_button('options_page__delete_button', False)
-        displayer.set_sensitive('options_page__delete_button', False)
-
-
-def on_toggled__options_page__kernels_radio_button_ORIGINAL_1(widget, row):
-
-    selected_index = int(row)
-    logger.log_value('The selected kernel is item number', selected_index)
-
-    # 0: version_name
-    # 1: vmlinuz_filename
-    # 2: new_vmlinuz_filename
-    # 3: initrd_filename
-    # 4: new_initrd_filename
-    # 5: directory
-    # 6: note
-    # 7: is_selected
-
-    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
-
-    # Select clicked row, and unselect other rows.
-    for number, item in enumerate(list_store):
-        list_store[number][7] = (number == selected_index)
-
-    # Search and replace text.
-    stack_name = 'options_page__boot_configuration_tab__stack'
-
-    # search_text_1 = r'/vmlinuz\S*'
-    # replacement_text_1 = '/%s' % list_store[selected_index][2]
-    search_text_1 = r'(linux.*)vmlinuz\S*'
-    replacement_text_1 = r'\1%s' % list_store[selected_index][2]
-
-    search_text_2 = r'(kernel.*)vmlinuz\S*'
-    replacement_text_2 = r'\1%s' % list_store[selected_index][2]
-
-    # search_text_3 = r'/initrd\S*'
-    # replacement_text_3 = '/%s' % list_store[selected_index][4]
-    search_text_3 = r'(initrd.*)initrd\S*'
-    replacement_text_3 = r'\1%s' % list_store[selected_index][4]
-
-    # Note: This won't work if boot appears between linux and vmlinuz.
-    search_text_4 = r'(linux.*vmlinuz\S*\s*)(?!.*boot=)'
-    replacement_text_4 = r'\1boot=casper '
-
-    search_text_5 = r'(append\s*)(?!.*boot=)'
-    replacement_text_5 = r'\1boot=casper '
-
-    displayer.replace_text_in_stack_buffer(
-        stack_name,
-        (search_text_1,
-         replacement_text_1),
-        (search_text_2,
-         replacement_text_2),
-        (search_text_3,
-         replacement_text_3),
-        (search_text_4,
-         replacement_text_4),
-        (search_text_5,
-         replacement_text_5))
-
-
-def on_toggled__options_page__kernels_radio_button_ORIGINAL_2(widget, row):
-
-    # The contents of the boot configurations files is also replaced in
-    # prepare_page.prepare_boot_configurations().
-
-    # 0: version_name
-    # 1: vmlinuz_filename
-    # 2: new_vmlinuz_filename
-    # 3: initrd_filename
-    # 4: new_initrd_filename
-    # 5: directory
-    # 6: note
-    # 7: is_selected
-
-    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
-
-    selected_index = int(row)
-    # Select clicked row, and unselect other rows.
-    for number, item in enumerate(list_store):
-        list_store[number][7] = (number == selected_index)
-
-    logger.log_value('The selected kernel is index number', selected_index)
-
-    # vmlinuz & boot=casper
-    # search_text_1 = r'\s+boot\s*=\s*casper'
-    search_text_1 = r' boot=casper'
-    replacement_text_1 = r''
-    search_text_2 = r'%s\S*/vmlinuz\S*' % model.status.casper_directory
-    replacement_text_2 = r'%s/%s boot=casper' % (model.status.casper_directory, list_store[selected_index][2])
-
-    # initrd
-    search_text_3 = r'%s\S*/initrd\S*' % model.status.casper_directory
-    replacement_text_3 = r'%s/%s' % (model.status.casper_directory, list_store[selected_index][4])
-
-    # Search and replace text.
-    stack_name = 'options_page__boot_configuration_tab__stack'
-    displayer.replace_text_in_stack_buffer(stack_name, (search_text_1, replacement_text_1), (search_text_2, replacement_text_2), (search_text_3, replacement_text_3))
-
-
-def on_toggled__options_page__kernels_radio_button(widget, row):
-
-    # The contents of the boot configurations files is also replaced in
-    # prepare_page.prepare_boot_configurations().
-
-    # 0: version_name
-    # 1: vmlinuz_filename
-    # 2: new_vmlinuz_filename
-    # 3: initrd_filename
-    # 4: new_initrd_filename
-    # 5: directory
-    # 6: note
-    # 7: is_selected
-
-    list_store = model.builder.get_object('options_page__linux_kernels_tab__list_store')
-
-    selected_index = int(row)
-    # Select clicked row, and unselect other rows.
-    for number, item in enumerate(list_store):
-        list_store[number][7] = (number == selected_index)
+    logger.log_label('Update boot configurations')
 
     logger.log_value('The selected kernel is index number', selected_index)
 
@@ -543,14 +452,14 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
 
     # linux + /casper/vmlinuz + boot=casper
     search_text_2 = r'^(\s*linux\s+.*)/%s\S*/vmlinuz\S*' % model.status.casper_directory
-    replacement_text_2 = r'\1/%s/%s boot=casper' % (model.status.casper_directory, list_store[selected_index][2])
+    replacement_text_2 = r'\1/%s/%s boot=casper' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_file_name'])
 
     # Handle files like /isolinux/txt.cfg
     # that have /casper/vmlinuz and boot=casper on separate lines.
 
     # kernel + /casper/vmlinuz
     search_text_3 = r'^(\s*kernel\s+.*)/%s\S*/vmlinuz\S*' % model.status.casper_directory
-    replacement_text_3 = r'\1/%s/%s' % (model.status.casper_directory, list_store[selected_index][2])
+    replacement_text_3 = r'\1/%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_file_name'])
 
     # append + boot=casper
     search_text_4 = r'(^\s*append\s+)(.*)'
@@ -558,12 +467,11 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
 
     # initrd
     search_text_5 = r'%s\S*/initrd\S*' % model.status.casper_directory
-    replacement_text_5 = r'%s/%s' % (model.status.casper_directory, list_store[selected_index][4])
+    replacement_text_5 = r'%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_initrd_file_name'])
 
     # Search and replace text.
-    stack_name = 'options_page__boot_configuration_tab__stack'
-    displayer.replace_text_in_stack_buffer(
-        stack_name,
+    boot_tab.search_and_replace_in_files(
+        file_paths,
         (search_text_1,
          replacement_text_1),
         (search_text_2,
@@ -574,32 +482,3 @@ def on_toggled__options_page__kernels_radio_button(widget, row):
          replacement_text_4),
         (search_text_5,
          replacement_text_5))
-
-
-def on_map__options_page__preseed_tab(*args):
-
-    displayer.set_visible('options_page__header_bar_preseed_box_1', True)
-
-    # TODO: Do not show the revert, undo, and redo buttons until they
-    # are implemented.
-    # displayer.set_visible('options_page__header_bar_preseed_box_2', True)
-    displayer.set_visible('options_page__header_bar_preseed_box_2', False)
-
-
-def on_unmap__options_page__preseed_tab(*args):
-
-    displayer.set_visible('options_page__header_bar_preseed_box_1', False)
-    displayer.set_visible('options_page__header_bar_preseed_box_2', False)
-
-
-def on_map__options_page__boot_configuration_tab(*args):
-
-    # TODO: Do not show the revert, undo, and redo buttons until they
-    # are implemented.
-    # displayer.set_visible('options_page__header_bar_boot_box', True)
-    displayer.set_visible('options_page__header_bar_boot_box', False)
-
-
-def on_unmap__options_page__boot_configuration_tab(*args):
-
-    displayer.set_visible('options_page__header_bar_boot_box', False)

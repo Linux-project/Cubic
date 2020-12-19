@@ -27,23 +27,6 @@
 #                                                                      #
 ########################################################################
 
-import gi
-
-gi.require_version('Gdk', '3.0')
-gi.require_version('Gtk', '3.0')
-
-from gi.repository import Gdk
-from gi.repository import Gtk
-from time import sleep
-
-from file_choosers import copy_file_chooser
-from navigator import handle_navigation
-from utilities import console
-from utilities import displayer
-from utilities import iso_utilities
-from utilities import logger
-from utilities import model
-
 ########################################################################
 # References
 ########################################################################
@@ -51,13 +34,102 @@ from utilities import model
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import gi
+
+gi.require_version('Gdk', '3.0')
+gi.require_version('Gtk', '3.0')
+
+from gi.repository import Gdk
+from gi.repository import Gio
+from gi.repository import Gtk
+
+import os
+import re
+import time
+
+from constants import SLEEP_0250_MS
+from file_choosers import copy_file_chooser
+from navigator import handle_navigation
+from utilities.displayer import MONOSPACE_FONT
+from utilities import console
+from utilities import displayer
+from utilities import iso_utilities
+from utilities import logger
+from utilities import model
+from utilities.processor import execute_synchronous
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'terminal_page'
 
 # Indicates if the virtual environment is running.
 is_running = False
+
+########################################################################
+# Initialize
+########################################################################
+
+terminal = model.builder.get_object('terminal_page__terminal')
+
+# Set Terminal Font
+terminal.set_font(MONOSPACE_FONT)
+
+# Set Terminal Colors
+# TODO: Create and use displayer.get_terminal_colors() function.
+schema_source = Gio.SettingsSchemaSource.get_default()
+_, schemas = schema_source.list_schemas(True)
+schemas = Gio.Settings.list_relocatable_schemas()
+if 'org.gnome.Terminal.Legacy.Profile' in schemas:
+    logger.log_value('Set terminal colors?', 'Yes')
+    settings = Gio.Settings.new_with_path('org.gnome.Terminal.Legacy.Profile', '/org/gnome/terminal/legacy/')
+    fg_rgb_color = None
+    bg_rgb_color = None
+    hex_palette = settings.get_value('palette')
+    if not hex_palette:
+        # Use custom foreground and background colors.
+        fg_rgb_color = Gdk.RGBA()
+        fg_rgb_color.parse('#e5e5e5')
+        bg_rgb_color = Gdk.RGBA()
+        bg_rgb_color.parse('#191919')
+        hex_palette = [
+            '#073642',
+            '#DC322F',
+            '#859900',
+            '#B58900',
+            '#268BD2',
+            '#D33682',
+            '#2AA198',
+            '#EEE8D5',
+            '#002B36',
+            '#CB4B16',
+            '#586E75',
+            '#657B83',
+            '#839496',
+            '#6C71C4',
+            '#93A1A1',
+            '#FDF6E3'
+        ]
+    rgb_palette = []
+    for hex_color in hex_palette:
+        rgb_color = Gdk.RGBA()
+        rgb_color.parse(hex_color)
+        rgb_palette.append(rgb_color)
+    terminal.set_colors(fg_rgb_color, bg_rgb_color, rgb_palette)
+else:
+    logger.log_value('Set terminal colors?', 'Skip')
+
+# Allow Drag and Drop in the Terminal
+flags = Gtk.DestDefaults.MOTION | Gtk.DestDefaults.HIGHLIGHT | Gtk.DestDefaults.DROP
+# TODO: Change: Gtk.TargetFlags
+#       See: https://lazka.github.io/pgi-docs/Gtk-3.0/structs/TargetEntry.html#methods
+targets = [Gtk.TargetEntry.new('text/uri-list', 0, 80), Gtk.TargetEntry.new('text/plain', 0, 80)]
+actions = Gdk.DragAction.COPY
+terminal.drag_dest_set(flags, targets, actions)
 
 ########################################################################
 # Navigation Functions
@@ -82,8 +154,8 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        displayer.set_visible('terminal_page__copy_button', True)
-        displayer.set_sensitive('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', True)
+        displayer.set_sensitive('terminal_page__copy_header_bar_button', False)
 
         return
 
@@ -103,12 +175,12 @@ def setup(action, old_page=None):
             is_next_sensitive=is_running,
             is_next_visible=True)
 
-        displayer.set_visible('terminal_page__copy_button', True)
-        displayer.set_sensitive('terminal_page__copy_button', is_running)
+        displayer.set_visible('terminal_page__copy_header_bar_button', True)
+        displayer.set_sensitive('terminal_page__copy_header_bar_button', is_running)
 
         return
 
-    if action == 'copy':
+    if action == 'copy-into-terminal':
 
         # Do not assume the virtual environment is running.
 
@@ -124,8 +196,8 @@ def setup(action, old_page=None):
             is_next_sensitive=is_running,
             is_next_visible=True)
 
-        displayer.set_visible('terminal_page__copy_button', True)
-        displayer.set_sensitive('terminal_page__copy_button', is_running)
+        displayer.set_visible('terminal_page__copy_header_bar_button', True)
+        displayer.set_sensitive('terminal_page__copy_header_bar_button', is_running)
 
         return
 
@@ -145,12 +217,12 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        displayer.set_visible('terminal_page__copy_button', True)
-        displayer.set_sensitive('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', True)
+        displayer.set_sensitive('terminal_page__copy_header_bar_button', False)
 
         return
 
-    elif action == 'next_terminal_page':
+    elif action == 'next-terminal':
 
         # The virtual environment will be started in enter().
 
@@ -166,8 +238,8 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        displayer.set_visible('terminal_page__copy_button', True)
-        displayer.set_sensitive('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', True)
+        displayer.set_sensitive('terminal_page__copy_header_bar_button', False)
 
         return
 
@@ -189,7 +261,7 @@ def enter(action, old_page=None):
 
         return
 
-    elif action == 'copy':
+    elif action == 'copy-into-terminal':
 
         return
 
@@ -198,12 +270,18 @@ def enter(action, old_page=None):
         # Attempt to enter the virtual environment.
         console.enter_virtual_environment(update_status)
 
+        # Update the release description.
+        update_release_descriptions()
+
         return
 
-    elif action == 'next_terminal_page':
+    elif action == 'next-terminal':
 
         # Attempt to enter the virtual environment.
         console.enter_virtual_environment(update_status)
+
+        # Update the release description.
+        update_release_descriptions()
 
         return
 
@@ -212,28 +290,103 @@ def enter(action, old_page=None):
         return 'unknown'
 
 
+def update_release_descriptions():
+
+    logger.log_label('Update the release descriptions')
+
+    description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
+
+    file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
+    update_release_description(file_path, 'PRETTY_NAME', description)
+
+    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
+    update_release_description(file_path, 'DISTRIB_DESCRIPTION', description)
+
+
+def update_release_description(file_path, key, value):
+
+    logger.log_value('The release description file is', file_path)
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.read()
+            match = re.search(r'%s=(.*)' % key, lines)
+            if match:
+                logger.log_value('The current release description is', match.group(1))
+            if model.is_changed_volume_id:
+                is_update_required = True
+                logger.log_value('Update the release description?', 'Yes; the volume id changed')
+            elif match and 'customized using Cubic on' in match.group(1):
+                is_update_required = True
+                logger.log_value('Update the release description?', 'Yes; the time stamp changed')
+            else:
+                is_update_required = False
+                logger.log_value('Update the release description?', 'No; using custom release description')
+            if is_update_required:
+                logger.log_value('The new release description is', value)
+                search_text = '%s.*' % key
+                replace_text = '%s=%s' % (key, value)
+                program = os.path.join(model.application.directory, 'commands', 'replace-text')
+                command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, file_path)
+                result, exit_status, signal_status = execute_synchronous(command)
+                logger.log_value('The result is', result)
+                logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    except Exception as exception:
+        logger.log_value('Error. The release description could not be updated due to', exception)
+
+
+def update_release_description_ORIGINAL():
+
+    logger.log_label('Update the release description')
+
+    description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
+
+    # Update PRETTY_NAME in /usr/lib/os-release. (/etc/os-release is a
+    # sym-link to this file).
+    target_file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
+    search_text = 'PRETTY_NAME.*'
+    replace_text = 'PRETTY_NAME=%s' % description
+    program = os.path.join(model.application.directory, 'commands', 'replace-text')
+    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, target_file_path)
+    result, exit_status, signal_status = execute_synchronous(command)
+    logger.log_value('The result is', result)
+    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+
+    # Update DISTRIB_DESCRIPTION in /etc/os-release.
+    target_file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
+    search_text = 'DISTRIB_DESCRIPTION.*'
+    replace_text = 'DISTRIB_DESCRIPTION=%s' % description
+    program = os.path.join(model.application.directory, 'commands', 'replace-text')
+    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, target_file_path)
+    result, exit_status, signal_status = execute_synchronous(command)
+    logger.log_value('The result is', result)
+    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+
+    # TODO: Account for errors (or ignore errors?)
+    # logger.log_value('Unable to update the disk information in', file_path)
+
+
 def leave(action, new_page=None):
 
     if action == 'back':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', False)
 
         # The terminal continues running whenever the application
-        # navigates away from the terminal page, so the pseudo terminal
+        # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
-        sleep(0.250)
+        time.sleep(SLEEP_0250_MS)
 
         return
 
-    elif action == 'copy':
+    elif action == 'copy-into-terminal':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', False)
 
         return
 
@@ -241,23 +394,23 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', False)
 
         # The terminal continues running whenever the application
-        # navigates away from the terminal page, so the pseudo terminal
+        # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
-        sleep(0.250)
+        time.sleep(SLEEP_0250_MS)
 
     elif action == 'quit':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', False)
 
         # The terminal continues running whenever the application
-        # navigates away from the terminal page, so the pseudo terminal
+        # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
@@ -269,10 +422,10 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('terminal_page__copy_button', False)
+        displayer.set_visible('terminal_page__copy_header_bar_button', False)
 
         # The terminal continues running whenever the application
-        # navigates away from the terminal page, so the pseudo terminal
+        # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
@@ -286,11 +439,13 @@ def leave(action, new_page=None):
 ########################################################################
 
 
-def selected_filepaths(filepaths):
+def selected_uris(uris):
 
-    logger.log_value('Selected filepaths', filepaths)
+    model.selected_uris = uris
+    logger.log_value('The selected uris are', model.selected_uris)
 
-    model.uris = filepaths
+    model.current_directory = console.get_current_directory()
+    logger.log_value('The current directory is', model.current_directory)
 
     # Go to the copy page.
 
@@ -302,7 +457,7 @@ def selected_filepaths(filepaths):
     # page. The pseudo terminal process must be explicitly killed by
     # executing the exit_virtual_environment() function of the
     # console module.
-    handle_navigation('copy')
+    handle_navigation('copy-into-terminal')
 
 
 ########################################################################
@@ -322,11 +477,11 @@ def on_terminal_page__terminal_child_exited(*args):
         logger.log_value('The argument is', arg)
 
 
-def on_clicked__terminal_page__copy_button(widget):
+def on_clicked__terminal_page__copy_header_bar_button(widget):
 
     logger.log_title('Clicked terminal page copy button')
 
-    copy_file_chooser.open(selected_filepaths)
+    copy_file_chooser.open(selected_uris)
 
 
 def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info, drag_time):
@@ -350,7 +505,11 @@ def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info,
     if text is not None:
         console.send_text_to_terminal(text)
     else:
-        model.uris = data.get_uris()
+        model.selected_uris = data.get_uris()
+        logger.log_value('The selected uris are', model.selected_uris)
+
+        model.current_directory = console.get_current_directory()
+        logger.log_value('The current directory is', model.current_directory)
 
         # Go to the copy page.
 
@@ -362,7 +521,7 @@ def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info,
         # page. The pseudo terminal process must be explicitly killed by
         # executing the exit_virtual_environment() function of the
         # console module.
-        handle_navigation('copy')
+        handle_navigation('copy-into-terminal')
 
 
 def on_button_press_event__terminal_page(widget, event):
@@ -432,7 +591,7 @@ def on_button_release_event__terminal_page__copy_text_menu_item(*args):
 def on_button_release_event__terminal_page__paste_file_menu_item(*args):
 
     clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-    model.uris = clipboard.wait_for_uris()
+    model.selected_uris = clipboard.wait_for_uris()
 
     # Go to the copy page.
 
@@ -445,7 +604,7 @@ def on_button_release_event__terminal_page__paste_file_menu_item(*args):
     # executing the exit_virtual_environment() function of the
     # console module.
 
-    handle_navigation('copy')
+    handle_navigation('copy-into-terminal')
 
 
 def on_button_release_event__terminal_page__paste_text_menu_item(*args):
@@ -481,7 +640,7 @@ def update_status(status):
 
     # Reset buttons based on status.
     displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=status)
-    displayer.set_sensitive('terminal_page__copy_button', status)
+    displayer.set_sensitive('terminal_page__copy_header_bar_button', status)
 
     # Display the status.
     if status:

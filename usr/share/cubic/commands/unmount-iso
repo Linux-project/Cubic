@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# delete                                                               #      
+# unmount-iso                                                          #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,7 +27,7 @@
 #                                                                      #
 ########################################################################
 
-# Delete a file or directory for Cubic.
+# Unmount an ISO for Cubic.
 
 ########################################################################
 # Arguments
@@ -35,14 +35,14 @@
 
 program=${0}
 number_arguments=${#}
-target_path=${1}
+iso_image_mount_point=${1}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
-# echo "target path................. ${target_path}."
+# echo "iso image mount point....... ${target_path}"
 
 ########################################################################
 # Command
 ########################################################################
 
-rm -rf "${target_path}"
+umount "${iso_image_mount_point}"

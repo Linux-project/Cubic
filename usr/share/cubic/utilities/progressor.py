@@ -27,21 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from ctypes import c_long, py_object, pythonapi
-from datetime import datetime
-from os import sync
-from re import compile
-from pexpect import EOF
-from threading import Event, Thread
-from time import sleep, time
-from traceback import format_exc
-
-from constants import CYAN, GREEN, RED
-from constants import NORMAL
-from constants import START_PERCENT, FINAL_PERCENT, SCALE_FACTOR
-from utilities import logger
-from utilities import processor
-
 ########################################################################
 # References
 ########################################################################
@@ -50,11 +35,30 @@ from utilities import processor
 # https://stackoverflow.com/questions/41679513/python-pexpect-pxssh-getting-the-exit-status
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import ctypes
+import datetime
+import os
+import pexpect
+import re
+import threading
+import time
+import traceback
+
+from constants import CYAN, GREEN, RED
+from constants import NORMAL
+from constants import START_PERCENT, FINAL_PERCENT, SCALE_FACTOR
+from utilities import logger
+from utilities import processor
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 # Pattern to match percent in the output. The format is "###.##%".
-PERCENT_PATTERN = compile(r'[0-9]{1,3}(\.[0-9]{2}){0,1}%')
+PERCENT_PATTERN = re.compile(r'[0-9]{1,3}(\.[0-9]{2}){0,1}%')
 
 # Number of steps in the progress at 0%.
 START_POSITION = int(START_PERCENT * SCALE_FACTOR)  # steps
@@ -90,17 +94,17 @@ class InterruptException(Exception):
         return 'Interrupt Exception'
 
 
-class ProgressTracker(Thread):
+class ProgressTracker(threading.Thread):
 
     def __init__(self, progress_callback):
 
         self.progress_callback = progress_callback
-        self.unblock_event = Event()
+        self.unblock_event = threading.Event()
         self.target_position = START_POSITION
-        self.time = time()
+        self.time = time.time()
         self.delay = -1
 
-        Thread.__init__(self, daemon=True)
+        threading.Thread.__init__(self, daemon=True)
 
     def block(self, is_block):
 
@@ -140,7 +144,7 @@ class ProgressTracker(Thread):
         if target_position > previous_target_position:
             if is_debug: print(CYAN + '▹ Progress: {:6.2f} %'.format(percent) + NORMAL)
             previous_time = self.time
-            self.time = time()
+            self.time = time.time()
             delta_time = self.time - previous_time
             delta_target_position = target_position - previous_target_position
             self.delay = delta_time / delta_target_position
@@ -165,19 +169,19 @@ class ProgressTracker(Thread):
                 if is_debug: self.print_values(position, self.target_position, self.delay, self.is_blocked())
                 self.wait()  # Wait until unblocked.
                 position += 1
-                sleep(self.delay)
+                time.sleep(self.delay)
 
             self.progress_callback(position / SCALE_FACTOR)
             if is_debug: self.print_values(position, self.target_position, self.delay, self.is_blocked())
 
         except InterruptException as exception:
             logger.log_value('Interrupted the progress tracker', exception)
-            # logger.log_value('The tracekback is', format_exc())
+            # logger.log_value('The tracek back is', traceback.format_exc())
             # return exception
 
         except Exception as exception:
             logger.log_value('Error while running the progress tracker', exception)
-            # logger.log_value('The tracekback is', format_exc())
+            # logger.log_value('The tracek back is', traceback.format_exc())
             # return exception
 
         logger.log_value('The progress tracker', 'Stopped')
@@ -185,7 +189,7 @@ class ProgressTracker(Thread):
     def stop(self):
 
         logger.log_value('Stop the progress tracker with id', self.ident)
-        pythonapi.PyThreadState_SetAsyncExc(c_long(self.ident), py_object(InterruptException))
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(self.ident), ctypes.py_object(InterruptException))
         self.block(False)
         # Do not join this thread because it may block the application.
         # self.join()
@@ -198,10 +202,11 @@ class ProgressTracker(Thread):
             '| Position: {:6.2f} % | '
             'Target: {:6.2f} % | '
             'Delay: {:8.5f} | '
-            '{:>9} |'.format(position / SCALE_FACTOR,
-                             target_position / SCALE_FACTOR,
-                             delay,
-                             RED + 'Blocked  ' + NORMAL if is_blocked else GREEN + 'Unblocked' + NORMAL))
+            '{:>9} |'.format(
+                position / SCALE_FACTOR,
+                target_position / SCALE_FACTOR,
+                delay,
+                RED + 'Blocked  ' + NORMAL if is_blocked else GREEN + 'Unblocked' + NORMAL))
         if is_blocked: print('=' * 71)
 
 
@@ -213,9 +218,9 @@ class ProgressTracker(Thread):
 # If you wish to get the exit status of the child you must call the
 # close() method. The exit or signal status of the child will be stored
 # in self.exitstatus or self.signalstatus. If the child exited normally
-# then exitstatus will store the exit return code and signalstatus will
+# then exit_status will store the exit return code and signal_status will
 # be None. If the child was terminated abnormally with a signal then
-# signalstatus will store the signal value and exitstatus will be None.
+# signal_status will store the signal value and exit_status will be None.
 
 # When using rsync, note that the percentages can fluctuate, sometimes
 # reverting to a lower value than previously reported.
@@ -227,7 +232,7 @@ def process_command(command, progress_tracker, working_directory=None):
     complete information from the running process.
     """
 
-    current_time = datetime.now()
+    current_time = datetime.datetime.now()
     formatted_time = '{:%H:%M:%S.%f}'.format(current_time)
     logger.log_value('The process started at', formatted_time)
 
@@ -237,7 +242,7 @@ def process_command(command, progress_tracker, working_directory=None):
         while not done:
             try:
                 process.expect(PERCENT_PATTERN)
-            except EOF as exception:
+            except pexpect.EOF as exception:
                 # Close the process to obtain the exit status.
                 process.close()
                 done = (process.exitstatus is OK)
@@ -247,7 +252,7 @@ def process_command(command, progress_tracker, working_directory=None):
                 progress_tracker.update(percent)
 
     except Exception as exception:
-        current_time = datetime.now()
+        current_time = datetime.datetime.now()
         progress_tracker.stop()
         process.close()
         logger.log_value('Error', 'An exception occurred.')
@@ -255,17 +260,17 @@ def process_command(command, progress_tracker, working_directory=None):
         logger.log_value('The process stopped at', formatted_time)
         logger.log_value('The exit status, signal status is', '%s, %s' % (process.exitstatus, process.signalstatus))
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', format_exc())
+        logger.log_value('The tracek back is', traceback.format_exc())
         message = process.before.strip().replace('\r\n', '\n')
         logger.log_value('The message is', message)
         if is_debug: print_message_and_exception(message, exception)
         return exception, message
 
     else:
-        sync()  # Write data to disk.
+        os.sync()  # Write data to disk.
         # Only wait after an EOF, otherwise the process will block.
         process.wait()
-        current_time = datetime.now()
+        current_time = datetime.datetime.now()
         if percent < FINAL_PERCENT:
             logger.log_value('Adjust the final percent', 'from {:.2f}% to {:.2f}%'.format(percent, FINAL_PERCENT))
             progress_tracker.update(FINAL_PERCENT)

@@ -27,12 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from utilities import configuration
-from utilities import displayer
-from utilities import iso_utilities
-from utilities import logger
-from utilities import model
-
 ########################################################################
 # References
 ########################################################################
@@ -42,7 +36,17 @@ from utilities import model
 # https://fastcompression.blogspot.com/2015/01/zstd-stronger-compression-algorithm.html
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+from pages import options_page
+from utilities import configuration
+from utilities import displayer
+from utilities import iso_utilities
+from utilities import model
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'compression_page'
@@ -148,6 +152,9 @@ def leave(action, new_page=None):
     elif action == 'quit':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        options_page.preseed_tab.remove_tree()
+        options_page.boot_tab.remove_tree()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 

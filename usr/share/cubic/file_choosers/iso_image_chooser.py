@@ -27,12 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from os.path import isfile
-
-from utilities import displayer
-from utilities import logger
-from utilities import model
-
 ########################################################################
 # References
 ########################################################################
@@ -40,7 +34,18 @@ from utilities import model
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import os
+import traceback
+
+from utilities import displayer
+from utilities import logger
+from utilities import model
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'iso_image_chooser'
@@ -51,13 +56,13 @@ callback = None
 ########################################################################
 
 
-def open(calback, filepath=None):
+def open(calback, file_path=None):
 
     displayer.set_sensitive('window', False)
-    if filepath:
-        displayer.show_filechooser(name, filepath)
+    if file_path:
+        displayer.show_file_chooser(name, file_path)
     else:
-        displayer.show_filechooser(name, model.application.user_home)
+        displayer.show_file_chooser(name, model.application.user_home)
     set_callback(calback)
 
 
@@ -74,11 +79,11 @@ def set_callback(new_callback):
     callback = new_callback
 
 
-def get_selected_filepath():
+def get_selected_file_path():
 
     dialog = model.builder.get_object(name)
-    filepath = dialog.get_filename()
-    return filepath
+    file_path = dialog.get_filename()
+    return file_path
 
 
 def on_clicked__iso_image_chooser__cancel_button(widget):
@@ -90,15 +95,27 @@ def on_clicked__iso_image_chooser__cancel_button(widget):
 def on_clicked__iso_image_chooser__select_button(widget):
 
     logger.log_title('Clicked ISO image chooser select button')
-    filepath = get_selected_filepath()
+    file_path = get_selected_file_path()
     try:
-        isfile(filepath)
+        os.path.isfile(file_path)
         close()
-        logger.log_value('The selected filepath is', filepath)
-        callback(filepath)
+        logger.log_value('The selected file path is', file_path)
+        callback(file_path)
     except TypeError as exception:
-        logger.log_value('Error. The selected filepath is', filepath)
-        filepath = None
+        logger.log_value('Error. The selected file path is', file_path)
+        logger.log_value('The exception is', exception)
+        logger.log_value('The tracek back is', traceback.format_exc())
+        file_path = None
+
+
+def on_map__iso_image_chooser__header_bar(header_bar):
+
+    is_visible = header_bar.is_visible()
+    button_box = model.builder.get_object('iso_image_chooser__button_box')
+
+    # Do not use GLib.idle_add because hiding the button_box must be
+    # immediate.
+    button_box.set_visible(not is_visible)
 
 
 def on_delete_event__iso_image_chooser(widget, event):

@@ -27,13 +27,17 @@
 #                                                                      #
 ########################################################################
 
-from utilities.fields import Fields
-
 ########################################################################
 # References
 ########################################################################
 
 # N/A
+
+########################################################################
+# Imports
+########################################################################
+
+from utilities.fields import Fields
 
 ########################################################################
 # Application
@@ -57,7 +61,7 @@ project.cubic_version = None
 project.create_date = None
 project.modify_date = None
 project.directory = None
-project.configuration_filepath = None
+project.configuration_file_path = None
 project.iso_mount_point = None
 project.custom_root_directory = None
 project.custom_disk_directory = None
@@ -67,7 +71,7 @@ project.custom_disk_directory = None
 ########################################################################
 
 original = Fields('original')
-original.iso_filename = None
+original.iso_file_name = None
 original.iso_directory = None
 original.iso_volume_id = None
 original.iso_release_name = None
@@ -80,7 +84,7 @@ original.iso_release_notes_url = None
 
 custom = Fields('custom')
 custom.iso_version_number = None
-custom.iso_filename = None
+custom.iso_file_name = None
 custom.iso_directory = None
 custom.iso_volume_id = None
 custom.iso_release_name = None
@@ -94,15 +98,15 @@ custom.iso_release_notes_url = None
 status = Fields('status')
 status.is_success_copy = False
 status.is_success_extract = False
+status.iso_template = None
 status.casper_directory = None
 status.iso_checksum = None
-status.iso_checksum_filename = None
+status.iso_checksum_file_name = None
 
 ########################################################################
 # Options
 ########################################################################
 
-# TODO: Consider moving this to "Status"
 options = Fields('options')
 options.boot_configurations = None
 options.compression = None
@@ -111,23 +115,40 @@ options.compression = None
 # Page Specific
 ########################################################################
 
-# Terminal Page --> Copy Page
-# Used to exchange information between the Terminal page and the Copy
-# page. This value is initialized whenever files are dragged onto the
-# terminal or whenever files are selected for copying from the Terminal
-# page.
-uris = None
+#-----------------------------------------------------------------------
+# Project page, Terminal page
+#-----------------------------------------------------------------------
 
-# Prepare Page --> Options Page --> Generate Page
-# Used to exchange information between the Prepare page, the Options
-# page and the Generate page to indicate which preseed files should be
-# deleted. This value is initialized to an empty list on the Prepare
-# page, when a new preseed file list is created.
-# TODO: Instead of initializing this value on the Prepare page, we could
-#  set this to [] in the Options page's setup function on action 'next',
-# since we are guaranteed that the preseed list is a new list, created
-# on the Prepare page.
-delete_list = None
+is_changed_volume_id = False
+
+#-----------------------------------------------------------------------
+# Terminal page, Preseed tab, Iso Boot tab
+#-----------------------------------------------------------------------
+
+# Stores the current directory selected on the Terminal page, the
+# Preseed tab, or the Iso Boot tab. This is the directory to copy files
+# into.
+current_directory = None
+
+# Stores the uniform resource identifiers of files selected on the
+# Terminal page, the Preseed tab, or the Iso Boot tab. These are the
+# files to be copied.
+selected_uris = None
+
+#-----------------------------------------------------------------------
+# Prepare page, Linux Kernels tab
+#-----------------------------------------------------------------------
+
+selected_kernel_index = None
+
+# This is a list of kernel detail dictionaries.
+kernel_details_list = None
+
+#-----------------------------------------------------------------------
+# Prepare page, Packages page
+#-----------------------------------------------------------------------
+
+package_details_list = None
 
 ########################################################################
 # Page Help
@@ -140,10 +161,14 @@ help_urls = {
     'delete_page': 'https://answers.launchpad.net/cubic/+faq/3228',
     'extract_page': 'https://answers.launchpad.net/cubic/+faq/3227',
     'terminal_page': 'https://answers.launchpad.net/cubic/+faq/3226',
-    'copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
+    'terminal_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
     'prepare_page': 'https://answers.launchpad.net/cubic/+faq/3224',
     'packages_page': 'https://answers.launchpad.net/cubic/+faq/3223',
     'options_page': 'https://answers.launchpad.net/cubic/+faq/3222',
+    # TODO: Create a new hep page for preseed_copy_page.
+    'preseed_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
+    # TODO: Create a new hep page for opens terminal_copy_page.
+    'boot_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
     'compression_page': 'https://answers.launchpad.net/cubic/+faq/3221',
     'generate_page': 'https://answers.launchpad.net/cubic/+faq/3220',
     'finish_page': 'https://answers.launchpad.net/cubic/+faq/3219'

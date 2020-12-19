@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# migrate-directory                                                    #
+# move-path                                                            #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,7 +27,7 @@
 #                                                                      #
 ########################################################################
 
-# Migrate a directory for Cubic.
+# Move a file or directory for Cubic.
 
 ########################################################################
 # Constants
@@ -51,9 +51,9 @@ user=${3}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
-# echo "source path................. ${source_path}."
-# echo "target path................. ${target_path}."
-# echo "user........................ ${user}."
+# echo "source path................. ${source_path}"
+# echo "target path................. ${target_path}"
+# echo "user........................ ${user}"
 
 ########################################################################
 # Command

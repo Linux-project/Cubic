@@ -27,18 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from glob import glob
-from hashlib import md5
-from os import access, F_OK, R_OK, W_OK, X_OK
-from os import mkdir, remove, walk
-from os.path import exists, getsize, islink, join
-from re import sub
-from shutil import copy, rmtree
-
-from utilities import logger
-from utilities import model
-from utilities.processor import execute_synchronous
-
 ########################################################################
 # References
 ########################################################################
@@ -46,7 +34,22 @@ from utilities.processor import execute_synchronous
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import glob
+import hashlib
+import magic
+import os
+import re
+import shutil
+
+from utilities import logger
+from utilities import model
+from utilities.processor import execute_synchronous
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 # N/A
@@ -57,10 +60,9 @@ from utilities.processor import execute_synchronous
 
 
 def make_directory(directory):
-    logger.log_label('Create directory')
-    logger.log_value('Directory', directory)
-    if not exists(directory):
-        mkdir(directory)
+    logger.log_value('Create directory', directory)
+    if not os.path.exists(directory):
+        os.mkdir(directory)
     else:
         logger.log_value('Cannot create directory', 'Directory already exists')
 
@@ -68,64 +70,74 @@ def make_directory(directory):
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_directory(directory):
     logger.log_value('Delete directory', directory)
-    if exists(directory) or islink(filepath):
+    if os.path.exists(directory):
         try:
             # TODO: Check if permissions prevent this operation?
             # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
             # rmtree(path, ignore_errors=False, onerror=HANDLER)
             # TODO: Path must point to a directory (but not a symbolic link to a directory).
-            rmtree(directory)
+            shutil.rmtree(directory)
             result = 'Successfully deleted %s' % directory
-            exitstatus = 0
-            signalstatus = None
+            exit_status = 0
+            signal_status = None
         except OSError as exception:
             logger.log_value('Exception', exception)
             # type, value, traceback = sys.exc_info()
             result = 'Error deleting %s' % directory
-            exitstatus = None
-            signalstatus = 1
+            exit_status = None
+            signal_status = 1
     else:
         logger.log_value('Cannot delete directory', 'Directory does not exist')
         result = 'Directory %s does not exist.' % directory
-        exitstatus = None
-        signalstatus = 1
+        exit_status = None
+        signal_status = 1
 
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exitstatus, signalstatus))
+    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
 
-    return result, exitstatus, signalstatus
+    return result, exit_status, signal_status
+
+
+def get_files_with_pattern(pattern, exclusion_list=None):
+    if exclusion_list:
+        logger.log_value('Get files with pattern', pattern)
+        logger.log_value('Exclude files files from the list', exclusion_list)
+        return [file_path for file_path in glob.glob(pattern) if file_path not in exclusion_list]
+    else:
+        logger.log_value('Get files with pattern', pattern)
+        return [file_path for file_path in glob.glob(pattern)]
 
 
 def delete_files_with_pattern(pattern, exclusion_list=None):
     if exclusion_list:
         logger.log_value('Delete existing files with pattern', pattern)
         logger.log_value('Keep files', exclusion_list)
-        [remove(delete_filepath) for delete_filepath in glob(pattern) if delete_filepath not in exclusion_list]
+        [os.remove(delete_file_path) for delete_file_path in glob.glob(pattern) if delete_file_path not in exclusion_list]
     else:
         logger.log_value('Delete existing files with pattern', pattern)
-        [remove(delete_filepath) for delete_filepath in glob(pattern)]
+        [os.remove(delete_file_path) for delete_file_path in glob.glob(pattern)]
 
 
 # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
-def delete_path_as_root(filepath):
-    logger.log_value('Delete file as root', filepath)
-    program = join(model.application.directory, 'commands', 'delete')
-    command = 'pkexec "%s" "%s"' % (program, filepath)
-    result, exitstatus, signalstatus = execute_synchronous(command)
+def delete_path_as_root(file_path):
+    logger.log_value('Delete file as root', file_path)
+    program = os.path.join(model.application.directory, 'commands', 'delete-path')
+    command = 'pkexec "%s" "%s"' % (program, file_path)
+    result, exit_status, signal_status = execute_synchronous(command)
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exitstatus, signalstatus))
+    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
 
-    return result, exitstatus, signalstatus
+    return result, exit_status, signal_status
 
 
 def get_directory_size(start_path):
     logger.log_label('Calculate directory size')
     logger.log_value('Directory', start_path)
     total_size = 0
-    for dirpath, dirnames, filenames in walk(start_path):
-        for filename in filenames:
-            filepath = join(dirpath, filename)
-            total_size += getsize(filepath)
+    for dirpath, dirnames, file_names in os.walk(start_path):
+        for file_name in file_names:
+            file_path = os.path.join(dirpath, file_name)
+            total_size += os.path.getsize(file_path)
 
     logger.log_value('Directory size is', total_size)
     return total_size
@@ -133,52 +145,54 @@ def get_directory_size(start_path):
 
 def directory_is_writable(directory):
     logger.log_value('Check if directory is writable', directory)
-    is_writable = access(directory, R_OK | W_OK | X_OK)
+    is_writable = os.access(directory, os.R_OK | os.W_OK | os.X_OK)
     logger.log_value('Directory is writable?', is_writable)
     return is_writable
 
 
-def get_directory_for_file(filename, start_path):
-    logger.log_label('Get directory for file')
-    logger.log_value('Filename', filename)
-    logger.log_value('Directory', start_path)
+def get_directory_for_file(file_name, start_path):
 
-    # TODO" can we return None, instead of '' ?
+    logger.log_value('Get directory for %s in' % file_name, start_path)
+
     directory = ''
-    for dirpath, dirnames, filenames in walk(start_path):
-        if filename in filenames:
+    # The directory may be a symlink.
+    for dirpath, dirnames, file_names in os.walk(start_path, followlinks=True):
+        if file_name in file_names:
             directory = dirpath
+            break
 
     if directory:
-        logger.log_value('%s is in' % filename, directory)
+        logger.log_value('%s is in' % file_name, directory)
     else:
-        logger.log_value('%s is not in' % filename, directory)
+        logger.log_value('%s is not in' % file_name, directory)
+
+    return directory
 
 
-def get_filepaths(start_path):
+def get_file_paths(start_path):
     logger.log_value('Get all file paths in the directory', start_path)
-    filepaths = []
-    for dirpath, dirnames, filenames in walk(start_path):
-        for filename in filenames:
-            filepath = join(dirpath, filename)
-            filepaths.append(filepath)
-    return filepaths
+    file_paths = []
+    for dirpath, dirnames, file_names in os.walk(start_path):
+        for file_name in file_names:
+            file_path = os.path.join(dirpath, file_name)
+            file_paths.append(file_path)
+    return file_paths
 
 
 def get_text_file_paths(start_path):
     logger.log_value('Get all text file paths in the directory', start_path)
-    filepaths = []
-    for dirpath, dirnames, filenames in walk(start_path):
-        for filename in filenames:
-            filepath = join(dirpath, filename)
+    file_paths = []
+    for dirpath, dirnames, file_names in os.walk(start_path):
+        for file_name in file_names:
+            file_path = os.path.join(dirpath, file_name)
             try:
-                with open(filepath, 'r') as file:
+                with open(file_path, 'r') as file:
                     file.read()
             except UnicodeDecodeError:
                 pass
             else:
-                filepaths.append(filepath)
-    return filepaths
+                file_paths.append(file_path)
+    return file_paths
 
 
 ########################################################################
@@ -186,35 +200,92 @@ def get_text_file_paths(start_path):
 ########################################################################
 
 
-def get_filesystem_type(filepath):
+def get_file_system_type(file_path):
 
     # ext, ext2, ext3, ext4, nfs, ntfs, vfat, zfs
-    logger.log_value('Get file system type', filepath)
-    command = 'df --output=fstype "%s"' % filepath
-    result, exitstatus, signalstatus = execute_synchronous(command)
-    filesystem_type = None
-    if not exitstatus and not signalstatus:
-        filesystem_type = result.splitlines()[1].upper()
-    logger.log_value('The file system type is', filesystem_type)
-    return filesystem_type
+    logger.log_value('Get file system type', file_path)
+    command = 'df --output=fstype "%s"' % file_path
+    result, exit_status, signal_status = execute_synchronous(command)
+    file_system_type = None
+    if not exit_status and not signal_status:
+        file_system_type = result.splitlines()[1].upper()
+    logger.log_value('The file system type is', file_system_type)
+    return file_system_type
 
 
-def calculate_md5_hash(filepath, buffer_size=2**20):
+def get_mime_information(file_path):
+    """
+    Arguments:
+        file_path: The full file path
+    Returns:
+        file_type (str) - The mime type
+        file_icon (str) - The icon name
+    """
+
+    # Icons:
+    #
+    # 'application': 'application-x-executable',
+    # 'audo': 'audio-x-generic',
+    # 'folder': 'folder-symbolic',
+    # 'font': 'font-x-generic',
+    # 'image': 'image-x-generic',
+    # 'package': 'package-x-generic',
+    # 'text': 'text-x-generic',
+    # 'video': 'video-x-generic'
+
+    # Get mime type and mime subtype.
+    if os.path.isdir(file_path):
+        mime_type, mime_subtype = 'folder', None
+    else:
+        _, extension = os.path.splitext(file_path)
+        if extension in ['.txt', '.seed']:
+            mime_type, mime_subtype = 'text', None
+        else:
+            content_mime_type = magic.from_file(file_path, True)
+            mime_type, mime_subtype = content_mime_type.split('/')
+
+    # TODO *.pcx files are image files, but can not be opened in Cubic as pixbuf.
+
+    # Return mime type and icon name.
+    if mime_type == 'image':
+        return 'image', 'image-x-generic'
+    if mime_type == 'audo':
+        return 'audio', 'audio-x-generic'
+    if mime_type == 'folder':
+        return 'folder', 'folder-symbolic'
+    if mime_type == 'font':
+        return 'font', 'font-x-generic'
+    if mime_type == 'image':
+        return 'image', 'image-x-generic'
+    if mime_type == 'inode' and mime_subtype == 'x-empty':
+        return 'text', 'text-x-generic'
+    if mime_type == 'package':
+        return 'package', 'package-x-generic'
+    if mime_type == 'text':
+        return 'text', 'text-x-generic'
+    if mime_type == 'video':
+        return 'video', 'video-x-generic'
+    if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(file_path) == 1:
+        return 'text', 'text-x-generic'
+    return None, 'application-x-executable'
+
+
+def calculate_md5_hash(file_path, buffer_size=2**20):
     """
     Calculate the md5 hash by reading a file into a buffer. The default buffer
     size is 2^20 bytes = 1048576 bytes = 1 MiB (Mebibytes).
     """
 
-    md5_hash = md5()
+    md5_hash = hashlib.md5()
     try:
-        with open(filepath, 'rb') as file:
+        with open(file_path, 'rb') as file:
             data = file.read(buffer_size)
             while data:
                 md5_hash.update(data)
                 data = file.read(buffer_size)
         return md5_hash.hexdigest()
     except Exception as exception:
-        logger.log_value('Unable to calculate the md5 hash for file', filepath)
+        logger.log_value('Unable to calculate the md5 hash for file', file_path)
         logger.log_value('The exception is', exception)
         return None
 
@@ -225,51 +296,51 @@ def copy_file(source_path, target_path):
     logger.log_value('Source file path', source_path)
     logger.log_value('Target file path', target_path)
 
-    copy(source_path, target_path)
+    shutil.copy(source_path, target_path)
 
 
 # TODO: Check if this function is terminated when the thread is killed?
-def delete_file(filepath):
-    logger.log_value('Delete file', filepath)
-    if exists(filepath) or islink(filepath):
+def delete_file(file_path):
+    logger.log_value('Delete file', file_path)
+    if os.path.exists(file_path):
         try:
             # TODO: Check if permissions prevent this operation?
-            remove(filepath)
-            result = 'Successfully deleted %s' % filepath
-            exitstatus = 0
-            signalstatus = None
+            os.remove(file_path)
+            result = 'Successfully deleted %s' % file_path
+            exit_status = 0
+            signal_status = None
         except OSError as exception:
             logger.log_value('Exception', exception)
             # type, value, traceback = sys.exc_info()
-            result = 'Error deleting %s' % filepath
-            exitstatus = None
-            signalstatus = 1
+            result = 'Error deleting %s' % file_path
+            exit_status = None
+            signal_status = 1
     else:
         logger.log_value('Cannot delete file', 'File does not exist')
-        result = 'File %s does not exist.' % filepath
-        exitstatus = None
-        signalstatus = 1
+        result = 'File %s does not exist.' % file_path
+        exit_status = None
+        signal_status = 1
 
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exitstatus, signalstatus))
+    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
 
-    return result, exitstatus, signalstatus
+    return result, exit_status, signal_status
 
 
-def replace_text_in_file(filepath, search_text, replacement_text):
+def replace_text_in_file(file_path, search_text, replacement_text):
     logger.log_label('Replace text in file')
-    logger.log_value('Filepath', filepath)
+    logger.log_value('Filepath', file_path)
     logger.log_value('Search text', search_text)
     logger.log_value('Replacement text', replacement_text)
 
     error = True
 
-    if not filepath:
+    if not file_path:
         logger.log_value('Cannot replace text', 'File not specified')
         return error
 
-    if not exists(filepath):
-        logger.log_value('Cannot replace text', 'File %s does not exist' % filepath)
+    if not os.path.exists(file_path):
+        logger.log_value('Cannot replace text', 'File %s does not exist' % file_path)
         return error
 
     if not search_text:
@@ -284,9 +355,9 @@ def replace_text_in_file(filepath, search_text, replacement_text):
     #       Currently, this is done in repackage_iso_page.update_disk_name(), but it should be done here.
     error = False
 
-    with open(filepath, 'r+') as file:
+    with open(file_path, 'r+') as file:
         file_contents = file.read()
-        file_contents = sub(search_text, replacement_text, file_contents)
+        file_contents = re.sub(search_text, replacement_text, file_contents)
         file.seek(0)
         file.truncate()
         file.write(file_contents)

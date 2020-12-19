@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# copy_page.py                                                         #
+# terminal_copy_page.py                                                #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,16 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from os.path import abspath, join
-from urllib.parse import urlparse, unquote
-
-from utilities.console import get_current_directory
-from utilities import displayer
-from utilities import iso_utilities
-from utilities import logger
-from utilities import model
-from utilities.progressor import show_progress
-
 ########################################################################
 # References
 ########################################################################
@@ -44,16 +34,29 @@ from utilities.progressor import show_progress
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
 ########################################################################
 
-name = 'copy_page'
+import os
+import urllib
 
-current_directory = None
+from constants import FINAL_PERCENT
+from utilities import console
+from utilities import constructor
+from utilities import displayer
+from utilities import iso_utilities
+from utilities import logger
+from utilities import model
+from utilities.progressor import show_progress
+
+########################################################################
+# Global Variables & Constants
+########################################################################
+
+name = 'terminal_copy_page'
+
 total_files = 0
 file_number = 0
-
-PERCENT_STOP = 100
 
 ########################################################################
 # Navigation Functions
@@ -62,25 +65,23 @@ PERCENT_STOP = 100
 
 def setup(action, old_page=None):
 
-    if action == 'copy':
+    if action == 'copy-into-terminal':
 
-        global current_directory
-        # TODO: Truncate path current_directory so it only starts at root.
-        current_directory = get_current_directory()
+        # The selected uris and current directory are set in terminal_page.selected_uris() method.
 
-        total_files = len(model.uris)
-        if total_files == 1:
-            label = 'Copy one file to %s' % current_directory
-        else:
-            label = 'Copy %s files to %s' % (total_files, current_directory)
+        count = len(model.selected_uris)
+        count_text = constructor.number_as_text(count)
+        files_text = constructor.get_plural('file', 'files', count)
+        # label = 'Copy %s %s to <span font_family="monospace">%s</span>...' % (count_text, files_text, model.current_directory)
+        label = 'Copy %s %s to %s...' % (count_text, files_text, model.current_directory)
 
         # Create a file details list of files to be copied.
-        file_details_list = create_file_details_list(model.uris)
+        file_details_list = create_file_details_list(model.selected_uris)
 
-        displayer.update_label('copy_page__progress_label', label)
-        displayer.update_progress_bar_text('copy_page__copy_files_progress_bar', None)
-        displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', 0)
-        displayer.update_list_store('copy_page__file_details__list_store', file_details_list)
+        displayer.update_label('terminal_copy_page__progress_label', label)
+        displayer.update_progress_bar_text('terminal_copy_page__copy_files_progress_bar', None)
+        displayer.update_progress_bar_percent('terminal_copy_page__copy_files_progress_bar', 0)
+        displayer.update_list_store('terminal_copy_page__file_details__list_store', file_details_list)
 
         return
 
@@ -91,7 +92,7 @@ def setup(action, old_page=None):
 
 def enter(action, old_page=None):
 
-    if action == 'copy':
+    if action == 'copy-into-terminal':
 
         displayer.reset_buttons(
             back_button_label='Cancel',
@@ -100,7 +101,7 @@ def enter(action, old_page=None):
             is_back_sensitive=True,
             is_back_visible=True,
             next_button_label='Copy',
-            next_action='copy',
+            next_action='copy-into-terminal',
             next_button_style='suggested-action',
             is_next_sensitive=True,
             is_next_visible=True)
@@ -117,19 +118,18 @@ def leave(action, new_page=None):
     if action == 'cancel':
 
         # TODO: Make sure the next button is enabled (only if the virtual environment is active).
-        #       This may need to be done on the termnal_page setup function for 'cancel' and for 'copy'.
+        #       This may need to be done on the terminal_page setup function for 'cancel' and for 'copy-into-terminal'.
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return
 
-    elif action == 'copy':
+    elif action == 'copy-into-terminal':
 
         # TODO: Make sure the next button is enabled (only if the virtual environment is active).
-        #       This may need to be done on the termnal_page setup function for 'cancel' and for 'copy'.
+        #       This may need to be done on the terminal_page setup function for 'cancel' and for 'copy-into-terminal'.
         displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
 
-        global current_directory
-        copy_files(current_directory, model.uris)
+        copy_files(model.current_directory, model.selected_uris)
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -139,6 +139,11 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        # The terminal continues running whenever the application
+        # navigates away from the Terminal page, so the pseudo terminal
+        # process must be explicitly killed.
+        console.exit_virtual_environment()
+
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
@@ -146,6 +151,11 @@ def leave(action, new_page=None):
     else:
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # The terminal continues running whenever the application
+        # navigates away from the Terminal page, so the pseudo terminal
+        # process must be explicitly killed.
+        console.exit_virtual_environment()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -167,8 +177,8 @@ def create_file_details_list(uris):
     file_details_list = []
 
     for file_number, uri in enumerate(uris):
-        filepath = unquote(urlparse(uri).path)
-        file_details_list.append([0, filepath])
+        file_path = urllib.parse.unquote(urllib.parse.urlparse(uri).path)
+        file_details_list.append([0, file_path])
 
     return file_details_list
 
@@ -187,14 +197,13 @@ def copy_files(current_directory, uris):
     global total_files
     total_files = len(uris)
 
-    # It is necessary to concatenate the custom root directory and
-    # the current directory using "+" because join() discards
-    # the current directory, which is considered an absolute path: "If a
-    # component is an absolute path, all previous components are thrown
-    # away and joining continues from the absolute path component."
+    # It is necessary to strip the leading '/' from the current directory,
+    # otherwise os.path.join() considers the current directory to be an absolute
+    # path and discards the custom root directory prefix: "If a component
+    # is an absolute path, all previous components are thrown away and
+    # os.path.joining continues from the absolute path component."
     # (See https://docs.python.org/3/library/os.path.html).
-    # TODO: consider using (a + '/' + b)
-    target_directory = abspath(model.project.custom_root_directory + current_directory)
+    target_directory = os.path.abspath(os.path.join(model.project.custom_root_directory, current_directory.strip(os.path.sep)))
 
     logger.log_value('The current directory is', current_directory)
     logger.log_value('The custom root directory is', model.project.custom_root_directory)
@@ -203,39 +212,39 @@ def copy_files(current_directory, uris):
     global file_number
     for file_number, uri in enumerate(uris):
 
-        filepath = unquote(urlparse(uri).path)
+        file_path = urllib.parse.unquote(urllib.parse.urlparse(uri).path)
 
         if total_files == 1:
-            # label = 'Copying one file to %s' % relative_directory
-            label = 'Copying one file to %s' % target_directory
+            # label = 'Copying one file to <span font_family="monospace">%s</span>' % current_directory
+            label = 'Copying one file to %s...' % current_directory
         else:
-            # label = 'Copying file %s of %s to %s' % (file_number + 1, total_files, relative_directory)
-            label = 'Copying file %s of %s to %s' % (file_number + 1, total_files, target_directory)
+            # label = 'Copying file %s of %s to <span font_family="monospace">%s</span>' % (file_number + 1, total_files, current_directory)
+            label = 'Copying file %s of %s to %s...' % (file_number + 1, total_files, current_directory)
 
-        displayer.update_label('copy_page__progress_label', label)
-        displayer.scroll_to_tree_view_row('copy_page__treeview', file_number)
-        displayer.select_tree_view_row('copy_page__treeview', file_number)
+        displayer.update_label('terminal_copy_page__progress_label', label)
+        displayer.scroll_to_tree_view_row('terminal_copy_page__tree_view', file_number)
+        displayer.select_tree_view_row('terminal_copy_page__tree_view', file_number)
 
-        copy_file(filepath, file_number, target_directory, total_files)
+        copy_file(file_path, file_number, target_directory, total_files)
 
 
-def copy_file(filepath, file_number, directory, total_files):
+def copy_file(file_path, file_number, directory, total_files):
 
     logger.log_label('Copy file number %s of %s' % (file_number + 1, total_files))
 
-    logger.log_value('The file is', filepath)
+    logger.log_value('The file is', file_path)
     logger.log_value('The target directory is', directory)
 
-    program = join(model.application.directory, 'commands', 'copy-path')
-    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, filepath, directory, 'root')
+    program = os.path.join(model.application.directory, 'commands', 'copy-path')
+    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, file_path, directory, 'root')
 
     # The progress callback function.
     def progress_callback(percent):
         global total_files
         global file_number
-        total_percent = (PERCENT_STOP * file_number + percent) / total_files
-        displayer.update_progress_bar_percent('copy_page__copy_files_progress_bar', total_percent)
-        displayer.update_list_store_progress_bar_percent('copy_page__file_details__list_store', file_number, percent)
+        total_percent = (FINAL_PERCENT * file_number + percent) / total_files
+        displayer.update_progress_bar_percent('terminal_copy_page__copy_files_progress_bar', total_percent)
+        displayer.update_list_store_progress_bar_percent('terminal_copy_page__file_details__list_store', file_number, percent)
         if total_percent % 10 == 0:
             logger.log_value('Completed', '%i%%' % total_percent)
 

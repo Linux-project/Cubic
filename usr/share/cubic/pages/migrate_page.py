@@ -27,12 +27,22 @@
 #                                                                      #
 ########################################################################
 
-from getpass import getuser
-from os import system
-from os.path import exists, join
-from time import sleep
+########################################################################
+# References
+########################################################################
+
+# N/A
+
+########################################################################
+# Imports
+########################################################################
+
+import getpass
+import os
+import time
 
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+from constants import SLEEP_1000_MS
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
@@ -41,13 +51,7 @@ from utilities import model
 from utilities.processor import execute_synchronous
 
 ########################################################################
-# References
-########################################################################
-
-# N/A
-
-########################################################################
-# Globals & Constants
+# Global Variables & Constants
 ########################################################################
 
 name = 'migrate_page'
@@ -80,7 +84,7 @@ def setup(action, old_page=None):
         display_version = constructor.get_major_minor_version(model.project.cubic_version)
         displayer.update_entry('migrate_page__project_cubic_version_entry', display_version)
         displayer.update_entry('migrate_page__project_directory_entry', model.project.directory)
-        # displayer.update_entry('migrate_page__original_iso_filename_entry', model.original.iso_filename)
+        # displayer.update_entry('migrate_page__original_iso_file_name_entry', model.original.iso_file_name)
         displayer.update_entry('migrate_page__custom_iso_version_number_entry', model.custom.iso_version_number)
         displayer.update_entry('migrate_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
         displayer.update_entry('migrate_page__custom_iso_release_name_entry', model.custom.iso_release_name)
@@ -126,13 +130,14 @@ def leave(action, new_page=None):
         # The following fields must be set before leaving this page:
         #
         # 1. model.project.cubic_version
+        #    - Set to model.application.cubic_version when the
+        #      configuration is saved.
         # 2. model.project.create_date
-        # 3. model.project.modify_date
-        # 4. model.project.directory
-        # 5. model.project.configuration_filepath
-        # 6. model.project.iso_mount_point
-        # 7. model.project.custom_root_directory
-        # 8. model.project.custom_disk_directory
+        # 3. model.project.directory
+        # 4. model.project.configuration_file_path
+        # 5. model.project.iso_mount_point
+        # 6. model.project.custom_root_directory
+        # 7. model.project.custom_disk_directory
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -166,7 +171,7 @@ def leave(action, new_page=None):
 def on_clicked__migrate_page__project_directory_open_button(widget):
 
     command = 'xdg-open %s &' % model.project.directory
-    system(command)
+    os.system(command)
 
 
 ########################################################################
@@ -182,29 +187,25 @@ def migrate_configuration():
     is_error = False
 
     logger.log_label('Migrate the configuration')
-    logger.log_value('Update the configuration file to the current format', model.project.configuration_filepath)
+    logger.log_value('Update the configuration file to the current format', model.project.configuration_file_path)
 
     displayer.update_status('migrate_page__configuration', PROCESSING)
-    sleep(1.000)
+    time.sleep(SLEEP_1000_MS)
 
     try:
-        # Update the Cubic version.
-        model.project.cubic_version = model.application.cubic_version
-        # Initialize the configuration to use the 2020 Layout.
-        configuration.initialize()
         configuration.save()
-        logger.log_value('Migrated', model.project.configuration_filepath)
+        logger.log_value('Migrated', model.project.configuration_file_path)
         displayer.update_status('migrate_page__configuration', OK)
         displayer.update_label('migrate_page__configuration_message', '')
     except Exception as exception:
-        logger.log_value('Error. Unable to migrate', model.project.configuration_filepath)
+        logger.log_value('Error. Unable to migrate', model.project.configuration_file_path)
         logger.log_value('The exception is', exception)
         displayer.update_status('migrate_page__configuration', ERROR)
-        displayer.update_label('migrate_page__configuration_message', 'Error. Unable to migrate %s.' % model.project.configuration_filepath)
+        displayer.update_label('migrate_page__configuration_message', 'Error. Unable to migrate %s.' % model.project.configuration_file_path)
         is_error = True
 
     # Pause to allow the user to see the result.
-    sleep(1.000)
+    time.sleep(SLEEP_1000_MS)
 
     return is_error
 
@@ -217,7 +218,7 @@ def migrate_custom_root():
     is_error = False
 
     # Create the custom root directory used by the old project structure.
-    source_path = join(model.project.directory, OLD_CUSTOM_ROOT_DIRECTORY)
+    source_path = os.path.join(model.project.directory, OLD_CUSTOM_ROOT_DIRECTORY)
 
     # The custom root directory for the new project structure was set on
     # the start page.
@@ -228,15 +229,15 @@ def migrate_custom_root():
     logger.log_value('To', target_path)
 
     displayer.update_status('migrate_page__custom_root', PROCESSING)
-    sleep(1.000)
+    time.sleep(SLEEP_1000_MS)
 
-    if exists(source_path):
+    if os.path.exists(source_path):
 
-        program = join(model.application.directory, 'commands', 'migrate-directory')
+        program = os.path.join(model.application.directory, 'commands', 'move-path')
         command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
-        result, exitstatus, signalstatus = execute_synchronous(command)
+        result, exit_status, signal_status = execute_synchronous(command)
 
-        if not exitstatus:
+        if not exit_status:
             logger.log_value('Migrated', source_path)
             displayer.update_status('migrate_page__custom_root', OK)
             displayer.update_label('migrate_page__custom_root_message', '')
@@ -255,7 +256,7 @@ def migrate_custom_root():
         is_error = True
 
     # Pause to allow the user to see the result.
-    sleep(1.000)
+    time.sleep(SLEEP_1000_MS)
 
     return is_error
 
@@ -268,7 +269,7 @@ def migrate_custom_disk():
     is_error = False
 
     # Create the custom disk directory used by the old project structure.
-    source_path = join(model.project.directory, OLD_CUSTOM_DISK_DIRECTORY)
+    source_path = os.path.join(model.project.directory, OLD_CUSTOM_DISK_DIRECTORY)
 
     # The custom disk directory for the new project structure was set on
     # the start page.
@@ -276,7 +277,7 @@ def migrate_custom_disk():
 
     # Get the current user to whom the ownership of the custom disk
     # directory will be recursively changed.
-    user = getuser()
+    user = getpass.getuser()
 
     logger.log_label('Migrate the customized disk')
     logger.log_value('From', source_path)
@@ -284,15 +285,15 @@ def migrate_custom_disk():
     logger.log_value('User', user)
 
     displayer.update_status('migrate_page__custom_disk', PROCESSING)
-    sleep(1.000)
+    time.sleep(SLEEP_1000_MS)
 
-    if exists(source_path):
+    if os.path.exists(source_path):
 
-        program = join(model.application.directory, 'commands', 'migrate-directory')
+        program = os.path.join(model.application.directory, 'commands', 'move-path')
         command = 'pkexec "%s" "%s" "%s" "%s"' % (program, source_path, target_path, user)
-        result, exitstatus, signalstatus = execute_synchronous(command)
+        result, exit_status, signal_status = execute_synchronous(command)
 
-        if not exitstatus:
+        if not exit_status:
             logger.log_value('Migrated', source_path)
             displayer.update_status('migrate_page__custom_disk', OK)
             displayer.update_label('migrate_page__custom_disk_message', '')
@@ -311,6 +312,6 @@ def migrate_custom_disk():
         is_error = True
 
     # Pause to allow the user to see the result.
-    sleep(1.000)
+    time.sleep(SLEEP_1000_MS)
 
     return is_error

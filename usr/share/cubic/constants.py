@@ -28,10 +28,80 @@
 ########################################################################
 
 ########################################################################
+# References
+########################################################################
+
+# https://docs.python.org/3/library/locale.html#locale.setlocale
+# http://manpages.ubuntu.com/manpages/groovy/man1/xorrisofs.1.html
+
+########################################################################
+# Imports
+########################################################################
+
+import locale
+
+########################################################################
+# Localization
+########################################################################
+
+# This sets the locale for all categories to the user’s default setting
+# (typically specified in the LANG environment variable). An empty
+# string specifies the user's default settings. According to POSIX, a
+# program which has not called setlocale(LC_ALL, '') runs using the
+# portable 'C' locale. Calling setlocale(LC_ALL, '') lets it use the
+# default locale as defined by the LANG variable.
+locale.setlocale(locale.LC_ALL, '')
+
+TIME_STAMP_FORMAT = '%c'
+LONG_TIME_STAMP_FORMAT = '%A %B %d, %Y %I:%M %p'
+VERSION_NUMBER_FORMAT = '%Y.%m.%d'
+
+########################################################################
 # Application
 ########################################################################
 
-NEW_CUBIC_VERSION = '2020.04'
+# Cubic release versions:
+#
+# "Classic" 2019 Version:
+#   From: Release 2015.11-1  on 11/05/2015
+#   To:   Release 2020.02-62 on 02/01/2020
+#
+# "Release" 2020 Version:
+#   From: Release 2020.04-1  on 04/26/2020
+#   To:   Release 2020.10-35 on 10/23/2020
+#
+# "Release" 2021 Version:
+#   From: Release 2020.12-36 on 12/19/2020
+#   To:   Release 20??.??-?? on ??/??/20??
+
+# These values are initial release version numbers.
+CUBIC_VERSION_2019 = '2015.11-1'  # Releases 2015.11-1 thru 2020.02-62
+CUBIC_VERSION_2020 = '2020.04-1'  # Releases 2020.04-1 thru 2020.10-35
+CUBIC_VERSION_2021 = '2020.12-36'  # Releases 2020.12-36 thru present
+
+# Sleep in milliseconds.
+SLEEP_0125_MS = 0.125
+SLEEP_0250_MS = 0.250
+SLEEP_0500_MS = 0.500
+SLEEP_1000_MS = 1.000
+SLEEP_1500_MS = 1.500
+
+# Size measurements.
+KIB = 1024**1  # 1 kibibytes (KiB) =          1024 bytes
+MIB = 1024**2  # 1 mibibytes (MiB) =       1048576 bytes
+GIB = 1024**3  # 1 gibibytes (GiB) =    1073741824 bytes
+TIB = 1024**4  # 1 tebibytes (TiB) = 1099511627776 bytes
+
+# Units for xorriso command: 1024, 1024k, 1024m, 1024g, 2048, 512.
+MULTIPLES = {'k': KIB, 'm': MIB, 'g': GIB, 't': TIB, 's': 2048, 'd': 512}
+
+# The maximum ISO size is 8 tebibytes.
+MAXIMUM_DISK_SIZE_BYTES = 8 * TIB
+MAXIMUM_DISK_SIZE_GIB = MAXIMUM_DISK_SIZE_BYTES / GIB
+
+########################################################################
+# File Names
+########################################################################
 
 ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
@@ -41,14 +111,8 @@ CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
 # ext, ext2, ext3, ext4, nfs, ntfs, vfat, zfs; FAT16, FAT32, and exFAT
 EXCLUDED_FILESYSTEM_TYPES = ['FAT', 'FAT16', 'FAT32', 'NTFS', 'VFAT']
 
-KIB = 1024**1  # 1 kibibytes (KiB) =          1024 bytes
-MIB = 1024**2  # 1 mibibytes (MiB) =       1048576 bytes
-GIB = 1024**3  # 1 gibibytes (GiB) =    1073741824 bytes
-TIB = 1024**4  # 1 tebibytes (TiB) = 1099511627776 bytes
-
-# The maximum ISO size is 8 tebibytes.
-MAXIMUM_DISK_SIZE_BYTES = 8 * TIB
-MAXIMUM_DISK_SIZE_GIB = MAXIMUM_DISK_SIZE_BYTES / GIB
+IMAGE_FILE_NAME = 'partition-%s.img'
+LOCK_FILE_NAME = '.#custom-root.lck'
 
 ########################################################################
 # Status
@@ -64,8 +128,8 @@ BLANK = 5
 # Ubuntu uses "isolinux/txt.cfg"; other distros use different files.
 # - Fix for bug #1885464: Linux Mint uses "isolinux/isolinux.cfg."
 # - Fix for bug #???????: Elementry uses "isolinux/live.cfg."
-# DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/txt.cfg'
-DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/live.cfg,isolinux/isolinux.cfg,isolinux/txt.cfg'
+DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/txt.cfg'
+### DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/live.cfg,isolinux/isolinux.cfg,isolinux/txt.cfg'
 
 NUMBERS_LOWER_CASE = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 NUMBERS_TITLE_CASE = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine']
@@ -84,7 +148,7 @@ START_PERCENT = 0  # %
 FINAL_PERCENT = 100  # %
 
 ########################################################################
-# Font Colors
+# Terminal & Font Colors
 ########################################################################
 
 # TODO: Replace colors in other modules with these

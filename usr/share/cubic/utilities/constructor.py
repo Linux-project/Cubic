@@ -27,24 +27,29 @@
 #                                                                      #
 ########################################################################
 
-from datetime import datetime
-from os.path import exists, getctime, join
-from re import search, sub
-from time import localtime, strftime
-
-from constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
-from constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
-from utilities import logger
-from utilities.processor import execute_synchronous
-
 ########################################################################
 # References
 ########################################################################
 
-# https://strftime.org/
+# https://time.strftime.org/
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import os
+import re
+import time
+import zlib
+
+from constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
+from constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
+from constants import TIME_STAMP_FORMAT, VERSION_NUMBER_FORMAT
+from utilities import logger
+from utilities.processor import execute_synchronous
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 # N/A
@@ -76,13 +81,13 @@ def get_os_distribution(root_directory='/'):
     Arguments:
     root_directory - The root directory of the OS.
                      May be '/' to get the distribution of the host OS.
-                     May be model.project.custom_disk_directory to get
+                     May be model.project.custom_root_directory to get
                      the distribution of the custom OS.
     """
 
     distribution = None
-    file_path = join(root_directory, 'etc/os-release')
-    if exists(file_path):
+    file_path = os.path.join(root_directory, 'etc/os-release')
+    if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
                 key, value = line.split('=')
@@ -107,8 +112,8 @@ def os_is_distribution(distribution, root_directory='/'):
     """
     is_distribution = False
     distribution = distribution.lower()
-    file_path = join(root_directory, 'etc/os-release')
-    if exists(file_path):
+    file_path = os.path.join(root_directory, 'etc/os-release')
+    if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
                 key, value = line.split('=')
@@ -137,7 +142,7 @@ def os_is_distribution(distribution, root_directory='/'):
 def get_kernel_version():
 
     command = 'uname -r'
-    result, exitstatus, signalstatus = execute_synchronous(command)
+    result, exit_status, signal_status = execute_synchronous(command)
 
     return result
 
@@ -145,7 +150,7 @@ def get_kernel_version():
 def get_package_version(package_name):
 
     command = 'dpkg-query --showformat="${Version}\n" --show "%s"' % package_name
-    result, exitstatus, signalstatus = execute_synchronous(command)
+    result, exit_status, signal_status = execute_synchronous(command)
 
     return result
 
@@ -157,53 +162,63 @@ def get_major_minor_version(package_version):
 
 def construct_custom_iso_version_number():
 
-    # logger.log_label('Construct custom ISO image version number')
+    # logger.log_label('Construct custom disk image version number')
 
-    version = datetime.now().strftime('%Y.%m.%d')
+    version = time.strftime(VERSION_NUMBER_FORMAT)
 
-    # logger.log_value('The constructed custom ISO image version number is', date_time)
+    # logger.log_value('The constructed custom disk image version number is', version)
 
     return version
 
 
-def get_current_date_time():
+def get_current_time_stamp():
 
-    # logger.log_label('Get current date time')
+    # logger.log_label('Get current time stamp in localized format')
 
-    date_time = datetime.now().strftime('%A %B %d, %Y %I:%M %p')
+    time_stamp = time.strftime(TIME_STAMP_FORMAT)
 
-    return date_time
+    return time_stamp
 
 
-def get_file_date_time(filepath):
+def reformat_time_stamp(time_stamp, new_format, old_format=TIME_STAMP_FORMAT):
+
+    # logger.log_label('Get current time stamp in localized format')
+
+    struct_time = time.strptime(time_stamp, old_format)
+    time_stamp = time.strftime(new_format, struct_time)
+
+    return time_stamp
+
+
+def get_file_time_stamp(file_path):
 
     # logger.log_label('Get file create date time')
 
-    date_time = getctime(filepath)
-    date_time = localtime(date_time)
-    date_time = strftime('%A %B %d, %Y %I:%M %p', date_time)
+    time_stamp = os.path.getmtime(file_path)
+    time_stamp = time.localtime(time_stamp)
+    time_stamp = time.strftime(TIME_STAMP_FORMAT, time_stamp)
 
-    return date_time
+    return time_stamp
 
 
-def construct_configuration_filepath(project_directory):
+def construct_configuration_file_path(project_directory):
 
-    # logger.log_label('Construct configuration filepath')
+    # logger.log_label('Construct configuration file path')
     # logger.log_value('The project directory is', project_directory)
 
-    configuration_filepath = join(project_directory, 'cubic.conf')
-    # logger.log_value('The constructed configuration filepath is', configuration_filepath)
+    configuration_file_path = os.path.join(project_directory, 'cubic.conf')
+    # logger.log_value('The constructed configuration file path is', configuration_file_path)
 
-    return configuration_filepath
+    return configuration_file_path
 
 
 def construct_original_iso_mount_point(project_directory):
 
-    # logger.log_label('Construct original ISO image mount point')
+    # logger.log_label('Construct original disk image mount point')
     # logger.log_value('The project directory is', project_directory)
 
-    original_iso_mount_point = join(project_directory, ISO_MOUNT_POINT)
-    # logger.log_value('The constructed original ISO image mount point is', original_iso_mount_point)
+    original_iso_mount_point = os.path.join(project_directory, ISO_MOUNT_POINT)
+    # logger.log_value('The constructed original disk image mount point is', original_iso_mount_point)
 
     return original_iso_mount_point
 
@@ -213,7 +228,7 @@ def construct_custom_root_directory(project_directory):
     # logger.log_label('Construct custom root directory')
     # logger.log_value('The project directory is', project_directory)
 
-    custom_root_directory = join(project_directory, CUSTOM_ROOT_DIRECTORY)
+    custom_root_directory = os.path.join(project_directory, CUSTOM_ROOT_DIRECTORY)
     # logger.log_value('The constructed custom root directory is', custom_root_directory)
 
     return custom_root_directory
@@ -221,32 +236,32 @@ def construct_custom_root_directory(project_directory):
 
 def construct_custom_disk_directory(project_directory):
 
-    # logger.log_label('Construct custom live ISO directory')
+    # logger.log_label('Construct custom disk directory')
     # logger.log_value('The project directory is', project_directory)
 
-    custom_disk_directory = join(project_directory, CUSTOM_DISK_DIRECTORY)
-    # logger.log_value('The constructed custom live ISO directory is', custom_disk_directory)
+    custom_disk_directory = os.path.join(project_directory, CUSTOM_DISK_DIRECTORY)
+    # logger.log_value('The constructed custom disk directory is', custom_disk_directory)
 
     return custom_disk_directory
 
 
-def construct_custom_iso_filename(original_iso_filename, custom_iso_version_number):
+def construct_custom_iso_file_name(original_iso_file_name, custom_iso_version_number):
 
-    logger.log_label('Construct custom ISO image filename')
-    logger.log_value('The original ISO image filename is', original_iso_filename)
-    logger.log_value('The custom ISO image version number is', custom_iso_version_number)
+    logger.log_label('Construct custom disk image file name')
+    logger.log_value('The original disk image file name is', original_iso_file_name)
+    logger.log_value('The custom disk image version number is', custom_iso_version_number)
 
-    if original_iso_filename:
+    if original_iso_file_name:
 
-        # original_iso_filename = sub('\.iso$', '',
-        #                                      original_iso_filename)
-        original_iso_filename = original_iso_filename[:-4]
+        # original_iso_file_name = re.sub('\.iso$', '',
+        #                                      original_iso_file_name)
+        original_iso_file_name = original_iso_file_name[:-4]
 
-        # original_iso_filename ◀ (text_a)(version)(text_b)
+        # original_iso_file_name ◀ (text_a)(version)(text_b)
         pattern = r'(^.*)(\d{4}\.\d{2}\.\d{2})(.*$)'
-        match = search(pattern, original_iso_filename)
+        match = re.search(pattern, original_iso_file_name)
         if match:
-            # Version exists in original_iso_filename.
+            # Version exists in original_iso_file_name.
             text_a = match.group(1)
             version = match.group(2)
             text_b = match.group(3)
@@ -255,7 +270,7 @@ def construct_custom_iso_filename(original_iso_filename, custom_iso_version_numb
             logger.log_value('text b', text_b)
             # text_a ◀ (text_c)(release)(point_release)(text_d)
             pattern = r'(^.*?)(\d{2}\.\d{1,2})(\.\d{1,2}){0,1}(.*$)'
-            match = search(pattern, text_a)
+            match = re.search(pattern, text_a)
             if match:
                 # Release exists in text_a.
                 text_c = match.group(1)
@@ -274,7 +289,7 @@ def construct_custom_iso_filename(original_iso_filename, custom_iso_version_numb
                     logger.log_value('new text a', text_a)
             else:
                 # text_b ◀ (text_c)(release)(point_release)(text_d)
-                match = search(pattern, text_b)
+                match = re.search(pattern, text_b)
                 if match:
                     # Release exists in text_b.
                     text_c = match.group(1)
@@ -291,14 +306,14 @@ def construct_custom_iso_filename(original_iso_filename, custom_iso_version_numb
                         # text_b = text_c + release + point_release + text_d
                         text_b = '%s%s%s%s' % (text_c, release, point_release, text_d)
                         logger.log_value('new text b', text_b)
-            # custom_iso_filename = text_a + custom_iso_version_number + text_b + '.iso'
-            custom_iso_filename = '%s%s%s.iso' % (text_a, custom_iso_version_number, text_b)
+            # custom_iso_file_name = text_a + custom_iso_version_number + text_b + '.iso'
+            custom_iso_file_name = '%s%s%s.iso' % (text_a, custom_iso_version_number, text_b)
         else:
             # original_volume_id ◀ (text_a)(release)(point_release)(text_b)
             pattern = r'(^.*?)(\d{2}\.\d{1,2})(\.\d{1,2}){0,1}(.*$)'
-            match = search(pattern, original_iso_filename)
+            match = re.search(pattern, original_iso_file_name)
             if match:
-                # Release exists in original_iso_filename.
+                # Release exists in original_iso_file_name.
                 text_a = match.group(1)
                 release = match.group(2)
                 point_release = match.group(3)
@@ -310,29 +325,29 @@ def construct_custom_iso_filename(original_iso_filename, custom_iso_version_numb
                 if not point_release:
                     point_release = '.0'
                     logger.log_value('new point_release', point_release)
-                # custom_iso_filename = text_a + release + point_release + '-' + custom_iso_version_number + text_b + '.iso'
-                custom_iso_filename = '%s%s%s-%s%s.iso' % (text_a, release, point_release, custom_iso_version_number, text_b)
+                # custom_iso_file_name = text_a + release + point_release + '-' + custom_iso_version_number + text_b + '.iso'
+                custom_iso_file_name = '%s%s%s-%s%s.iso' % (text_a, release, point_release, custom_iso_version_number, text_b)
             else:
-                # custom_iso_filename = original_iso_filename + '-' + custom_iso_version_number + '.iso'
-                custom_iso_filename = '%s-%s.iso' % (original_iso_filename, custom_iso_version_number)
-        # logger.log_value('The constructed custom ISO image filename is', custom_iso_filename)
+                # custom_iso_file_name = original_iso_file_name + '-' + custom_iso_version_number + '.iso'
+                custom_iso_file_name = '%s-%s.iso' % (original_iso_file_name, custom_iso_version_number)
+        # logger.log_value('The constructed custom disk image file name is', custom_iso_file_name)
     else:
-        custom_iso_filename = None
-        # logger.log_value('The constructed custom ISO image filename is', custom_iso_filename)
+        custom_iso_file_name = None
+        # logger.log_value('The constructed custom disk image file name is', custom_iso_file_name)
 
-    return custom_iso_filename
+    return custom_iso_file_name
 
 
 def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_number):
 
-    logger.log_label('Construct custom ISO image volume id')
-    logger.log_value('The original ISO image volume id is', original_iso_volume_id)
-    logger.log_value('The custom ISO image version number is', custom_iso_version_number)
+    logger.log_label('Construct custom disk image volume id')
+    logger.log_value('The original disk image volume id is', original_iso_volume_id)
+    logger.log_value('The custom disk image version number is', custom_iso_version_number)
 
     if original_iso_volume_id:
         # original_iso_volume_id ◀ (text_a)(version)(text_b)
         pattern = r'(^.*)(\d{4}\.\d{2}\.\d{2})(.*$)'
-        match = search(pattern, original_iso_volume_id)
+        match = re.search(pattern, original_iso_volume_id)
         if match:
             # Version exists in original_iso_volume_id.
             text_a = match.group(1)
@@ -343,7 +358,7 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
             logger.log_value('text b', text_b)
             # text_a ◀ (text_c)(release)(point_release)(text_d)
             pattern = r'(^.*?)(\d{2}\.\d{1,2})(\.\d{1,2}){0,1}(.*$)'
-            match = search(pattern, text_a)
+            match = re.search(pattern, text_a)
             if match:
                 # Release exists in text_a.
                 text_c = match.group(1)
@@ -362,7 +377,7 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
                     logger.log_value('new text a', text_a)
             else:
                 # text_b ◀ (text_c)(release)(point_release)(text_d)
-                match = search(pattern, text_b)
+                match = re.search(pattern, text_b)
                 if match:
                     # Release exists in text_b.
                     text_c = match.group(1)
@@ -384,7 +399,7 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
         else:
             # original_volume_id ◀ (text_a)(release)(point_release)(text_b)
             pattern = r'(^.*?)(\d{2}\.\d{1,2})(\.\d{1,2}){0,1}(.*$)'
-            match = search(pattern, original_iso_volume_id)
+            match = re.search(pattern, original_iso_volume_id)
             if match:
                 # Release exists in original_iso_volume_id.
                 text_a = match.group(1)
@@ -403,35 +418,46 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
             else:
                 # custom_iso_volume_id = original_iso_volume_id + ' ' + custom_iso_version_number
                 custom_iso_volume_id = '%s %s' % (original_iso_volume_id, custom_iso_version_number)
-        custom_iso_volume_id = custom_iso_volume_id[:32]
-        # logger.log_value('The constructed custom ISO image volume id is', custom_iso_volume_id)
+        # If volume id is longer than 32 characters, and there is a space
+        # within the last five positions, trim the space and subsequent
+        # characters.
+        if len(custom_iso_volume_id) > 32:
+            try:
+                index_of_space = custom_iso_volume_id.rindex(' ', 27, 32)
+                logger.log_value('The custom iso volume id is too long', 'Trim all characters after the space at index %s' % index_of_space)
+            except ValueError as exception:
+                custom_iso_volume_id = custom_iso_volume_id[:32]
+                logger.log_value('The custom iso volume id is too long', 'Trim to 32 characters')
+            else:
+                custom_iso_volume_id = custom_iso_volume_id[:index_of_space]
+        # logger.log_value('The constructed custom disk image volume id is', custom_iso_volume_id)
     else:
         custom_iso_volume_id = None
-        # logger.log_value('The constructed custom ISO image volume id is', custom_iso_volume_id)
+        # logger.log_value('The constructed custom disk image volume id is', custom_iso_volume_id)
 
     return custom_iso_volume_id
 
 
 def construct_custom_iso_release_name(original_iso_release_name):
 
-    # logger.log_label('Construct custom ISO image release name')
-    # logger.log_value('The original ISO image release name is', original_iso_release_name)
+    # logger.log_label('Construct custom disk image release name')
+    # logger.log_value('The original disk image release name is', original_iso_release_name)
 
     try:
-        custom_iso_release_name = 'Custom %s' % sub(r'^Custom\s*', '', original_iso_release_name)
+        custom_iso_release_name = 'Custom %s' % re.sub(r'^Custom\s*', '', original_iso_release_name)
     except Exception as exception:
-        logger.log_value('Encountered exception while creating custom ISO image release name', exception)
+        logger.log_value('Encountered exception while creating custom disk image release name', exception)
         custom_iso_release_name = ''
-    # logger.log_value('The constructed custom ISO image release name is', custom_iso_release_name)
+    # logger.log_value('The constructed custom disk image release name is', custom_iso_release_name)
 
     return custom_iso_release_name
 
 
 def construct_custom_iso_disk_name(custom_iso_volume_id, custom_iso_release_name):
 
-    # logger.log_label('Construct custom ISO image disk name')
-    # logger.log_value('The custom ISO image volume id is', custom_iso_volume_id)
-    # logger.log_value('The custom ISO image release name is', custom_iso_release_name)
+    # logger.log_label('Construct custom disk image disk name')
+    # logger.log_value('The custom disk image volume id is', custom_iso_volume_id)
+    # logger.log_value('The custom disk image release name is', custom_iso_release_name)
 
     if custom_iso_volume_id and custom_iso_release_name:
         custom_iso_disk_name = '%s "%s"' % (custom_iso_volume_id, custom_iso_release_name)
@@ -442,16 +468,16 @@ def construct_custom_iso_disk_name(custom_iso_volume_id, custom_iso_release_name
     else:
         custom_iso_disk_name = ''
 
-    # logger.log_value('The constructed custom ISO image disk name is', custom_iso_disk_name)
+    # logger.log_value('The constructed custom disk image disk name is', custom_iso_disk_name)
 
     return custom_iso_disk_name
 
 
 def construct_custom_iso_disk_name_ORIGINAL(custom_iso_volume_id, custom_iso_release_name):
 
-    # logger.log_label('Construct custom ISO image disk name')
-    # logger.log_value('The custom ISO image volume id is', custom_iso_volume_id)
-    # logger.log_value('The custom ISO image release name is', custom_iso_release_name)
+    # logger.log_label('Construct custom disk image disk name')
+    # logger.log_value('The custom disk image volume id is', custom_iso_volume_id)
+    # logger.log_value('The custom disk image release name is', custom_iso_release_name)
 
     # The custom_iso_volume_id and custom_iso_release_name may be empty
     # strings but are never None.
@@ -468,25 +494,43 @@ def construct_custom_iso_disk_name_ORIGINAL(custom_iso_volume_id, custom_iso_rel
     else:
         custom_iso_disk_name = ''
     '''
-    # logger.log_value('The constructed custom ISO image disk name is', custom_iso_disk_name)
+    # logger.log_value('The constructed custom disk image disk name is', custom_iso_disk_name)
 
     return custom_iso_disk_name
 
 
-def construct_custom_iso_checksum_filename(custom_iso_filename):
+def construct_custom_iso_checksum_file_name(custom_iso_file_name):
 
-    # logger.log_label('Construct custom ISO image checksum filename')
-    # logger.log_value('The custom ISO image filename is', custom_iso_filename)
+    # logger.log_label('Construct custom disk image checksum file name')
+    # logger.log_value('The custom disk image file name is', custom_iso_file_name)
 
     try:
-        # filename_root = splitext(custom_iso_filename)[0]
-        # filename_root = search(r'(.*?)\.iso*', custom_iso_filename).group(1)
-        # filename_root = search(r'(.*?)(?:(?:\.iso)*)$', custom_iso_filename).group(1)
-        custom_iso_checksum_filename = '%s.md5' % custom_iso_filename[:-4]
+        # file_name_root = splitext(custom_iso_file_name)[0]
+        # file_name_root = re.search(r'(.*?)\.iso*', custom_iso_file_name).group(1)
+        # file_name_root = re.search(r'(.*?)(?:(?:\.iso)*)$', custom_iso_file_name).group(1)
+        custom_iso_checksum_file_name = '%s.md5' % custom_iso_file_name[:-4]
     except Exception as exception:
-        logger.log_value('Encountered exception while creating custom ISO image checksum filename', exception)
-        custom_iso_checksum_filename = 'custom.md5'
+        logger.log_value('Encountered exception while creating custom disk image checksum file name', exception)
+        custom_iso_checksum_file_name = 'custom.md5'
 
-    # logger.log_value('The constructed custom ISO image checksum filename is', custom_iso_checksum_filename)
+    # logger.log_value('The constructed custom disk image checksum file name is', custom_iso_checksum_file_name)
 
-    return custom_iso_checksum_filename
+    return custom_iso_checksum_file_name
+
+
+def encode(t):
+
+    b = t.encode('utf-8')
+    z = zlib.compress(b)
+    h = z.hex().upper()
+
+    return h
+
+
+def decode(h):
+
+    z = bytes.fromhex(h)
+    b = zlib.decompress(z)
+    t = b.decode('utf-8')
+
+    return t

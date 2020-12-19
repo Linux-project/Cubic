@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# mount                                                                #
+# stop-process                                                         #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -27,7 +27,7 @@
 #                                                                      #
 ########################################################################
 
-# Mount an ISO for Cubic.
+# Terminate a process for Cubic.
 
 ########################################################################
 # Arguments
@@ -35,26 +35,18 @@
 
 program=${0}
 number_arguments=${#}
-iso_image_mount_point=${1}
-iso_image_filepath=${2}
+process_id=${1}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
-# echo "iso image mount point....... ${iso_image_mount_point}."
-# echo "iso image filepath.......... ${iso_image_filepath}."
+# echo "process id.................. $process_id"
 
 ########################################################################
 # Command
 ########################################################################
 
-mount --options loop "${iso_image_filepath}" "${iso_image_mount_point}"
+# The negative pid is used to kill all child processes.
 
-# Error codes
-#  1 = incorrect invocation permission
-#  2 = system error (out of memory, cannot fork, no more loop devices)
-#  4 = internal mount bug or missing nfs support in mount
-#  8 = user interrupt
-# 16 = problems writing or locking /etc/mtab
-# 32 = mount failure
-# 64 = some mount succeeded
+echo "kill -s SIGKILL -${process_id}"
+kill -s SIGKILL -${process_id}
 

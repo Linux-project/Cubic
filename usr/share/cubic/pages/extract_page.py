@@ -26,26 +26,43 @@
 # along with Cubic. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                      #
 ########################################################################
-
-from os import walk
-from os.path import join, relpath
-from time import sleep
-
-from utilities import configuration
-from utilities import displayer
-from utilities import iso_utilities
-from utilities import logger
-from utilities import model
-from utilities.progressor import show_progress
+"""
+Prior to entering this page:
+- model.status.iso_template must be set to None whenever
+  model.status.is_success_copy is set to False.
+- model.status.casper_directory must be set to None whenever
+  model.status.is_success_extract is set to False.
+"""
 
 ########################################################################
 # References
 ########################################################################
 
-# N/A
+# https://askubuntu.com/questions/1289400/remaster-installation-image-for-ubuntu-20-10
+# http://manpages.ubuntu.com/manpages/groovy/man1/xorriso.1.html
+# https://linux.die.net/man/8/mkisofs
+# http://manpages.ubuntu.com/manpages/groovy/man1/dd.1.html
+# https://stackoverflow.com/questions/65189149/best-regex-in-python-to-not-have-double-space-in-result-when-substring-is-remo/65189757#65189757
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import os
+import time
+
+from constants import IMAGE_FILE_NAME
+from constants import SLEEP_1000_MS
+from utilities import configuration
+from utilities import constructor
+from utilities import displayer
+from utilities import file_utilities, iso_utilities
+from utilities import logger
+from utilities import model
+from utilities.progressor import show_progress
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'extract_page'
@@ -73,19 +90,23 @@ def setup(action, old_page=None):
             is_next_sensitive=False,
             is_next_visible=True)
 
-        # Locate the compressed Linux file system.
+        # The template must always be None if is success copy is None.
+        # This should be set correctly on the Project page, but set it
+        # here as a precaution (in case the user edited the
+        # configuration file.
+        if not model.status.is_success_copy: model.status.iso_template = None
 
-        displayer.set_visible('extract_page__casper_directory_section', not model.status.casper_directory)
-        displayer.update_label('extract_page__casper_directory_message', '')
-        displayer.update_status('extract_page__casper_directory', displayer.BULLET)
+        # The casper directory must always be None if is success extract
+        # is None. This should be set correctly on the Project page, but
+        # set it here as a precaution (in case the user edited the
+        # configuration file.
+        if not model.status.is_success_extract: model.status.casper_directory = None
 
-        # Extract the compressed Linux file system.
+        # Identify important files on the original disk image.
 
-        displayer.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
-        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
-        # displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
-        displayer.update_label('extract_page__unsquashfs_message', '')
-        displayer.update_status('extract_page__unsquashfs', displayer.BULLET)
+        displayer.set_visible('extract_page__analyze_original_iso_section', not model.status.iso_template or not model.status.casper_directory)
+        displayer.update_label('extract_page__analyze_original_iso_message', '')
+        displayer.update_status('extract_page__analyze_original_iso', displayer.BULLET)
 
         # Copy important files from the original disk image.
 
@@ -95,6 +116,14 @@ def setup(action, old_page=None):
         displayer.update_label('extract_page__copy_original_iso_files_message', '')
         displayer.update_status('extract_page__copy_original_iso_files', displayer.BULLET)
 
+        # Extract the compressed Linux file system.
+
+        displayer.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
+        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
+        # displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
+        displayer.update_label('extract_page__unsquashfs_message', '')
+        displayer.update_status('extract_page__unsquashfs', displayer.BULLET)
+
         return
 
     else:
@@ -103,29 +132,80 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Specific success or error messages should be displayed in the called
+    functions, but the display status the model status values should be
+    set here because they depend on the outcome of multiple functions.
+
+    Assume that prior to entering this page:
+
+    - model.status.iso_template is set to None whenever
+      model.status.is_success_copy is set to False.
+
+    - model.status.casper_directory is set to None whenever
+      model.status.is_success_extract is set to False.
+    """
 
     if action == 'next':
 
-        # Determine casper relative directory
-        if not model.status.casper_directory:
-            is_error = identify_casper_relative_directory()
-            # Pause to allow the user to see the result.
-            sleep(1.000)
+        # Identify important files on the original disk image.
+        if not model.status.iso_template or not model.status.casper_directory:
+
+            displayer.update_status('extract_page__analyze_original_iso', displayer.PROCESSING)
+            time.sleep(SLEEP_1000_MS)
+
+            # Identify the template for the original disk image.
+            if not model.status.iso_template:
+
+                # Delete the old image files. Ignore errors.
+                pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
+                file_utilities.delete_files_with_pattern(pattern)
+
+                # Set model.status.iso_template.
+                is_error = identify_iso_template()
+                if is_error:
+                    # Stay on this page.
+                    return
+
+            # Identify the casper relative directory.
+            if not model.status.casper_directory:
+
+                is_error = identify_casper_directory()
+                if is_error:
+                    # Stay on this page.
+                    return
+
+            # Success. Pause to allow the user to see the result.
+            displayer.update_label('extract_page__analyze_original_iso_message', 'Success.')
+            displayer.update_status('extract_page__analyze_original_iso', displayer.OK)
+            time.sleep(SLEEP_1000_MS)
+
+        # Copy original disk files.
+        if not model.status.is_success_copy:
+
+            displayer.update_status('extract_page__copy_original_iso_files', displayer.PROCESSING)
+
+            # Copy original disk files.
+            is_error = copy_original_iso_files()
             if is_error: return  # Stay on this page.
+
+            # Success. Pause to allow the user to see the result.
+            model.status.is_success_copy = True
+            displayer.update_status('extract_page__copy_original_iso_files', displayer.OK)
+            time.sleep(SLEEP_1000_MS)
 
         # Extract the Linux file system.
         if not model.status.is_success_extract:
+
+            displayer.update_status('extract_page__unsquashfs', displayer.PROCESSING)
+
             is_error = extract_squashfs()
-            # Pause to allow the user to see the result.
-            sleep(1.000)
             if is_error: return  # Stay on this page.
 
-        # Copy original ISO files.
-        if not model.status.is_success_copy:
-            is_error = copy_original_iso_files()
-            # Pause to allow the user to see the result.
-            sleep(1.000)
-            if is_error: return  # Stay on this page.
+            # Success. Pause to allow the user to see the result.
+            model.status.is_success_copy = True
+            displayer.update_status('extract_page__unsquashfs', displayer.OK)
+            time.sleep(SLEEP_1000_MS)
 
         return 'next'
 
@@ -182,37 +262,55 @@ def leave(action, new_page=None):
 ########################################################################
 
 #-----------------------------------------------------------------------
-# Identify the Casper Directory Functions
+# Analyze the Original Disk Functions
 #-----------------------------------------------------------------------
 
-# TODO: Add log statements.
+
+def identify_iso_template():
+
+    logger.log_label('Generate the ISO template')
+
+    iso_report = iso_utilities.get_iso_report()
+    template = iso_utilities.generate_iso_template(iso_report)
+    if template:
+        model.status.iso_template = constructor.encode(template)
+    else:
+        model.status.iso_template = None
+
+    if not model.status.iso_template:
+        is_error = True
+        displayer.update_label(
+            'extract_page__analyze_original_iso_message',
+            '<span foreground="red">Error. Unable to identify information about this disk.</span>')
+        displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
+    else:
+        is_error = False
+
+    return is_error
 
 
-def identify_casper_relative_directory():
+def identify_casper_directory():
+    """
+    Set the relative casper directory.
+    """
 
-    logger.log_label('Find the compressed Linux file system.')
-
-    displayer.update_status('extract_page__casper_directory', displayer.PROCESSING)
-
-    sleep(1.000)
-
-    relative_directory = None
+    logger.log_label('Find the compressed Linux file system')
 
     # Look for the casper relative directory in the mounted iso directory.
-    if not relative_directory:
+    if not model.status.casper_directory:
         try:
-            directory = get_directory_for_file('filesystem.squashfs', model.project.iso_mount_point)
-            relative_directory = relpath(directory, model.project.iso_mount_point)
-            logger.log_value('The compressed Linux file system directory is', relative_directory)
+            directory = file_utilities.get_directory_for_file('filesystem.squashfs', model.project.iso_mount_point)
+            model.status.casper_directory = os.path.relpath(directory, model.project.iso_mount_point)
+            # logger.log_value('The compressed Linux file system directory is', model.status.casper_directory)
         except ValueError as exception:
             logger.log_value('Unable to find the compressed Linux file system in %s' % model.project.iso_mount_point, exception)
 
     # Look for the casper relative directory in the custom disk directory.
-    if not relative_directory:
+    if not model.status.casper_directory:
         try:
-            directory = get_directory_for_file('filesystem.squashfs', model.project.custom_disk_directory)
-            relative_directory = relpath(directory, model.project.custom_disk_directory)
-            logger.log_value('The compressed Linux file system directory is', relative_directory)
+            directory = file_utilities.get_directory_for_file('filesystem.squashfs', model.project.custom_disk_directory)
+            model.status.casper_directory = os.path.relpath(directory, model.project.custom_disk_directory)
+            # logger.log_value('The compressed Linux file system directory is', model.status.casper_directory)
         except ValueError as exception:
             logger.log_value('Unable to find the compressed Linux file system in %s' % model.project.custom_disk_directory, exception)
 
@@ -223,131 +321,34 @@ def identify_casper_relative_directory():
     #       directory in the mounted iso will become the new casper
     #       directory, and all files will be copied from there.
 
-    if not relative_directory:
+    if not model.status.casper_directory:
         is_error = True
-        model.status.casper_directory = None
-        displayer.update_label('extract_page__casper_directory_message', 'Unable to locate the compressed Linux file system.')
-        displayer.update_status('extract_page__casper_directory', displayer.ERROR)
+        displayer.update_label('extract_page__analyze_original_iso_message', '<span foreground="red">Unable to locate the compressed Linux file system.</span>')
+        displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
     else:
         is_error = False
-        model.status.casper_directory = relative_directory
-        displayer.update_status('extract_page__casper_directory', displayer.OK)
-
-    return is_error
-
-
-def get_directory_for_file(filename, start_path):
-
-    logger.log_value('Get directory for %s in' % filename, start_path)
-
-    directory = ''
-    for dirpath, dirnames, filenames in walk(start_path):
-        if filename in filenames:
-            directory = dirpath
-            break
-
-    if directory:
-        logger.log_value('%s is in' % filename, directory)
-    else:
-        logger.log_value('%s is not in' % filename, directory)
-
-    return directory
-
-
-def get_directory_for_file_PROPOSED(filename, start_path):
-
-    # TODO: Consider using this version which allows the casper
-    #       directory to be a symlink.
-
-    logger.log_value('Get directory for %s in' % filename, start_path)
-
-    directory = ''
-    for dirpath, dirnames, filenames in walk(start_path, followlinks=True):
-        if filename in filenames:
-            directory = dirpath
-            break
-
-    if directory:
-        logger.log_value('%s is in' % filename, directory)
-    else:
-        logger.log_value('%s is not in' % filename, directory)
-
-    return directory
-
-
-#-----------------------------------------------------------------------
-# Extract the Linux File System Functions
-#-----------------------------------------------------------------------
-
-
-def extract_squashfs():
-
-    logger.log_label('Extract the compressed Linux file system.')
-
-    displayer.update_status('extract_page__unsquashfs', displayer.PROCESSING)
-
-    # sleep(1.000)
-
-    # Clear the terminal because the history will no longer be valid
-    # when the new *.squashfs file is extracted.
-    terminal = model.builder.get_object('terminal_page__terminal')
-    terminal.reset(True, True)
-
-    target_path = model.project.custom_root_directory
-    logger.log_value('The target path is', target_path)
-
-    source_path = join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
-    logger.log_value('The source path is', source_path)
-
-    program = join(model.application.directory, 'commands', 'extract-root')
-    command = 'pkexec "%s" "%s" "%s"' % (program, target_path, source_path)
-
-    # The progress callback function.
-    def progress_callback(percent):
-        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
-        if percent % 10 == 0:
-            logger.log_value('Completed', '%i%%' % percent)
-
-    exception, message = show_progress(command, progress_callback)
-
-    is_error = bool(exception)
-    if is_error:
-        model.status.is_success_extract = False
-        if 'No space left on device' in message:
-            displayer.update_label('extract_page__unsquashfs_message', 'Error. Not enough space on the disk.')
-        else:
-            displayer.update_label('extract_page__unsquashfs_message', 'Error. Unable to extract the compressed Linux file system.')
-        displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
-    else:
-        model.status.is_success_extract = True
-        # displayer.update_label('extract_page__unsquashfs_message', '')
-        displayer.update_status('extract_page__unsquashfs', displayer.OK)
 
     return is_error
 
 
 #-----------------------------------------------------------------------
-# Copy Original ISO Files Functions
+# Copy Original Disk Files Functions
 #-----------------------------------------------------------------------
 
 
 def copy_original_iso_files():
 
-    logger.log_label('Copy important files from the original disk image.')
-
-    displayer.update_status('extract_page__copy_original_iso_files', displayer.PROCESSING)
-
-    # sleep(1.000)
+    logger.log_label('Copy important files from the original disk image')
 
     # Add a "/" at the end of the path so rsync copies the contents
     # of the source directory to the target directory.
-    source_path = join(model.project.iso_mount_point, '')
+    source_path = os.path.join(model.project.iso_mount_point, '')
     logger.log_value('The source path is', source_path)
 
     # Add a "/" at the end of the path so rsync copies files into
     # the target directory. This is not required, but is consistent
     # with the source directory path above.
-    target_path = join(model.project.custom_disk_directory, '')
+    target_path = os.path.join(model.project.custom_disk_directory, '')
     logger.log_value('The target path is', target_path)
 
     # Copy files from the original iso.
@@ -409,15 +410,66 @@ def copy_original_iso_files():
 
     exception, message = show_progress(command, progress_callback)
 
-    is_error = bool(exception)
-    if is_error:
+    if exception:
+        is_error = True
         model.status.is_success_copy = False
         if 'No space left on device' in message:
-            displayer.update_label('extract_page__copy_original_iso_files_message', 'Error. Not enough space on the disk.')
+            displayer.update_label('extract_page__copy_original_iso_files_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
         else:
-            displayer.update_label('extract_page__copy_original_iso_files_message', 'Error. Unable to copy files from the original disk image.')
+            displayer.update_label(
+                'extract_page__copy_original_iso_files_message',
+                '<span foreground="red">Error. Unable to copy files from the original disk image.</span>')
         displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
     else:
+        is_error = False
         model.status.is_success_copy = True
-        displayer.update_status('extract_page__copy_original_iso_files', displayer.OK)
+
+    return is_error
+
+
+#-----------------------------------------------------------------------
+# Extract the Linux File System Functions
+#-----------------------------------------------------------------------
+
+
+def extract_squashfs():
+
+    logger.log_label('Extract the compressed Linux file system')
+
+    # Clear the terminal because the history will no longer be valid
+    # when the new *.squashfs file is extracted.
+    terminal = model.builder.get_object('terminal_page__terminal')
+    terminal.reset(True, True)
+
+    target_path = model.project.custom_root_directory
+    logger.log_value('The target path is', target_path)
+
+    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
+    logger.log_value('The source path is', source_path)
+
+    program = os.path.join(model.application.directory, 'commands', 'extract-root')
+    command = 'pkexec "%s" "%s" "%s"' % (program, target_path, source_path)
+
+    # The progress callback function.
+    def progress_callback(percent):
+        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
+        if percent % 10 == 0:
+            logger.log_value('Completed', '%i%%' % percent)
+
+    exception, message = show_progress(command, progress_callback)
+
+    if exception:
+        is_error = True
+        model.status.is_success_extract = False
+        if 'No space left on device' in message:
+            displayer.update_label('extract_page__unsquashfs_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
+        else:
+            displayer.update_label(
+                'extract_page__unsquashfs_message',
+                '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>')
+        displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
+    else:
+        is_error = False
+        model.status.is_success_extract = True
+
     return is_error

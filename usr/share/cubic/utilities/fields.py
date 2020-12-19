@@ -27,8 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from utilities import logger
-
 ########################################################################
 # References
 ########################################################################
@@ -36,7 +34,13 @@ from utilities import logger
 # https://docs.python.org/3/reference/datamodel.html
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+from utilities import logger
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 # N/A
@@ -283,7 +287,7 @@ class IsoField:
 
 class IsoFields:
 
-    # TODO: Copy the name of the Isofield, if one is supplied.
+    # TODO: Copy the name of the IsoField, if one is supplied.
     #       Use value instead of name and iso_fields. Then check value
     #       using isinstance(value, str).
     def __init__(self, name, iso_fields=None):
@@ -292,7 +296,7 @@ class IsoFields:
 
         if iso_fields:
             super().__setattr__('iso_version_number', IsoField(iso_fields.iso_version_number, self))
-            super().__setattr__('iso_filename', IsoField(iso_fields.iso_filename, self))
+            super().__setattr__('iso_file_name', IsoField(iso_fields.iso_file_name, self))
             super().__setattr__('iso_directory', IsoField(iso_fields.iso_directory, self))
             super().__setattr__('iso_volume_id', IsoField(iso_fields.iso_volume_id, self))
             super().__setattr__('iso_release_name', IsoField(iso_fields.iso_release_name, self))
@@ -300,7 +304,7 @@ class IsoFields:
             super().__setattr__('iso_release_notes_url', IsoField(iso_fields.iso_release_notes_url, self))
         else:
             super().__setattr__('iso_version_number', IsoField('iso_version_number', self))
-            super().__setattr__('iso_filename', IsoField('iso_filename', self))
+            super().__setattr__('iso_file_name', IsoField('iso_file_name', self))
             super().__setattr__('iso_directory', IsoField('iso_directory', self))
             super().__setattr__('iso_volume_id', IsoField('iso_volume_id', self))
             super().__setattr__('iso_release_name', IsoField('iso_release_name', self))
@@ -313,7 +317,7 @@ class IsoFields:
         object is equal to the value property of each corresponding
         Isofield of iso_fields. Otherwise, return False.
         - iso_version_number.value
-        - iso_filename.value
+        - iso_file_name.value
         - iso_directory.value
         - iso_volume_id.value
         - iso_release_name.value
@@ -324,7 +328,7 @@ class IsoFields:
         return (
             iso_fields                                                          \
             and self.iso_version_number == iso_fields.iso_version_number        \
-            and self.iso_filename == iso_fields.iso_filename                    \
+            and self.iso_file_name == iso_fields.iso_file_name                    \
             and self.iso_directory == iso_fields.iso_directory                  \
             and self.iso_volume_id == iso_fields.iso_volume_id                  \
             and self.iso_release_name == iso_fields.iso_release_name            \
@@ -339,7 +343,7 @@ class IsoFields:
         if key == 'is_valid':
             return (
                 self.iso_version_number.is_valid         \
-                and self.iso_filename.is_valid           \
+                and self.iso_file_name.is_valid           \
                 and self.iso_directory.is_valid          \
                 and self.iso_volume_id.is_valid          \
                 and self.iso_release_name.is_valid       \

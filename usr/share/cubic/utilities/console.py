@@ -27,25 +27,6 @@
 #                                                                      #
 ########################################################################
 
-import gi
-
-gi.require_version('GLib', '2.0')
-gi.require_version('Vte', '2.91')
-
-from gi.repository import GLib
-from gi.repository.Vte import PtyFlags, Pty
-from os import sep
-from os.path import join
-from pydbus import SystemBus
-from re import sub
-from sys import stdout
-from time import sleep
-
-from constants import BOLD_RED, BOLD_GREEN, BOLD_BLUE, BOLD_YELLOW, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
-from utilities import logger
-from utilities import model
-from utilities.processor import execute_synchronous, execute_synchronous_unregistered
-
 ########################################################################
 # References
 ########################################################################
@@ -55,7 +36,31 @@ from utilities.processor import execute_synchronous, execute_synchronous_unregis
 # https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import gi
+
+gi.require_version('GLib', '2.0')
+gi.require_version('Vte', '2.91')
+
+from gi.repository import GLib
+from gi.repository.Vte import PtyFlags, Pty
+
+import os
+import pydbus
+import re
+import sys
+import time
+
+from constants import BOLD_RED, BOLD_GREEN, BOLD_BLUE, BOLD_YELLOW, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
+from constants import SLEEP_0250_MS
+from utilities import logger
+from utilities import model
+from utilities.processor import execute_synchronous, execute_synchronous_unregistered
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 builder = None
@@ -103,11 +108,11 @@ def _enter_virtual_environment():
     logger.log_label('Enter virtual environment')
     logger.log_value('The virtual environment directory is', model.project.custom_root_directory)
 
-    program = join(model.application.directory, 'commands', 'start-virtual-environment')
+    program = os.path.join(model.application.directory, 'commands', 'start-console')
     # The command must be a tuple, as required by spawn_async().
     command = ('pkexec', program, 'cubic', model.project.custom_root_directory)
 
-    display_command = sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', ' '.join(command))
+    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', ' '.join(command))
     logger.log_value('Command', display_command)
 
     # logger.log_value('Set new pseudo terminal', 'None')
@@ -118,7 +123,7 @@ def _enter_virtual_environment():
     # the processor module. As a result, this process is not
     # terminated by the interrupt_navigation_thread() function of the
     # navigator module. This allows the terminal to continue running
-    # while the application navigates away from the terminal page. The
+    # while the application navigates away from the Terminal page. The
     # pseudo terminal process must be explicitly killed by executing
     # exit_virtual_environment().
 
@@ -152,7 +157,7 @@ def _enter_virtual_environment():
         spawn_flags=(GLib.SpawnFlags.DEFAULT | GLib.SpawnFlags.SEARCH_PATH),
         child_setup=None,
         child_setup_data=None,
-        timeout=-1,
+        timeout=-1, # milliseconds; -1 = wait indefinitely
         cancellable=None,
         callback=watch_virtual_environment,
         user_data=None)
@@ -173,7 +178,7 @@ def child_setup(*data):
     child_setup_data=(,).
     """
     logger.log_value('CHILD SETUP', 'START')
-    # sleep(1.000)
+    # time.sleep(SLEEP_1000_MS)
     logger.log_value('CHILD SETUP', 'STOP')
     logger.log_value('CHILD DATA', data)
 
@@ -223,7 +228,7 @@ def subscribe_virtual_environment_entered():
     global properties_changed_subscription
 
     if not properties_changed_subscription:
-        system_bus = SystemBus()
+        system_bus = pydbus.SystemBus()
         logger.log_value('System bus id', id(system_bus))
         properties_changed_subscription = system_bus.subscribe(
             sender='org.freedesktop.systemd1',
@@ -273,7 +278,7 @@ def entered_virtual_environment(sender, object_path, interface, signal, paramete
         job_status, job_path = parameter_b['Job']
         job_status = int(job_status)
 
-    if active_state == 'active' and sub_state == 'running' and job_status == 0 and job_path == sep:
+    if active_state == 'active' and sub_state == 'running' and job_status == 0 and job_path == os.path.sep:
         logger.log_label('Entered virtual environment')
         _entered_virtual_environment(active_state, sub_state, job_status, job_path)
     # else:
@@ -365,17 +370,17 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     Different ways to exit the terminal, and the corresponding status values:
 
     Execute the follwing from outside Cubic's terminal.
-    $ pkexec /usr/share/cubic/commands/terminate-process <pid of start-virtual-environment>
+    $ pkexec /usr/share/cubic/commands/stop-process <pid of start-console>
     status = 9
 
     Execute the follwing from outside Cubic's terminal.
-    $ sudo kill -9 <pid of start-virtual-environment>
+    $ sudo kill -9 <pid of start-console>
     status = 9
 
     Execute the follwing from outside Cubic's terminal.
-    $ sudo pkill --full start-virtual-environment
+    $ sudo pkill --full start-console
     status = 15
-    $ sudo pkill --signal 9 --full start-virtual-environment
+    $ sudo pkill --signal 9 --full start-console
     status = 9
 
     Execute the follwing from outside Cubic's terminal.
@@ -490,7 +495,7 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
             # This situation will never happen.
             GLib.idle_add(send_message_to_terminal, BOLD_BLUE + 'You have exited the virtual environment.' + NORMAL)
         # Pause to allow GLib.idle_add() to display the message.
-        sleep(0.250)
+        time.sleep(SLEEP_0250_MS)
 
     # Decide to reenter the virtual environment.
     if reenter and attempts < MAX_ATTEMPTS:
@@ -513,7 +518,7 @@ def exit_virtual_environment():
     processor module. As a result, this process is not terminated
     by the interrupt_navigation_thread() function of the navigator module.
     This allows the terminal to continue running while the application
-    navigates away from the terminal page. The pseudo terminal process
+    navigates away from the Terminal page. The pseudo terminal process
     must be explicitly killed by executing exit_virtual_environment().
     """
 
@@ -522,7 +527,7 @@ def exit_virtual_environment():
     global reenter
     reenter = False
     try:
-        stdout.flush()
+        sys.stdout.flush()
         exit_virtual_environment_using_kill()
     except Exception as exception:
         logger.log_value('Warning', exception)
@@ -539,10 +544,10 @@ def exit_virtual_environment_using_kill():
             # If the pseudo terminal does not have a process id attribute,
             # then the virtual environment has already exited.
             process_id = pseudo_terminal.process_id
-            program = join(model.application.directory, 'commands', 'terminate-process')
+            program = os.path.join(model.application.directory, 'commands', 'stop-process')
             # TODO: Should we use execute_synchronous_unregistered() ?
             command = 'pkexec "%s" "%s"' % (program, process_id)
-            result, exitstatus, signalstatus = execute_synchronous(command)
+            result, exit_status, signal_status = execute_synchronous(command)
         else:
             logger.log_value('There is no virtual environment to exit. The pseudo terminal is ', pseudo_terminal)
     else:
@@ -558,7 +563,7 @@ def exit_virtual_environment_using_kill_ORIGINAL():
     pseudo_terminal = terminal.get_pty()
     if pseudo_terminal:
         process_id = pseudo_terminal.process_id
-        exitstatus, signalstatus = terminate_process(process_id)
+        exit_status, signal_status = terminate_process(process_id)
 '''
 
 
@@ -566,10 +571,10 @@ def exit_virtual_environment_using_machinectl():
 
     logger.log_label('Exit virtual environment using machinectl')
 
-    program = join(model.application.directory, 'commands', 'stop-virtual-environment')
+    program = os.path.join(model.application.directory, 'commands', 'stop-console')
     # TODO: Should we use execute_synchronous_unregistered() ?
     command = 'pkexec "%s" "%s"' % (program, 'cubic')
-    result, exitstatus, signalstatus = execute_synchronous(command)
+    result, exit_status, signal_status = execute_synchronous(command)
 
 
 ########################################################################
@@ -588,7 +593,7 @@ def is_virtual_environment_running():
 
     logger.log_label('Check virtual environment')
     command = 'machinectl --property=State show cubic'
-    result, exitstatus, signalstatus = execute_synchronous(command)
+    result, exit_status, signal_status = execute_synchronous(command)
     if 'running' in result:
         logger.log_value('Is the virtual environment running?', 'Yes')
         is_running = True
@@ -605,16 +610,16 @@ def is_virtual_environment_running():
 '''
 def get_bash_process_id(pseudo_terminal_process_id):
 
-    logger.log_label('Get the bash child process id for the pseudo terminal.')
+    logger.log_label('Get the bash child process id for the pseudo terminal')
 
     bash_process_id = None
 
     command = 'pstree -p %d' % pseudo_terminal_process_id
-    process_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(
+    process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(
         command)
 
-    if not exitstatus and not signalstatus:
-        bash_process_id_information = re.search(r'bash\((\d+)\)', result)
+    if not exit_status and not signal_status:
+        bash_process_id_information = re.search(r'bash\\((\\d+)\\)', result)
         if bash_process_id_information:
             bash_process_id = bash_process_id_information.group(1)
         else:
@@ -633,18 +638,18 @@ def get_current_directory():
 
     current_directory = None
 
-    logger.log_label('Get the current directory.')
+    logger.log_label('Get the current directory')
 
     global pseudo_terminal
     bash_process_id = get_bash_process_id(pseudo_terminal.process_id)
 
-    program = join(model.application.directory, 'commands',
+    program = os.path.join(model.application.directory, 'commands',
         'current-directory')
     command = 'pkexec "%s" "%s"' % (program, bash_process_id)
-    process_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(
+    process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(
         command)
 
-    if not exitstatus and not signalstatus:
+    if not exit_status and not signal_status:
         current_directory = result
         logger.log_value('The current directory is', current_directory)
     else:
@@ -659,18 +664,18 @@ def get_current_directory():
 
     current_directory = None
 
-    logger.log_label('Get the current directory.')
+    logger.log_label('Get the current directory')
 
     global pseudo_terminal
     process_id = pseudo_terminal.process_id
-    program = join(model.application.directory, 'commands', 'current-directory')
+    program = os.path.join(model.application.directory, 'commands', 'current-directory')
     command = 'pkexec "%s" "%s"' % (program, process_id)
 
-    process_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(command)
+    process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command)
 
-    if not exitstatus and not signalstatus:
+    if not exit_status and not signal_status:
         current_directory = result
-        logger.log_value('The current directory is', current_directory)
+        # logger.log_value('The current directory is', current_directory)
     else:
         logger.log_value('Unable to get the current directory using result', current_directory)
 

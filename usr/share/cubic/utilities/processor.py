@@ -27,16 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from os import sync
-from os.path import join
-from pexpect import spawn, ExceptionPexpect
-from re import sub
-from signal import SIGTERM
-from traceback import format_exc
-
-from utilities import logger
-from utilities import model
-
 ########################################################################
 # References
 ########################################################################
@@ -44,7 +34,20 @@ from utilities import model
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import os
+import pexpect
+import re
+import signal
+import traceback
+
+from utilities import logger
+from utilities import model
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 process = None
@@ -58,18 +61,18 @@ process = None
 # Because spwanu() is a string interface, process.read().decode() is not
 # necessary.
 
-# If the child exited normally then exitstatus will store the exit
-# return code and signalstatus will be None.
-# If the child was terminated abnormally with a signal then signalstatus
-# will store the signal value and exitstatus will be None.
+# If the child exited normally then exit_status will store the exit
+# return code and signal_status will be None.
+# If the child was terminated abnormally with a signal then signal_status
+# will store the signal value and exit_status will be None.
 #
-# Process              exitstatus     signalstatus
+# Process              exit_status     signal_status
 # -----------------    -----------    ------------
 # Running              None           None
 # Exited Normally      Return Code    None
 # Exited Abnormally    None           Signal Code
 
-# Bash Process         exitstatus     signalstatus
+# Bash Process         exit_status     signal_status
 # -----------------    -----------    ------------
 # Running              None           None
 # Exited Normally      0              None
@@ -85,14 +88,14 @@ def execute_synchronous(command, working_directory=None):
     terminate_process() function.
     """
 
-    display_command = sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
+    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
     # logger.log_label('Execute synchronously')
     # logger.log_value('Command', command)
     logger.log_value('Execute synchronously', display_command)
 
     result = None
-    exitstatus = None
-    signalstatus = None
+    exit_status = None
+    signal_status = None
     global process
     if process and process.isalive():
         logger.log_value('Warning, the process is running', process.pid)
@@ -102,28 +105,28 @@ def execute_synchronous(command, working_directory=None):
     try:
         # Using pexpect.split_command_line removes the spaces in the
         # command. This results in the error:
-        # pexpect.exceptions.ExceptionPexpect: The command was not found
+        # pexpect.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        process = spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
+        process = pexpect.spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
         logger.log_value('The process id is', process.pid)
         result = process.read()
         result = result.strip() if result else None
         # Close the process to obtain the exit status.
         process.close()
-        exitstatus = process.exitstatus
-        signalstatus = process.signalstatus
-    except ExceptionPexpect as exception:
+        exit_status = process.exitstatus
+        signal_status = process.signalstatus
+    except pexpect.ExceptionPexpect as exception:
         # Close the process to obtain the exit status.
         if process: process.close()
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', format_exc())
+        logger.log_value('The tracek back is', traceback.format_exc())
 
-    sync()  # Write data to disk.
+    os.sync()  # Write data to disk.
     process = None
 
-    return result, exitstatus, signalstatus
+    return result, exit_status, signal_status
 
 
 def execute_synchronous_unregistered(command, working_directory=None):
@@ -132,39 +135,39 @@ def execute_synchronous_unregistered(command, working_directory=None):
     registered with this module, so it can not be terminated using the
     terminate_process() function.
     """
-    display_command = sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
+    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
     # logger.log_label('Execute synchronously unregistered')
     # logger.log_value('Command', command))
     logger.log_value('Execute synchronously unregistered', display_command)
 
     process_pid = None
     result = None
-    exitstatus = None
-    signalstatus = None
+    exit_status = None
+    signal_status = None
     try:
         # Using pexpect.split_command_line removes the spaces in the
         # command. This results in the error:
-        # pexpect.exceptions.ExceptionPexpect: The command was not found
+        # pexpect.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        process = spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
+        process = pexpect.spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
         process_pid = process.pid
         logger.log_value('The unregistered process id is', process.pid)
         result = process.read()
         result = result.strip() if result else None
         # Close the process to obtain the exit status.
         process.close()
-        exitstatus = process.exitstatus
-        signalstatus = process.signalstatus
-    except ExceptionPexpect as exception:
+        exit_status = process.exitstatus
+        signal_status = process.signalstatus
+    except pexpect.ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', format_exc())
+        logger.log_value('The tracek back is', traceback.format_exc())
 
-    sync()  # Write data to disk.
+    os.sync()  # Write data to disk.
     process = None
 
-    return process_pid, result, exitstatus, signalstatus
+    return process_pid, result, exit_status, signal_status
 
 
 def execute_asynchronous(command, working_directory=None):
@@ -176,11 +179,11 @@ def execute_asynchronous(command, working_directory=None):
     readline(), or read_nonblocking(). The application must explicitly
     close the connection with the process to obtain the exit status:
         process.close()
-        exitstatus = process.exitstatus
-        signalstatus = process.signalstatus
+        exit_status = process.exitstatus
+        signal_status = process.signalstatus
     """
 
-    display_command = sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
+    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
     # logger.log_label('Execute asynchronously')
     # logger.log_value('Command', command)
     logger.log_value('Execute asynchronously', display_command)
@@ -194,15 +197,15 @@ def execute_asynchronous(command, working_directory=None):
     try:
         # Using pexpect.split_command_line removes the spaces in the
         # command. This results in the error:
-        # pexpect.exceptions.ExceptionPexpect: The command was not found
+        # pexpect.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        process = spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
+        process = pexpect.spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
         logger.log_value('The process id is', process.pid)
-    except ExceptionPexpect as exception:
+    except pexpect.ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracekback is', format_exc())
+        logger.log_value('The tracek back is', traceback.format_exc())
 
     return process
 
@@ -230,7 +233,7 @@ def _terminate_user_process():
     if current_process and current_process.isalive():
         logger.log_value('Terminate process', current_process.pid)
         try:
-            current_process.kill(SIGTERM)
+            current_process.kill(signal.SIGTERM)
             # Get the exit status and signal status of the process that was killed.
             logger.log_value('The exit status of process %s is' % current_process.pid, current_process.exitstatus)
             logger.log_value('The signal status of process %s is' % current_process.pid, current_process.signalstatus)
@@ -238,10 +241,10 @@ def _terminate_user_process():
             process = None
         except PermissionError as exception:
             logger.log_value('The exception is', exception)
-            logger.log_value('The tracekback is', format_exc())
+            logger.log_value('The tracek back is', traceback.format_exc())
         except Exception as exception:
             logger.log_value('The exception is', exception)
-            logger.log_value('The tracekback is', format_exc())
+            logger.log_value('The tracek back is', traceback.format_exc())
 
 
 def _terminate_root_process():
@@ -254,18 +257,18 @@ def _terminate_root_process():
     if current_process and current_process.isalive():
         logger.log_value('Terminate process', current_process.pid)
         try:
-            program = join(model.application.directory, 'commands', 'terminate-process')
+            program = os.path.join(model.application.directory, 'commands', 'stop-process')
             command = 'pkexec "%s" "%s"' % (program, current_process.pid)
             # Get the exit status and signal status of the terminator process.
-            terminator_pid, result, exitstatus, signalstatus = execute_synchronous_unregistered(command, model.application.directory)
+            terminator_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command, model.application.directory)
             # Set the global process to None.
             process = None
             # logger.log_value('The result is', result)
-            logger.log_value('The exit status of terminator process %s is' % terminator_pid, exitstatus)
-            logger.log_value('The signal status of terminator process %s is' % terminator_pid, signalstatus)
+            logger.log_value('The exit status of terminator process %s is' % terminator_pid, exit_status)
+            logger.log_value('The signal status of terminator process %s is' % terminator_pid, signal_status)
             # Get the exit status and signal status of the process that was killed.
             logger.log_value('The exit status of process %s is' % current_process.pid, current_process.exitstatus)
             logger.log_value('The signal status of process %s is' % current_process.pid, current_process.signalstatus)
         except Exception as exception:
             logger.log_value('The exception is', exception)
-            logger.log_value('The tracekback is', format_exc())
+            logger.log_value('The tracek back is', traceback.format_exc())

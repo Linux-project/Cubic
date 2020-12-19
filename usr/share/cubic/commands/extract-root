@@ -40,8 +40,8 @@ source_path=${2}
 
 # echo "program..................... $program"
 # echo "number of arguments......... $number_arguments"
-# echo "target path................. ${target_path}."
-# echo "source path................. ${source_path}."
+# echo "target path................. ${target_path}"
+# echo "source path................. ${source_path}"
 
 ########################################################################
 # Command

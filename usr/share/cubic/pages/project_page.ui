@@ -32,20 +32,20 @@
     <property name="can_focus">False</property>
     <property name="icon_name">edit-delete-symbolic</property>
   </object>
-  <object class="GtkButton" id="project_page__delete_button">
-    <property name="can_focus">False</property>
+  <object class="GtkButton" id="project_page__delete_header_bar_button">
+    <property name="can_focus">True</property>
     <property name="receives_default">True</property>
     <property name="tooltip_text" translatable="yes">Delete this project</property>
     <property name="image">project_page__delete_image</property>
     <property name="always_show_image">True</property>
-    <signal name="clicked" handler="on_clicked__project_page__delete_button" swapped="no"/>
+    <signal name="clicked" handler="on_clicked__project_page__delete_header_bar_button" swapped="no"/>
   </object>
-  <object class="GtkImage" id="project_page__directory_image">
+  <object class="GtkImage" id="project_page__directory_1_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="icon_name">folder-symbolic</property>
   </object>
-  <object class="GtkImage" id="project_page__new_image">
+  <object class="GtkImage" id="project_page__directory_2_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="icon_name">folder-symbolic</property>
@@ -63,15 +63,15 @@
   <object class="GtkBox" id="project_page__header_bar_box">
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkButton" id="project_page__undo_button">
+      <object class="GtkButton" id="project_page__undo_header_bar_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">False</property>
+        <property name="can_focus">True</property>
         <property name="receives_default">True</property>
-        <property name="tooltip_text" translatable="yes">Undo changes to the custom ISO values</property>
+        <property name="tooltip_text" translatable="yes">Undo changes to the custom disk values</property>
         <property name="image">project_page__undo_image</property>
         <property name="always_show_image">True</property>
-        <signal name="clicked" handler="on_clicked__project_page__undo_button" swapped="no"/>
+        <signal name="clicked" handler="on_clicked__project_page__undo_header_bar_button" swapped="no"/>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -80,15 +80,15 @@
       </packing>
     </child>
     <child>
-      <object class="GtkButton" id="project_page__redo_button">
+      <object class="GtkButton" id="project_page__redo_header_bar_button">
         <property name="visible">True</property>
         <property name="sensitive">False</property>
-        <property name="can_focus">False</property>
+        <property name="can_focus">True</property>
         <property name="receives_default">True</property>
-        <property name="tooltip_text" translatable="yes">Redo changes to the custom ISO values</property>
+        <property name="tooltip_text" translatable="yes">Redo changes to the custom disk values</property>
         <property name="image">project_page__redo_image</property>
         <property name="always_show_image">True</property>
-        <signal name="clicked" handler="on_clicked__project_page__redo_button" swapped="no"/>
+        <signal name="clicked" handler="on_clicked__project_page__redo_header_bar_button" swapped="no"/>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -106,18 +106,19 @@
     <property name="icon_name">view-refresh-symbolic</property>
   </object>
   <object class="GtkGrid" id="project_page">
-    <property name="height_request">650</property>
+    <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
       <object class="GtkLabel">
+        <property name="width_request">894</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">24</property>
         <property name="margin_right">24</property>
         <property name="margin_top">18</property>
         <property name="margin_bottom">18</property>
-        <property name="hexpand">True</property>
         <property name="label" translatable="yes">Select the original disk image to customize.</property>
+        <property name="justify">fill</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
         <property name="xalign">0</property>
@@ -132,13 +133,11 @@
     </child>
     <child>
       <object class="GtkGrid">
-        <property name="width_request">876</property>
+        <property name="width_request">894</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
-        <property name="margin_left">24</property>
-        <property name="margin_right">24</property>
         <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
@@ -149,7 +148,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Original ISO...
+            <property name="label" translatable="yes">Original Disk...
 </property>
             <property name="wrap">True</property>
             <property name="xalign">0</property>
@@ -169,7 +168,7 @@
             <property name="hexpand">True</property>
             <property name="column_spacing">12</property>
             <child>
-              <object class="GtkLabel" id="project_page__original_iso_filename_label">
+              <object class="GtkLabel" id="project_page__original_iso_file_name_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Filename</property>
@@ -182,12 +181,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="project_page__original_iso_filename_entry">
+              <object class="GtkEntry" id="project_page__original_iso_file_name_entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="editable">False</property>
-                <signal name="changed" handler="on_changed__project_page__original_iso_filename_entry" swapped="no"/>
+                <signal name="changed" handler="on_changed__project_page__original_iso_file_name_entry" swapped="no"/>
                 <style>
                   <class name="background"/>
                 </style>
@@ -198,13 +197,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="project_page__original_iso_filename_open_button">
+              <object class="GtkButton" id="project_page__original_iso_file_name_open_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="image">project_page__new_image</property>
+                <property name="tooltip_text" translatable="yes">Select the original disk image</property>
+                <property name="image">project_page__directory_1_image</property>
                 <property name="always_show_image">True</property>
-                <signal name="clicked" handler="on_clicked__project_page__original_iso_filename_open_button" swapped="no"/>
+                <signal name="clicked" handler="on_clicked__project_page__original_iso_file_name_open_button" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">2</property>
@@ -212,7 +212,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkImage" id="project_page__original_iso_filename_status">
+              <object class="GtkImage" id="project_page__original_iso_file_name_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="icon_name">cubic-blank-symbolic</property>
@@ -223,7 +223,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="project_page__original_iso_filename_message">
+              <object class="GtkLabel" id="project_page__original_iso_file_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="opacity">0.50196078431372548</property>
@@ -624,7 +624,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Custom ISO...
+            <property name="label" translatable="yes">Custom Disk...
 </property>
             <property name="wrap">True</property>
             <property name="xalign">0</property>
@@ -730,7 +730,7 @@
             <property name="hexpand">True</property>
             <property name="column_spacing">12</property>
             <child>
-              <object class="GtkLabel" id="project_page__custom_iso_filename_label">
+              <object class="GtkLabel" id="project_page__custom_iso_file_name_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Filename</property>
@@ -743,11 +743,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="project_page__custom_iso_filename_entry">
+              <object class="GtkEntry" id="project_page__custom_iso_file_name_entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
-                <signal name="changed" handler="on_changed__project_page__custom_iso_filename_entry" swapped="no"/>
+                <signal name="changed" handler="on_changed__project_page__custom_iso_file_name_entry" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -756,7 +756,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkImage" id="project_page__custom_iso_filename_status">
+              <object class="GtkImage" id="project_page__custom_iso_file_name_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
               </object>
@@ -766,7 +766,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="project_page__custom_iso_filename_message">
+              <object class="GtkLabel" id="project_page__custom_iso_file_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="opacity">0.50196078431372548</property>
@@ -832,7 +832,8 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="image">project_page__directory_image</property>
+                <property name="tooltip_text" translatable="yes">Select the directory to save the custom disk image</property>
+                <property name="image">project_page__directory_2_image</property>
                 <property name="always_show_image">True</property>
                 <signal name="clicked" handler="on_clicked__project_page__custom_iso_directory_open_button" swapped="no"/>
               </object>
@@ -1172,14 +1173,14 @@
   </object>
   <object class="GtkSizeGroup">
     <widgets>
-      <widget name="project_page__original_iso_filename_label"/>
+      <widget name="project_page__original_iso_file_name_label"/>
       <widget name="project_page__original_iso_directory_label"/>
       <widget name="project_page__original_iso_volume_id_label"/>
       <widget name="project_page__original_iso_release_name_label"/>
       <widget name="project_page__original_iso_disk_name_label"/>
       <widget name="project_page__original_iso_release_notes_url_label"/>
       <widget name="project_page__custom_iso_version_number_label"/>
-      <widget name="project_page__custom_iso_filename_label"/>
+      <widget name="project_page__custom_iso_file_name_label"/>
       <widget name="project_page__custom_iso_directory_label"/>
       <widget name="project_page__custom_iso_volume_id_label"/>
       <widget name="project_page__custom_iso_release_name_label"/>

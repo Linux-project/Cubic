@@ -27,17 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from os import system
-from os.path import exists, isfile, join
-from time import sleep
-
-from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
-from utilities import displayer
-from utilities import file_utilities
-from utilities import iso_utilities
-from utilities import logger
-from utilities import model
-
 ########################################################################
 # References
 ########################################################################
@@ -45,7 +34,23 @@ from utilities import model
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import os
+import time
+
+from constants import IMAGE_FILE_NAME, LOCK_FILE_NAME
+from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
+from constants import SLEEP_0500_MS, SLEEP_1500_MS
+from utilities import displayer
+from utilities import file_utilities
+from utilities import iso_utilities
+from utilities import logger
+from utilities import model
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'finish_page'
@@ -72,13 +77,13 @@ def setup(action, old_page=None):
             is_next_visible=True)
 
         displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
-        displayer.update_entry('finish_page__custom_iso_filename_entry', model.custom.iso_filename)
+        displayer.update_entry('finish_page__custom_iso_file_name_entry', model.custom.iso_file_name)
         displayer.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
         displayer.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
         displayer.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
         displayer.update_entry('finish_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
         displayer.update_entry('finish_page__custom_iso_checksum_entry', model.status.iso_checksum)
-        displayer.update_entry('finish_page__custom_iso_checksum_filename_entry', model.status.iso_checksum_filename)
+        displayer.update_entry('finish_page__custom_iso_checksum_file_name_entry', model.status.iso_checksum_file_name)
 
         displayer.update_status('finish_page__delete_project_files', BLANK)
         displayer.activate_check_button('finish_page__delete_project_files_check_button', False)
@@ -102,13 +107,13 @@ def setup(action, old_page=None):
             is_next_visible=True)
 
         displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
-        displayer.update_entry('finish_page__custom_iso_filename_entry', model.custom.iso_filename)
+        displayer.update_entry('finish_page__custom_iso_file_name_entry', model.custom.iso_file_name)
         displayer.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
         displayer.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
         displayer.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
         displayer.update_entry('finish_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
         displayer.update_entry('finish_page__custom_iso_checksum_entry', model.status.iso_checksum)
-        displayer.update_entry('finish_page__custom_iso_checksum_filename_entry', model.status.iso_checksum_filename)
+        displayer.update_entry('finish_page__custom_iso_checksum_file_name_entry', model.status.iso_checksum_file_name)
 
         displayer.update_status('finish_page__delete_project_files', BLANK)
         displayer.activate_check_button('finish_page__delete_project_files_check_button', False)
@@ -144,7 +149,7 @@ def leave(action, new_page=None):
 
         displayer.set_sensitive('finish_page__delete_project_files_check_button', False)
 
-        # The original ISO is unmounted when leaving the Generate page,
+        # The original disk is unmounted when leaving the Generate page,
         # so there is no need to unmount it here.
         # iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -155,11 +160,11 @@ def leave(action, new_page=None):
         logger.log_value('Delete the project files?', is_active)
         if is_active:
             displayer.update_status('finish_page__delete_project_files', PROCESSING)
-            # sleep(0.500)
+            time.sleep(SLEEP_0500_MS)
             delete_project_files()
             displayer.update_status('finish_page__delete_project_files', OK)
             # Pause to allow the user to see the result.
-            sleep(1.000)
+            time.sleep(SLEEP_1500_MS)
 
         return
 
@@ -181,30 +186,30 @@ def leave(action, new_page=None):
 ########################################################################
 
 
-def on_clicked__finish_page__custom_iso_filename_open_button(widget):
+def on_clicked__finish_page__custom_iso_file_name_open_button(widget):
 
-    if isfile('/bin/nautilus'):
-        filepath = join(model.custom.iso_directory, model.custom.iso_filename)
-        if not isfile(filepath):
-            filepath = model.custom.iso_directory
-        command = 'nautilus %s &' % filepath
-        system(command)
+    if os.path.isfile('/bin/nautilus'):
+        file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
+        if not os.path.isfile(file_path):
+            file_path = model.custom.iso_directory
+        command = 'nautilus %s &' % file_path
+        os.system(command)
     else:
         command = 'xdg-open %s &' % model.custom.iso_directory
-        system(command)
+        os.system(command)
 
 
-def on_clicked__finish_page__custom_iso_checksum_filename_open_button(widget):
+def on_clicked__finish_page__custom_iso_checksum_file_name_open_button(widget):
 
-    if isfile('/bin/nautilus'):
-        filepath = join(model.custom.iso_directory, model.status.iso_checksum_filename)
-        if not isfile(filepath):
-            filepath = model.custom.iso_directory
-        command = 'nautilus %s &' % filepath
-        system(command)
+    if os.path.isfile('/bin/nautilus'):
+        file_path = os.path.join(model.custom.iso_directory, model.status.iso_checksum_file_name)
+        if not os.path.isfile(file_path):
+            file_path = model.custom.iso_directory
+        command = 'nautilus %s &' % file_path
+        os.system(command)
     else:
         command = 'xdg-open %s &' % model.custom.iso_directory
-        system(command)
+        os.system(command)
 
 
 ########################################################################
@@ -217,27 +222,27 @@ def unmount_original_iso():
     is_error = False
 
     #
-    # Unmount and delete the original ISO mount point.
+    # Unmount and delete the original disk mount point.
     #
-    logger.log_value('Unmount the original ISO and delete the mount point', model.project.iso_mount_point)
-    if exists(model.project.iso_mount_point):
-        # Unmount the original ISO disk image.
-        result, exitstatus, signalstatus = iso_utilities.unmount(model.project.iso_mount_point)
-        if not signalstatus:
+    logger.log_value('Unmount the original disk and delete the mount point', model.project.iso_mount_point)
+    if os.path.exists(model.project.iso_mount_point):
+        # Unmount the original disk image.
+        result, exit_status, signal_status = iso_utilities.unmount(model.project.iso_mount_point)
+        if not signal_status:
             # Delete the mount point.
-            logger.log_value('Delete the original ISO mount point', model.project.iso_mount_point)
-            result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.iso_mount_point)
-            if not signalstatus:
-                logger.log_value('Deleted the original ISO mount point', model.project.iso_mount_point)
+            logger.log_value('Delete the original disk mount point', model.project.iso_mount_point)
+            result, exit_status, signal_status = file_utilities.delete_directory(model.project.iso_mount_point)
+            if not signal_status:
+                logger.log_value('Deleted the original disk mount point', model.project.iso_mount_point)
                 pass
             else:
-                logger.log_value('Unable to delete the original ISO mount point', model.project.iso_mount_point)
+                logger.log_value('Unable to delete the original disk mount point', model.project.iso_mount_point)
                 is_error = True
         else:
-            logger.log_value('Unable to unmount the original ISO and delete the mount point', model.project.iso_mount_point)
+            logger.log_value('Unable to unmount the original disk and delete the mount point', model.project.iso_mount_point)
             is_error = True
     else:
-        logger.log_value('Skipping. The original ISO mount point does not exist', model.project.iso_mount_point)
+        logger.log_value('Skipping. The original disk mount point does not exist', model.project.iso_mount_point)
 
     return is_error
 
@@ -249,11 +254,11 @@ def delete_project_files():
     #
     # Delete the configuration file
     #
-    logger.log_value('Delete the configuration file', model.project.configuration_filepath)
-    # sleep(1.000)
-    if exists(model.project.configuration_filepath):
-        result, exitstatus, signalstatus = file_utilities.delete_file(model.project.configuration_filepath)
-        if not signalstatus:
+    logger.log_value('Delete the configuration file', model.project.configuration_file_path)
+    # time.sleep(SLEEP_1000_MS)
+    if os.path.exists(model.project.configuration_file_path):
+        result, exit_status, signal_status = file_utilities.delete_file(model.project.configuration_file_path)
+        if not signal_status:
             # OK
             pass
         else:
@@ -266,10 +271,27 @@ def delete_project_files():
     # Delete the custom root directory.
     #
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
-    # sleep(1.000)
-    if exists(model.project.custom_root_directory):
-        result, exitstatus, signalstatus = file_utilities.delete_path_as_root(model.project.custom_root_directory)
-        if not signalstatus:
+    # time.sleep(SLEEP_1000_MS)
+    if os.path.exists(model.project.custom_root_directory):
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_root_directory)
+        if not signal_status:
+            # OK
+            pass
+        else:
+            is_error = True
+    else:
+        # Skip
+        pass
+
+    #
+    # Delete the virtual environment lock file.
+    #
+    lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
+    logger.log_value('Delete the virtual environment lock file', lock_file_path)
+    # time.sleep(SLEEP_1000_MS)
+    if os.path.exists(lock_file_path):
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
+        if not signal_status:
             # OK
             pass
         else:
@@ -281,14 +303,32 @@ def delete_project_files():
     #
     # Delete the custom disk directory.
     #
-    logger.log_value('Delete the custom ISO directory', model.project.custom_disk_directory)
-    # sleep(1.000)
-    if exists(model.project.custom_disk_directory):
-        result, exitstatus, signalstatus = file_utilities.delete_directory(model.project.custom_disk_directory)
-        if not signalstatus:
+    logger.log_value('Delete the custom disk directory', model.project.custom_disk_directory)
+    # time.sleep(SLEEP_1000_MS)
+    if os.path.exists(model.project.custom_disk_directory):
+        result, exit_status, signal_status = file_utilities.delete_directory(model.project.custom_disk_directory)
+        if not signal_status:
             # OK
             pass
         else:
+            is_error = True
+    else:
+        # Skip
+        pass
+
+    #
+    # Delete the iso partition image files.
+    #
+    image_file_pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
+    image_file_files = file_utilities.get_files_with_pattern(image_file_pattern)
+    logger.log_value('Delete the iso partition image files', image_file_files)
+    # time.sleep(SLEEP_1000_MS)
+
+    if image_file_files:
+        file_utilities.delete_files_with_pattern(image_file_pattern)
+        # Check if all image files were deleted.
+        image_file_files = file_utilities.get_files_with_pattern(image_file_pattern)
+        if image_file_files:
             is_error = True
     else:
         # Skip

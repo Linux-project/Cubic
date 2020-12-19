@@ -38,11 +38,11 @@
     <property name="icon_name">folder-symbolic</property>
   </object>
   <object class="GtkGrid" id="finish_page">
-    <property name="height_request">650</property>
+    <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="orientation">vertical</property>
     <child>
       <object class="GtkLabel">
+        <property name="width_request">894</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">24</property>
@@ -50,6 +50,7 @@
         <property name="margin_top">18</property>
         <property name="margin_bottom">18</property>
         <property name="label" translatable="yes">The following customized disk image has been successfully created.</property>
+        <property name="justify">fill</property>
         <property name="wrap">True</property>
         <property name="max_width_chars">0</property>
         <property name="xalign">0</property>
@@ -64,13 +65,11 @@
     </child>
     <child>
       <object class="GtkGrid">
-        <property name="width_request">616</property>
+        <property name="width_request">596</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
-        <property name="margin_left">154</property>
-        <property name="margin_right">154</property>
         <property name="margin_bottom">18</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
@@ -81,7 +80,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="hexpand">False</property>
-            <property name="label" translatable="yes">Custom ISO</property>
+            <property name="label" translatable="yes">Custom Disk</property>
             <property name="wrap">True</property>
             <property name="xalign">1</property>
           </object>
@@ -91,7 +90,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="finish_page__custom_iso_filename_entry">
+          <object class="GtkEntry" id="finish_page__custom_iso_file_name_entry">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
@@ -107,13 +106,14 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="finish_page__custom_iso_filename_open_button">
+          <object class="GtkButton" id="finish_page__custom_iso_file_name_open_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Open the custom disk image directory</property>
             <property name="image">finish_page__directory_1_image</property>
             <property name="always_show_image">True</property>
-            <signal name="clicked" handler="on_clicked__finish_page__custom_iso_filename_open_button" swapped="no"/>
+            <signal name="clicked" handler="on_clicked__finish_page__custom_iso_file_name_open_button" swapped="no"/>
           </object>
           <packing>
             <property name="left_attach">3</property>
@@ -207,7 +207,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="finish_page__custom_iso_checksum_filename_entry">
+          <object class="GtkEntry" id="finish_page__custom_iso_checksum_file_name_entry">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
@@ -223,13 +223,14 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="finish_page__custom_iso_checksum_filename_open_button">
+          <object class="GtkButton" id="finish_page__custom_iso_checksum_file_name_open_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Open the custom disk image directory</property>
             <property name="image">finish_page__directory_2_image</property>
             <property name="always_show_image">True</property>
-            <signal name="clicked" handler="on_clicked__finish_page__custom_iso_checksum_filename_open_button" swapped="no"/>
+            <signal name="clicked" handler="on_clicked__finish_page__custom_iso_checksum_file_name_open_button" swapped="no"/>
           </object>
           <packing>
             <property name="left_attach">3</property>
@@ -427,7 +428,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="hexpand">True</property>
-            <property name="label" translatable="yes">Delete all project files, except the generated ISO disk image and the corresponding MD5 checksum file.</property>
+            <property name="label" translatable="yes">Delete all project files, except the generated disk image and the corresponding checksum file.</property>
             <property name="wrap">True</property>
             <property name="max_width_chars">0</property>
             <property name="xalign">0</property>

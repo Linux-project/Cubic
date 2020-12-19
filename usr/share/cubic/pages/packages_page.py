@@ -27,13 +27,6 @@
 #                                                                      #
 ########################################################################
 
-from os.path import exists, join
-
-from utilities import displayer
-from utilities import iso_utilities
-from utilities import logger
-from utilities import model
-
 ########################################################################
 # References
 ########################################################################
@@ -41,10 +34,24 @@ from utilities import model
 # N/A
 
 ########################################################################
-# Globals & Constants
+# Imports
+########################################################################
+
+import os
+
+from utilities import displayer
+from utilities import iso_utilities
+from utilities import logger
+from utilities import model
+
+########################################################################
+# Global Variables & Constants
 ########################################################################
 
 name = 'packages_page'
+
+undo_index = 0
+undo_list = None
 
 ########################################################################
 # Navigation Functions
@@ -52,6 +59,9 @@ name = 'packages_page'
 
 
 def setup(action, old_page=None):
+
+    global undo_index
+    global undo_list
 
     if action == 'back':
 
@@ -68,14 +78,7 @@ def setup(action, old_page=None):
             is_next_visible=True)
 
         displayer.set_visible('packages_page__header_bar_box', True)
-
-        # TODO: Shouldn't we do this on the options page?
-
-        # displayer.set_solid('packages_page__header_bar__box', True)
-        # displayer.set_solid('options_page__header_bar__box', False)
-        # displayer.set_solid('options_page__stack_switcher', False)
-        # displayer.set_solid('stack_switcher', False)
-        displayer.set_visible('stack_switcher', False)
+        displayer.set_visible('options_page__stack_switcher', False)
 
         return
 
@@ -94,22 +97,16 @@ def setup(action, old_page=None):
             is_next_visible=True)
 
         displayer.set_visible('packages_page__header_bar_box', True)
+        displayer.set_visible('options_page__stack_switcher', False)
 
-        # TODO: Shouldn't we do this on the options page?
+        displayer.update_list_store('packages_page__list_store', model.package_details_list)
 
-        # displayer.set_solid('packages_page__header_bar__box', True)
-        # displayer.set_solid('options_page__header_bar__box', False)
-        # displayer.set_solid('options_page__stack_switcher', False)
-        # displayer.set_solid('stack_switcher', False)
-        displayer.set_visible('stack_switcher', False)
+        undo_index = 0
+        undo_list = []
 
-        # TODO: Remove these variables from the model, and add them to the Packages page.
-        model.undo_index = 0
-        model.undo_list = []
-
-        displayer.set_sensitive('packages_page__redo_button', False)
-        displayer.set_sensitive('packages_page__revert_button', False)
-        displayer.set_sensitive('packages_page__undo_button', False)
+        displayer.set_sensitive('packages_page__redo_header_bar_button', False)
+        displayer.set_sensitive('packages_page__revert_header_bar_button', False)
+        displayer.set_sensitive('packages_page__undo_header_bar_button', False)
 
         return
 
@@ -153,13 +150,13 @@ def leave(action, new_page=None):
         # Always save the filesystem.manifest-remove file, even if there are no
         # packages to remove. If the does not exist an empty file will be created.
         # This function will create the file if it does not exist.
-        filename = 'filesystem.manifest-remove'
+        file_name = 'filesystem.manifest-remove'
         removable_packages_list = create_typical_removable_packages_list()
-        save_filesystem_manifest_remove_file(filename, removable_packages_list)
+        save_file_system_manifest_remove_file(file_name, removable_packages_list)
 
         # Update filesystem.manifest-minimal-remove file.
-        filename = 'filesystem.manifest-minimal-remove'
-        is_exists = is_exists_filesystem_manifest_remove(filename)
+        file_name = 'filesystem.manifest-minimal-remove'
+        is_exists = is_exists_file_system_manifest_remove(file_name)
         removable_packages_list = create_minimal_removable_packages_list()
         # Save the filesystem.manifest-minimal-remove file if there are packages to
         # remove or if the file already exists. If the file does not exist, there
@@ -167,7 +164,7 @@ def leave(action, new_page=None):
         # minimal remove column even when the file does not exist).
         if is_exists or removable_packages_list:
             # This function will create the file if it does not exist.
-            save_filesystem_manifest_remove_file(filename, removable_packages_list)
+            save_file_system_manifest_remove_file(file_name, removable_packages_list)
 
         # TODO: If either of the above fails, action should be 'error'
         #       and we should navigate to an error page.
@@ -196,19 +193,22 @@ def leave(action, new_page=None):
 ########################################################################
 
 
-def on_clicked__packages_page__revert_button(widget):
+def on_clicked__packages_page__revert_header_bar_button(widget):
+
+    global undo_index
+    global undo_list
 
     list_store = model.builder.get_object('packages_page__list_store')
 
-    while model.undo_index > 0:
+    while undo_index > 0:
 
-        model.undo_index -= 1
+        undo_index -= 1
 
-        row, column = model.undo_list[model.undo_index]
+        row, column = undo_list[undo_index]
 
-        displayer.select_tree_view_row('packages_page__treeview', row)
-        # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
-        # sleep(0.250)
+        displayer.select_tree_view_row('packages_page__tree_view', row)
+        # displayer.scroll_to_tree_view_row('packages_page__tree_view', row)
+        # time.sleep(SLEEP_0250_MS)
 
         # print(
         #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -219,8 +219,8 @@ def on_clicked__packages_page__revert_button(widget):
         #         list_store[row][1],
         #         list_store[row][2],
         #         list_store[row][3],
-        #         len(model.undo_list),
-        #         model.undo_index))
+        #         len(undo_list),
+        #         undo_index))
 
         if column == 0:
             list_store[row][0] = not list_store[row][0]
@@ -242,11 +242,11 @@ def on_clicked__packages_page__revert_button(widget):
         else:
             list_store[row][1] = not list_store[row][1]
 
-    # if model.undo_index == 0:
-    displayer.set_sensitive('packages_page__revert_button', False)
-    displayer.set_sensitive('packages_page__undo_button', False)
+    # if undo_index == 0:
+    displayer.set_sensitive('packages_page__revert_header_bar_button', False)
+    displayer.set_sensitive('packages_page__undo_header_bar_button', False)
 
-    displayer.set_sensitive('packages_page__redo_button', True)
+    displayer.set_sensitive('packages_page__redo_header_bar_button', True)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -257,21 +257,24 @@ def on_clicked__packages_page__revert_button(widget):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
 
-def on_clicked__packages_page__undo_button(widget):
+def on_clicked__packages_page__undo_header_bar_button(widget):
 
-    model.undo_index -= 1
+    global undo_index
+    global undo_list
+
+    undo_index -= 1
 
     list_store = model.builder.get_object('packages_page__list_store')
 
-    row, column = model.undo_list[model.undo_index]
+    row, column = undo_list[undo_index]
 
-    displayer.select_tree_view_row('packages_page__treeview', row)
-    # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
-    # sleep(0.250)
+    displayer.select_tree_view_row('packages_page__tree_view', row)
+    # displayer.scroll_to_tree_view_row('packages_page__tree_view', row)
+    # time.sleep(SLEEP_0250_MS)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -282,8 +285,8 @@ def on_clicked__packages_page__undo_button(widget):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
@@ -305,11 +308,11 @@ def on_clicked__packages_page__undo_button(widget):
     else:
         list_store[row][1] = not list_store[row][1]
 
-    if model.undo_index == 0:
-        displayer.set_sensitive('packages_page__revert_button', False)
-        displayer.set_sensitive('packages_page__undo_button', False)
+    if undo_index == 0:
+        displayer.set_sensitive('packages_page__revert_header_bar_button', False)
+        displayer.set_sensitive('packages_page__undo_header_bar_button', False)
 
-    displayer.set_sensitive('packages_page__redo_button', True)
+    displayer.set_sensitive('packages_page__redo_header_bar_button', True)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -320,19 +323,22 @@ def on_clicked__packages_page__undo_button(widget):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
 
-def on_clicked__packages_page__redo_button(widget):
+def on_clicked__packages_page__redo_header_bar_button(widget):
+
+    global undo_index
+    global undo_list
 
     list_store = model.builder.get_object('packages_page__list_store')
 
-    row, column = model.undo_list[model.undo_index]
+    row, column = undo_list[undo_index]
 
-    displayer.select_tree_view_row('packages_page__treeview', row)
-    # displayer.scroll_to_tree_view_row('packages_page__treeview', row)
-    # sleep(0.250)
+    displayer.select_tree_view_row('packages_page__tree_view', row)
+    # displayer.scroll_to_tree_view_row('packages_page__tree_view', row)
+    # time.sleep(SLEEP_0250_MS)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -343,8 +349,8 @@ def on_clicked__packages_page__redo_button(widget):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
@@ -366,13 +372,13 @@ def on_clicked__packages_page__redo_button(widget):
     else:
         list_store[row][1] = not list_store[row][1]
 
-    model.undo_index += 1
+    undo_index += 1
 
-    if len(model.undo_list) == model.undo_index:
-        displayer.set_sensitive('packages_page__redo_button', False)
+    if len(undo_list) == undo_index:
+        displayer.set_sensitive('packages_page__redo_header_bar_button', False)
 
-    displayer.set_sensitive('packages_page__revert_button', True)
-    displayer.set_sensitive('packages_page__undo_button', True)
+    displayer.set_sensitive('packages_page__revert_header_bar_button', True)
+    displayer.set_sensitive('packages_page__undo_header_bar_button', True)
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -383,11 +389,14 @@ def on_clicked__packages_page__redo_button(widget):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
 
 def on_toggled__packages_page__remove_1_check_button(widget, row):
+
+    global undo_index
+    global undo_list
 
     list_store = model.builder.get_object('packages_page__list_store')
 
@@ -401,8 +410,8 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
     list_store[row][0] = not list_store[row][0]
 
@@ -422,22 +431,22 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
         # Set minimal check button active
         list_store[row][3] = True
 
-    if len(model.undo_list) > model.undo_index:
-        # print(' - Insert at %s, value %s' % (model.undo_index, [row, 0]))
-        model.undo_list[model.undo_index] = [row, 0]
+    if len(undo_list) > undo_index:
+        # print(' - Insert at %s, value %s' % (undo_index, [row, 0]))
+        undo_list[undo_index] = [row, 0]
     else:
         # print(
-        #     ' - Append at %s, value %s' % (model.undo_index + 1,
+        #     ' - Append at %s, value %s' % (undo_index + 1,
         #                                    [row,
         #                                     0]))
-        model.undo_list.append([row, 0])
+        undo_list.append([row, 0])
 
-    model.undo_index += 1
+    undo_index += 1
 
-    displayer.set_sensitive('packages_page__revert_button', True)
-    displayer.set_sensitive('packages_page__undo_button', True)
-    displayer.set_sensitive('packages_page__redo_button', False)
-    del model.undo_list[model.undo_index:]
+    displayer.set_sensitive('packages_page__revert_header_bar_button', True)
+    displayer.set_sensitive('packages_page__undo_header_bar_button', True)
+    displayer.set_sensitive('packages_page__redo_header_bar_button', False)
+    del undo_list[undo_index:]
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -448,11 +457,14 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
 
 def on_toggled__packages_page__remove_2_check_button(widget, row):
+
+    global undo_index
+    global undo_list
 
     list_store = model.builder.get_object('packages_page__list_store')
 
@@ -466,27 +478,27 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
     list_store[row][1] = not list_store[row][1]
 
-    if len(model.undo_list) > model.undo_index:
-        # print(' - Insert at %s, value %s' % (model.undo_index, [row, 1]))
-        model.undo_list[model.undo_index] = [row, 1]
+    if len(undo_list) > undo_index:
+        # print(' - Insert at %s, value %s' % (undo_index, [row, 1]))
+        undo_list[undo_index] = [row, 1]
     else:
         # print(
-        #     ' - Append at %s, value %s' % (model.undo_index + 1,
+        #     ' - Append at %s, value %s' % (undo_index + 1,
         #                                    [row,
         #                                     1]))
-        model.undo_list.append([row, 1])
+        undo_list.append([row, 1])
 
-    model.undo_index += 1
+    undo_index += 1
 
-    displayer.set_sensitive('packages_page__revert_button', True)
-    displayer.set_sensitive('packages_page__undo_button', True)
-    displayer.set_sensitive('packages_page__redo_button', False)
-    del model.undo_list[model.undo_index:]
+    displayer.set_sensitive('packages_page__revert_header_bar_button', True)
+    displayer.set_sensitive('packages_page__undo_header_bar_button', True)
+    displayer.set_sensitive('packages_page__redo_header_bar_button', False)
+    del undo_list[undo_index:]
 
     # print(
     #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
@@ -497,8 +509,8 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
     #         list_store[row][1],
     #         list_store[row][2],
     #         list_store[row][3],
-    #         len(model.undo_list),
-    #         model.undo_index))
+    #         len(undo_list),
+    #         undo_index))
 
 
 ########################################################################
@@ -510,23 +522,20 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 #       - extract_page
 #       - generate_page
 #       - options_page
-def is_exists_filesystem_manifest_remove(filename):
+def is_exists_file_system_manifest_remove(file_name):
 
     # Check custom live iso directory
-    filepath = join(model.project.custom_disk_directory, model.status.casper_directory, filename)
+    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
 
-    is_exists = exists(filepath)
+    is_exists = os.path.exists(file_path)
     if is_exists:
-        logger.log_value('%s found in' % filename, join(model.project.custom_disk_directory, model.status.casper_directory))
+        logger.log_value('%s found in' % file_name, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
         return True
     else:
-        logger.log_value('%s not found in' % filename, join(model.project.custom_disk_directory, model.status.casper_directory))
+        logger.log_value('%s not found in' % file_name, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
         return False
 
 
-# TODO: This function is needed on multiple pages. Consider refactoring.
-#       - packages_page
-#       - prepare_page
 def create_typical_removable_packages_list():
 
     logger.log_label('Create typical removable packages list')
@@ -548,9 +557,6 @@ def create_typical_removable_packages_list():
     return removable_packages_list
 
 
-# TODO: This function is needed on multiple pages. Consider refactoring.
-#       - packages_page
-#       - prepare_page
 def create_minimal_removable_packages_list():
 
     logger.log_label('Create minimal removable packages list')
@@ -572,36 +578,13 @@ def create_minimal_removable_packages_list():
     return removable_packages_list
 
 
-# TODO: This function is needed on multiple pages. Consider refactoring.
-#       - packages_page
-#       - prepare_page
-# TODO: This function is not used.
-def create_removable_packages_list(listore_name, index):
+def save_file_system_manifest_remove_file(file_name, removable_packages_list):
 
-    logger.log_label('Get removable packages list from user selections')
-    logger.log_value('Get user selections from', listore_name)
-    list_store = model.builder.get_object(listore_name)
-    removable_packages_list = []
-    item = list_store.get_iter_first()
-    while item is not None:
-        flag = list_store.get_value(item, index)
-        package_name = list_store.get_value(item, 2)
-        if flag:
-            removable_packages_list.append(package_name)
-        item = list_store.iter_next(item)
-    removable_packages_list
-    logger.log_value('New number of packages to be removed', len(removable_packages_list))
+    logger.log_label('Create new file system manifest remove file')
 
-    return removable_packages_list
-
-
-def save_filesystem_manifest_remove_file(filename, removable_packages_list):
-
-    logger.log_label('Create new filesystem manifest remove file')
-
-    filepath = join(model.project.custom_disk_directory, model.status.casper_directory, filename)
-    logger.log_value('Write filesystem manifest remove file to', filepath)
-    with open(filepath, 'w') as file:
+    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    logger.log_value('Write file system manifest remove file to', file_path)
+    with open(file_path, 'w') as file:
         first_line = True
         for packages_name in removable_packages_list:
             if first_line:
