@@ -292,77 +292,56 @@ def enter(action, old_page=None):
 
 def update_release_descriptions():
 
-    logger.log_label('Update the release descriptions')
+    # logger.log_label('Update the release descriptions')
 
     description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
-
-    file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
-    update_release_description(file_path, 'PRETTY_NAME', description)
 
     file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
     update_release_description(file_path, 'DISTRIB_DESCRIPTION', description)
 
+    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'os-release')
+    update_release_description(file_path, 'PRETTY_NAME', description)
+
+    file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
+    update_release_description(file_path, 'PRETTY_NAME', description)
+
 
 def update_release_description(file_path, key, value):
 
-    logger.log_value('The release description file is', file_path)
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.read()
-            match = re.search(r'%s=(.*)' % key, lines)
-            if match:
-                logger.log_value('The current release description is', match.group(1))
-            if model.is_changed_volume_id:
-                is_update_required = True
-                logger.log_value('Update the release description?', 'Yes; the volume id changed')
-            elif match and 'customized using Cubic on' in match.group(1):
-                is_update_required = True
-                logger.log_value('Update the release description?', 'Yes; the time stamp changed')
-            else:
-                is_update_required = False
-                logger.log_value('Update the release description?', 'No; using custom release description')
-            if is_update_required:
-                logger.log_value('The new release description is', value)
-                search_text = '%s.*' % key
-                replace_text = '%s=%s' % (key, value)
-                program = os.path.join(model.application.directory, 'commands', 'replace-text')
-                command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, file_path)
-                result, exit_status, signal_status = execute_synchronous(command)
-                logger.log_value('The result is', result)
-                logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
-    except Exception as exception:
-        logger.log_value('Error. The release description could not be updated due to', exception)
-
-
-def update_release_description_ORIGINAL():
-
     logger.log_label('Update the release description')
 
-    description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
-
-    # Update PRETTY_NAME in /usr/lib/os-release. (/etc/os-release is a
-    # sym-link to this file).
-    target_file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
-    search_text = 'PRETTY_NAME.*'
-    replace_text = 'PRETTY_NAME=%s' % description
-    program = os.path.join(model.application.directory, 'commands', 'replace-text')
-    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, target_file_path)
-    result, exit_status, signal_status = execute_synchronous(command)
-    logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
-
-    # Update DISTRIB_DESCRIPTION in /etc/os-release.
-    target_file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
-    search_text = 'DISTRIB_DESCRIPTION.*'
-    replace_text = 'DISTRIB_DESCRIPTION=%s' % description
-    program = os.path.join(model.application.directory, 'commands', 'replace-text')
-    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, target_file_path)
-    result, exit_status, signal_status = execute_synchronous(command)
-    logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
-
-    # TODO: Account for errors (or ignore errors?)
-    # logger.log_value('Unable to update the disk information in', file_path)
+    if not os.path.isfile(file_path):
+        logger.log_value('The release description file does not exist', file_path)
+    elif os.path.islink(file_path):
+        logger.log_value('The release description file is is a symlink', file_path)
+    else:
+        logger.log_value('The release description file is', file_path)
+        try:
+            with open(file_path, 'r') as file:
+                lines = file.read()
+                match = re.search(r'%s=(.*)' % key, lines)
+                if match:
+                    logger.log_value('The current release description is', match.group(1))
+                if model.update_release_description:
+                    is_update_required = True
+                    logger.log_value('Update the release description?', 'Yes')
+                elif match and 'customized using Cubic on' in match.group(1):
+                    is_update_required = True
+                    logger.log_value('Update the release description?', 'Yes. The release description is automatically updated')
+                else:
+                    is_update_required = False
+                    logger.log_value('Update the release description?', 'No. Keep custom release description')
+                if is_update_required:
+                    logger.log_value('The new release description is', value)
+                    search_text = '%s.*' % key
+                    replace_text = '%s=%s' % (key, value)
+                    program = os.path.join(model.application.directory, 'commands', 'replace-text')
+                    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, file_path)
+                    result, exit_status, signal_status = execute_synchronous(command)
+                    logger.log_value('The result is', result)
+                    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+        except Exception as exception:
+            logger.log_value('Error. The release description could not be updated due to', exception)
 
 
 def leave(action, new_page=None):

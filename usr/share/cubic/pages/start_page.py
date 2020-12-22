@@ -39,7 +39,8 @@
 
 import os
 
-from constants import OK, ERROR, EXCLUDED_FILESYSTEM_TYPES, CUBIC_VERSION_2020
+from constants import CUBIC_VERSION_2020, CUBIC_VERSION_2021
+from constants import OK, ERROR, EXCLUDED_FILESYSTEM_TYPES
 from file_choosers import directory_chooser
 from utilities import configuration
 from utilities import constructor
@@ -173,6 +174,7 @@ def leave(action, new_page=None):
         # 5. model.project.iso_mount_point
         # 6. model.project.custom_root_directory
         # 7. model.project.custom_disk_directory
+        # 8. model.update_release_description
 
         # model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
         # model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
@@ -201,6 +203,7 @@ def leave(action, new_page=None):
         # 5. model.project.iso_mount_point
         # 6. model.project.custom_root_directory
         # 7. model.project.custom_disk_directory
+        # 8. model.update_release_description
 
         # model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
         # model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
@@ -277,6 +280,7 @@ def validate_page():
                 model.project.configuration_file_path = constructor.construct_configuration_file_path(model.project.directory)
                 if os.path.isfile(model.project.configuration_file_path):
                     configuration.load()
+                    model.update_release_description = bool(model.project.cubic_version < CUBIC_VERSION_2021)
                     if model.project.cubic_version < CUBIC_VERSION_2020:
                         displayer.reset_buttons(
                             back_button_label='❬Back',
@@ -320,6 +324,7 @@ def validate_page():
                 else:
                     configuration.initialize()
                     reset_model()
+                    model.update_release_description = True
                     displayer.reset_buttons(
                         back_button_label='❬Back',
                         back_action='back',
@@ -331,7 +336,7 @@ def validate_page():
                         next_button_style='suggested-action',
                         is_next_sensitive=True,
                         is_next_visible=True)
-                    displayer.update_label('start_page__project_directory_message', 'A new cubic project will be created using this directory.')
+                    displayer.update_label('start_page__project_directory_message', 'A new Cubic project will be created using this directory.')
                     displayer.set_entry_error('start_page__project_directory_entry', OK)
             else:
                 displayer.reset_buttons(

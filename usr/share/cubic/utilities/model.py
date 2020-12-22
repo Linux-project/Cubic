@@ -119,7 +119,7 @@ options.compression = None
 # Project page, Terminal page
 #-----------------------------------------------------------------------
 
-is_changed_volume_id = False
+update_release_description = False
 
 #-----------------------------------------------------------------------
 # Terminal page, Preseed tab, Iso Boot tab

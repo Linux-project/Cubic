@@ -33,6 +33,7 @@
 
 # https://docs.python.org/3/library/locale.html#locale.setlocale
 # http://manpages.ubuntu.com/manpages/groovy/man1/xorrisofs.1.html
+# https://docs.python.org/3/library/time.html#time.strftime
 
 ########################################################################
 # Imports
@@ -52,8 +53,11 @@ import locale
 # default locale as defined by the LANG variable.
 locale.setlocale(locale.LC_ALL, '')
 
-TIME_STAMP_FORMAT = '%c'
-LONG_TIME_STAMP_FORMAT = '%A %B %d, %Y %I:%M %p'
+TIME_STAMP_FORMAT = '%x %X'  # Locale appropriate date and time format.
+TIME_STAMP_FORMAT_LONG_1 = '%A %B %d, %Y %I:%M %p'
+TIME_STAMP_FORMAT_LONG_2 = '%A %B %d, %Y %I:%M'
+TIME_STAMP_FORMAT_LONG_3 = '%A %B %d, %Y %H:%M'
+TIME_STAMP_FORMAT_YYYYMMDD = '%Y%m%d'
 VERSION_NUMBER_FORMAT = '%Y.%m.%d'
 
 ########################################################################

@@ -45,6 +45,7 @@ import time
 from constants import FINAL_PERCENT
 from constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
 from constants import SLEEP_0500_MS
+from constants import TIME_STAMP_FORMAT_YYYYMMDD
 from pages import options_page
 from utilities import configuration
 from utilities import constructor
@@ -725,7 +726,7 @@ def update_disk_info():
 
     try:
         # Use the modify date from the model.
-        time_stamp = constructor.reformat_time_stamp(model.project.modify_date, '%Y%m%d')
+        time_stamp = constructor.reformat_time_stamp(model.project.modify_date, TIME_STAMP_FORMAT_YYYYMMDD)
         text = '%s (%s)' % (model.custom.iso_disk_name, time_stamp)
         logger.log_value('The custom disk image name and release date are', text)
         file_path = os.path.join(model.project.custom_disk_directory, '.disk', 'info')
@@ -990,7 +991,7 @@ def get_xorriso_command():
                '-l '           \
                '-iso-level 3 ' \
                '{0} '          \
-               '-o {1} .').format(complete, iso_file_path)
+               '-o "{1}" .').format(complete, iso_file_path)
 
     return command
 

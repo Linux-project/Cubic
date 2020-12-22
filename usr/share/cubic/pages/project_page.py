@@ -424,7 +424,7 @@ def leave(action, new_page=None):
         model.custom.iso_version_number = custom.iso_version_number.value
         model.custom.iso_file_name = custom.iso_file_name.value
         model.custom.iso_directory = custom.iso_directory.value
-        model.is_changed_volume_id = bool(model.custom.iso_volume_id != custom.iso_volume_id.value)
+        if model.custom.iso_volume_id != custom.iso_volume_id.value: model.update_release_description = True
         model.custom.iso_volume_id = custom.iso_volume_id.value
         model.custom.iso_release_name = custom.iso_release_name.value
         model.custom.iso_disk_name = custom.iso_disk_name.value
@@ -478,7 +478,7 @@ def leave(action, new_page=None):
         model.custom.iso_version_number = custom.iso_version_number.value
         model.custom.iso_file_name = custom.iso_file_name.value
         model.custom.iso_directory = custom.iso_directory.value
-        model.is_changed_volume_id = bool(model.custom.iso_volume_id != custom.iso_volume_id.value)
+        if model.custom.iso_volume_id != custom.iso_volume_id.value: model.update_release_description = True
         model.custom.iso_volume_id = custom.iso_volume_id.value
         model.custom.iso_release_name = custom.iso_release_name.value
         model.custom.iso_disk_name = custom.iso_disk_name.value

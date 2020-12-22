@@ -1,5 +1,11 @@
 cubic (2020.12) focal; urgency=low
 
+  * Issues fixed in version 2020.12-37:
+
+  - Fixed Bug #1908879, Cubic v2020.12.36 crash on startup.
+  - Fixed Bug #1908849, Generate step fails if the Cubic project
+    directory path contains spaces.
+
   * Issues fixed in version 2020.12-36:
 
   - Fixed Bug #1905098, Failed to generate ISO for Ubuntu 20.10.
@@ -9,4 +15,4 @@ cubic (2020.12) focal; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 19 Dec 2020 15:33:20 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 21 Dec 2020 20:56:12 -0500

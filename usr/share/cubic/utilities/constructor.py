@@ -32,6 +32,8 @@
 ########################################################################
 
 # https://time.strftime.org/
+# https://docs.python.org/3/library/time.html#time.strftime
+# https://docs.python.org/3/library/time.html#time.strptime
 
 ########################################################################
 # Imports
@@ -180,12 +182,51 @@ def get_current_time_stamp():
     return time_stamp
 
 
-def reformat_time_stamp(time_stamp, new_format, old_format=TIME_STAMP_FORMAT):
+def reformat_time_stamp_ORIGINAL(time_stamp, new_format, old_format=TIME_STAMP_FORMAT):
 
     # logger.log_label('Get current time stamp in localized format')
 
     struct_time = time.strptime(time_stamp, old_format)
     time_stamp = time.strftime(new_format, struct_time)
+
+    return time_stamp
+
+
+def reformat_time_stamp(time_stamp, new_format, *old_formats):
+    """
+    Converts time stamp string to a new time stamp string with a new format.
+
+    Arguments:
+    time_stamp  - The original time stamp string to be converted.
+    new_format  - The format of the new time stamp string.
+    old_formats - A tuple of possible old time stamp formats to try.
+    """
+
+    # logger.log_label('Get current time stamp in localized format')
+
+    time_stamp = time_stamp.strip()
+    logger.log_value('Reformat the time stamp', time_stamp)
+
+    if not old_formats:
+        old_formats = (TIME_STAMP_FORMAT, )
+
+    for old_format in old_formats:
+        logger.log_value('Try old time stamp format', old_format)
+        try:
+            struct_time = time.strptime(time_stamp, old_format)
+            logger.log_value('Matched the time stamp format?', 'Yes')
+            break
+        except ValueError as exception:
+            logger.log_value('Matched the time stamp format?', 'No')
+            # This situation should never happen. If it does, time.strftime()
+            # will result in an exception, and the original cause will need to
+            # identified and corrected.
+            struct_time = None
+
+    logger.log_value('The new time stamp format is', new_format)
+
+    time_stamp = time.strftime(new_format, struct_time).strip()
+    logger.log_value('The reformatted time stamp is', time_stamp)
 
     return time_stamp
 
