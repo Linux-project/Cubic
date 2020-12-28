@@ -1,5 +1,12 @@
 cubic (2020.12) focal; urgency=low
 
+  * Issues fixed in version 2020.12-38:
+
+  - Fixed Bug #1909402, The Volume ID is not applied to the generated
+    ISO.
+  - Fixed Bug #1909414, During ISO boot, check disk reports error in 1
+    file.
+
   * Issues fixed in version 2020.12-37:
 
   - Fixed Bug #1908879, Cubic v2020.12.36 crash on startup.
@@ -15,4 +22,4 @@ cubic (2020.12) focal; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 21 Dec 2020 20:56:12 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 28 Dec 2020 16:00:43 -0500

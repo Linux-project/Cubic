@@ -270,105 +270,12 @@ def selected_project_directory(directory):
 
 def validate_page():
 
-    if model.project.directory:
-        if file_utilities.directory_is_writable(model.project.directory):
-            file_system_type = file_utilities.get_file_system_type(model.project.directory)
-            if file_system_type not in EXCLUDED_FILESYSTEM_TYPES:
-                model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
-                model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
-                model.project.custom_disk_directory = constructor.construct_custom_disk_directory(model.project.directory)
-                model.project.configuration_file_path = constructor.construct_configuration_file_path(model.project.directory)
-                if os.path.isfile(model.project.configuration_file_path):
-                    configuration.load()
-                    model.update_release_description = bool(model.project.cubic_version < CUBIC_VERSION_2021)
-                    if model.project.cubic_version < CUBIC_VERSION_2020:
-                        displayer.reset_buttons(
-                            back_button_label='❬Back',
-                            back_action='back',
-                            back_button_style=None,
-                            is_back_sensitive=False,
-                            is_back_visible=False,
-                            next_button_label='Migrate❭',
-                            next_action='migrate',
-                            next_button_style='suggested-action',
-                            is_next_sensitive=True,
-                            is_next_visible=True)
-                        displayer.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
-                        displayer.set_entry_error('start_page__project_directory_entry', OK)
-                    else:
-                        displayer.reset_buttons(
-                            back_button_label='❬Back',
-                            back_action='back',
-                            back_button_style=None,
-                            is_back_sensitive=False,
-                            is_back_visible=False,
-                            next_button_label='Next❭',
-                            next_action='next',
-                            next_button_style='suggested-action',
-                            is_next_sensitive=True,
-                            is_next_visible=True)
-                        # displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
-                        # TODO: Remove the following if/else clause in a
-                        #       future release because this code was
-                        #       added to alleviate a configuration file
-                        #       layout change. (12/19/2020)
-                        if not model.status.iso_template and not os.path.isfile(os.path.join(model.original.iso_directory, model.original.iso_file_name)):
-                            displayer.update_label(
-                                'start_page__project_directory_message',
-                                '<span size="medium" foreground="red">Warning. Cubic will require the original disk image to copy important files and may overwrite your changes to the disk boot configurations (%s) or preseed files. Before proceeding, make backups of these files located in %s.</span>'
-                                % (', '.join(model.options.boot_configurations),
-                                   model.project.custom_disk_directory))
-                        else:
-                            displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
-                        displayer.set_entry_error('start_page__project_directory_entry', OK)
-                else:
-                    configuration.initialize()
-                    reset_model()
-                    model.update_release_description = True
-                    displayer.reset_buttons(
-                        back_button_label='❬Back',
-                        back_action='back',
-                        back_button_style=None,
-                        is_back_sensitive=False,
-                        is_back_visible=False,
-                        next_button_label='Next❭',
-                        next_action='next',
-                        next_button_style='suggested-action',
-                        is_next_sensitive=True,
-                        is_next_visible=True)
-                    displayer.update_label('start_page__project_directory_message', 'A new Cubic project will be created using this directory.')
-                    displayer.set_entry_error('start_page__project_directory_entry', OK)
-            else:
-                displayer.reset_buttons(
-                    back_button_label='❬Back',
-                    back_action='back',
-                    back_button_style=None,
-                    is_back_sensitive=False,
-                    is_back_visible=False,
-                    next_button_label='Next❭',
-                    next_action='next',
-                    next_button_style='suggested-action',
-                    is_next_sensitive=False,
-                    is_next_visible=True)
-                displayer.update_label(
-                    'start_page__project_directory_message',
-                    '<span foreground="red">Error. Cannot customize Linux on the %s file system.</span>' % file_system_type)
-                displayer.set_entry_error('start_page__project_directory_entry', ERROR)
-        else:
-            displayer.reset_buttons(
-                back_button_label='❬Back',
-                back_action='back',
-                back_button_style=None,
-                is_back_sensitive=False,
-                is_back_visible=False,
-                next_button_label='Next❭',
-                next_action='next',
-                next_button_style='suggested-action',
-                is_next_sensitive=False,
-                is_next_visible=True)
-            displayer.update_label('start_page__project_directory_message', '<span foreground="red">Error. Cannot access directory.</span>')
-            displayer.set_entry_error('start_page__project_directory_entry', ERROR)
-    else:
+    #
+    # No directory was selected.
+    #
+
+    if not model.project.directory:
+
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -380,8 +287,192 @@ def validate_page():
             next_button_style='suggested-action',
             is_next_sensitive=False,
             is_next_visible=True)
+
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
         displayer.set_entry_error('start_page__project_directory_entry', OK)
+
+        return
+
+    #
+    # The selected directory is not writable.
+    #
+
+    if not file_utilities.directory_is_writable(model.project.directory):
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=False,
+            is_back_visible=False,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=False,
+            is_next_visible=True)
+
+        displayer.update_label('start_page__project_directory_message', '<span foreground="red">Error. Cannot access directory.</span>')
+        displayer.set_entry_error('start_page__project_directory_entry', ERROR)
+
+        return
+
+    #
+    # An excluded file system was selected.
+    #
+
+    file_system_type = file_utilities.get_file_system_type(model.project.directory)
+    if file_system_type in EXCLUDED_FILESYSTEM_TYPES:
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=False,
+            is_back_visible=False,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=False,
+            is_next_visible=True)
+
+        displayer.update_label(
+            'start_page__project_directory_message',
+            '<span foreground="red">Error. Cannot customize Linux on the %s file system.</span>' % file_system_type)
+        displayer.set_entry_error('start_page__project_directory_entry', ERROR)
+
+        return
+
+    #
+    # Initialize values for new or existing projects.
+    #
+
+    model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
+    model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
+    model.project.custom_disk_directory = constructor.construct_custom_disk_directory(model.project.directory)
+
+    #
+    # This is a new project.
+    #
+
+    model.project.configuration_file_path = constructor.construct_configuration_file_path(model.project.directory)
+    if not os.path.isfile(model.project.configuration_file_path):
+
+        configuration.initialize()
+        reset_model()
+        model.update_release_description = True
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=False,
+            is_back_visible=False,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.update_label('start_page__project_directory_message', 'A new Cubic project will be created using this directory.')
+        displayer.set_entry_error('start_page__project_directory_entry', OK)
+
+        return
+
+    #
+    # Load configuration and initialize values for existing projects.
+    #
+
+    configuration.load()
+    model.update_release_description = bool(model.project.cubic_version < CUBIC_VERSION_2021)
+
+    #
+    # Migrate existing project.
+    #
+
+    if model.project.cubic_version < CUBIC_VERSION_2020:
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=False,
+            is_back_visible=False,
+            next_button_label='Migrate❭',
+            next_action='migrate',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
+        displayer.set_entry_error('start_page__project_directory_entry', OK)
+
+        return
+
+    #
+    # Existing project without an ISO template.
+    #
+
+    # TODO: Remove the following section in a future release. (12/19/2020)
+    if not model.status.iso_template and not os.path.isfile(os.path.join(model.original.iso_directory, model.original.iso_file_name)):
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=False,
+            is_back_visible=False,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.update_label(
+            'start_page__project_directory_message',
+            '<span foreground="red">Warning. Cubic will require the'       \
+            ' original disk image to copy important files and may'         \
+            ' overwrite your changes to the disk boot configurations (%s)' \
+            ' or preseed files. Before proceeding, make backups of these'  \
+            ' files located in %s.</span>'
+            % (', '.join(model.options.boot_configurations),
+               model.project.custom_disk_directory))
+
+        displayer.set_entry_error('start_page__project_directory_entry', OK)
+
+        return
+
+    #
+    # Existing project with ISO template.
+    #
+
+    displayer.reset_buttons(
+        back_button_label='❬Back',
+        back_action='back',
+        back_button_style=None,
+        is_back_sensitive=False,
+        is_back_visible=False,
+        next_button_label='Next❭',
+        next_action='next',
+        next_button_style='suggested-action',
+        is_next_sensitive=True,
+        is_next_visible=True)
+
+    #-------------------------------------------------------------------
+    # TODO: Remove this section in a future release. (12/27/2020)
+    #       Also, remove similar code from start_page and extract_page.
+
+    # Correct an error in the ISO template.
+    if model.status.iso_template:
+        template = constructor.decode(model.status.iso_template)
+        if '{{volume_id}}' in template:
+            template = template.replace('{{volume_id}}', '{volume_id}')
+            model.status.iso_template = constructor.encode(template)
+    #-------------------------------------------------------------------
+
+    displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
+    displayer.set_entry_error('start_page__project_directory_entry', OK)
+
+    return
 
 
 def reset_model():

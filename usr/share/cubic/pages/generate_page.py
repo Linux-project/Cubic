@@ -31,7 +31,8 @@
 # References
 ########################################################################
 
-# N/A
+# http://manpages.ubuntu.com/manpages/groovy/man1/xorrisofs.1.html
+# https://linux.die.net/man/8/mkisofs
 
 ########################################################################
 # Imports
@@ -753,31 +754,53 @@ def update_disk_info():
 #       Do we use a flag and/or break in all loops?
 def update_checksums():
 
+    # TODO: Should os.path.realpath should be used for?...
+    #       1. checksums_file_path
+    #       2. exclude_paths
+
     logger.log_label('Update checksums')
 
     # Show % in progress by setting text to None.
     displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', None)
 
     checksums_file_path = os.path.join(model.project.custom_disk_directory, 'md5sum.txt')
-    start_directory = model.project.custom_disk_directory
-    # exclude_paths = [os.path.join(model.project.custom_disk_directory, 'isolinux'), checksums_file_path]
-    exclude_paths = [
-        os.path.join(model.project.custom_disk_directory,
-                     'isolinux'),
-        os.path.join(model.project.custom_disk_directory,
-                     'boot.catalog'),
-        checksums_file_path
-    ]
 
-    # TODO: Validate if we need os.path.realpath here?
-    # checksums_file_path = os.path.realpath(checksums_file_path)
-    # start_directory = os.path.realpath(start_directory)
-    # exclude_paths = [os.path.realpath(path) for path in exclude_paths]
+    #
+    # Identify file paths to exclude from the checksums.
+    #
+
+    exclude_paths = []
+
+    # Exclude the checksums file.
+    exclude_paths.append(checksums_file_path)
+
+    # Exclude the eltorito boot image and the boot catalog.
+
+    template = constructor.decode(model.status.iso_template)
+
+    # Exclude the eltorito boot image file path (if it exists).
+    result = re.search(r"-b '(.*?)'", template)
+    if result:
+        file_path = result.group(1).strip(os.path.sep)
+        file_path = os.path.join(model.project.custom_disk_directory, file_path)
+        print('File path: %s' % file_path)
+        exclude_paths.append(file_path)
+
+    # Exclude the boot catalog file path (if it exists).
+    result = re.search(r"-c '(.*?)'", template)
+    if result:
+        file_path = result.group(1).strip(os.path.sep)
+        file_path = os.path.join(model.project.custom_disk_directory, file_path)
+        print('File path: %s' % file_path)
+        exclude_paths.append(file_path)
 
     logger.log_value('Write MD5 checksums to', checksums_file_path)
 
-    # Get file_paths.
+    #
+    # Get file paths to include in the checksums.
+    #
 
+    start_directory = model.project.custom_disk_directory
     file_paths = []
     for directory, directory_names, file_names in os.walk(start_directory):
         if directory not in exclude_paths:
@@ -787,7 +810,9 @@ def update_checksums():
                     file_paths.append(file_path)
     file_paths.sort(key=lambda file_path: file_path.lower())
 
-    # Calculate MD5 checksums and display progress.
+    #
+    # Calculate checksums and display progress.
+    #
 
     total_files = len(file_paths)
     if total_files == 0:
@@ -981,7 +1006,7 @@ def create_iso_image():
 def get_xorriso_command():
 
     template = constructor.decode(model.status.iso_template)
-    complete = template.format(iso_volume_id=model.custom.iso_volume_id, boot_image_directory=model.project.directory)
+    complete = template.format(volume_id=model.custom.iso_volume_id, boot_image_directory=model.project.directory)
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
     command = ('xorriso '      \
                '-as mkisofs '  \

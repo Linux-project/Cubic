@@ -325,7 +325,7 @@ def handle_volume_id(line):
 
     if not line.startswith('-V'): return False, line
 
-    line = "-V '{{volume_id}}'"
+    line = "-V '{volume_id}'"
 
     return False, line
 
@@ -339,7 +339,7 @@ def handle_volume_id_ALTERNATIVE(line):
 
     if '-V' not in line: return False, line
 
-    line = re.sub(r"\s*-V\s+'.*'\s*|\s*-V\s+\S*\s*", " -V '{{volume_id}}' ", line).strip()
+    line = re.sub(r"\s*-V\s+'.*'\s*|\s*-V\s+\S*\s*", " -V '{volume_id}' ", line).strip()
 
     return False, line
 

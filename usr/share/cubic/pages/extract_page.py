@@ -175,6 +175,18 @@ def enter(action, old_page=None):
                     # Stay on this page.
                     return
 
+            #-----------------------------------------------------------
+            # TODO: Remove this section in a future release. (12/27/2020)
+            #       Also, remove similar code from start_page and extract_page.
+
+            # Correct an error in the ISO template.
+            if model.status.iso_template:
+                template = constructor.decode(model.status.iso_template)
+                if '{{volume_id}}' in template:
+                    template = template.replace('{{volume_id}}', '{volume_id}')
+                    model.status.iso_template = constructor.encode(template)
+            #-----------------------------------------------------------
+
             # Success. Pause to allow the user to see the result.
             displayer.update_label('extract_page__analyze_original_iso_message', 'Success.')
             displayer.update_status('extract_page__analyze_original_iso', displayer.OK)
@@ -363,8 +375,8 @@ def copy_original_iso_files():
     # do not copy: /casper/filesystem.size
     # do not copy: /casper/filesystem.squashfs
     # do not copy: /casper/filesystem.squashfs.gpg
-    # ~ ~ ~  copy: /casper/initrd.lz
-    # ~ ~ ~  copy: /casper/vmlinuz.efi
+    # ~ ~ ~  copy: /casper/initrd
+    # ~ ~ ~  copy: /casper/vmlinuz
     #
     # Some important rsync options:
     #
@@ -382,7 +394,7 @@ def copy_original_iso_files():
     # progress for individual files.
     command = (
         'rsync'
-        ' --info=progress2 "%s" "%s"'
+        ' --info=progress2 "{source_path}" "{target_path}"'
         ' --delete'
         # ' --archive'
         ' --recursive'
@@ -391,16 +403,13 @@ def copy_original_iso_files():
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
         ' --exclude=".disk/release_notes_url"'
-        ' --exclude="/%s/filesystem.manifest"'
-        ' --exclude="/%s/filesystem.size"'
-        ' --exclude="/%s/filesystem.squashfs"'
-        ' --exclude="/%s/filesystem.squashfs.gpg"' %
-        (source_path,
-         target_path,
-         model.status.casper_directory,
-         model.status.casper_directory,
-         model.status.casper_directory,
-         model.status.casper_directory))
+        ' --exclude="/{casper_directory}/filesystem.manifest"'
+        ' --exclude="/{casper_directory}/filesystem.size"'
+        ' --exclude="/{casper_directory}/filesystem.squashfs"'
+        ' --exclude="/{casper_directory}/filesystem.squashfs.gpg"').format(
+            source_path=source_path,
+            target_path=target_path,
+            casper_directory=model.status.casper_directory)
 
     # The progress callback function.
     def progress_callback(percent):
