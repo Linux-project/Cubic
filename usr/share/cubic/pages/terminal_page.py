@@ -572,6 +572,9 @@ def on_button_release_event__terminal_page__paste_file_menu_item(*args):
     clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
     model.selected_uris = clipboard.wait_for_uris()
 
+    model.current_directory = console.get_current_directory()
+    logger.log_value('The current directory is', model.current_directory)
+
     # Go to the copy page.
 
     # The pseudo terminal process is not registered with the
@@ -582,7 +585,6 @@ def on_button_release_event__terminal_page__paste_file_menu_item(*args):
     # page. The pseudo terminal process must be explicitly killed by
     # executing the exit_virtual_environment() function of the
     # console module.
-
     handle_navigation('copy-into-terminal')
 
 

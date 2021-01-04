@@ -1,4 +1,9 @@
-cubic (2020.12) focal; urgency=low
+cubic (2021.01) focal; urgency=low
+
+  * Issues fixed in version 2021.01-39:
+
+  - Fixed Bug #1909600, Terminal page right-click "Paste file" context menu
+    option is not working.
 
   * Issues fixed in version 2020.12-38:
 
@@ -22,4 +27,4 @@ cubic (2020.12) focal; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 28 Dec 2020 16:00:43 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 04 Jan 2021 12:04:43 -0500
