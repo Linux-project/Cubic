@@ -276,6 +276,8 @@ def _load_from_2019_layout():
     model.status.iso_checksum_file_name = get_value('Custom', 'custom_iso_image_md5_filename', default=None)
 
     # Options
+    # Not in the original 2019 layout.
+    model.options.update_os_release = get_boolean('Options', 'update_os_release', default=True)
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
     model.options.boot_configurations = [
         boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',') if boot_configuration.strip().strip('/')
@@ -330,6 +332,8 @@ def _load_from_2020_layout():
     model.status.iso_checksum_file_name = get_value('Status', 'iso_checksum_filename', default=None)
 
     # Options
+    # Not in the original 2020 layout.
+    model.options.update_os_release = get_boolean('Options', 'update_os_release', default=True)
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
     model.options.boot_configurations = [
         boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',') if boot_configuration.strip().strip('/')
@@ -375,6 +379,8 @@ def _load_from_2021_layout():
     model.status.iso_checksum_file_name = get_value('Status', 'iso_checksum_file_name', default=None)
 
     # Options
+    # Not in the original 2021 layout.
+    model.options.update_os_release = get_boolean('Options', 'update_os_release', default=True)
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
     model.options.boot_configurations = [
         boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',') if boot_configuration.strip().strip('/')
@@ -461,6 +467,8 @@ def _save_using_2019_layout():
     config_parser.set('Custom', 'custom_iso_image_md5_filename', model.status.iso_checksum_file_name)
 
     # Save options values.
+    # Not in the original 2019 layout.
+    config_parser.set('Options', 'update_os_release', str(bool(model.options.update_os_release)))
     boot_configurations_string = ','.join(boot_configuration.strip(' /') for boot_configuration in model.options.boot_configurations)
     config_parser.set('Options', 'boot_configurations', boot_configurations_string)
     # Not in the original 2019 layout.
@@ -510,6 +518,8 @@ def _save_using_2020_layout():
     config_parser.set('Status', 'iso_checksum_filename', model.status.iso_checksum_file_name)
 
     # Save options values.
+    # Not in the original 2019 layout.
+    config_parser.set('Options', 'update_os_release', str(bool(model.options.update_os_release)))
     boot_configurations_string = ','.join(boot_configuration.strip(' /') for boot_configuration in model.options.boot_configurations)
     config_parser.set('Options', 'boot_configurations', boot_configurations_string)
     config_parser.set('Options', 'compression', model.options.compression)
@@ -556,6 +566,8 @@ def _save_using_2021_layout():
     config_parser.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
 
     # Save options values.
+    # Not in the original 2019 layout.
+    config_parser.set('Options', 'update_os_release', str(bool(model.options.update_os_release)))
     boot_configurations_string = ','.join(boot_configuration.strip(' /') for boot_configuration in model.options.boot_configurations)
     config_parser.set('Options', 'boot_configurations', boot_configurations_string)
     config_parser.set('Options', 'compression', model.options.compression)

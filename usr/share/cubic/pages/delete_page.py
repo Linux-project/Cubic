@@ -542,5 +542,6 @@ def reset_model():
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 
+    model.options.update_os_release = None
     model.options.boot_configurations = None
     model.options.compression = None

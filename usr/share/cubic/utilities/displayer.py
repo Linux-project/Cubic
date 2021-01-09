@@ -493,11 +493,11 @@ def empty_box(box_name):
     for child in box.get_children():
         # TODO: Do we need the logging here?
         if isinstance(child, Gtk.Label):
-            logger.log_value('Removing label', child.get_text())
+            logger.log_value('Removing label from box', child.get_text())
         elif isinstance(child, Gtk.Button):
-            logger.log_value('Removing button', child.get_label())
+            logger.log_value('Removing button from box', child.get_label())
         else:
-            logger.log_value('Removing unknown type', child)
+            logger.log_value('Removing unknown type from box', child)
         GLib.idle_add(Gtk.Box.remove, box, child)
         GLib.idle_add(Gtk.Widget.destroy, child)
 

@@ -271,7 +271,8 @@ def enter(action, old_page=None):
         console.enter_virtual_environment(update_status)
 
         # Update the release description.
-        update_release_descriptions()
+        if model.options.update_os_release:
+            update_release_descriptions()
 
         return
 
@@ -281,67 +282,14 @@ def enter(action, old_page=None):
         console.enter_virtual_environment(update_status)
 
         # Update the release description.
-        update_release_descriptions()
+        if model.options.update_os_release:
+            update_release_descriptions()
 
         return
 
     else:
 
         return 'unknown'
-
-
-def update_release_descriptions():
-
-    # logger.log_label('Update the release descriptions')
-
-    description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
-
-    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
-    update_release_description(file_path, 'DISTRIB_DESCRIPTION', description)
-
-    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'os-release')
-    update_release_description(file_path, 'PRETTY_NAME', description)
-
-    file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
-    update_release_description(file_path, 'PRETTY_NAME', description)
-
-
-def update_release_description(file_path, key, value):
-
-    logger.log_label('Update the release description')
-
-    if not os.path.isfile(file_path):
-        logger.log_value('The release description file does not exist', file_path)
-    elif os.path.islink(file_path):
-        logger.log_value('The release description file is is a symlink', file_path)
-    else:
-        logger.log_value('The release description file is', file_path)
-        try:
-            with open(file_path, 'r') as file:
-                lines = file.read()
-                match = re.search(r'%s=(.*)' % key, lines)
-                if match:
-                    logger.log_value('The current release description is', match.group(1))
-                if model.update_release_description:
-                    is_update_required = True
-                    logger.log_value('Update the release description?', 'Yes')
-                elif match and 'customized using Cubic on' in match.group(1):
-                    is_update_required = True
-                    logger.log_value('Update the release description?', 'Yes. The release description is automatically updated')
-                else:
-                    is_update_required = False
-                    logger.log_value('Update the release description?', 'No. Keep custom release description')
-                if is_update_required:
-                    logger.log_value('The new release description is', value)
-                    search_text = '%s.*' % key
-                    replace_text = '%s=%s' % (key, value)
-                    program = os.path.join(model.application.directory, 'commands', 'replace-text')
-                    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, search_text, replace_text, file_path)
-                    result, exit_status, signal_status = execute_synchronous(command)
-                    logger.log_value('The result is', result)
-                    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
-        except Exception as exception:
-            logger.log_value('Error. The release description could not be updated due to', exception)
 
 
 def leave(action, new_page=None):
@@ -379,6 +327,10 @@ def leave(action, new_page=None):
         # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
+
+        # Update the release description.
+        if model.options.update_os_release:
+            update_release_descriptions()
 
         time.sleep(SLEEP_0250_MS)
 
@@ -636,3 +588,59 @@ def update_status(status):
         displayer.update_label('terminal_page__kernel_version_label', '')
 
     logger.log_value('Virtual environment status message', message)
+
+
+def update_release_descriptions():
+
+    # logger.log_label('Update the release descriptions')
+
+    description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
+
+    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
+    if os.path.isfile(file_path) and not os.path.islink(file_path):
+        update_release_description(file_path, 'DISTRIB_DESCRIPTION', description)
+
+    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'os-release')
+    if os.path.isfile(file_path) and not os.path.islink(file_path):
+        update_release_description(file_path, 'PRETTY_NAME', description)
+
+    file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
+    if os.path.isfile(file_path) and not os.path.islink(file_path):
+        update_release_description(file_path, 'PRETTY_NAME', description)
+
+
+def update_release_description(target_file_path, key, value):
+
+    # logger.log_label('Update the release description')
+
+    value = value.replace('"', '')
+
+    logger.log_value('Update release description in', target_file_path)
+    logger.log_value('▹ Key', key)
+    logger.log_value('▹ Value', value)
+
+    lines = []
+    with open(target_file_path, 'r') as file:
+        lines = file.readlines()
+
+    new_lines = []
+    for line in lines:
+        if line.startswith(key):
+            line = '%s="%s"' % (key, value)
+        new_lines.append(line.strip())
+
+    target_file_name = os.path.basename(target_file_path)
+    temp_file_path = os.path.join(os.path.sep, 'tmp', target_file_name)
+
+    with open(temp_file_path, 'w') as file:
+        for line in new_lines:
+            file.write(line + os.linesep)
+
+    program = os.path.join(model.application.directory, 'commands', 'move-path')
+    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, temp_file_path, target_file_path, 'root')
+    result, exit_status, signal_status = execute_synchronous(command)
+    if not exit_status:
+        logger.log_value('Updated', target_file_path)
+    else:
+        logger.log_value('Error. Unable to update', target_file_path)
+        logger.log_value('The result is', result)

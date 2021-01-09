@@ -1,5 +1,11 @@
 cubic (2021.01) focal; urgency=low
 
+  * Issues fixed in version 2021.01-40:
+
+  - Fixed Bug #1910408, Cubic appends characters to /etc/os-release and
+    /etc/lsb-release breaking the new automated installation method for
+    Ubuntu. (Also reference Bug #1907873).
+
   * Issues fixed in version 2021.01-39:
 
   - Fixed Bug #1909600, Terminal page right-click "Paste file" context menu
@@ -27,4 +33,4 @@ cubic (2021.01) focal; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 04 Jan 2021 12:04:43 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 09 Jan 2021 18:47:41 -0500

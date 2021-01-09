@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# iso_fields.py                                                        #
+# fields.py                                                            #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -88,6 +88,12 @@ class Fields:
 
 
 class IsoField:
+    """
+    If appending a new field in IsoFields, update both references to the
+    last field in the __setattr__() method. This ensures the validators
+    are not invoked during the __init__() method. Currently the last
+    field is "options_update_os_release".
+    """
 
     def __init__(self, value, iso_fields):
         """
@@ -202,8 +208,8 @@ class IsoField:
                 # In order to ensure that the validator is not invoked
                 # during IsoField.__init__() using an incomplete
                 # IsoFields object, check if the last value,
-                # iso_release_notes_url, has been assigned.
-                if self.validator and self.iso_fields.iso_release_notes_url:
+                # options_update_os_release, has been assigned.
+                if self.validator and self.iso_fields.options_update_os_release:
                     # If a validator is available, validate the fields.
                     is_valid, status, message = self.validator(self.iso_fields)
                     self.is_valid = is_valid
@@ -247,8 +253,8 @@ class IsoField:
                 # In order to ensure that the validator is not invoked
                 # during IsoField.__init__() using an incomplete
                 # IsoFields object, check if the last value,
-                # iso_release_notes_url, has been assigned.
-                if self.validator and self.iso_fields.iso_release_notes_url:
+                # options_update_os_release, has been assigned.
+                if self.validator and self.iso_fields.options_update_os_release:
                     # if is_log:
                     #     logger.log_value(
                     #         'Set %s %s %s' %
@@ -302,6 +308,7 @@ class IsoFields:
             super().__setattr__('iso_release_name', IsoField(iso_fields.iso_release_name, self))
             super().__setattr__('iso_disk_name', IsoField(iso_fields.iso_disk_name, self))
             super().__setattr__('iso_release_notes_url', IsoField(iso_fields.iso_release_notes_url, self))
+            super().__setattr__('options_update_os_release', IsoField(iso_fields.options_update_os_release, self))
         else:
             super().__setattr__('iso_version_number', IsoField('iso_version_number', self))
             super().__setattr__('iso_file_name', IsoField('iso_file_name', self))
@@ -310,6 +317,7 @@ class IsoFields:
             super().__setattr__('iso_release_name', IsoField('iso_release_name', self))
             super().__setattr__('iso_disk_name', IsoField('iso_disk_name', self))
             super().__setattr__('iso_release_notes_url', IsoField('iso_release_notes_url', self))
+            super().__setattr__('options_update_os_release', IsoField('options_update_os_release', self))
 
     def __eq__(self, iso_fields):
         """
@@ -323,17 +331,19 @@ class IsoFields:
         - iso_release_name.value
         - iso_disk_name.value
         - iso_release_notes_url.value
+        - options_update_os_release
         """
 
         return (
-            iso_fields                                                          \
-            and self.iso_version_number == iso_fields.iso_version_number        \
-            and self.iso_file_name == iso_fields.iso_file_name                    \
-            and self.iso_directory == iso_fields.iso_directory                  \
-            and self.iso_volume_id == iso_fields.iso_volume_id                  \
-            and self.iso_release_name == iso_fields.iso_release_name            \
-            and self.iso_disk_name == iso_fields.iso_disk_name                  \
-            and self.iso_release_notes_url == iso_fields.iso_release_notes_url)
+            iso_fields                                                               \
+            and self.iso_version_number == iso_fields.iso_version_number             \
+            and self.iso_file_name == iso_fields.iso_file_name                       \
+            and self.iso_directory == iso_fields.iso_directory                       \
+            and self.iso_volume_id == iso_fields.iso_volume_id                       \
+            and self.iso_release_name == iso_fields.iso_release_name                 \
+            and self.iso_disk_name == iso_fields.iso_disk_name                       \
+            and self.iso_release_notes_url == iso_fields.iso_release_notes_url       \
+            and self.options_update_os_release == iso_fields.options_update_os_release)
 
     def __getattr__(self, key):
         """
@@ -342,13 +352,14 @@ class IsoFields:
 
         if key == 'is_valid':
             return (
-                self.iso_version_number.is_valid         \
+                self.iso_version_number.is_valid          \
                 and self.iso_file_name.is_valid           \
-                and self.iso_directory.is_valid          \
-                and self.iso_volume_id.is_valid          \
-                and self.iso_release_name.is_valid       \
-                and self.iso_disk_name.is_valid          \
-                and self.iso_release_notes_url.is_valid)
+                and self.iso_directory.is_valid           \
+                and self.iso_volume_id.is_valid           \
+                and self.iso_release_name.is_valid        \
+                and self.iso_disk_name.is_valid           \
+                and self.iso_release_notes_url.is_valid   \
+                and self.options_update_os_release.is_valid)
 
     def __repr__(self):
         """
@@ -454,7 +465,7 @@ class IsoFieldsHistory:
     def print_iso_fields(self, iso_fields, message):
 
         print()
-        print('-------------------------------------------------------------')
+        print('-' * 80)
         print(message)
         print('The self.selected index is "%s"' % self.selected)
         print('The id is "%s"' % id(iso_fields))
@@ -472,5 +483,5 @@ class IsoFieldsHistory:
             print('The iso fields are...')
             print(c)
             print()
-        print('-------------------------------------------------------------')
+        print('-' * 80)
         print()

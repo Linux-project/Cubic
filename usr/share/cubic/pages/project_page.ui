@@ -34,6 +34,7 @@
   </object>
   <object class="GtkButton" id="project_page__delete_header_bar_button">
     <property name="can_focus">True</property>
+    <property name="focus_on_click">False</property>
     <property name="receives_default">True</property>
     <property name="tooltip_text" translatable="yes">Delete this project</property>
     <property name="image">project_page__delete_image</property>
@@ -67,6 +68,7 @@
         <property name="visible">True</property>
         <property name="sensitive">False</property>
         <property name="can_focus">True</property>
+        <property name="focus_on_click">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Undo changes to the custom disk values</property>
         <property name="image">project_page__undo_image</property>
@@ -84,6 +86,7 @@
         <property name="visible">True</property>
         <property name="sensitive">False</property>
         <property name="can_focus">True</property>
+        <property name="focus_on_click">False</property>
         <property name="receives_default">True</property>
         <property name="tooltip_text" translatable="yes">Redo changes to the custom disk values</property>
         <property name="image">project_page__redo_image</property>
@@ -1162,6 +1165,75 @@
           </packing>
         </child>
         <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="column_spacing">12</property>
+            <child>
+              <object class="GtkLabel" id="project_page__custom_options_update_os_release_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">OS Release</property>
+                <property name="xalign">1</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="project_page__custom_options_update_os_release_check_button">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="focus_on_click">False</property>
+                <property name="receives_default">False</property>
+                <property name="image_position">right</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="on_toggled__project_page__custom_options_update_os_release_check_button" swapped="no"/>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="project_page__custom_options_update_os_release_instructions">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Update the release description.</property>
+                <property name="wrap">True</property>
+                <property name="max_width_chars">0</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage" id="project_page__custom_options_update_os_release_status">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">cubic-blank-symbolic</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">8</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
           <placeholder/>
         </child>
       </object>
@@ -1186,6 +1258,7 @@
       <widget name="project_page__custom_iso_release_name_label"/>
       <widget name="project_page__custom_iso_disk_name_label"/>
       <widget name="project_page__custom_iso_release_notes_url_label"/>
+      <widget name="project_page__custom_options_update_os_release_label"/>
     </widgets>
   </object>
 </interface>

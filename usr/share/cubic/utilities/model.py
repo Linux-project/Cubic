@@ -96,8 +96,8 @@ custom.iso_release_notes_url = None
 ########################################################################
 
 status = Fields('status')
-status.is_success_copy = False
-status.is_success_extract = False
+status.is_success_copy = None
+status.is_success_extract = None
 status.iso_template = None
 status.casper_directory = None
 status.iso_checksum = None
@@ -108,18 +108,13 @@ status.iso_checksum_file_name = None
 ########################################################################
 
 options = Fields('options')
+options.update_os_release = None
 options.boot_configurations = None
 options.compression = None
 
 ########################################################################
 # Page Specific
 ########################################################################
-
-#-----------------------------------------------------------------------
-# Project page, Terminal page
-#-----------------------------------------------------------------------
-
-update_release_description = False
 
 #-----------------------------------------------------------------------
 # Terminal page, Preseed tab, Iso Boot tab

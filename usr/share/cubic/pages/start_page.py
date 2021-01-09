@@ -174,7 +174,6 @@ def leave(action, new_page=None):
         # 5. model.project.iso_mount_point
         # 6. model.project.custom_root_directory
         # 7. model.project.custom_disk_directory
-        # 8. model.update_release_description
 
         # model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
         # model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
@@ -203,7 +202,6 @@ def leave(action, new_page=None):
         # 5. model.project.iso_mount_point
         # 6. model.project.custom_root_directory
         # 7. model.project.custom_disk_directory
-        # 8. model.update_release_description
 
         # model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
         # model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
@@ -359,7 +357,6 @@ def validate_page():
 
         configuration.initialize()
         reset_model()
-        model.update_release_description = True
 
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -383,7 +380,6 @@ def validate_page():
     #
 
     configuration.load()
-    model.update_release_description = bool(model.project.cubic_version < CUBIC_VERSION_2021)
 
     #
     # Migrate existing project.
@@ -508,5 +504,6 @@ def reset_model():
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 
+    model.options.update_os_release = None
     model.options.boot_configurations = None
     model.options.compression = None

@@ -50,6 +50,7 @@ The following fields must be set before entering this page:
 
 import os
 import re
+import urllib
 
 from constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
 from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
@@ -424,7 +425,6 @@ def leave(action, new_page=None):
         model.custom.iso_version_number = custom.iso_version_number.value
         model.custom.iso_file_name = custom.iso_file_name.value
         model.custom.iso_directory = custom.iso_directory.value
-        if model.custom.iso_volume_id != custom.iso_volume_id.value: model.update_release_description = True
         model.custom.iso_volume_id = custom.iso_volume_id.value
         model.custom.iso_release_name = custom.iso_release_name.value
         model.custom.iso_disk_name = custom.iso_disk_name.value
@@ -439,6 +439,7 @@ def leave(action, new_page=None):
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
         # Options
+        model.options.update_os_release = custom.options_update_os_release.value
         model.options.boot_configurations = options.boot_configurations
 
         # Save the model values.
@@ -478,7 +479,6 @@ def leave(action, new_page=None):
         model.custom.iso_version_number = custom.iso_version_number.value
         model.custom.iso_file_name = custom.iso_file_name.value
         model.custom.iso_directory = custom.iso_directory.value
-        if model.custom.iso_volume_id != custom.iso_volume_id.value: model.update_release_description = True
         model.custom.iso_volume_id = custom.iso_volume_id.value
         model.custom.iso_release_name = custom.iso_release_name.value
         model.custom.iso_disk_name = custom.iso_disk_name.value
@@ -493,6 +493,7 @@ def leave(action, new_page=None):
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
         # Options
+        model.options.update_os_release = custom.options_update_os_release.value
         model.options.boot_configurations = options.boot_configurations
 
         # Save the model values.
@@ -717,6 +718,7 @@ def initialize_custom():
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
     fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
+    fields.options_update_os_release.validator = validate_custom_options_update_os_release
 
     return fields
 
@@ -742,6 +744,12 @@ def initialize_options():
     logger.log_label('Initialize the options fields')
 
     fields = Fields('options')
+
+    # The field options_update_os_release is stored in "custom"
+    # IsoFields instead of "options" Fields, so changes can be tracked
+    # in custom_history to permit undo and redo. This  value is
+    # initialized to True in the initialize_custom() function.
+    # fields.update_os_release = True
 
     fields.boot_configurations = [boot_configuration.strip().strip(os.path.sep) for boot_configuration in DEFAULT_BOOT_CONFIGURATIONS_STRING.split(',')]
 
@@ -783,10 +791,10 @@ def initialize_original_from_iso(original_iso_file_path):
     fields.iso_release_notes_url.value = iso_utilities.get_iso_release_notes_url(model.project.iso_mount_point)
 
     # Add validators.
-    # Do not add a validator to iso_version_number, because the original
-    # iso does not have an iso_version_number. However, explicitly set
-    # iso_version_number.is_valid to True, because IsoFields.is_valid
-    # checks is_valid all for fields.
+    # Do not add a validator for iso version number, because the
+    # original section does not display this field. However, explicitly
+    # set iso_version_number.is_valid to True, because IsoFields.is_valid
+    # checks if all fields are valid.
     fields.iso_version_number.is_valid = True
     fields.iso_file_name.validator = validate_original_iso_file_name
     fields.iso_directory.validator = validate_original_iso_directory
@@ -794,6 +802,11 @@ def initialize_original_from_iso(original_iso_file_path):
     fields.iso_release_name.validator = validate_original_iso_release_name
     fields.iso_disk_name.validator = validate_original_iso_disk_name
     fields.iso_release_notes_url.validator = validate_original_iso_release_notes_url
+    # Do not add a validator for options update os_release, because the
+    # original section does not display this field. However, explicitly
+    # set iso_version_number.is_valid to True, because IsoFields.is_valid
+    # checks if all fields are valid.
+    fields.options_update_os_release.is_valid = True
 
     return fields
 
@@ -809,6 +822,7 @@ def initialize_custom_from_iso():
       - iso_release_name
       - iso_disk_name
       - iso_release_notes_url
+      - options_update_os_release (always initialize to True)
     """
     logger.log_label('Initialize the custom fields from the iso')
 
@@ -822,6 +836,7 @@ def initialize_custom_from_iso():
     fields.iso_release_name.value = constructor.construct_custom_iso_release_name(original.iso_release_name.value)
     fields.iso_disk_name.value = constructor.construct_custom_iso_disk_name(fields.iso_volume_id.value, fields.iso_release_name.value)
     fields.iso_release_notes_url.value = original.iso_release_notes_url.value
+    fields.options_update_os_release.value = True
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -831,6 +846,7 @@ def initialize_custom_from_iso():
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
     fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
+    fields.options_update_os_release.validator = validate_custom_options_update_os_release
 
     return fields
 
@@ -852,6 +868,7 @@ def refresh_custom_using_version_number():
       - iso_release_name
       - iso_disk_name
       - iso_release_notes_url
+      - options_update_os_release (always initialize to True)
     """
 
     logger.log_label('Initialize the custom fields using the version number')
@@ -868,6 +885,7 @@ def refresh_custom_using_version_number():
         fields.iso_release_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_release_name.value)
         fields.iso_disk_name.value = re.sub(custom.iso_version_number.value, fields.iso_version_number.value, custom.iso_disk_name.value)
         fields.iso_release_notes_url.value = custom.iso_release_notes_url.value
+        fields.options_update_os_release.value = True
     else:
         fields.iso_file_name.value = custom.iso_file_name.value
         fields.iso_directory.value = custom.iso_directory.value
@@ -875,6 +893,7 @@ def refresh_custom_using_version_number():
         fields.iso_release_name.value = custom.iso_release_name.value
         fields.iso_disk_name.value = custom.iso_disk_name.value
         fields.iso_release_notes_url.value = custom.iso_release_notes_url.value
+        fields.options_update_os_release.value = True
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -884,6 +903,7 @@ def refresh_custom_using_version_number():
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
     fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
+    fields.options_update_os_release.validator = validate_custom_options_update_os_release
 
     return fields
 
@@ -922,10 +942,10 @@ def initialize_original_from_model():
     fields.iso_release_notes_url.value = model.original.iso_release_notes_url
 
     # Add validators.
-    # Do not add a validator to iso_version_number, because the original
-    # iso does not have an iso_version_number. However, explicitly set
-    # iso_version_number.is_valid to True, because IsoFields.is_valid
-    # checks is_valid all for fields.
+    # Do not add a validator for iso version number, because the
+    # original section does not display this field. However, explicitly
+    # set iso_version_number.is_valid to True, because IsoFields.is_valid
+    # checks if all fields are valid.
     fields.iso_version_number.is_valid = True
     fields.iso_file_name.validator = validate_original_iso_file_name
     fields.iso_directory.validator = validate_original_iso_directory
@@ -933,6 +953,11 @@ def initialize_original_from_model():
     fields.iso_release_name.validator = validate_original_iso_release_name
     fields.iso_disk_name.validator = validate_original_iso_disk_name
     fields.iso_release_notes_url.validator = validate_original_iso_release_notes_url
+    # Do not add a validator for options update os_release, because the
+    # original section does not display this field. However, explicitly
+    # set iso_version_number.is_valid to True, because IsoFields.is_valid
+    # checks if all fields are valid.
+    fields.options_update_os_release.is_valid = True
 
     return fields
 
@@ -948,6 +973,7 @@ def initialize_custom_from_model():
       - iso_release_name
       - iso_disk_name
       - iso_release_notes_url
+      - options_update_os_release
     """
 
     logger.log_label('Initialize the custom fields from the model')
@@ -962,6 +988,7 @@ def initialize_custom_from_model():
     fields.iso_release_name.value = model.custom.iso_release_name
     fields.iso_disk_name.value = model.custom.iso_disk_name
     fields.iso_release_notes_url.value = model.custom.iso_release_notes_url
+    fields.options_update_os_release.value = model.options.update_os_release
 
     # Add validators.
     fields.iso_version_number.validator = validate_custom_iso_version_number
@@ -971,6 +998,7 @@ def initialize_custom_from_model():
     fields.iso_release_name.validator = validate_custom_iso_release_name
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
     fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
+    fields.options_update_os_release.validator = validate_custom_options_update_os_release
 
     return fields
 
@@ -1015,6 +1043,13 @@ def initialize_options_from_model():
     logger.log_label('Initialize the options fields from the model')
 
     fields = Fields('options')
+
+    # The field options_update_os_release is stored in "custom"
+    # IsoFields instead of "options" Fields, so changes can be tracked
+    # in custom_history to permit undo and redo.
+    # initialized from the model in the initialize_custom_from_model()
+    # function.
+    # fields.update_os_release = model.options.update_os_release
 
     fields.boot_configurations = model.options.boot_configurations
 
@@ -1176,6 +1211,12 @@ def display_custom_fields(fields):
     displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', fields.iso_release_notes_url.status == ERROR)
     displayer.update_label('project_page__custom_iso_release_notes_url_message', fields.iso_release_notes_url.message)
 
+    # The field options_update_os_release is stored in "custom"
+    # IsoFields instead of "options" Fields, so changes can be tracked
+    # in custom_history to permit undo and redo.
+    displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', fields.options_update_os_release.value)
+    displayer.update_status('project_page__custom_options_update_os_release', fields.options_update_os_release.status)
+
     # Unblock handlers.
     displayer.idle_add(unblock_custom_handlers)
 
@@ -1206,6 +1247,9 @@ def block_custom_handlers():
     entry = model.builder.get_object('project_page__custom_iso_release_notes_url_entry')
     entry.handler_block_by_func(on_changed__project_page__custom_iso_release_notes_url_entry)
 
+    check_button = model.builder.get_object('project_page__custom_options_update_os_release_check_button')
+    check_button.handler_block_by_func(on_toggled__project_page__custom_options_update_os_release_check_button)
+
 
 def unblock_custom_handlers():
     """
@@ -1232,6 +1276,9 @@ def unblock_custom_handlers():
 
     entry = model.builder.get_object('project_page__custom_iso_release_notes_url_entry')
     entry.handler_unblock_by_func(on_changed__project_page__custom_iso_release_notes_url_entry)
+
+    check_button = model.builder.get_object('project_page__custom_options_update_os_release_check_button')
+    check_button.handler_unblock_by_func(on_toggled__project_page__custom_options_update_os_release_check_button)
 
 
 ########################################################################
@@ -1488,10 +1535,14 @@ def on_changed__project_page__custom_iso_volume_id_entry(widget):
 
     # Propagate.
 
-    # custom.iso_disk_name.value will be updated automaticallywhen the
+    # custom.iso_disk_name.value will be updated automatically when the
     # on_changed handler is invoked.
     iso_disk_name = constructor.construct_custom_iso_disk_name(custom.iso_volume_id.value, custom.iso_release_name.value)
     displayer.update_entry('project_page__custom_iso_disk_name_entry', iso_disk_name)
+
+    # custom.options_update_os_release.value will be updated
+    # automatically when the on_toggled handler is invoked.
+    displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', True)
 
     validate_page()
 
@@ -1538,6 +1589,22 @@ def on_changed__project_page__custom_iso_release_notes_url_entry(widget):
     displayer.update_status('project_page__custom_iso_release_notes_url', custom.iso_release_notes_url.status)
     displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', custom.iso_release_notes_url.status == ERROR)
     displayer.update_label('project_page__custom_iso_release_notes_url_message', custom.iso_release_notes_url.message)
+
+    validate_page()
+
+
+def on_toggled__project_page__custom_options_update_os_release_check_button(widget):
+
+    logger.log_label('Custom options_update os release changed')
+
+    # The field options_update_os_release is stored in "custom"
+    # IsoFields instead of "options" Fields, so changes can be tracked
+    # in custom_history to permit undo and redo.
+    custom.options_update_os_release.value = widget.get_active()
+
+    displayer.update_status('project_page__custom_options_update_os_release', custom.options_update_os_release.status)
+    # displayer.set_check_button_error('project_page__custom_options_update_os_release', custom.options_update_os_release.status == ERROR)
+    # displayer.update_label('project_page__custom_options_update_os_release', custom.options_update_os_release.message)
 
     validate_page()
 
@@ -1640,6 +1707,9 @@ def set_editable_custom_section(is_valid):
     displayer.set_entry_editable('project_page__custom_iso_disk_name_entry', is_valid)
     displayer.set_entry_editable('project_page__custom_iso_release_notes_url_entry', is_valid)
 
+    # Check button widgets can not be set editable.
+    # displayer.set_check_button_editable('project_page__custom_options_update_os_release_check_button', is_valid)
+
 
 def set_sensitive_custom_section(is_valid):
     """
@@ -1655,6 +1725,9 @@ def set_sensitive_custom_section(is_valid):
     displayer.set_sensitive('project_page__custom_iso_release_name_entry', is_valid)
     displayer.set_sensitive('project_page__custom_iso_disk_name_entry', is_valid)
     displayer.set_sensitive('project_page__custom_iso_release_notes_url_entry', is_valid)
+
+    displayer.set_sensitive('project_page__custom_options_update_os_release_check_button', is_valid)
+    displayer.set_sensitive('project_page__custom_options_update_os_release_instructions', is_valid)
 
 
 def validate_custom_iso_undo_button():
@@ -1710,6 +1783,14 @@ def validate_custom_iso_refresh_button():
 # ----------------------------------------------------------------------
 # Original Field Validation Functions
 # ----------------------------------------------------------------------
+
+# To access the validator's field use:
+#   • fields.{field_name}.value.
+# To access other fields use:
+#   • original.{other_field_name}.value
+#   • custom.{other_field_name}.value
+# Every validator must first check:
+#   • if not fields.iso_file_name.is_valid
 
 
 def validate_original_iso_version_number(fields):
@@ -1866,9 +1947,28 @@ def validate_original_iso_release_notes_url(fields):
     return is_valid, status, message
 
 
+def validate_original_options_update_os_release(fields):
+    """
+    This function is not used.
+    """
+
+    is_valid = True
+    status = OK
+    message = None
+    return is_valid, status, message
+
+
 # ----------------------------------------------------------------------
 # Custom Field Validation Functions
 # ----------------------------------------------------------------------
+
+# To access the validator's field use:
+#   • fields.{field_name}.value.
+# To access other fields use:
+#   • original.{other_field_name}.value
+#   • custom.{other_field_name}.value
+# Every validator must first check:
+#   • if not original or not original.iso_file_name.is_valid
 
 
 def validate_custom_iso_version_number(fields):
@@ -2004,7 +2104,32 @@ def validate_custom_iso_release_notes_url(fields):
     return is_valid, status, message
 
 
-import urllib
+def validate_custom_options_update_os_release(fields):
+
+    if not original or not original.iso_file_name.is_valid:
+        is_valid = False
+        message = None
+        status = BLANK
+    else:
+        if fields.iso_volume_id.value:
+            if fields.options_update_os_release.value:
+                is_valid = True
+                message = None
+                status = OK
+            else:
+                is_valid = True
+                message = None
+                status = OPTIONAL
+        else:
+            if fields.options_update_os_release.value:
+                is_valid = False
+                message = None
+                status = ERROR
+            else:
+                is_valid = True
+                message = None
+                status = OPTIONAL
+    return is_valid, status, message
 
 
 def is_url(url):

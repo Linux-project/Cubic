@@ -33,10 +33,10 @@
 # Constants
 ########################################################################
 
-SOURCE_CUSTOM_DISK_DIRECTORY="custom-live-iso"
+# SOURCE_CUSTOM_DISK_DIRECTORY="custom-live-iso"
 TARGET_CUSTOM_DISK_DIRECTORY="custom-disk"
 
-SOURCE_CUSTOM_ROOT_DIRECTORY="squashfs-root"
+# SOURCE_CUSTOM_ROOT_DIRECTORY="squashfs-root"
 TARGET_CUSTOM_ROOT_DIRECTORY="custom-root"
 
 ########################################################################
@@ -66,8 +66,8 @@ user=${3}
 #         ${target_path} =~ ${TARGET_CUSTOM_ROOT_DIRECTORY}$ ) ]]; then
 
 # As a precaution, limit the paths that this command may be execute on.
-if [[ ${source_path} =~ ${SOURCE_CUSTOM_DISK_DIRECTORY}$ || \
-      ${source_path} =~ ${SOURCE_CUSTOM_ROOT_DIRECTORY}$ ]]; then
+if [[ ${target_path} =~ ${TARGET_CUSTOM_DISK_DIRECTORY} || \
+      ${target_path} =~ ${TARGET_CUSTOM_ROOT_DIRECTORY} ]]; then
 
     # Remove the existing directory if it exists.
     # echo "rm --recursive --force ${target_path}"
@@ -97,9 +97,9 @@ else
     # Use echo $? to check the error status.
     # http://www.tldp.org/LDP/abs/html/exitcodes.html
     if [[ ${user} ]]; then
-        echo "Error. Unable to migrate ${source_path} to ${target_path} for ${user}."
+        echo "Error. Unable to move ${source_path} to ${target_path} for ${user}."
     else
-        echo "Error. Unable to migrate ${source_path} to ${target_path}."
+        echo "Error. Unable to move ${source_path} to ${target_path}."
     fi
 
     exit 1
