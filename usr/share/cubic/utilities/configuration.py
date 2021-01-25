@@ -297,13 +297,14 @@ def _load_from_2020_layout():
     # Project
     # model.project.cubic_version = get_value('Project', 'cubic_version')
     create_date = get_value('Project', 'create_date')
-    model.project.create_date = constructor.reformat_time_stamp(
-        create_date,
-        TIME_STAMP_FORMAT,
-        TIME_STAMP_FORMAT,
-        TIME_STAMP_FORMAT_LONG_1,
-        TIME_STAMP_FORMAT_LONG_2,
-        TIME_STAMP_FORMAT_LONG_3)
+    # model.project.create_date = constructor.reformat_time_stamp(
+    #     create_date,
+    #     TIME_STAMP_FORMAT,
+    #     TIME_STAMP_FORMAT,
+    #     TIME_STAMP_FORMAT_LONG_1,
+    #     TIME_STAMP_FORMAT_LONG_2,
+    #     TIME_STAMP_FORMAT_LONG_3)
+    model.project.create_date = get_value('Project', 'create_date')
     # model.project.modify_date = get_value('Project', 'modify_date')
     # model.project.directory = get_value('Project', 'directory')
 

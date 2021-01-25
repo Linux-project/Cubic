@@ -1,5 +1,11 @@
 cubic (2021.01) focal; urgency=low
 
+  * Issues fixed in version 2021.01-41:
+
+  - Fixed Bug #1911469, Stuck at "Update the disk name" when generating disk
+    image. The date and time format is now explicitly set to YYYY-MM-DD HH:MM
+    because localized formats are ambiguous.
+
   * Issues fixed in version 2021.01-40:
 
   - Fixed Bug #1910408, Cubic appends characters to /etc/os-release and
@@ -33,4 +39,4 @@ cubic (2021.01) focal; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 09 Jan 2021 18:47:41 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 24 Jan 2021 20:56:26 -0500
