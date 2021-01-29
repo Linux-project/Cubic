@@ -1,10 +1,27 @@
 cubic (2021.01) focal; urgency=low
 
+  * Issues fixed in version 2021.01-42:
+
+  - Fixed Bug #1913652, Display the Cubic version in the About Dialog.
+  - Fixed Bug #1913636, Make Cubic work with Feren OS. Explicitly assign
+    read permissions (744 and 644) to all directories and files copied
+    from the original ISO, to remedy files with incorrect permissions.
+  - Fixed Bug #1913005, Unable to open the file browser on the Migrate
+    page, Delete page, or Finish page when the file path contains spaces.
+  - Select the file when it is opened in the default browser. Previously
+    this only worked in Nautilus, while other file browsers simply
+    opened the file's parent directory without selecting the file.
+  - Delete temporary files created in /var/tmp while analyzing the
+    initrd files to determine their kernel versions.
+  - On the Prepare page, when displaying the total number of packages to
+    be removed for a minimal install, include the number of packages to
+    be removed for a typical install.
+
   * Issues fixed in version 2021.01-41:
 
-  - Fixed Bug #1911469, Stuck at "Update the disk name" when generating disk
-    image. The date and time format is now explicitly set to YYYY-MM-DD HH:MM
-    because localized formats are ambiguous.
+  - Fixed Bug #1911469, Stuck at "Update the disk name" when generating
+    disk image. The date and time format is now explicitly set to
+    YYYY-MM-DD HH:MM because localized formats are ambiguous.
 
   * Issues fixed in version 2021.01-40:
 
@@ -14,8 +31,8 @@ cubic (2021.01) focal; urgency=low
 
   * Issues fixed in version 2021.01-39:
 
-  - Fixed Bug #1909600, Terminal page right-click "Paste file" context menu
-    option is not working.
+  - Fixed Bug #1909600, Terminal page right-click "Paste file" context
+    menu option is not working.
 
   * Issues fixed in version 2020.12-38:
 
@@ -39,4 +56,4 @@ cubic (2021.01) focal; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 24 Jan 2021 20:56:26 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 28 Jan 2021 22:44:52 -0500

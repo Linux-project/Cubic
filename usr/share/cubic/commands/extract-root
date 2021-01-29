@@ -38,8 +38,8 @@ number_arguments=${#}
 target_path=${1}
 source_path=${2}
 
-# echo "program..................... $program"
-# echo "number of arguments......... $number_arguments"
+# echo "program..................... ${program}"
+# echo "number of arguments......... ${number_arguments}"
 # echo "target path................. ${target_path}"
 # echo "source path................. ${source_path}"
 

@@ -392,6 +392,8 @@ def copy_original_iso_files():
 
     # Use info=progress2 to get the total progress, instead of the
     # progress for individual files.
+    # Add read and write permissions for the user.
+    # Set read and write permissions for group and other.
     command = (
         'rsync'
         ' --info=progress2 "{source_path}" "{target_path}"'
@@ -399,7 +401,7 @@ def copy_original_iso_files():
         # ' --archive'
         ' --recursive'
         ' --links'
-        ' --chmod=u+rwX'
+        ' --chmod=u+rwX,g=rX,o=rX'
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
         ' --exclude=".disk/release_notes_url"'

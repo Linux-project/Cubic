@@ -37,9 +37,9 @@ program=${0}
 number_arguments=${#}
 machine_name=${1}
 
-# echo "program..................... $program"
-# echo "number of arguments......... $number_arguments"
-# echo "machine_name................ $machine_name"
+# echo "program..................... ${program}"
+# echo "number of arguments......... ${number_arguments}"
+# echo "machine name................ ${machine_name}"
 
 ########################################################################
 # Command

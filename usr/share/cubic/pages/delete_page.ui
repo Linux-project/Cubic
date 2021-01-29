@@ -109,6 +109,7 @@
           <object class="GtkButton" id="delete_page__project_directory_open_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="focus_on_click">False</property>
             <property name="receives_default">True</property>
             <property name="image">delete_page__directory_1_image</property>
             <property name="always_show_image">True</property>
@@ -152,6 +153,7 @@
           <object class="GtkButton" id="delete_page__delete_page__custom_iso_file_name_open_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="focus_on_click">False</property>
             <property name="receives_default">True</property>
             <property name="image">delete_page__directory_2_image</property>
             <property name="always_show_image">True</property>

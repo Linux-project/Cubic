@@ -49,6 +49,7 @@ from constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from constants import SLEEP_0125_MS, SLEEP_0250_MS, SLEEP_0500_MS, SLEEP_1000_MS
 from utilities import constructor
 from utilities import displayer
+from utilities import file_utilities
 from utilities import iso_utilities
 from utilities import logger
 from utilities import model
@@ -176,10 +177,10 @@ def enter(action, old_page=None):
         is_exists = is_exists_file_system_manifest_remove(file_name)
         if is_exists:
             removable_packages_list_1 = get_removable_packages_list(file_name)
-            count = len(removable_packages_list_1)
-            logger.log_value('Number of installed packages found', count)
-            number_text = constructor.number_as_text(count, True)
-            plural_text = constructor.get_plural('package is', 'packages are', count)
+            count_1 = len(removable_packages_list_1)
+            logger.log_value('Number of packages matching typical install list', count_1)
+            number_text = constructor.number_as_text(count_1, True)
+            plural_text = constructor.get_plural('package is', 'packages are', count_1)
             displayer.update_label(
                 'prepare_page__package_manifest_1_message',
                 '%s %s flagged for removal after a typical install.' % (number_text,
@@ -203,10 +204,10 @@ def enter(action, old_page=None):
         is_exists = is_exists_file_system_manifest_remove(file_name)
         if is_exists:
             removable_packages_list_2 = get_removable_packages_list(file_name)
-            count = len(removable_packages_list_2)
-            logger.log_value('Number of installed packages found', count)
-            number_text = constructor.number_as_text(count, True)
-            plural_text = constructor.get_plural('package is', 'packages are', count)
+            count_2 = len(removable_packages_list_2)
+            logger.log_value('Number of packages matching minimal install list', count_2)
+            number_text = constructor.number_as_text(count_1 + count_2, True)
+            plural_text = constructor.get_plural('package is', 'packages are', count_1 + count_2)
             displayer.update_label(
                 'prepare_page__package_manifest_2_message',
                 '%s %s flagged for removal after a minimal install.' % (number_text,
@@ -354,6 +355,10 @@ def create_kernel_details_list(*directories):
         # Real path is necessary here.
         directory = os.path.realpath(directory)
         update_initrd_details_list(directory, initrd_details_list)
+
+    # Delete temporary files.
+    file_path_pattern = os.path.os.path.join(os.sep, 'var', 'tmp', 'unmkinitramfs_*')
+    file_utilities.delete_files_with_pattern(file_path_pattern)
 
     # For debugging.
     # print_details_list(initrd_details_list)

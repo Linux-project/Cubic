@@ -109,6 +109,7 @@
           <object class="GtkButton" id="finish_page__custom_iso_file_name_open_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="focus_on_click">False</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Open the custom disk image directory</property>
             <property name="image">finish_page__directory_1_image</property>
@@ -226,6 +227,7 @@
           <object class="GtkButton" id="finish_page__custom_iso_checksum_file_name_open_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="focus_on_click">False</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Open the custom disk image directory</property>
             <property name="image">finish_page__directory_2_image</property>

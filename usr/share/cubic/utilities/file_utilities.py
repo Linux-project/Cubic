@@ -31,7 +31,8 @@
 # References
 ########################################################################
 
-# N/A
+# https://freedesktop.org/wiki/Specifications/file-manager-interface
+# https://unix.stackexchange.com/questions/364997/open-a-directory-in-the-default-file-manager-and-select-a-file
 
 ########################################################################
 # Imports
@@ -363,3 +364,43 @@ def replace_text_in_file(file_path, search_text, replacement_text):
         file.write(file_contents)
 
     return error
+
+
+def select_file_in_browser(file_path):
+    """
+    Opens the file browser and selects the file.
+    """
+
+    command = (
+        'dbus-send'
+        ' --session'
+        # ' --print-reply'
+        ' --dest=org.freedesktop.FileManager1'
+        ' --type=method_call'
+        ' /org/freedesktop/FileManager1'
+        ' org.freedesktop.FileManager1.ShowItems'
+        ' array:string:"file://{file_path}"'
+        ' string:""').format(file_path=file_path)
+    # logger.log_value(('Open in file browser', command)
+    logger.log_value('Open in file browser', file_path)
+    os.system(command)
+
+
+def open_directory_in_browser(file_path):
+    """
+    Opens the file browser and displays the contents of the directory.
+    """
+
+    command = (
+        'dbus-send'
+        ' --session'
+        # ' --print-reply'
+        ' --dest=org.freedesktop.FileManager1'
+        ' --type=method_call'
+        ' /org/freedesktop/FileManager1'
+        ' org.freedesktop.FileManager1.ShowFolders'
+        ' array:string:"file://{file_path}"'
+        ' string:""').format(file_path=file_path)
+    # logger.log_value(('Open in file browser', command)
+    logger.log_value('Open in file browser', file_path)
+    os.system(command)

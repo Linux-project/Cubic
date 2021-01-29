@@ -79,6 +79,8 @@ def setup(action, old_page=None):
             is_next_visible=True)
 
         display_version = constructor.get_major_minor_version(model.application.cubic_version)
+        about_dialog = model.builder.get_object('about_dialog')
+        about_dialog.set_version('<small>%s</small>' % display_version)
         displayer.update_label('start_page__version_label', 'Version %s' % display_version)
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
 

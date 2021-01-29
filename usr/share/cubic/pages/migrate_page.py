@@ -46,6 +46,7 @@ from constants import SLEEP_1000_MS
 from utilities import configuration
 from utilities import constructor
 from utilities import displayer
+from utilities import file_utilities
 from utilities import logger
 from utilities import model
 from utilities.processor import execute_synchronous
@@ -170,7 +171,12 @@ def leave(action, new_page=None):
 
 def on_clicked__migrate_page__project_directory_open_button(widget):
 
-    command = 'xdg-open %s &' % model.project.directory
+    file_utilities.open_directory_in_browser(model.project.directory)
+
+
+def on_clicked__migrate_page__project_directory_open_button_ORIGINAL(widget):
+
+    command = 'xdg-open "%s" &' % model.project.directory
     os.system(command)
 
 

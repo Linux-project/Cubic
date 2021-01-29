@@ -176,7 +176,7 @@
       </object>
     </child>
     <child>
-      <object class="GtkSeparatorMenuItem" id="terminal_page__menu_separator_1">
+      <object class="GtkSeparatorMenuItem">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
       </object>
@@ -200,7 +200,7 @@
       </object>
     </child>
     <child>
-      <object class="GtkSeparatorMenuItem" id="terminal_page__menu_separator_2">
+      <object class="GtkSeparatorMenuItem">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
       </object>

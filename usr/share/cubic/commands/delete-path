@@ -37,8 +37,8 @@ program=${0}
 number_arguments=${#}
 target_path=${1}
 
-# echo "program..................... $program"
-# echo "number of arguments......... $number_arguments"
+# echo "program..................... ${program}"
+# echo "number of arguments......... ${number_arguments}"
 # echo "target path................. ${target_path}"
 
 ########################################################################

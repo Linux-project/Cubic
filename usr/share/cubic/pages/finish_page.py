@@ -188,27 +188,45 @@ def leave(action, new_page=None):
 
 def on_clicked__finish_page__custom_iso_file_name_open_button(widget):
 
+    file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
+    if os.path.isfile(file_path):
+        file_utilities.select_file_in_browser(file_path)
+    else:
+        file_utilities.open_directory_in_browser(model.custom.iso_directory)
+
+
+def on_clicked__finish_page__custom_iso_checksum_file_name_open_button(widget):
+
+    file_path = os.path.join(model.custom.iso_directory, model.status.iso_checksum_file_name)
+    if os.path.isfile(file_path):
+        file_utilities.select_file_in_browser(file_path)
+    else:
+        file_utilities.open_directory_in_browser(model.custom.iso_directory)
+
+
+def on_clicked__finish_page__custom_iso_file_name_open_button_ORIGINAL(widget):
+
     if os.path.isfile('/bin/nautilus'):
         file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
         if not os.path.isfile(file_path):
             file_path = model.custom.iso_directory
-        command = 'nautilus %s &' % file_path
+        command = 'nautilus "%s" &' % file_path
         os.system(command)
     else:
-        command = 'xdg-open %s &' % model.custom.iso_directory
+        command = 'xdg-open "%s" &' % model.custom.iso_directory
         os.system(command)
 
 
-def on_clicked__finish_page__custom_iso_checksum_file_name_open_button(widget):
+def on_clicked__finish_page__custom_iso_checksum_file_name_open_button_ORIGINAL(widget):
 
     if os.path.isfile('/bin/nautilus'):
         file_path = os.path.join(model.custom.iso_directory, model.status.iso_checksum_file_name)
         if not os.path.isfile(file_path):
             file_path = model.custom.iso_directory
-        command = 'nautilus %s &' % file_path
+        command = 'nautilus "%s" &' % file_path
         os.system(command)
     else:
-        command = 'xdg-open %s &' % model.custom.iso_directory
+        command = 'xdg-open "%s" &' % model.custom.iso_directory
         os.system(command)
 
 

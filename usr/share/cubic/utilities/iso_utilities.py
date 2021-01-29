@@ -60,14 +60,24 @@ from utilities.processor import execute_synchronous
 ########################################################################
 
 
-def mount(iso_mount_point, iso_file_path):
+def mount(iso_file_path, iso_mount_point, user_id=None, group_id=None):
+    """
+    If user, group, or other has the execute permission for a file, all
+    three will be assigned the execute permission for the file when the
+    iso is mounted.
+    """
 
     logger.log_label('Mount the iso image')
+    logger.log_value('The iso file path is', iso_file_path)
     logger.log_value('The mount point is', iso_mount_point)
-    logger.log_value('The iso file path is', iso_mount_point)
+    logger.log_value('The user id is', user_id)
+    logger.log_value('The group id is', group_id)
 
     program = os.path.join(model.application.directory, 'commands', 'mount-iso')
-    command = 'pkexec "%s" "%s" "%s"' % (program, iso_mount_point, iso_file_path)
+    if user_id and group_id:
+        command = 'pkexec "%s" "%s" "%s" "%s" "%s"' % (program, iso_file_path, iso_mount_point, user_id, group_id)
+    else:
+        command = 'pkexec "%s" "%s" "%s"' % (program, iso_file_path, iso_mount_point)
     result, exit_status, signal_status = execute_synchronous(command)
 
     logger.log_value('The result is', result)

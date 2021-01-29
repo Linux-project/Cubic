@@ -538,12 +538,16 @@ def mount_original_iso(original_iso_file_path):
         #       Consider having iso_utilities.mount() create the missing
         #       mount point before mounting.
         file_utilities.make_directory(model.project.iso_mount_point)
-        iso_utilities.mount(model.project.iso_mount_point, original_iso_file_path)
+        user_id = os.getuid()
+        group_id = os.getgid()
+        iso_utilities.mount(original_iso_file_path, model.project.iso_mount_point, user_id, group_id)
     elif not iso_utilities.is_mounted(model.project.iso_mount_point, original_iso_file_path):
         # A different iso is mounted on the mount point.
         # Unmount the other iso, and then mount this iso.
+        user_id = os.getuid()
+        group_id = os.getgid()
         iso_utilities.unmount(model.project.iso_mount_point)
-        iso_utilities.mount(model.project.iso_mount_point, original_iso_file_path)
+        iso_utilities.mount(original_iso_file_path, model.project.iso_mount_point, user_id, group_id)
     else:
         # This iso is already mounted.
         pass

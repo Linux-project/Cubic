@@ -147,6 +147,7 @@
           <object class="GtkButton" id="migrate_page__project_directory_open_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="focus_on_click">False</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Open the project directory</property>
             <property name="image">migrate_page__directory_image</property>

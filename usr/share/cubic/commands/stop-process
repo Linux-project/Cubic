@@ -37,9 +37,9 @@ program=${0}
 number_arguments=${#}
 process_id=${1}
 
-# echo "program..................... $program"
-# echo "number of arguments......... $number_arguments"
-# echo "process id.................. $process_id"
+# echo "program..................... ${program}"
+# echo "number of arguments......... ${number_arguments}"
+# echo "process id.................. ${process_id}"
 
 ########################################################################
 # Command

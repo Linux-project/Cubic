@@ -37,15 +37,15 @@ program=${0}
 number_arguments=${#}
 process_id=${1}
 
-# echo "program..................... $program"
-# echo "number of arguments......... $number_arguments"
-# echo "process id.................. $process_id"
+# echo "program..................... ${program}"
+# echo "number of arguments......... ${number_arguments}"
+# echo "process id.................. ${process_id}"
 
 ########################################################################
 # Command
 ########################################################################
 
-# Do not echo the commands because the output is used by the applicaton.
+# Do not echo the commands because the output is used by the application.
 # The expected output format of the readlink command is a directory
 # path.
 

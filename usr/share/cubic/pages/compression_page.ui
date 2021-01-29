@@ -74,7 +74,7 @@ Click the Generate button to begin creating the customized disk image.</property
             <property name="tooltip_text" translatable="yes">Fast compression algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
-            <property name="margin_left">17</property>
+            <property name="margin_left">18</property>
             <property name="active">True</property>
             <property name="draw_indicator">True</property>
             <property name="group">compression_page__radio_button_3</property>
@@ -96,7 +96,7 @@ Click the Generate button to begin creating the customized disk image.</property
             <property name="tooltip_text" translatable="yes">Lempel–Ziv–Oberhumer algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
-            <property name="margin_left">17</property>
+            <property name="margin_left">18</property>
             <property name="active">True</property>
             <property name="draw_indicator">True</property>
             <property name="group">compression_page__radio_button_3</property>
@@ -118,7 +118,7 @@ Click the Generate button to begin creating the customized disk image.</property
             <property name="tooltip_text" translatable="yes">GNU DEFLATE algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
-            <property name="margin_left">17</property>
+            <property name="margin_left">18</property>
             <property name="active">True</property>
             <property name="draw_indicator">True</property>
             <signal name="toggled" handler="on_toggled__compression_page__radio_button" swapped="no"/>
@@ -139,7 +139,7 @@ Click the Generate button to begin creating the customized disk image.</property
             <property name="tooltip_text" translatable="yes">Zstandard algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
-            <property name="margin_left">17</property>
+            <property name="margin_left">18</property>
             <property name="active">True</property>
             <property name="draw_indicator">True</property>
             <property name="group">compression_page__radio_button_3</property>
@@ -161,7 +161,7 @@ Click the Generate button to begin creating the customized disk image.</property
             <property name="tooltip_text" translatable="yes">Deprecated Lempel–Ziv–Markov chain algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
-            <property name="margin_left">17</property>
+            <property name="margin_left">18</property>
             <property name="active">True</property>
             <property name="draw_indicator">True</property>
             <property name="group">compression_page__radio_button_3</property>
@@ -183,7 +183,7 @@ Click the Generate button to begin creating the customized disk image.</property
             <property name="tooltip_text" translatable="yes">Lempel–Ziv–Markov chain algorithm</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
-            <property name="margin_left">17</property>
+            <property name="margin_left">18</property>
             <property name="active">True</property>
             <property name="draw_indicator">True</property>
             <property name="group">compression_page__radio_button_3</property>

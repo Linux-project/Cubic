@@ -37,9 +37,9 @@ program=${0}
 number_arguments=${#}
 iso_image_mount_point=${1}
 
-# echo "program..................... $program"
-# echo "number of arguments......... $number_arguments"
-# echo "iso image mount point....... ${target_path}"
+# echo "program..................... ${program}"
+# echo "number of arguments......... ${number_arguments}"
+# echo "iso image mount point....... ${iso_image_mount_point}"
 
 ########################################################################
 # Command
