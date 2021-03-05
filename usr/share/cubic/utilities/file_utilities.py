@@ -113,10 +113,12 @@ def delete_files_with_pattern(pattern, exclusion_list=None):
     if exclusion_list:
         logger.log_value('Delete existing files with pattern', pattern)
         logger.log_value('Keep files', exclusion_list)
-        [os.remove(delete_file_path) for delete_file_path in glob.glob(pattern) if delete_file_path not in exclusion_list]
+        # [os.remove(file_path) for file_path in glob.glob(pattern) if file_path not in exclusion_list]
+        [delete_path_as_root(file_path) for file_path in glob.glob(pattern) if file_path not in exclusion_list]
     else:
         logger.log_value('Delete existing files with pattern', pattern)
-        [os.remove(delete_file_path) for delete_file_path in glob.glob(pattern)]
+        # [os.remove(file_path) for file_path in glob.glob(pattern)]
+        [delete_path_as_root(file_path) for file_path in glob.glob(pattern)]
 
 
 # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree

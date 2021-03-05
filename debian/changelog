@@ -1,4 +1,13 @@
-cubic (2021.01) focal; urgency=low
+cubic (2021.03) focal; urgency=low
+
+  * Issues fixed in version 2021.03-43:
+
+  - Fixed Bug lp:#1916257, Terminal doesn't support keyboard shortcut
+    for copy & paste. Added the following shortcuts: Ctrl+Shift+A for
+    select all, Ctrl+Shift+V for paste, and Ctrl+Shift+A> for copy.
+
+  - Fixed Bug lp:#1917927, Error on the Prepare Page when deleting files
+    in /var/tmp/.
 
   * Issues fixed in version 2021.01-42:
 
@@ -56,4 +65,4 @@ cubic (2021.01) focal; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19.
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 28 Jan 2021 22:44:52 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 05 Mar 2021 17:46:25 -0500

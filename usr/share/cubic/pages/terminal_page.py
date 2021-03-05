@@ -31,7 +31,8 @@
 # References
 ########################################################################
 
-# N/A
+# https://lazka.github.io/pgi-docs/#Vte-2.90/classes/Terminal.html
+# https://lazka.github.io/pgi-docs/#Vte-2.91/classes/Terminal.html
 
 ########################################################################
 # Imports
@@ -415,6 +416,44 @@ def on_clicked__terminal_page__copy_header_bar_button(widget):
     copy_file_chooser.open(selected_uris)
 
 
+def on_key_press_event__terminal_page(widget, event):
+
+    # logger.log_value('Key press event', chr(event.keyval))
+
+    # The event.type is Gdk.EventType.KEY_PRESS.
+    if event.state == Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MODIFIER_RESERVED_25_MASK or event.state == Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK:
+
+        # Copy
+        if event.keyval == 99 or event.keyval == 67:
+            # logger.log_value('Copy key press event', '<ctrl><shift><%s>' % chr(event.keyval))
+            terminal = model.builder.get_object('terminal_page__terminal')
+            terminal_has_selection = terminal.get_has_selection()
+            if terminal_has_selection:
+                terminal.copy_clipboard()
+                terminal.unselect_all()
+            # Return True to prevent the event from being propagated to
+            # the Terminal.
+            return True
+
+        # Paste
+        elif event.keyval == 86 or event.keyval == 118:
+            # logger.log_value('Paste key press event', '<ctrl><shift><%s>' % chr(event.keyval))
+            terminal = model.builder.get_object('terminal_page__terminal')
+            terminal.paste_clipboard()
+            # Return True to prevent the event from being propagated to
+            # the Terminal.
+            return True
+
+        # Select All
+        elif event.keyval == 65 or event.keyval == 97:
+            # logger.log_value('Paste key press event', '<ctrl><shift><%s>' % chr(event.keyval))
+            terminal = model.builder.get_object('terminal_page__terminal')
+            terminal.select_all()
+            # Return True to prevent the event from being propagated to
+            # the Terminal.
+            return True
+
+
 def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info, drag_time):
 
     # Skip if terminal is not running.
@@ -457,7 +496,8 @@ def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info,
 
 def on_button_press_event__terminal_page(widget, event):
 
-    if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
+    # The event.type is Gdk.EventType.BUTTON_PRESS.
+    if event.button == 3:
 
         logger.log_value('Mouse button 3 pressed for', 'terminal_page')
 
@@ -502,21 +542,7 @@ def on_button_release_event__terminal_page__copy_text_menu_item(*args):
 
     terminal = model.builder.get_object('terminal_page__terminal')
     terminal.copy_clipboard()
-
-    # TODO: Remove Vte 2.90.
-
-    # https://lazka.github.io/pgi-docs/#Vte-2.90/classes/Terminal.html
-    # https://lazka.github.io/pgi-docs/#Vte-2.91/classes/Terminal.html
-    try:
-        terminal.unselect_all
-    except AttributeError:
-        # Vte 2.90 only...
-        # Ubuntu 14.04 uses libvte-2.90
-        terminal.select_none()
-    else:
-        # Vte 2.91 only...
-        # Ubuntu 15.04 uses libvte-2.91
-        terminal.unselect_all()
+    terminal.unselect_all()
 
 
 def on_button_release_event__terminal_page__paste_file_menu_item(*args):

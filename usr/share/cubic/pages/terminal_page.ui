@@ -140,6 +140,7 @@
             <property name="scroll_on_output">False</property>
             <signal name="button-press-event" handler="on_button_press_event__terminal_page" swapped="no"/>
             <signal name="drag-data-received" handler="on_drag_data_received__terminal_page" swapped="no"/>
+            <signal name="key-press-event" handler="on_key_press_event__terminal_page" swapped="no"/>
           </object>
         </child>
       </object>
