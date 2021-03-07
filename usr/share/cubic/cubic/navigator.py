@@ -155,11 +155,11 @@ import sys
 import threading
 import traceback
 
-from utilities.displayer import SLIDE_NONE, SLIDE_LEFT, SLIDE_RIGHT
-from utilities import displayer
-from utilities import logger
-from utilities import model
-from utilities.processor import terminate_process
+from cubic.utilities.displayer import SLIDE_NONE, SLIDE_LEFT, SLIDE_RIGHT
+from cubic.utilities import displayer
+from cubic.utilities import logger
+from cubic.utilities import model
+from cubic.utilities.processor import terminate_process
 
 ########################################################################
 # Global Variables & Constants
@@ -223,7 +223,7 @@ def on_window_destroy(*args):
     handle_navigation(action)
 
 
-def on_clicked__navigation_button(button):
+def on_clicked_navigation_button(button):
 
     display_label = re.sub('❬|❭', '', button.get_label())
     logger.log_value('Clicked', display_label)
@@ -479,7 +479,7 @@ def get_page(page_name):
 
     if page_name:
         try:
-            page = importlib.import_module('pages.%s' % page_name)
+            page = importlib.import_module('cubic.pages.%s' % page_name)
         except ModuleNotFoundError as exception:
             logger.log_value('Error', exception)
             raise exception

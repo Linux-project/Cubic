@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# cubic.py                                                             #
+# cubic_wizard.py                                                      #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
@@ -37,8 +37,6 @@
 # Initialize
 ########################################################################
 
-# import warnings
-
 import os
 if os.getuid() == 0:
     print(
@@ -47,7 +45,7 @@ if os.getuid() == 0:
     print()
     exit()
 
-from utilities import logger
+from cubic.utilities import logger
 logger.log_title('Cubic - Custom Ubuntu ISO Creator')
 
 ########################################################################
@@ -65,9 +63,9 @@ import importlib
 import os
 import traceback
 
-import navigator
-from utilities import constructor
-from utilities import model
+from cubic import navigator
+from cubic.utilities import constructor
+from cubic.utilities import model
 
 ########################################################################
 # Global Variables & Constants
@@ -100,7 +98,7 @@ try:
     model.application.kernel_version = constructor.get_kernel_version()
 
     # Load the user interface.
-    model.builder = Gtk.Builder.new_from_file('cubic.ui')
+    model.builder = Gtk.Builder.new_from_file('cubic_wizard.ui')
     # Connect the signals to handlers in the associated module.
     model.builder.connect_signals(navigator)
 
@@ -114,17 +112,17 @@ try:
     # Get the stack.
     pages = model.builder.get_object('pages')
 
-    for file_name in sorted(glob.glob('pages/*_page.ui')):
+    for file_name in sorted(glob.glob('cubic/pages/*_page.ui')):
 
         # Get the module name.
-        module_name = file_name[6:-3]
+        module_name = file_name[12:-3]
         logger.log_value('Setup', module_name.replace('_', ' '))
 
         # Load the user interface.
         model.builder.add_from_file(file_name)
 
         # Load the module.
-        module = importlib.import_module('pages.%s' % module_name)
+        module = importlib.import_module('cubic.pages.%s' % module_name)
 
         # Connect the signals to handlers in the associated module.
         model.builder.connect_signals(module)
@@ -173,19 +171,19 @@ try:
 
     logger.log_label('Setup file choosers')
 
-    for file_name in sorted(glob.glob('file_choosers/*_chooser.ui')):
+    for file_name in sorted(glob.glob('cubic/choosers/*_chooser.ui')):
 
         print()
 
         # Get the module name.
-        module_name = file_name[14:-3]
+        module_name = file_name[15:-3]
         logger.log_value('Setup (ignore warnings)', module_name.replace('_', ' '))
 
         # Load the user interface.
         model.builder.add_from_file(file_name)
 
         # Load the module.
-        module = importlib.import_module('file_choosers.%s' % module_name)
+        module = importlib.import_module('cubic.choosers.%s' % module_name)
 
         # Connect the signals to handlers in the associated module.
         model.builder.connect_signals(module)

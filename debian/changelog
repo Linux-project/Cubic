@@ -1,68 +1,72 @@
-cubic (2021.03) focal; urgency=low
+cubic (2021.03) bionic focal groovy hirsute; urgency=medium
+
+  * Issues fixed in version 2021.03-44:
+
+  - Fixed Bug LP:#1916396, AttributeError: module 'logger' has no attribute
+    'log_title'. Refactored the application to use a unique package structure in
+    order to avoid name collisions.
 
   * Issues fixed in version 2021.03-43:
 
-  - Fixed Bug lp:#1916257, Terminal doesn't support keyboard shortcut
-    for copy & paste. Added the following shortcuts: Ctrl+Shift+A for
-    select all, Ctrl+Shift+V for paste, and Ctrl+Shift+A> for copy.
-
-  - Fixed Bug lp:#1917927, Error on the Prepare Page when deleting files
-    in /var/tmp/.
+  - Fixed Bug LP:#1916257, Terminal doesn't support keyboard shortcut for copy
+    & paste. Added the following shortcuts: Ctrl+Shift+A for select all,
+    Ctrl+Shift+C for copy, and Ctrl+Shift+V for paste.
+  - Fixed Bug LP:#1917927, Error on the Prepare Page when deleting files in
+    /var/tmp/.
 
   * Issues fixed in version 2021.01-42:
 
-  - Fixed Bug #1913652, Display the Cubic version in the About Dialog.
-  - Fixed Bug #1913636, Make Cubic work with Feren OS. Explicitly assign
-    read permissions (744 and 644) to all directories and files copied
-    from the original ISO, to remedy files with incorrect permissions.
-  - Fixed Bug #1913005, Unable to open the file browser on the Migrate
+  - Fixed Bug LP:#1913652, Display the Cubic version in the About Dialog.
+  - Fixed Bug LP:#1913636, Make Cubic work with Feren OS. Explicitly assign
+    read permissions (744 and 644) to all directories and files copied from
+    the original ISO, to remedy files with incorrect permissions.
+  - Fixed Bug LP:#1913005, Unable to open the file browser on the Migrate
     page, Delete page, or Finish page when the file path contains spaces.
-  - Select the file when it is opened in the default browser. Previously
-    this only worked in Nautilus, while other file browsers simply
-    opened the file's parent directory without selecting the file.
-  - Delete temporary files created in /var/tmp while analyzing the
-    initrd files to determine their kernel versions.
-  - On the Prepare page, when displaying the total number of packages to
-    be removed for a minimal install, include the number of packages to
-    be removed for a typical install.
+  - Select the file when it is opened in the default browser. Previously this
+    only worked in Nautilus, while other file browsers simply opened the
+    file's parent directory without selecting the file.
+  - Delete temporary files created in /var/tmp while analyzing the initrd
+    files to determine their kernel versions.
+  - On the Prepare page, when displaying the total number of packages to be
+    removed for a minimal install, include the number of packages to be removed
+    for a typical install.
 
   * Issues fixed in version 2021.01-41:
 
-  - Fixed Bug #1911469, Stuck at "Update the disk name" when generating
-    disk image. The date and time format is now explicitly set to
-    YYYY-MM-DD HH:MM because localized formats are ambiguous.
+  - Fixed Bug LP:#1911469, Stuck at "Update the disk name" when generating
+    disk image. The date and time format is now explicitly set to YYYY-MM-DD
+    HH:MM because localized formats are ambiguous.
 
   * Issues fixed in version 2021.01-40:
 
-  - Fixed Bug #1910408, Cubic appends characters to /etc/os-release and
+  - Fixed Bug LP:#1910408, Cubic appends characters to /etc/os-release and
     /etc/lsb-release breaking the new automated installation method for
-    Ubuntu. (Also reference Bug #1907873).
+    Ubuntu. (Also reference Bug LP:#1907873).
 
   * Issues fixed in version 2021.01-39:
 
-  - Fixed Bug #1909600, Terminal page right-click "Paste file" context
-    menu option is not working.
+  - Fixed Bug LP:#1909600, Terminal page right-click "Paste file" context menu
+    option is not working.
 
   * Issues fixed in version 2020.12-38:
 
-  - Fixed Bug #1909402, The Volume ID is not applied to the generated
-    ISO.
-  - Fixed Bug #1909414, During ISO boot, check disk reports error in 1
+  - Fixed Bug LP:#1909402, The Volume ID is not applied to the generated ISO.
+  - Fixed Bug LP:#1909414, During ISO boot, check disk reports error in 1
     file.
 
   * Issues fixed in version 2020.12-37:
 
-  - Fixed Bug #1908879, Cubic v2020.12.36 crash on startup.
-  - Fixed Bug #1908849, Generate step fails if the Cubic project
-    directory path contains spaces.
+  - Fixed Bug LP:#1908879, Cubic v2020.12.36 crash on startup.
+  - Fixed Bug LP:#1908849, Generate step fails if the Cubic project directory
+    path contains spaces.
 
   * Issues fixed in version 2020.12-36:
 
-  - Fixed Bug #1905098, Failed to generate ISO for Ubuntu 20.10.
-  - Fixed Bug #1853914, Request: Ability to add a whole folder directly
+  - Fixed Bug LP:#1905098, Failed to generate ISO for Ubuntu 20.10.
+  - Fixed Bug LP:#1853914, Request: Ability to add a whole folder directly
     into preseed.
-  - Fixed Bug #1907873, Make version information available in the
+  - Fixed Bug LP:#1907873, Make version information available in the
     customized OS.
-  - Merged from Experimental branch, revision 19.
+  - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Fri, 05 Mar 2021 17:46:25 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 06 Mar 2021 19:29:48 -0500

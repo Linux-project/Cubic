@@ -2,7 +2,7 @@
 
 <!--
 
-  cubic.ui
+  cubic_wizard.ui
 
   Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>
 
@@ -172,6 +172,7 @@
   <object class="GtkWindow" id="window">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
+    <property name="icon_name">cubic</property>
     <signal name="destroy" handler="on_window_destroy" swapped="no"/>
     <child type="titlebar">
       <object class="GtkHeaderBar" id="header_bar">
@@ -185,7 +186,7 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Go to the previous page</property>
-            <signal name="clicked" handler="on_clicked__navigation_button" swapped="no"/>
+            <signal name="clicked" handler="on_clicked_navigation_button" swapped="no"/>
           </object>
         </child>
         <child type="title">
@@ -225,7 +226,7 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Go to the next page</property>
-            <signal name="clicked" handler="on_clicked__navigation_button" swapped="no"/>
+            <signal name="clicked" handler="on_clicked_navigation_button" swapped="no"/>
             <style>
               <class name="suggested-action"/>
             </style>

@@ -8,4 +8,4 @@ Type=Application
 Icon=cubic
 StartupNotify=true
 Categories=Utility;Application;System;
-StartupWMClass = cubic.py
+StartupWMClass=cubic_wizard.py
