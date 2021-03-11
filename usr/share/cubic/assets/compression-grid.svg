@@ -1,3 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!--
+
+  compression-grid.svg
+
+  Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>
+
+  This file is part of Cubic - Custom Ubuntu ISO Creator.
+
+  See <http://www.gnu.org/licenses/>.
+
+-->
+
 <svg height="360" width="360">
 
   <defs>

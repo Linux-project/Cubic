@@ -41,6 +41,7 @@
 import glob
 import hashlib
 import magic
+import mimetypes
 import os
 import re
 import shutil
@@ -216,63 +217,6 @@ def get_file_system_type(file_path):
     return file_system_type
 
 
-def get_mime_information(file_path):
-    """
-    Arguments:
-        file_path: The full file path
-    Returns:
-        file_type (str) - The mime type
-        file_icon (str) - The icon name
-    """
-
-    # Icons:
-    #
-    # 'application': 'application-x-executable',
-    # 'audo': 'audio-x-generic',
-    # 'folder': 'folder-symbolic',
-    # 'font': 'font-x-generic',
-    # 'image': 'image-x-generic',
-    # 'package': 'package-x-generic',
-    # 'text': 'text-x-generic',
-    # 'video': 'video-x-generic'
-
-    # Get mime type and mime subtype.
-    if os.path.isdir(file_path):
-        mime_type, mime_subtype = 'folder', None
-    else:
-        _, extension = os.path.splitext(file_path)
-        if extension in ['.txt', '.seed']:
-            mime_type, mime_subtype = 'text', None
-        else:
-            content_mime_type = magic.from_file(file_path, True)
-            mime_type, mime_subtype = content_mime_type.split('/')
-
-    # TODO *.pcx files are image files, but can not be opened in Cubic as pixbuf.
-
-    # Return mime type and icon name.
-    if mime_type == 'image':
-        return 'image', 'image-x-generic'
-    if mime_type == 'audo':
-        return 'audio', 'audio-x-generic'
-    if mime_type == 'folder':
-        return 'folder', 'folder-symbolic'
-    if mime_type == 'font':
-        return 'font', 'font-x-generic'
-    if mime_type == 'image':
-        return 'image', 'image-x-generic'
-    if mime_type == 'inode' and mime_subtype == 'x-empty':
-        return 'text', 'text-x-generic'
-    if mime_type == 'package':
-        return 'package', 'package-x-generic'
-    if mime_type == 'text':
-        return 'text', 'text-x-generic'
-    if mime_type == 'video':
-        return 'video', 'video-x-generic'
-    if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(file_path) == 1:
-        return 'text', 'text-x-generic'
-    return None, 'application-x-executable'
-
-
 def calculate_md5_hash(file_path, buffer_size=2**20):
     """
     Calculate the md5 hash by reading a file into a buffer. The default buffer
@@ -406,3 +350,114 @@ def open_directory_in_browser(file_path):
     # logger.log_value(('Open in file browser', command)
     logger.log_value('Open in file browser', file_path)
     os.system(command)
+
+
+def guess_mime_type(full_file_path):
+    """
+    Guess the mime type using the file extension. This is faster
+    than reading the file, but may be inaccurate.
+
+    Arguments:
+    full_file_path - Full file path of the file.
+
+    Returns:
+    The mime type of the file.
+    """
+
+    if os.path.isdir(full_file_path):
+        # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm140625828597376
+        # inode/directory
+        mime_type = 'directory'
+    else:
+        mime_info = mimetypes.guess_type(full_file_path)[0]
+        if mime_info:
+            mime_type, mime_subtype = mime_info.split(os.path.sep)
+            if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(full_file_path) == 1:
+                mime_type = 'text'
+        else:
+            mime_type = None
+
+    return mime_type
+
+
+def read_mime_type(full_file_path):
+    """
+    Identify the mime type by reading the file. This is slower than
+    using the file extension, but is more accurate.
+
+    Arguments:
+    full_file_path - Full file path of the file.
+
+    Returns:
+    The mime type of the file.
+    """
+
+    if os.path.isdir(full_file_path):
+        # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm140625828597376
+        # inode/directory
+        mime_type = 'directory'
+    else:
+        mime_info = magic.from_file(full_file_path, True)
+        if mime_info:
+            mime_type, mime_subtype = mime_info.split(os.path.sep)
+            if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(full_file_path) == 1:
+                mime_type = 'text'
+            elif mime_type == 'inode' and mime_subtype == 'x-empty':
+                mime_type = 'text'
+        else:
+            mime_type = None
+
+    return mime_type
+
+
+def get_icon_name(mime_type):
+    """
+    Get the standard icon name for the specified mime type using the
+    following mapping.
+
+        Mime Type    Icon Name
+        ---------    ------------------------
+        audio        audio-x-generic
+        directory    folder-symbolic
+        font         font-x-generic
+        image        image-x-generic
+        package      package-x-generic
+        text         text-x-generic
+        video        video-x-generic
+        unknown      application-x-executable
+
+    Arguments:
+    mime_type - The mime type of the file.
+
+    Returns:
+    The standard icon name for the specified mime type.
+    """
+
+    # TODO: *.pcx files are image files with a mime type of
+    #       image/x-pcx, but can not be opened in Cubic as pixbuf.
+
+    if mime_type == 'audo':
+        icon_name = 'audio-x-generic'
+
+    elif mime_type == 'directory':
+        icon_name = 'folder-symbolic'
+
+    elif mime_type == 'font':
+        icon_name = 'font-x-generic'
+
+    elif mime_type == 'image':
+        icon_name = 'image-x-generic'
+
+    elif mime_type == 'package':
+        icon_name = 'package-x-generic'
+
+    elif mime_type == 'text':
+        icon_name = 'text-x-generic'
+
+    elif mime_type == 'video':
+        icon_name = 'video-x-generic'
+
+    else:
+        icon_name = 'application-x-executable'
+
+    return icon_name

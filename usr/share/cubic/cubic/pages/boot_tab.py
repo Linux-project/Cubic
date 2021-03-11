@@ -91,6 +91,7 @@ class IsoBootTab(FilesTab):
         self.DELETE_FILE_VIEW_PORT = 'boot_tab__delete_file_view_port'
         self.DIRECTORY_HEADER_BOX = 'boot_tab__directory_header_box'
         self.FILE_HEADER_BOX = 'boot_tab__file_header_box'
+        self.FILE_PATH_LABEL = 'boot_tab__file_path_label'
         self.FOLDER_NAME = 'boot_tab__folder_name'
         self.FOLDER_VIEW_PORT = 'boot_tab__folder_view_port'
         self.PICTURE_IMAGE = 'boot_tab__picture_image'

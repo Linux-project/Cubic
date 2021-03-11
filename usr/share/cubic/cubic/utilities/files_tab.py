@@ -45,8 +45,13 @@ import re
 import shutil
 
 gi.require_version('Gtk', '3.0')
+try:
+    gi.require_version('GtkSource', '4')
+except ValueError:
+    gi.require_version('GtkSource', '3.0')
 
 from gi.repository import GLib
+from gi.repository import GtkSource
 
 from cubic.choosers import copy_file_chooser
 from cubic.navigator import handle_navigation
@@ -154,6 +159,14 @@ class FilesTab:
     def toggle_show_all_files_header_bar_button(self, button):
 
         is_show_all_files = button.get_active()
+
+        # Save the file and mark it as required before filtering the
+        # tree to include it in the filtered list.
+        scrolled_window = model.builder.get_object(self.SCROLLED_WINDOW_2)
+        child = scrolled_window.get_child()
+        if type(child) is GtkSource.View:
+            self.files_tree.save_source_buffer(child)
+
         self.files_tree.filter(is_show_all_files)
 
     #-------------------------------------------------------------------
@@ -687,6 +700,11 @@ class FilesTab:
         child = scrolled_window.get_child()
         if child: scrolled_window.remove(child)
 
+        # Display the file path.
+        label = model.builder.get_object(self.FILE_PATH_LABEL)
+        label.set_text(file_path)
+        label.set_visible(True)
+
         # Display the new child based on the type of file.
         if mime_type == 'directory':
             self.set_visible(self.DIRECTORY_HEADER_BOX, True)
@@ -755,6 +773,10 @@ class FilesTab:
         child = scrolled_window.get_child()
         if child: scrolled_window.remove(child)
 
+        # Hide the file path.
+        label = model.builder.get_object(self.FILE_PATH_LABEL)
+        label.set_visible(False)
+
         # Display information.
 
         label = model.builder.get_object(self.CREATE_FILE_FILE_PATH_LABEL)
@@ -796,6 +818,10 @@ class FilesTab:
         # Remove the current child from the scrolled window.
         child = scrolled_window.get_child()
         if child: scrolled_window.remove(child)
+
+        # Hide the file path.
+        label = model.builder.get_object(self.FILE_PATH_LABEL)
+        label.set_visible(False)
 
         # Display information.
 
@@ -839,6 +865,10 @@ class FilesTab:
         child = scrolled_window.get_child()
         if child: scrolled_window.remove(child)
 
+        # Hide the file path.
+        label = model.builder.get_object(self.FILE_PATH_LABEL)
+        label.set_visible(False)
+
         # Display information.
 
         label = model.builder.get_object(self.RENAME_DIRECTORY_FILE_PATH_LABEL)
@@ -879,6 +909,10 @@ class FilesTab:
         # Remove the current child from the scrolled window.
         child = scrolled_window.get_child()
         if child: scrolled_window.remove(child)
+
+        # Hide the file path.
+        label = model.builder.get_object(self.FILE_PATH_LABEL)
+        label.set_visible(False)
 
         # Display information.
 
@@ -922,6 +956,10 @@ class FilesTab:
         child = scrolled_window.get_child()
         if child: scrolled_window.remove(child)
 
+        # Hide the file path.
+        label = model.builder.get_object(self.FILE_PATH_LABEL)
+        label.set_visible(False)
+
         # Display information.
 
         label = model.builder.get_object(self.RENAME_FILE_FILE_PATH_LABEL)
@@ -961,6 +999,10 @@ class FilesTab:
         # Remove the current child from the scrolled window.
         child = scrolled_window.get_child()
         if child: scrolled_window.remove(child)
+
+        # Hide the file path.
+        label = model.builder.get_object(self.FILE_PATH_LABEL)
+        label.set_visible(False)
 
         # Display information.
 
@@ -1021,6 +1063,8 @@ class FilesTab:
 
     def guess_mime_type(self, full_file_path):
         """
+        This method is not used.
+
         Guess the mime type using the file extension. This is faster
         than reading the file, but may be inaccurate.
 
@@ -1046,8 +1090,11 @@ class FilesTab:
 
         return mime_type
 
+    # TODO: Remove this method because it is not used.
     def read_mime_type(self, full_file_path):
         """
+        This method is not used.
+
         Guess the mime type by reading the file. This is slower than
         using the file extension, but is more inaccurate.
 
@@ -1075,7 +1122,11 @@ class FilesTab:
 
         return mime_type
 
+    # TODO: Remove this method because it is not used.
     def get_icon_name(self, mime_type):
+        """
+        This method is not used.
+        """
 
         if mime_type == 'audo':
             icon_name = 'audio-x-generic'

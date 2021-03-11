@@ -29,10 +29,9 @@
 
 # TODO: Ensure IS_EDITED is set consistently.
 # TODO: Improve efficiency.
-# TODO: Figure out why on_changed_tree_selection() is invoked multiple
-#       times for the same tree iter when the tree is filtered.
-# TODO: Add mime types for .preseed, .txt, .cfg, .conf, etc.
-#       mimetypes.types_map.update(mimetypes.read_mime_types('<path>/mime.types'))
+
+# Gtk.TreeStore - the tree_store used to store tree iters
+# Gtk.TreeModel - the tree_store used to display tree iters
 
 ########################################################################
 # References
@@ -68,8 +67,6 @@ import asyncio
 import gi
 import icu
 import locale
-import magic
-import mimetypes
 import os
 import pyinotify
 import threading
@@ -86,6 +83,7 @@ from gi.repository import GtkSource
 from gi.repository.GdkPixbuf import Pixbuf
 
 from cubic.utilities.displayer import MONOSPACE_FONT, SOURCE_LANGUAGE, SOURCE_STYLE_SCHEME
+from cubic.utilities import file_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
 
@@ -103,25 +101,41 @@ MASK = (pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE | pyinotify.IN_DELETE | p
 # Used to sort the tree in the tree_iter_compare() method.
 COLLATOR = icu.Collator.createInstance(icu.Locale(str(locale.getlocale())))
 
-# Tree Row
-# TREE_ITER: [FILE_NAME, FILE_PATH, FILE_ICON]
+# tree_row - an array of three values stored by a tree iter
+# tree_iter: [FILE_NAME, FILE_PATH, FILE_ICON]
+
+# Indexes for tree_row
 FILE_NAME = 0
 FILE_PATH = 1
 FILE_ICON = 2
 
-# Empty tree row.
-EMPTY_TREE_ROW = [None, None, None]  # [FILE_NAME, FILE_PATH, FILE_ICON]
+# Empty tree row
+# [FILE_NAME, FILE_PATH, FILE_ICON]
+EMPTY_TREE_ROW = [None, None, None]
 
-# File Information Map
-# FILE_PATH: [TREE_ITER, SHOW_FILE, FILE_DATA, MIME_TYPE, IS_EDITED]
+# file_map - a dictionary mapping relative file paths to file_info
+# {file_path: file_info}
+# {file_path: [TREE_ITER, SHOW_FILE, FILE_DATA, MIME_TYPE, IS_EDITED]}
+
+# file_info is an array of five values
+# file_info: [TREE_ITER, SHOW_FILE, FILE_DATA, MIME_TYPE, IS_EDITED]
+#
+# TREE_ITER - Gtk.TreeIter for Gtk.TreeStore
+# SHOW_FILE - True if the file is required, False otherwise
+# FILE_DATA - GtkSource.View, Gtk.ViewPort, Pixbuf, None
+# MIME_TYPE - the mine type of a file
+# IS_EDITED - True if the file was modified by Cubic, False otherwise
+
+# Indexes for file_info
 TREE_ITER = 0
 SHOW_FILE = 1
 FILE_DATA = 2
 MIME_TYPE = 3
 IS_EDITED = 4
 
-# Empty file information.
-EMPTY_FILE_INFO = [None, False, None, None, False]  # [TREE_ITER, SHOW_FILE, FILE_DATA, MIME_TYPE, IS_EDITED]
+# Empty file info
+# [TREE_ITER, SHOW_FILE, FILE_DATA, MIME_TYPE, IS_EDITED]
+EMPTY_FILE_INFO = [None, False, None, None, False]
 
 ########################################################################
 # File Event Handlers Class
@@ -220,7 +234,7 @@ class FilesTree:
         # Set the function to call, when a tree selection changes.
         self.selection_changed = selection_changed
 
-        # Create a mapping of relative file paths to tree iters.
+        # Create a mapping of relative file paths to file_info's.
         self.file_map = dict()
 
         # target_file_path is used to notify "process..." methods that a
@@ -328,12 +342,12 @@ class FilesTree:
 
         # Get the correct mime type and file icon by reading the file.
         # If the file is a text file or image, load the data.
-        if mime_type != 'folder':
+        if mime_type != 'directory':
 
             full_file_path = self.get_full_file_path(file_path)
-            mime_type = self.read_mime_type(full_file_path)
+            mime_type = file_utilities.read_mime_type(full_file_path)
             if mime_type != file_info[MIME_TYPE]: file_data = None
-            file_icon = self.get_icon_name(mime_type)
+            file_icon = file_utilities.get_icon_name(mime_type)
 
             if mime_type == 'text':
 
@@ -372,6 +386,13 @@ class FilesTree:
                 self.file_map[file_path][MIME_TYPE] = mime_type
                 self.file_map[file_path][FILE_DATA] = file_data
                 self.file_map[file_path][IS_EDITED] = is_edited
+
+            else:
+
+                # Use a generic icon.
+                file_icon = 'application-x-executable'
+                tree_model.set_value(tree_iter, FILE_ICON, file_icon)
+                self.file_map[file_path][MIME_TYPE] = mime_type
 
         self.selection_changed(file_name, file_path, file_data, mime_type)
 
@@ -476,8 +497,9 @@ class FilesTree:
         #    exits
         # 2. has been unmapped and is not being displayed, so idle_add
         #    is unnecessary
-
+        #
         # GLib.idle_add(save_source_buffer, source_view)
+
         self.save_source_buffer(source_view)
 
     def save_source_buffer(self, source_view):
@@ -496,18 +518,26 @@ class FilesTree:
         is_modified = source_buffer.get_modified()
         if is_modified:
             file_path = self.get_relative_file_path(source_view.file_path)
-            logger.log_value('Save source buffer for', file_path)
+            logger.log_value('Save changes to', file_path)
             self.file_map[file_path][IS_EDITED] = True
+
+            # Set the file as required since it was modified.
+            tree_store = self.tree_model.get_model()
+            tree_iter = self.file_map[file_path][TREE_ITER]
+            self.set_required_file(tree_store, tree_iter)
+
+            # Write the file.
             with open(source_view.file_path, 'w') as file:
                 start_iter = source_buffer.get_start_iter()
                 end_iter = source_buffer.get_end_iter()
                 data = source_buffer.get_text(start_iter, end_iter, True)
                 file.write(data)
                 source_buffer.set_modified(False)
+
         else:
             # TODO: Remove this else clause after testing.
             file_path = self.get_relative_file_path(source_view.file_path)
-            logger.log_value('The source buffer for %s was not modified' % file_path, 'Do not save changes')
+            logger.log_value('Do not save (no changes)', file_path)
 
     def search_and_replace_in_file(self, file_path, search_replace_tuples):
         """
@@ -534,12 +564,12 @@ class FilesTree:
 
             # Get the correct mime type and file icon by reading the file.
             # If the file is a text file or image, load the data.
-            if mime_type != 'folder':
+            if mime_type != 'directory':
 
                 full_file_path = self.get_full_file_path(file_path)
-                mime_type = self.read_mime_type(full_file_path)
+                mime_type = file_utilities.read_mime_type(full_file_path)
                 if mime_type != file_info[MIME_TYPE]: file_data = None
-                file_icon = self.get_icon_name(mime_type)
+                file_icon = file_utilities.get_icon_name(mime_type)
 
                 if mime_type == 'text':
 
@@ -584,6 +614,13 @@ class FilesTree:
                     self.file_map[file_path][MIME_TYPE] = mime_type
                     self.file_map[file_path][FILE_DATA] = file_data
                     self.file_map[file_path][IS_EDITED] = is_edited
+
+                else:
+
+                    # Use a generic icon.
+                    file_icon = 'application-x-executable'
+                    tree_model.set_value(tree_iter, FILE_ICON, file_icon)
+                    self.file_map[file_path][MIME_TYPE] = mime_type
 
     def search_and_replace_in_source_view(self, source_view, search_replace_tuples):
         """
@@ -692,14 +729,14 @@ class FilesTree:
                 # Get info for the original file.
                 show_file = False
                 file_data = None
-                mime_type = self.guess_mime_type(full_file_path)
+                mime_type = file_utilities.guess_mime_type(full_file_path)
                 is_edited = False
 
                 # Get the file name.
                 file_name = os.path.basename(file_path) if parent_tree_iter else file_path
 
                 # Get the icon name.
-                file_icon = self.get_icon_name(mime_type)
+                file_icon = file_utilities.get_icon_name(mime_type)
 
                 # Append a new tree iter.
                 tree_store = self.tree_model.get_model()
@@ -751,7 +788,7 @@ class FilesTree:
                 file_name = os.path.basename(file_path) if parent_tree_iter else file_path
 
                 # Get the icon name.
-                file_icon = self.get_icon_name(mime_type)
+                file_icon = file_utilities.get_icon_name(mime_type)
 
                 # Update the full file path, if file data is a source view.
                 if file_data and hasattr(file_data, 'file_path'):
@@ -813,8 +850,23 @@ class FilesTree:
                             show required files.
         """
 
+        # Set the show all files state.
         self.is_show_all_files = is_show_all_files
+
+        # Filter the tree.
+
+        tree_selection = self.tree_view.get_selection()
+
+        # Block the on_changed_tree_selection handler from being invoked
+        # for each row while the tree is being filtered.
+        tree_selection.handler_block_by_func(self.on_changed_tree_selection)
         self.tree_model.refilter()
+        tree_selection.handler_unblock_by_func(self.on_changed_tree_selection)
+
+        # Handle the current tree selection, since it may have changed.
+        self.change_tree_selection(tree_selection)
+
+        # Expand all of the rows in the tree.
         self.tree_view.expand_all()
 
     def tree_iter_visible(self, tree_store, tree_iter, data):
@@ -832,7 +884,7 @@ class FilesTree:
         data       - This is unused
 
         Returns:
-        True if the tree iter should be visible, False otherwise
+        True if the tree iter should be visible, False otherwise.
         """
 
         if self.is_show_all_files:
@@ -1298,87 +1350,3 @@ class FilesTree:
         file_path = os.path.relpath(file_path, model.project.custom_disk_directory)
 
         return file_path
-
-    def guess_mime_type(self, full_file_path):
-        """
-        Guess the mime type using the file extension. This is faster
-        than reading the file, but may be inaccurate.
-
-        Arguments:
-        full_file_path - Full file path of the file.
-
-        Returns:
-        The mime type of the file.
-        """
-
-        if os.path.isdir(full_file_path):
-            # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm140625828597376
-            # inode/directory
-            mime_type = 'directory'
-        else:
-            mime_info = mimetypes.guess_type(full_file_path)[0]
-            if mime_info:
-                mime_type, mime_subtype = mime_info.split(os.path.sep)
-                if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(full_file_path) == 1:
-                    mime_type = 'text'
-            else:
-                mime_type = None
-
-        return mime_type
-
-    def read_mime_type(self, full_file_path):
-        """
-        Guess the mime type by reading the file. This is slower than
-        using the file extension, but is more inaccurate.
-
-        Arguments:
-        full_file_path - Full file path of the file.
-
-        Returns:
-        The mime type of the file.
-        """
-
-        if os.path.isdir(full_file_path):
-            # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm140625828597376
-            # inode/directory
-            mime_type = 'directory'
-        else:
-            mime_info = magic.from_file(full_file_path, True)
-            if mime_info:
-                mime_type, mime_subtype = mime_info.split(os.path.sep)
-                if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(full_file_path) == 1:
-                    mime_type = 'text'
-                elif mime_type == 'inode' and mime_subtype == 'x-empty':
-                    mime_type = 'text'
-            else:
-                mime_type = None
-
-        return mime_type
-
-    def get_icon_name(self, mime_type):
-
-        if mime_type == 'audo':
-            icon_name = 'audio-x-generic'
-
-        elif mime_type == 'directory':
-            icon_name = 'folder-symbolic'
-
-        elif mime_type == 'font':
-            icon_name = 'font-x-generic'
-
-        elif mime_type == 'image':
-            icon_name = 'image-x-generic'
-
-        elif mime_type == 'package':
-            icon_name = 'package-x-generic'
-
-        elif mime_type == 'text':
-            icon_name = 'text-x-generic'
-
-        elif mime_type == 'video':
-            icon_name = 'video-x-generic'
-
-        else:
-            icon_name = 'application-x-executable'
-
-        return icon_name

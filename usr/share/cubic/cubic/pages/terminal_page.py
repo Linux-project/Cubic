@@ -430,7 +430,7 @@ def on_key_press_event__terminal_page(widget, event):
             terminal_has_selection = terminal.get_has_selection()
             if terminal_has_selection:
                 terminal.copy_clipboard()
-                terminal.unselect_all()
+                # terminal.unselect_all()
             # Return True to prevent the event from being propagated to
             # the Terminal.
             return True
@@ -459,7 +459,7 @@ def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info,
     # Skip if terminal is not running.
     if not is_running: return
 
-    logger.log_value('Drag data received for', 'terminal_page')
+    logger.log_value('Drag data received for', 'terminal page')
 
     # Gtk.SelectionData
     # https://lazka.github.io/pgi-docs/#Gtk-3.0/classes/SelectionData.html
@@ -499,7 +499,7 @@ def on_button_press_event__terminal_page(widget, event):
     # The event.type is Gdk.EventType.BUTTON_PRESS.
     if event.button == 3:
 
-        logger.log_value('Mouse button 3 pressed for', 'terminal_page')
+        logger.log_value('Mouse button 3 pressed for', 'terminal page')
 
         terminal = model.builder.get_object('terminal_page__terminal')
         terminal_has_selection = terminal.get_has_selection()
@@ -542,7 +542,7 @@ def on_button_release_event__terminal_page__copy_text_menu_item(*args):
 
     terminal = model.builder.get_object('terminal_page__terminal')
     terminal.copy_clipboard()
-    terminal.unselect_all()
+    # terminal.unselect_all()
 
 
 def on_button_release_event__terminal_page__paste_file_menu_item(*args):

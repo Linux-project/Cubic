@@ -112,13 +112,6 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
-    '''
-    iso_count_text = constructor.number_as_text(len(iso_file_path_list))
-    iso_files_text = 'file' if len(iso_file_path_list) == 1 else 'files'
-    md5_count_text = constructor.number_as_text(len(iso_checksum_file_path_list))
-    md5_files_text = 'file' if len(iso_checksum_file_path_list) == 1 else 'files'
-    label = 'Delete %s disk image %s and %s MD5 checksum %s.' % (iso_count_text, iso_files_text, md5_count_text, md5_files_text)
-    '''
 
     if action == 'next':
 
@@ -183,15 +176,15 @@ def enter(action, old_page=None):
             plural_text = constructor.get_plural('package is', 'packages are', count_1)
             displayer.update_label(
                 'prepare_page__package_manifest_1_message',
-                '%s %s flagged for removal after a typical install.' % (number_text,
-                                                                        plural_text))
+                '%s %s flagged for removal during a typical install.' % (number_text,
+                                                                         plural_text))
             displayer.update_status('prepare_page__package_manifest_1', OK)
         else:
             removable_packages_list_1 = []
             displayer.update_status('prepare_page__package_manifest_1', OPTIONAL)
             displayer.update_label(
                 'prepare_page__package_manifest_1_message',
-                'This disk does not have a list of packages to be removed after a typical install.')
+                'This disk does not have a list of packages to be removed during a typical install.')
         time.sleep(SLEEP_0500_MS)
 
         #
@@ -210,15 +203,15 @@ def enter(action, old_page=None):
             plural_text = constructor.get_plural('package is', 'packages are', count_1 + count_2)
             displayer.update_label(
                 'prepare_page__package_manifest_2_message',
-                '%s %s flagged for removal after a minimal install.' % (number_text,
-                                                                        plural_text))
+                '%s %s flagged for removal during a minimal install.' % (number_text,
+                                                                         plural_text))
             displayer.update_status('prepare_page__package_manifest_2', OK)
         else:
             removable_packages_list_2 = []
             displayer.update_status('prepare_page__package_manifest_2', OPTIONAL)
             displayer.update_label(
                 'prepare_page__package_manifest_2_message',
-                'This disk does not have a list of packages to be removed after a minimal install.')
+                'This disk does not have a list of packages to be removed during a minimal install.')
         time.sleep(SLEEP_0500_MS)
 
         #
@@ -242,6 +235,7 @@ def enter(action, old_page=None):
         # time.sleep(SLEEP_0500_MS)
 
         time.sleep(SLEEP_1000_MS)
+
         return 'next'
 
 
@@ -530,18 +524,18 @@ def _update_kernel_details_list(kernel_details_list):
             note += 'You are currently running kernel version %s.' % current_kernel_version_name
         # if index == 0:
         #     if note: note += ' '  # os.os.linesep
-        #     note += 'This is the newest kernel version available to bootstrap the customized disk image.'
+        #     note += 'This is the newest kernel version available to bootstrap the customized disk.'
         directory = kernel_details['directory']
         if directory == original_iso_image_directory:
             if note: note += ' '  # os.os.linesep
-            note += 'This kernel is used to bootstrap the original disk image.'
+            note += 'This kernel is used to bootstrap the original disk.'
             if len(kernel_details_list) > 1:
                 if note: note += ' '  # os.os.linesep
                 note += 'Select this kernel if you encounter issues such as BusyBox when using other kernel versions.'
             # if is_server_image()
             #     # if note: note += ' ' # os.os.linesep
             #     # note += 'Since you are customizing a server image, select this option if you encounter issues using other kernel versions.'
-            #     # Set the selected index for the the original disk image kernel.
+            #     # Set the selected index for the the original disk kernel.
             #     selected_index = index
         new_vmlinuz_file_name = kernel_details['new_vmlinuz_file_name']
         new_initrd_file_name = kernel_details['new_initrd_file_name']
@@ -1206,9 +1200,9 @@ def create_package_details_list(installed_packages_list, removable_packages_list
         package_details_list.append(package_details)
 
     logger.log_value('Total number of installed packages', len(installed_packages_list))
-    logger.log_value('Number of packages to be removed after a typical install', number_of_packages_to_remove_1)
-    logger.log_value('Number of packages to be retained after a typical install', number_of_packages_to_retain_1)
-    logger.log_value('Number of packages to be removed after a minimal install', number_of_packages_to_remove_2)
-    logger.log_value('Number of packages to be retained after a minimal install', number_of_packages_to_retain_2)
+    logger.log_value('Number of packages to be removed during a typical install', number_of_packages_to_remove_1)
+    logger.log_value('Number of packages to be retained during a typical install', number_of_packages_to_retain_1)
+    logger.log_value('Number of packages to be removed during a minimal install', number_of_packages_to_remove_2)
+    logger.log_value('Number of packages to be retained during a minimal install', number_of_packages_to_retain_2)
 
     return package_details_list

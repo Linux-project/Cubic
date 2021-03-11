@@ -40,8 +40,9 @@
 import os
 if os.getuid() == 0:
     print(
-        'Error. Cubic (Custom Ubuntu ISO Creator) is a graphical user interface application and may not be run using sudo or as root. See "man cubic" for more information.'
-    )
+        'Error. Cubic (Custom Ubuntu ISO Creator) is a graphical user'
+        ' interface application and may not be run using sudo or as'
+        ' root. See "man cubic" for more information.')
     print()
     exit()
 
@@ -60,6 +61,7 @@ from gi.repository import Gtk
 
 import glob
 import importlib
+import mimetypes
 import os
 import traceback
 
@@ -91,6 +93,10 @@ try:
     # Real path is necessary here.
     model.application.directory = os.path.dirname(os.path.realpath(__file__))
     os.chdir(model.application.directory)
+
+    # Add additional mime types.
+    mimetypes.init()
+    mimetypes.types_map.update(mimetypes.read_mime_types('assets/mime.types'))
 
     model.application.user_home = os.path.expanduser(os.path.join('~', '*'))
 

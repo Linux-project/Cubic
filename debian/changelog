@@ -1,4 +1,17 @@
-cubic (2021.03) bionic focal groovy hirsute; urgency=medium
+cubic (2021.03) bionic focal groovy hirsute; urgency=low
+
+  - Fixed Bug LP:#1918067, On the Boot tab, modified unfiltered files are not
+    visible in the filtered files list.
+  - Improved tree performance when the show all files button is toggled
+    on the Boot tab.
+  - Fixed Bug LP:#1918072, On the Preseed tab and the Boot tab, show the name of
+    the file being edited.
+  - Fixed Bug LP:#1918543, On the Boot Tab, some icons are incorrect for
+    unfiltered files.
+  - Added additional mime types in order to correctly identify icons for
+    files on the Preseed tab and Boot tab.
+  - Simplified the instructions on the Extract page, Prepare page, Packages
+    page, Options page, Preseed tab, and Boot tab.
 
   * Issues fixed in version 2021.03-44:
 
@@ -11,7 +24,7 @@ cubic (2021.03) bionic focal groovy hirsute; urgency=medium
   - Fixed Bug LP:#1916257, Terminal doesn't support keyboard shortcut for copy
     & paste. Added the following shortcuts: Ctrl+Shift+A for select all,
     Ctrl+Shift+C for copy, and Ctrl+Shift+V for paste.
-  - Fixed Bug LP:#1917927, Error on the Prepare Page when deleting files in
+  - Fixed Bug LP:#1917927, Error on the Prepare page when deleting files in
     /var/tmp/.
 
   * Issues fixed in version 2021.01-42:
@@ -69,4 +82,4 @@ cubic (2021.03) bionic focal groovy hirsute; urgency=medium
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 06 Mar 2021 19:29:48 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Wed, 10 Mar 2021 23:05:21 -0500
