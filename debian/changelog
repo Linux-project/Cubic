@@ -1,5 +1,15 @@
 cubic (2021.03) bionic focal groovy hirsute; urgency=low
 
+  * Issues fixed in version 2021.03-46:
+
+  - Fixed Bug LP:#1918741, Drag and drop text onto terminal doesn't work.
+  - Improved stability when transitioning from the Prepare page to the Options
+    page.
+  - Fixed issue on the Prepare page and the Generate page where status text
+    shifts vertically by a few pixels when updated.
+
+  * Issues fixed in version 2021.03-45:
+
   - Fixed Bug LP:#1918067, On the Boot tab, modified unfiltered files are not
     visible in the filtered files list.
   - Improved tree performance when the show all files button is toggled
@@ -82,4 +92,4 @@ cubic (2021.03) bionic focal groovy hirsute; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Wed, 10 Mar 2021 23:05:21 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Wed, 24 Mar 2021 18:16:05 -0400

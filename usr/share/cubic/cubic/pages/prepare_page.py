@@ -660,8 +660,6 @@ def update_vmlinuz_details_list(directory, details_list):
             # file instead, and this 'if not' block will not be
             # executed. This is considered a negligible risk.
 
-            # TODO: Is there a more reliable remedy?
-
             # It is necessary to strip the leading '/' from the real
             # path, otherwise os.path.join() considers the real path to be an
             # absolute path and discards the custom root directory
@@ -816,8 +814,6 @@ def update_initrd_details_list(directory, details_list):
             # exists on the host system, real path will point to that
             # file instead, and this 'if not' block will not be
             # executed. This is considered a negligable risk.
-
-            # TODO: Is there a more reliable remedy?
 
             # It is necessary to strip the leading '/' from the real
             # path, otherwise os.path.join() considers the real path to be an

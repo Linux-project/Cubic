@@ -43,13 +43,19 @@
 # Imports
 ########################################################################
 
+import gi
 import os
 
-from cubic.pages.boot_tab import IsoBootTab
-from cubic.pages.kernel_tab import IsoKernelTab
+gi.require_version('GLib', '2.0')
+
+from gi.repository import GLib
+
+from cubic.pages.boot_tab import BootTab
+from cubic.pages.kernel_tab import KernelTab
 from cubic.pages.preseed_tab import PreseedTab
 from cubic.utilities import configuration
 from cubic.utilities import displayer
+from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -67,6 +73,199 @@ boot_tab = None
 ########################################################################
 # Navigation Functions
 ########################################################################
+
+
+def setup_ORIGINAL(action, old_page=None):
+
+    if action == 'back':
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        return
+
+    if action == 'cancel':
+
+        # Do not assume the virtual environment is running.
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        return
+
+    if action == 'copy-preseed':
+
+        # Do not assume the virtual environment is running.
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        return
+
+    if action == 'copy-boot-configuration':
+
+        # Do not assume the virtual environment is running.
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        return
+
+    elif action == 'next':
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        header_bar = model.builder.get_object('header_bar')
+
+        #
+        # Kernel tab
+        #
+
+        global kernel_tab
+        if not kernel_tab:
+
+            # Load the user interface and connect the signals to
+            # handlers in the associated module.
+            kernel_tab = KernelTab()
+
+            grid = model.builder.get_object('options_page__kernel_tab__grid')
+            scrolled_window = model.builder.get_object('kernel_tab__scrolled_window')
+            displayer.attach(grid, scrolled_window, 0, 1, 1, 1)
+            # grid.attach(scrolled_window, 0, 1, 1, 1)
+
+            # Add previously loaded widgets to the header bar.
+            # box = model.builder.get_object('kernel_tab__header_box')
+            # header_bar.add(box)
+            # displayer.set_visible('kernel_tab__header_box', False)
+
+        kernel_tab.create_linux_kernels_list()
+
+        #
+        # Preseed tab
+        #
+
+        global preseed_tab
+        if not preseed_tab:
+
+            # Load the user interface and connect the signals to
+            # handlers in the associated module.
+            preseed_tab = PreseedTab()
+
+            grid = model.builder.get_object('options_page__preseed_tab__grid')
+            panes = model.builder.get_object('preseed_tab__panes')
+            displayer.attach(grid, panes, 0, 1, 1, 1)
+            # grid.attach(panes, 0, 1, 1, 1)
+
+            # Add previously loaded widgets to the header bar.
+            box = model.builder.get_object('preseed_tab__header_box')
+            header_bar.add(box)
+            displayer.set_visible('preseed_tab__header_box', False)
+
+        # If the preseed directory does not exist, create it.
+        file_path = os.path.join(model.project.custom_disk_directory, 'preseed')
+        file_utilities.make_directory(file_path)
+        preseed_tab.create_tree(['preseed'])
+
+        #
+        # Boot tab
+        #
+
+        global boot_tab
+        if not boot_tab:
+
+            # Load the user interface and connect the signals to
+            # handlers in the associated module.
+            boot_tab = BootTab()
+
+            grid = model.builder.get_object('options_page__boot_tab__grid')
+            panes = model.builder.get_object('boot_tab__panes')
+            displayer.attach(grid, panes, 0, 1, 1, 1)
+            # grid.attach(panes, 0, 1, 1, 1)
+
+            # Add previously loaded widgets to the header bar.
+            box = model.builder.get_object('boot_tab__header_box')
+            header_bar.add(box)
+            displayer.set_visible('boot_tab__header_box', False)
+
+        # Assume the boot/grub directory exists.
+        boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)
+
+        #
+        # Update the boot configurations.
+        #
+
+        # Save the selected kernel in the model.
+        model.selected_kernel_index = kernel_tab.selected_kernel_index
+
+        # Update the boot configurations based on the selected kernel.
+        update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
+
+        return
+
+    else:
+
+        return 'unknown'
 
 
 def setup(action, old_page=None):
@@ -170,76 +369,14 @@ def setup(action, old_page=None):
         displayer.set_visible('title_label', False)
         displayer.set_visible('options_page__stack_switcher', True)
 
-        header_bar = model.builder.get_object('header_bar')
+        # Setup the Kernel tab.
+        setup_kernel_tab()
 
-        global kernel_tab
-        if not kernel_tab:
+        # Setup the Preseed tab.
+        setup_preseed_tab()
 
-            # Load the user interface.
-            model.builder.add_from_file('cubic/pages/kernel_tab.ui')
-            grid = model.builder.get_object('options_page__kernel_tab__grid')
-            scrolled_window = model.builder.get_object('kernel_tab__scrolled_window')
-            displayer.attach(grid, scrolled_window, 0, 1, 1, 1)
-
-            # Connect the signals to handlers in the associated module.
-            kernel_tab = IsoKernelTab()
-
-            # Add previously loaded widgets to the header bar.
-            # box = model.builder.get_object('kernel_tab__header_box')
-            # header_bar.add(box)
-            # displayer.set_visible('kernel_tab__header_box', False)
-
-        kernel_tab.create_linux_kernels_list()
-
-        global preseed_tab
-        if not preseed_tab:
-
-            # Load the user interface.
-            model.builder.add_from_file('cubic/pages/preseed_tab.ui')
-            grid = model.builder.get_object('options_page__preseed_tab__grid')
-            panes = model.builder.get_object('preseed_tab__panes')
-            displayer.attach(grid, panes, 0, 1, 1, 1)
-
-            # Connect the signals to handlers in the associated module.
-            preseed_tab = PreseedTab()
-
-            # Add previously loaded widgets to the header bar.
-            box = model.builder.get_object('preseed_tab__header_box')
-            header_bar.add(box)
-            displayer.set_visible('preseed_tab__header_box', False)
-
-        # If the preseed directory does not exist, create it.
-        file_path = os.path.join(model.project.custom_disk_directory, 'preseed')
-        # TODO: Use file_utilities.make_directory() or os.makedirs ?
-        # file_utilities.make_directory(file_path)
-        os.makedirs(file_path, exist_ok=True)
-        preseed_tab.create_tree(['preseed'])
-
-        global boot_tab
-        if not boot_tab:
-
-            # Load the user interface.
-            model.builder.add_from_file('cubic/pages/boot_tab.ui')
-            grid = model.builder.get_object('options_page__boot_tab__grid')
-            panes = model.builder.get_object('boot_tab__panes')
-            displayer.attach(grid, panes, 0, 1, 1, 1)
-
-            # Connect the signals to handlers in the associated module.
-            boot_tab = IsoBootTab()
-
-            # Add previously loaded widgets to the header bar.
-            box = model.builder.get_object('boot_tab__header_box')
-            header_bar.add(box)
-            displayer.set_visible('boot_tab__header_box', False)
-
-        # Assume the boot/grub directory exists.
-        boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)
-
-        # Save the selected kernel in the model.
-        model.selected_kernel_index = kernel_tab.selected_kernel_index
-
-        # Update the boot configurations based on the selected kernel.
-        update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
+        # Setup the Boot tab.
+        setup_boot_tab()
 
         return
 
@@ -427,6 +564,129 @@ def on_unmap__options_page__boot_tab(*args):
 ########################################################################
 # Support Functions
 ########################################################################
+
+
+def setup_kernel_tab():
+    """
+    Setup the Kernel tab.
+    """
+
+    GLib.idle_add(_setup_kernel_tab)
+
+
+def _setup_kernel_tab():
+    """
+    Setup the Kernel tab.
+    This function must be invoked using GLib.idle_add().
+    """
+
+    global kernel_tab
+    if not kernel_tab:
+
+        # Load the user interface and connect the signals to
+        # handlers in the associated module.
+        kernel_tab = KernelTab()
+
+        grid = model.builder.get_object('options_page__kernel_tab__grid')
+        scrolled_window = model.builder.get_object('kernel_tab__scrolled_window')
+        grid.attach(scrolled_window, 0, 1, 1, 1)
+
+        # Add previously loaded widgets to the header bar.
+        # header_bar = model.builder.get_object('header_bar')
+        # box = model.builder.get_object('kernel_tab__header_box')
+        # header_bar.add(box)
+        # box.set_visible(False)
+
+    # Create the list of kernels.
+    kernel_tab.create_linux_kernels_list()
+
+    # Save the selected kernel in the model.
+    model.selected_kernel_index = kernel_tab.selected_kernel_index
+
+
+def setup_preseed_tab():
+    """
+    Setup the Preseed tab.
+    """
+
+    GLib.idle_add(_setup_preseed_tab)
+
+
+def _setup_preseed_tab():
+    """
+    Setup the Preseed tab.
+    This function must be invoked using GLib.idle_add().
+    """
+
+    global preseed_tab
+    if not preseed_tab:
+
+        # Load the user interface and connect the signals to
+        # handlers in the associated module.
+        preseed_tab = PreseedTab()
+
+        grid = model.builder.get_object('options_page__preseed_tab__grid')
+        panes = model.builder.get_object('preseed_tab__panes')
+        grid.attach(panes, 0, 1, 1, 1)
+
+        # Add previously loaded widgets to the header bar.
+        header_bar = model.builder.get_object('header_bar')
+        box = model.builder.get_object('preseed_tab__header_box')
+        header_bar.add(box)
+        box.set_visible(False)
+
+    # If the preseed directory does not exist, create it.
+    file_path = os.path.join(model.project.custom_disk_directory, 'preseed')
+    file_utilities.make_directory(file_path)
+
+    # Create the list of preseed files.
+    preseed_tab.create_tree(['preseed'])
+
+
+def setup_boot_tab():
+    """
+    Setup the Boot tab.
+    """
+
+    GLib.idle_add(_setup_boot_tab)
+
+
+def _setup_boot_tab():
+    """
+    Setup the Boot tab.
+    This function must be invoked using GLib.idle_add().
+    """
+
+    global boot_tab
+    if not boot_tab:
+
+        # Load the user interface and connect the signals to
+        # handlers in the associated module.
+        boot_tab = BootTab()
+
+        grid = model.builder.get_object('options_page__boot_tab__grid')
+        panes = model.builder.get_object('boot_tab__panes')
+        grid.attach(panes, 0, 1, 1, 1)
+
+        # Add previously loaded widgets to the header bar.
+        header_bar = model.builder.get_object('header_bar')
+        box = model.builder.get_object('boot_tab__header_box')
+        header_bar.add(box)
+        box.set_visible(False)
+
+    # If the boot/grub directory does not exist, create it.
+    file_path = os.path.join(model.project.custom_disk_directory, 'boot/grub')
+    file_utilities.make_directories(file_path)
+
+    # The isolinux directory is optional.
+    # file_path = os.path.join(model.project.custom_disk_directory, 'isolinux')
+    # file_utilities.make_directory(file_path)
+
+    # Create the list of boot configurations files.
+    boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)
+
+    # Update the boot configurations based on the selected kernel.
+    update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
 
 
 def update_boot_configurations(file_paths, kernel_details_list, selected_index):

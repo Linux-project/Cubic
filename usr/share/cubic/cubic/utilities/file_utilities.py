@@ -62,6 +62,9 @@ from cubic.utilities.processor import execute_synchronous
 
 
 def make_directory(directory):
+    """
+    Create a single directory when the parent directory path exists.
+    """
     logger.log_value('Create directory', directory)
     if not os.path.exists(directory):
         os.mkdir(directory)
@@ -69,12 +72,26 @@ def make_directory(directory):
         logger.log_value('Cannot create directory', 'Directory already exists')
 
 
+def make_directories(file_path):
+    """
+    Create all directories in the specified file path.
+    """
+    logger.log_value('Create directories', file_path)
+    if not os.path.exists(file_path):
+        os.makedirs(file_path, exist_ok=True)
+    else:
+        logger.log_value('Cannot create directories', 'Directories already exists')
+
+
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_directory(directory):
+    """
+    If permissions prevent deleting the directory, use
+    delete_path_as_root() instead.
+    """
     logger.log_value('Delete directory', directory)
     if os.path.exists(directory):
         try:
-            # TODO: Check if permissions prevent this operation?
             # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
             # rmtree(path, ignore_errors=False, onerror=HANDLER)
             # TODO: Path must point to a directory (but not a symbolic link to a directory).
@@ -248,10 +265,13 @@ def copy_file(source_path, target_path):
 
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_file(file_path):
+    """
+    If permissions prevent deleting the file path, use
+    delete_path_as_root() instead.
+    """
     logger.log_value('Delete file', file_path)
     if os.path.exists(file_path):
         try:
-            # TODO: Check if permissions prevent this operation?
             os.remove(file_path)
             result = 'Successfully deleted %s' % file_path
             exit_status = 0
@@ -298,7 +318,7 @@ def replace_text_in_file(file_path, search_text, replacement_text):
         logger.log_value('Cannot replace text', 'Replacement text not specified')
         return error
 
-    # TODO: Add a try statment and return error accordingly.
+    # TODO: Add a try statement and return error accordingly.
     #       Currently, this is done in repackage_iso_page.update_disk_name(), but it should be done here.
     error = False
 

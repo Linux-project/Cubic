@@ -160,9 +160,7 @@ help_urls = {
     'prepare_page': 'https://answers.launchpad.net/cubic/+faq/3224',
     'packages_page': 'https://answers.launchpad.net/cubic/+faq/3223',
     'options_page': 'https://answers.launchpad.net/cubic/+faq/3222',
-    # TODO: Create a new hep page for preseed_copy_page.
     'preseed_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
-    # TODO: Create a new hep page for opens terminal_copy_page.
     'boot_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
     'compression_page': 'https://answers.launchpad.net/cubic/+faq/3221',
     'generate_page': 'https://answers.launchpad.net/cubic/+faq/3220',

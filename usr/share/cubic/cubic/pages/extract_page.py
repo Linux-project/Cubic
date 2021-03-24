@@ -105,7 +105,7 @@ def setup(action, old_page=None):
         # Identify important files on the original disk image.
 
         displayer.set_visible('extract_page__analyze_original_iso_section', not model.status.iso_template or not model.status.casper_directory)
-        displayer.update_label('extract_page__analyze_original_iso_message', '')
+        displayer.update_label('extract_page__analyze_original_iso_message', '...')
         displayer.update_status('extract_page__analyze_original_iso', displayer.BULLET)
 
         # Copy important files from the original disk image.

@@ -54,25 +54,29 @@ from cubic.utilities import model
 # N/A
 
 ########################################################################
-# Iso Kernel Tab Class
+# Kernel Tab Class
 ########################################################################
 
 
-class IsoKernelTab():
+class KernelTab():
 
     def __init__(self):
         """
-        Create a new IsoKernelTab.
+        Create a new KernelTab.
+        This method is invoked using GLib.idle_add() from options_page.
         """
 
-        logger.log_label('Initialize Iso Kernel Tab')
+        logger.log_label('Initialize Kernel Tab')
+
+        # Load the user interface and immediately connect the signals to
+        # the handlers.
+        model.builder.add_from_file('cubic/pages/kernel_tab.ui')
+        model.builder.connect_signals({'on_toggled__kernel_tab__kernels_radio_button': self.on_toggled__kernel_tab__kernels_radio_button})
 
         # REFERENCE: https://whyareyoureadingthisurl.wordpress.com/2012/01/21/howto-pack-gtk-cellrenderers-vertically-in-a-gtk-treeview/
         column = model.builder.get_object('kernel_tab__tree_view_column_2')
         area = column.get_area()
         area.set_orientation(Gtk.Orientation.VERTICAL)
-
-        model.builder.connect_signals({'on_toggled__kernel_tab__kernels_radio_button': self.on_toggled__kernel_tab__kernels_radio_button})
 
     def create_linux_kernels_list(self):
 

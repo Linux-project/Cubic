@@ -90,12 +90,12 @@ def setup(action, old_page=None):
 
         displayer.update_status('generate_page__copy_boot_files', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__copy_boot_files_progress_bar', 0)
-        # displayer.update_progress_bar_text('generate_page__copy_boot_files_progress_bar', '')
+        # displayer.update_progress_bar_text('generate_page__copy_boot_files_progress_bar', ' ')
         displayer.update_label('generate_page__copy_boot_files_message', '...')
 
         displayer.update_status('generate_page__create_squashfs', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', 0)
-        displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '')
+        displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', ' ')
         displayer.update_label('generate_page__create_squashfs_message', '...')
 
         displayer.update_status('generate_page__update_file_system_size', displayer.BULLET)
@@ -106,7 +106,7 @@ def setup(action, old_page=None):
 
         displayer.update_status('generate_page__update_checksums', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 0)
-        displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', '')
+        displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', ' ')
         displayer.update_label('generate_page__update_checksums_message', '...')
 
         displayer.update_status('generate_page__check_custom_disk_size', displayer.BULLET)
@@ -114,8 +114,8 @@ def setup(action, old_page=None):
 
         displayer.update_status('generate_page__create_iso_image', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', 0)
-        displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '')
-        displayer.update_label('generate_page__create_iso_image_message', '...\n')
+        displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', ' ')
+        displayer.update_label('generate_page__create_iso_image_message', '...')
 
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.BULLET)
         displayer.update_label('generate_page__calculate_iso_image_checksum_message', '...')
@@ -982,16 +982,10 @@ def create_iso_image():
     else:
         if size_in_bytes > GIB:
             logger.log_value('The size of the custom disk is', '%.2f MiB (%i bytes)' % (size_in_gib, size_in_bytes))
-            displayer.update_label(
-                'generate_page__create_iso_image_message',
-                'Successfully created %.2f GiB disk image:\n%s.' % (size_in_gib,
-                                                                    model.custom.iso_file_name))
+            displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f GiB disk image %s.' % (size_in_gib, model.custom.iso_file_name))
         else:
             logger.log_value('The size of the custom disk is', '%.2f MiB (%i bytes)' % (size_in_mib, size_in_bytes))
-            displayer.update_label(
-                'generate_page__create_iso_image_message',
-                'Successfully created %.2f MiB disk image:\n%s.' % (size_in_mib,
-                                                                    model.custom.iso_file_name))
+            displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f MiB disk image %s.' % (size_in_mib, model.custom.iso_file_name))
         displayer.update_status('generate_page__create_iso_image', displayer.OK)
         is_error = False
 

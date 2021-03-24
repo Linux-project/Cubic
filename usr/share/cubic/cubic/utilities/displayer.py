@@ -374,9 +374,6 @@ def update_status(prefix, status):
 
     # logger.log_value('Set status for entry %s_status' % prefix, status)
 
-    # TODO: Use Gtk.Icontheme instead of Gtk.IconSize because Gtk.IconSize id deprecated.
-    #       https://lazka.github.io/pgi-docs/Gtk-3.0/enums.html#Gtk.IconSize
-
     # Valid icon sizes are:
     #
     #   0 = Gtk.IconSize.INVALID
@@ -405,9 +402,6 @@ def update_status_image(name, status):
     """
     This is used on the Terminal page.
     """
-
-    # TODO: Use Gtk.Icontheme instead of Gtk.IconSize because Gtk.IconSize id deprecated.
-    #       https://lazka.github.io/pgi-docs/Gtk-3.0/enums.html#Gtk.IconSize
 
     image = model.builder.get_object(name)
     GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)

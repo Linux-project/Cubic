@@ -33,6 +33,8 @@
 
 # https://lazka.github.io/pgi-docs/#Vte-2.90/classes/Terminal.html
 # https://lazka.github.io/pgi-docs/#Vte-2.91/classes/Terminal.html
+# https://lazka.github.io/pgi-docs/Gtk-3.0/structs/TargetEntry.html#methods
+# https://lazka.github.io/pgi-docs/Gtk-3.0/flags.html#Gtk.TargetFlags
 
 ########################################################################
 # Imports
@@ -84,7 +86,6 @@ terminal.set_font(MONOSPACE_FONT)
 # TODO: Create and use displayer.get_terminal_colors() function.
 schema_source = Gio.SettingsSchemaSource.get_default()
 _, schemas = schema_source.list_schemas(True)
-schemas = Gio.Settings.list_relocatable_schemas()
 if 'org.gnome.Terminal.Legacy.Profile' in schemas:
     logger.log_value('Set terminal colors?', 'Yes')
     settings = Gio.Settings.new_with_path('org.gnome.Terminal.Legacy.Profile', '/org/gnome/terminal/legacy/')
@@ -125,11 +126,18 @@ else:
     logger.log_value('Set terminal colors?', 'Skip')
 
 # Allow Drag and Drop in the Terminal
+
 flags = Gtk.DestDefaults.MOTION | Gtk.DestDefaults.HIGHLIGHT | Gtk.DestDefaults.DROP
-# TODO: Change: Gtk.TargetFlags
-#       See: https://lazka.github.io/pgi-docs/Gtk-3.0/structs/TargetEntry.html#methods
-targets = [Gtk.TargetEntry.new('text/uri-list', 0, 80), Gtk.TargetEntry.new('text/plain', 0, 80)]
+
+# https://lazka.github.io/pgi-docs/Gtk-3.0/flags.html#Gtk.TargetFlags
+# 1 = SAME_APP
+# 2 = SAME_WIDGET
+# 3 = OTHER_APP
+# 4 = OTHER_WIDGET
+targets = [Gtk.TargetEntry.new('text/uri-list', Gtk.TargetFlags.OTHER_APP, 80), Gtk.TargetEntry.new('text/plain', Gtk.TargetFlags.OTHER_APP, 80)]
+
 actions = Gdk.DragAction.COPY
+
 terminal.drag_dest_set(flags, targets, actions)
 
 ########################################################################
@@ -397,7 +405,6 @@ def selected_uris(uris):
 ########################################################################
 
 
-# TODO: This function is not used.
 def on_terminal_page__terminal_child_exited(*args):
     """
     This function is not used.

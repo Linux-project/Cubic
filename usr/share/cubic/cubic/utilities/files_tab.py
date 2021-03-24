@@ -38,12 +38,11 @@
 ########################################################################
 
 import gi
-import magic
-import mimetypes
 import os
 import re
 import shutil
 
+gi.require_version('GLib', '2.0')
 gi.require_version('Gtk', '3.0')
 try:
     gi.require_version('GtkSource', '4')
@@ -56,6 +55,7 @@ from gi.repository import GtkSource
 from cubic.choosers import copy_file_chooser
 from cubic.navigator import handle_navigation
 from cubic.utilities.files_tree import FilesTree
+from cubic.utilities import file_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
 
@@ -77,16 +77,19 @@ INVALID_FILE_NAME_MESSAGE = 'Enter a valid file name containing alpha-numeric ch
 
 class FilesTab:
 
-    def __init__(self):
+    def __init__(self, file_path):
         """
         Create a new FilesTab.
+        This method is invoked using GLib.idle_add() when PreseedTab and
+        BootTab are instantiated in options_page.setup_preseed_tab() and
+        options_page.setup_boot_tab() functions, respectively.
         """
 
         logger.log_label('Initialize Files Tab')
 
-        self.files_tree = None
-
-        # Note: do not use GLib.idle_add() to connect the signals.
+        # Load the user interface and immediately connect the signals to
+        # the handlers.
+        model.builder.add_from_file(file_path)
         model.builder.connect_signals(
             {
                 self.ON_CHANGED_CREATE_DIRECTORY_FILE_NAME_ENTRY: self.on_changed_create_directory_file_name_entry,
@@ -109,11 +112,16 @@ class FilesTab:
                 self.ON_TOGGLED_SHOW_ALL_FILES_HEADER_BAR_BUTTON: self.on_toggled_show_all_files_header_bar_button
             })
 
+        self.files_tree = None
+
     def create_tree(self, root_file_paths, required_file_paths=None):
+        """
+        This method is invoked using GLib.idle_add() from options_page.
+        """
 
-        GLib.idle_add(self._create_tree, root_file_paths, required_file_paths)
-
-    def _create_tree(self, root_file_paths, required_file_paths):
+        # logger.log_label('Create tree')
+        # logger.log_value('The root file paths are', root_file_paths)
+        # logger.log_value('The required file paths are', required_file_paths)
 
         # Activate this show all files (filter) button only if there are
         # required file paths.
@@ -441,7 +449,7 @@ class FilesTab:
         # Create the new file.
         logger.log_value('Create directory', file_path)
         full_file_path = self.get_full_file_path(file_path)
-        os.makedirs(full_file_path, exist_ok=True)
+        file_utilities.make_directory(full_file_path)
 
         # Set target_file_path to notify the the process_IN_CREATE()
         # function to select this file in the tree. After the tree
@@ -1060,99 +1068,6 @@ class FilesTab:
     ####################################################################
     # Miscellaneous Functions
     ####################################################################
-
-    def guess_mime_type(self, full_file_path):
-        """
-        This method is not used.
-
-        Guess the mime type using the file extension. This is faster
-        than reading the file, but may be inaccurate.
-
-        Arguments:
-        full_file_path - Full file path of the file.
-
-        Returns:
-        The mime type of the file.
-        """
-
-        if os.path.isdir(full_file_path):
-            # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm140625828597376
-            # inode/directory
-            mime_type = 'directory'
-        else:
-            mime_info = mimetypes.guess_type(full_file_path)[0]
-            if mime_info:
-                mime_type, mime_subtype = mime_info.split(os.path.sep)
-                if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(full_file_path) == 1:
-                    mime_type = 'text'
-            else:
-                mime_type = None
-
-        return mime_type
-
-    # TODO: Remove this method because it is not used.
-    def read_mime_type(self, full_file_path):
-        """
-        This method is not used.
-
-        Guess the mime type by reading the file. This is slower than
-        using the file extension, but is more inaccurate.
-
-        Arguments:
-        full_file_path - Full file path of the file.
-
-        Returns:
-        The mime type of the file.
-        """
-
-        if os.path.isdir(full_file_path):
-            # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm140625828597376
-            # inode/directory
-            mime_type = 'directory'
-        else:
-            mime_info = magic.from_file(full_file_path, True)
-            if mime_info:
-                mime_type, mime_subtype = mime_info.split(os.path.sep)
-                if mime_type == 'application' and mime_subtype == 'octet-stream' and os.path.getsize(full_file_path) == 1:
-                    mime_type = 'text'
-                elif mime_type == 'inode' and mime_subtype == 'x-empty':
-                    mime_type = 'text'
-            else:
-                mime_type = None
-
-        return mime_type
-
-    # TODO: Remove this method because it is not used.
-    def get_icon_name(self, mime_type):
-        """
-        This method is not used.
-        """
-
-        if mime_type == 'audo':
-            icon_name = 'audio-x-generic'
-
-        elif mime_type == 'directory':
-            icon_name = 'folder-symbolic'
-
-        elif mime_type == 'font':
-            icon_name = 'font-x-generic'
-
-        elif mime_type == 'image':
-            icon_name = 'image-x-generic'
-
-        elif mime_type == 'package':
-            icon_name = 'package-x-generic'
-
-        elif mime_type == 'text':
-            icon_name = 'text-x-generic'
-
-        elif mime_type == 'video':
-            icon_name = 'video-x-generic'
-
-        else:
-            icon_name = 'application-x-executable'
-
-        return icon_name
 
     def set_visible(self, widget_name, is_visible):
 

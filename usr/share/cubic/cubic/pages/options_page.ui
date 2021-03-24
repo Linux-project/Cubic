@@ -79,7 +79,6 @@
                 <property name="label" translatable="yes">Select the kernel that will be used to bootstrap the customized disk.
 The disk boot configurations will be automatically updated with the correct &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names.</property>
                 <property name="use_markup">True</property>
-                <property name="justify">fill</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -115,7 +114,6 @@ The disk boot configurations will be automatically updated with the correct &lt;
                 <property name="label" translatable="yes">Update the preseed files used to automate installation.
 Reference these files in the disk boot configurations by prefixing them with &lt;tt&gt;/cdrom&lt;/tt&gt;.</property>
                 <property name="use_markup">True</property>
-                <property name="justify">fill</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -152,7 +150,6 @@ Reference these files in the disk boot configurations by prefixing them with &lt
                 <property name="label" translatable="yes">Update the disk boot configurations.
 The &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names have been automatically updated to match the selected disk boot kernel.</property>
                 <property name="use_markup">True</property>
-                <property name="justify">fill</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>

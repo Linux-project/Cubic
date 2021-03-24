@@ -47,18 +47,19 @@ from cubic.utilities import logger
 # N/A
 
 ########################################################################
-# Iso Boot Tab Class
+# Boot Tab Class
 ########################################################################
 
 
-class IsoBootTab(FilesTab):
+class BootTab(FilesTab):
 
     def __init__(self):
         """
-        Create a new IsoBootTab.
+        Create a new BootTab.
+        This method is invoked using GLib.idle_add() from options_page.
         """
 
-        logger.log_label('Initialize Iso Boot Tab')
+        logger.log_label('Initialize Boot Tab')
 
         self.COPY_ACTION = 'copy-boot-configuration'
 
@@ -137,4 +138,4 @@ class IsoBootTab(FilesTab):
         self.ON_TOGGLED_RENAME_FILE_HEADER_BAR_BUTTON = 'on_toggled__boot_tab__rename_file_header_bar_button'
         self.ON_TOGGLED_SHOW_ALL_FILES_HEADER_BAR_BUTTON = 'on_toggled__boot_tab__show_all_files_header_bar_button'
 
-        super().__init__()
+        super().__init__('cubic/pages/boot_tab.ui')

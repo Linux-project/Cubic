@@ -56,6 +56,7 @@ class PreseedTab(FilesTab):
     def __init__(self):
         """
         Create a new PreseedTab.
+        This method is invoked using GLib.idle_add() from options_page.
         """
 
         logger.log_label('Initialize Preseed Tab')
@@ -137,4 +138,4 @@ class PreseedTab(FilesTab):
         self.ON_TOGGLED_RENAME_FILE_HEADER_BAR_BUTTON = 'on_toggled__preseed_tab__rename_file_header_bar_button'
         self.ON_TOGGLED_SHOW_ALL_FILES_HEADER_BAR_BUTTON = 'on_toggled__preseed_tab__show_all_files_header_bar_button'
 
-        super().__init__()
+        super().__init__('cubic/pages/preseed_tab.ui')

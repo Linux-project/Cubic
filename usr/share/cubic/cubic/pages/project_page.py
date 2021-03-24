@@ -534,9 +534,6 @@ def mount_original_iso(original_iso_file_path):
     if not iso_utilities.is_mounted(model.project.iso_mount_point):
         # Nothing is mounted on the mount point.
         # Create the mount point (if necessary) and mount this iso.
-        # TODO: Use file_utilities.make_directory() or os.makedirs ?
-        #       Consider having iso_utilities.mount() create the missing
-        #       mount point before mounting.
         file_utilities.make_directory(model.project.iso_mount_point)
         user_id = os.getuid()
         group_id = os.getgid()
@@ -2162,7 +2159,7 @@ def save_iso_release_notes_url():
     directory = os.path.join(model.project.custom_disk_directory, '.disk')
     file_path = os.path.join(directory, 'release_notes_url')
     try:
-        os.makedirs(directory, exist_ok=True)
+        file_utilities.make_directory(directory)
         logger.log_value('Write the custom iso release notes url to', file_path)
         logger.log_value('The custom iso release notes url is', model.custom.iso_release_notes_url)
         with open(file_path, 'w') as file:
