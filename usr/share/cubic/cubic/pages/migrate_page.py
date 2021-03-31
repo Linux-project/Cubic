@@ -85,7 +85,6 @@ def setup(action, old_page=None):
         display_version = constructor.get_major_minor_version(model.project.cubic_version)
         displayer.update_entry('migrate_page__project_cubic_version_entry', display_version)
         displayer.update_entry('migrate_page__project_directory_entry', model.project.directory)
-        # displayer.update_entry('migrate_page__original_iso_file_name_entry', model.original.iso_file_name)
         displayer.update_entry('migrate_page__custom_iso_version_number_entry', model.custom.iso_version_number)
         displayer.update_entry('migrate_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
         displayer.update_entry('migrate_page__custom_iso_release_name_entry', model.custom.iso_release_name)
@@ -172,12 +171,6 @@ def leave(action, new_page=None):
 def on_clicked__migrate_page__project_directory_open_button(widget):
 
     file_utilities.open_directory_in_browser(model.project.directory)
-
-
-def on_clicked__migrate_page__project_directory_open_button_ORIGINAL(widget):
-
-    command = 'xdg-open "%s" &' % model.project.directory
-    os.system(command)
 
 
 ########################################################################

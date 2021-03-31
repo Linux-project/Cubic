@@ -75,199 +75,6 @@ boot_tab = None
 ########################################################################
 
 
-def setup_ORIGINAL(action, old_page=None):
-
-    if action == 'back':
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
-
-        displayer.set_visible('title_label', False)
-        displayer.set_visible('options_page__stack_switcher', True)
-
-        return
-
-    if action == 'cancel':
-
-        # Do not assume the virtual environment is running.
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=True,
-            is_next_visible=True)
-
-        displayer.set_visible('title_label', False)
-        displayer.set_visible('options_page__stack_switcher', True)
-
-        return
-
-    if action == 'copy-preseed':
-
-        # Do not assume the virtual environment is running.
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=True,
-            is_next_visible=True)
-
-        displayer.set_visible('title_label', False)
-        displayer.set_visible('options_page__stack_switcher', True)
-
-        return
-
-    if action == 'copy-boot-configuration':
-
-        # Do not assume the virtual environment is running.
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=True,
-            is_next_visible=True)
-
-        displayer.set_visible('title_label', False)
-        displayer.set_visible('options_page__stack_switcher', True)
-
-        return
-
-    elif action == 'next':
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
-
-        displayer.set_visible('title_label', False)
-        displayer.set_visible('options_page__stack_switcher', True)
-
-        header_bar = model.builder.get_object('header_bar')
-
-        #
-        # Kernel tab
-        #
-
-        global kernel_tab
-        if not kernel_tab:
-
-            # Load the user interface and connect the signals to
-            # handlers in the associated module.
-            kernel_tab = KernelTab()
-
-            grid = model.builder.get_object('options_page__kernel_tab__grid')
-            scrolled_window = model.builder.get_object('kernel_tab__scrolled_window')
-            displayer.attach(grid, scrolled_window, 0, 1, 1, 1)
-            # grid.attach(scrolled_window, 0, 1, 1, 1)
-
-            # Add previously loaded widgets to the header bar.
-            # box = model.builder.get_object('kernel_tab__header_box')
-            # header_bar.add(box)
-            # displayer.set_visible('kernel_tab__header_box', False)
-
-        kernel_tab.create_linux_kernels_list()
-
-        #
-        # Preseed tab
-        #
-
-        global preseed_tab
-        if not preseed_tab:
-
-            # Load the user interface and connect the signals to
-            # handlers in the associated module.
-            preseed_tab = PreseedTab()
-
-            grid = model.builder.get_object('options_page__preseed_tab__grid')
-            panes = model.builder.get_object('preseed_tab__panes')
-            displayer.attach(grid, panes, 0, 1, 1, 1)
-            # grid.attach(panes, 0, 1, 1, 1)
-
-            # Add previously loaded widgets to the header bar.
-            box = model.builder.get_object('preseed_tab__header_box')
-            header_bar.add(box)
-            displayer.set_visible('preseed_tab__header_box', False)
-
-        # If the preseed directory does not exist, create it.
-        file_path = os.path.join(model.project.custom_disk_directory, 'preseed')
-        file_utilities.make_directory(file_path)
-        preseed_tab.create_tree(['preseed'])
-
-        #
-        # Boot tab
-        #
-
-        global boot_tab
-        if not boot_tab:
-
-            # Load the user interface and connect the signals to
-            # handlers in the associated module.
-            boot_tab = BootTab()
-
-            grid = model.builder.get_object('options_page__boot_tab__grid')
-            panes = model.builder.get_object('boot_tab__panes')
-            displayer.attach(grid, panes, 0, 1, 1, 1)
-            # grid.attach(panes, 0, 1, 1, 1)
-
-            # Add previously loaded widgets to the header bar.
-            box = model.builder.get_object('boot_tab__header_box')
-            header_bar.add(box)
-            displayer.set_visible('boot_tab__header_box', False)
-
-        # Assume the boot/grub directory exists.
-        boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)
-
-        #
-        # Update the boot configurations.
-        #
-
-        # Save the selected kernel in the model.
-        model.selected_kernel_index = kernel_tab.selected_kernel_index
-
-        # Update the boot configurations based on the selected kernel.
-        update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
-
-        return
-
-    else:
-
-        return 'unknown'
-
-
 def setup(action, old_page=None):
 
     if action == 'back':
@@ -583,8 +390,8 @@ def _setup_kernel_tab():
     global kernel_tab
     if not kernel_tab:
 
-        # Load the user interface and connect the signals to
-        # handlers in the associated module.
+        # Load the user interface and connect the signals to handlers in
+        # the associated module.
         kernel_tab = KernelTab()
 
         grid = model.builder.get_object('options_page__kernel_tab__grid')
@@ -621,8 +428,8 @@ def _setup_preseed_tab():
     global preseed_tab
     if not preseed_tab:
 
-        # Load the user interface and connect the signals to
-        # handlers in the associated module.
+        # Load the user interface and connect the signals to handlers in
+        # the associated module.
         preseed_tab = PreseedTab()
 
         grid = model.builder.get_object('options_page__preseed_tab__grid')
@@ -660,8 +467,8 @@ def _setup_boot_tab():
     global boot_tab
     if not boot_tab:
 
-        # Load the user interface and connect the signals to
-        # handlers in the associated module.
+        # Load the user interface and connect the signals to handlers in
+        # the associated module.
         boot_tab = BootTab()
 
         grid = model.builder.get_object('options_page__boot_tab__grid')

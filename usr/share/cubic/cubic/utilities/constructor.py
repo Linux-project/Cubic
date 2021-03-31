@@ -182,16 +182,6 @@ def get_current_time_stamp():
     return time_stamp
 
 
-def reformat_time_stamp_ORIGINAL(time_stamp, new_format, old_format=TIME_STAMP_FORMAT):
-
-    # logger.log_label('Get current time stamp in localized format')
-
-    struct_time = time.strptime(time_stamp, old_format)
-    time_stamp = time.strftime(new_format, struct_time)
-
-    return time_stamp
-
-
 def reformat_time_stamp(time_stamp, new_format, *old_formats):
     """
     Converts time stamp string to a new time stamp string with a new format.
@@ -509,32 +499,6 @@ def construct_custom_iso_disk_name(custom_iso_volume_id, custom_iso_release_name
     else:
         custom_iso_disk_name = ''
 
-    # logger.log_value('The constructed custom disk image disk name is', custom_iso_disk_name)
-
-    return custom_iso_disk_name
-
-
-def construct_custom_iso_disk_name_ORIGINAL(custom_iso_volume_id, custom_iso_release_name):
-
-    # logger.log_label('Construct custom disk image disk name')
-    # logger.log_value('The custom disk image volume id is', custom_iso_volume_id)
-    # logger.log_value('The custom disk image release name is', custom_iso_release_name)
-
-    # The custom_iso_volume_id and custom_iso_release_name may be empty
-    # strings but are never None.
-    custom_iso_disk_name = '%s "%s"' % (custom_iso_volume_id, custom_iso_release_name)
-    #
-    custom_iso_disk_name.strip()[:32]
-    '''
-    if custom_iso_volume_id and custom_iso_release_name:
-        custom_iso_disk_name = '%s "%s"' % (custom_iso_volume_id, custom_iso_release_name)
-    elif custom_iso_volume_id:
-        custom_iso_disk_name = custom_iso_volume_id
-    elif custom_iso_release_name:
-        custom_iso_disk_name = custom_iso_release_name
-    else:
-        custom_iso_disk_name = ''
-    '''
     # logger.log_value('The constructed custom disk image disk name is', custom_iso_disk_name)
 
     return custom_iso_disk_name

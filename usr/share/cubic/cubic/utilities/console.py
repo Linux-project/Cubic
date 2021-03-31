@@ -718,24 +718,6 @@ def send_command_to_terminal(text):
     logger.log_value('Send bytes to terminal', text)
 
 
-def send_command_to_terminal_ORIGINAL(text):
-    """
-    This function is not used.
-    This function is the same as send_text_to_terminal().
-    """
-
-    terminal = model.builder.get_object('terminal_page__terminal')
-
-    try:
-        # Using Vte.Terminal 2.90 or 2.91
-        terminal.feed_child(text, -1)
-        logger.log_value('Send text to terminal', text)
-    except TypeError:
-        # Using Vte.Terminal "new" 2.91
-        terminal.feed_child(bytes(text, encoding='utf-8'))
-        logger.log_value('Send bytes to terminal', text)
-
-
 def send_text_to_terminal(text):
     """
     Used by terminal_page to drag and drop text into the terminal.
@@ -748,21 +730,3 @@ def send_text_to_terminal(text):
     # Vte.Terminal 2.91
     terminal.feed_child(bytes(text, encoding='utf-8'))
     logger.log_value('Send bytes to terminal', text)
-
-
-def send_text_to_terminal_ORIGINAL(text):
-    """
-    Used by terminal_page to drag and drop text into the terminal.
-    This function is the same as send_command_to_terminal().
-    """
-
-    terminal = model.builder.get_object('terminal_page__terminal')
-
-    try:
-        # Using Vte.Terminal 2.90 or 2.91
-        terminal.feed_child(text, -1)
-        logger.log_value('Send text to terminal', text)
-    except TypeError:
-        # Using Vte.Terminal "new" 2.91
-        terminal.feed_child(bytes(text, encoding='utf-8'))
-        logger.log_value('Send bytes to terminal', text)

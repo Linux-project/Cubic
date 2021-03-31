@@ -92,11 +92,12 @@ try:
 
     # Real path is necessary here.
     model.application.directory = os.path.dirname(os.path.realpath(__file__))
-    os.chdir(model.application.directory)
+    # os.chdir(model.application.directory)
 
     # Add additional mime types.
     mimetypes.init()
-    mimetypes.types_map.update(mimetypes.read_mime_types('assets/mime.types'))
+    file_path = os.path.join(model.application.directory, 'assets', 'mime.types')
+    mimetypes.types_map.update(mimetypes.read_mime_types(file_path))
 
     model.application.user_home = os.path.expanduser(os.path.join('~', '*'))
 
@@ -104,7 +105,8 @@ try:
     model.application.kernel_version = constructor.get_kernel_version()
 
     # Load the user interface.
-    model.builder = Gtk.Builder.new_from_file('cubic_wizard.ui')
+    file_path = os.path.join(model.application.directory, 'cubic_wizard.ui')
+    model.builder = Gtk.Builder.new_from_file(file_path)
     # Connect the signals to handlers in the associated module.
     model.builder.connect_signals(navigator)
 
@@ -118,14 +120,19 @@ try:
     # Get the stack.
     pages = model.builder.get_object('pages')
 
-    for file_name in sorted(glob.glob('cubic/pages/*_page.ui')):
+    pattern = os.path.join(model.application.directory, 'cubic', 'pages', '*_page.ui')
+    file_paths = sorted(glob.glob(pattern))
+    for file_path in file_paths:
+
+        # Get the file name.
+        file_name = os.path.basename(file_path)
 
         # Get the module name.
-        module_name = file_name[12:-3]
+        module_name = file_name[:-3]
         logger.log_value('Setup', module_name.replace('_', ' '))
 
         # Load the user interface.
-        model.builder.add_from_file(file_name)
+        model.builder.add_from_file(file_path)
 
         # Load the module.
         module = importlib.import_module('cubic.pages.%s' % module_name)
@@ -177,16 +184,21 @@ try:
 
     logger.log_label('Setup file choosers')
 
-    for file_name in sorted(glob.glob('cubic/choosers/*_chooser.ui')):
+    pattern = os.path.join(model.application.directory, 'cubic', 'choosers', '*_chooser.ui')
+    file_paths = sorted(glob.glob(pattern))
+    for file_path in file_paths:
+
+        # Get the file name.
+        file_name = os.path.basename(file_path)
 
         print()
 
         # Get the module name.
-        module_name = file_name[15:-3]
+        module_name = file_name[:-3]
         logger.log_value('Setup (ignore warnings)', module_name.replace('_', ' '))
 
         # Load the user interface.
-        model.builder.add_from_file(file_name)
+        model.builder.add_from_file(file_path)
 
         # Load the module.
         module = importlib.import_module('cubic.choosers.%s' % module_name)

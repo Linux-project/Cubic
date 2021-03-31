@@ -1114,7 +1114,7 @@ def display_original_fields(fields):
 
 def block_original_handlers():
     """
-    Only invoke this function using GLib.idle_add().
+    This function must be invoked using GLib.idle_add().
     """
 
     entry = model.builder.get_object('project_page__original_iso_file_name_entry')
@@ -1138,7 +1138,7 @@ def block_original_handlers():
 
 def unblock_original_handlers():
     """
-    Only invoke this function using GLib.idle_add().
+    This function must be invoked using GLib.idle_add().
     """
 
     entry = model.builder.get_object('project_page__original_iso_file_name_entry')
@@ -1224,7 +1224,7 @@ def display_custom_fields(fields):
 
 def block_custom_handlers():
     """
-    Only invoke this function using GLib.idle_add().
+    This function must be invoked using GLib.idle_add().
     """
 
     entry = model.builder.get_object('project_page__custom_iso_version_number_entry')
@@ -1254,7 +1254,7 @@ def block_custom_handlers():
 
 def unblock_custom_handlers():
     """
-    Only invoke this function using GLib.idle_add().
+    This function must be invoked using GLib.idle_add().
     """
 
     entry = model.builder.get_object('project_page__custom_iso_version_number_entry')

@@ -37,8 +37,11 @@
 # Imports
 ########################################################################
 
+import os
+
 from cubic.utilities.files_tab import FilesTab
 from cubic.utilities import logger
+from cubic.utilities import model
 
 ########################################################################
 # Global Variables & Constants
@@ -56,7 +59,7 @@ class PreseedTab(FilesTab):
     def __init__(self):
         """
         Create a new PreseedTab.
-        This method is invoked using GLib.idle_add() from options_page.
+        This method must be invoked using GLib.idle_add().
         """
 
         logger.log_label('Initialize Preseed Tab')
@@ -138,4 +141,5 @@ class PreseedTab(FilesTab):
         self.ON_TOGGLED_RENAME_FILE_HEADER_BAR_BUTTON = 'on_toggled__preseed_tab__rename_file_header_bar_button'
         self.ON_TOGGLED_SHOW_ALL_FILES_HEADER_BAR_BUTTON = 'on_toggled__preseed_tab__show_all_files_header_bar_button'
 
-        super().__init__('cubic/pages/preseed_tab.ui')
+        file_path = os.path.join(model.application.directory, 'cubic', 'pages', 'preseed_tab.ui')
+        super().__init__(file_path)

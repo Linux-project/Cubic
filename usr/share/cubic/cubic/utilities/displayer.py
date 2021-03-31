@@ -348,7 +348,7 @@ def show_file_chooser(widget_name, file_path):
 
 def _show_file_chooser(file_chooser, file_path):
     """
-    Only invoke this function using GLib.idle_add().
+    This function must be invoked using GLib.idle_add().
     """
 
     # If the file does not exist, set_filename() will open the parent
@@ -559,7 +559,7 @@ def update_list_store(list_store_name, data_list):
 
 def _update_list_store_rows(list_store, data_list):
     """
-    Only invoke this function using GLib.idle_add().
+    This function must be invoked using GLib.idle_add().
     """
 
     list_store.clear()
@@ -576,7 +576,7 @@ def update_list_store_progress_bar_percent(list_store_name, path, percent):
 
 def _update_list_store_progress_bar_percent(list_store, path, percent):
     """
-    Only invoke this function using GLib.idle_add().
+    This function must be invoked using GLib.idle_add().
     """
 
     list_store[path][0] = percent

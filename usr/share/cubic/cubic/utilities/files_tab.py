@@ -80,9 +80,7 @@ class FilesTab:
     def __init__(self, file_path):
         """
         Create a new FilesTab.
-        This method is invoked using GLib.idle_add() when PreseedTab and
-        BootTab are instantiated in options_page.setup_preseed_tab() and
-        options_page.setup_boot_tab() functions, respectively.
+        This method must be invoked using GLib.idle_add().
         """
 
         logger.log_label('Initialize Files Tab')
@@ -116,7 +114,7 @@ class FilesTab:
 
     def create_tree(self, root_file_paths, required_file_paths=None):
         """
-        This method is invoked using GLib.idle_add() from options_page.
+        This method must be invoked using GLib.idle_add().
         """
 
         # logger.log_label('Create tree')
@@ -210,7 +208,8 @@ class FilesTab:
     def click_copy_files_header_bar_button(self, button):
 
         self.untoggle_directory_header_bar_buttons(button)
-        self.show_pane_for_selected_file()
+        file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
+        self.show_pane_for_file(file_name, file_path, file_data, mime_type)
         copy_file_chooser.open(self.selected_uris)
 
     def on_toggled_create_file_header_bar_button(self, button):
@@ -220,11 +219,12 @@ class FilesTab:
     def toggle_create_file_header_bar_button(self, button):
 
         is_active = button.get_active()
+        file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
         if is_active:
             self.untoggle_directory_header_bar_buttons(button)
-            self.show_pane_for_selected_create_file()
+            self.show_pane_for_create_file(file_name, file_path, file_data, mime_type)
         else:
-            self.show_pane_for_selected_file()
+            self.show_pane_for_file(file_name, file_path, file_data, mime_type)
 
     def on_toggled_create_directory_header_bar_button(self, button):
 
@@ -233,11 +233,12 @@ class FilesTab:
     def toggle_create_directory_header_bar_button(self, button):
 
         is_active = button.get_active()
+        file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
         if is_active:
             self.untoggle_directory_header_bar_buttons(button)
-            self.show_pane_for_selected_create_directory()
+            self.show_pane_for_create_directory(file_name, file_path, file_data, mime_type)
         else:
-            self.show_pane_for_selected_file()
+            self.show_pane_for_file(file_name, file_path, file_data, mime_type)
 
     def on_toggled_rename_directory_header_bar_button(self, button):
 
@@ -246,11 +247,12 @@ class FilesTab:
     def toggle_rename_directory_header_bar_button(self, button):
 
         is_active = button.get_active()
+        file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
         if is_active:
             self.untoggle_directory_header_bar_buttons(button)
-            self.show_pane_for_selected_rename_directory()
+            self.show_pane_for_rename_directory(file_name, file_path, file_data, mime_type)
         else:
-            self.show_pane_for_selected_file()
+            self.show_pane_for_file(file_name, file_path, file_data, mime_type)
 
     def on_toggled_delete_directory_header_bar_button(self, button):
 
@@ -259,11 +261,12 @@ class FilesTab:
     def toggle_delete_directory_header_bar_button(self, button):
 
         is_active = button.get_active()
+        file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
         if is_active:
             self.untoggle_directory_header_bar_buttons(button)
-            self.show_pane_for_selected_delete_directory()
+            self.show_pane_for_delete_directory(file_name, file_path, file_data, mime_type)
         else:
-            self.show_pane_for_selected_file()
+            self.show_pane_for_file(file_name, file_path, file_data, mime_type)
 
     #-------------------------------------------------------------------
     # File
@@ -288,11 +291,12 @@ class FilesTab:
     def toggle_rename_file_header_bar_button(self, button):
 
         is_active = button.get_active()
+        file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
         if is_active:
             self.untoggle_file_header_bar_buttons(button)
-            self.show_pane_for_selected_rename_file()
+            self.show_pane_for_rename_file(file_name, file_path, file_data, mime_type)
         else:
-            self.show_pane_for_selected_file()
+            self.show_pane_for_file(file_name, file_path, file_data, mime_type)
 
     def on_toggled_delete_file_header_bar_button(self, button):
 
@@ -301,11 +305,12 @@ class FilesTab:
     def toggle_delete_file_header_bar_button(self, button):
 
         is_active = button.get_active()
+        file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
         if is_active:
             self.untoggle_file_header_bar_buttons(button)
-            self.show_pane_for_selected_delete_file()
+            self.show_pane_for_delete_file(file_name, file_path, file_data, mime_type)
         else:
-            self.show_pane_for_selected_file()
+            self.show_pane_for_file(file_name, file_path, file_data, mime_type)
 
     ####################################################################
     # Pane Handlers
@@ -670,19 +675,11 @@ class FilesTab:
     # Contents
     #-------------------------------------------------------------------
 
-    def show_pane_for_selected_file(self):
-
-        if self.files_tree:
-            file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
-            # logger.log_value('Show pane for selected file', file_path)
-            self.show_pane_for_file(file_name, file_path, file_data, mime_type)
-        else:
-            logger.log_value('Warning. Unable to show pane for selected file', 'The tree is None')
-
     def show_pane_for_file(self, file_name, file_path, file_data, mime_type):
         """
         May be called by methods in this class or as a callback from
         FilesTree.
+        This method must be invoked using GLib.idle_add().
         """
 
         logger.log_value('Show pane for file', file_path)
@@ -762,15 +759,6 @@ class FilesTab:
     # Directory
     #-------------------------------------------------------------------
 
-    def show_pane_for_selected_create_file(self):
-
-        if self.files_tree:
-            file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
-            # logger.log_value('Show pane for create file', file_path)
-            self.show_pane_for_create_file(file_name, file_path, file_data, mime_type)
-        else:
-            logger.log_value('Warning. Unable to show pane for create file', 'The tree is None')
-
     def show_pane_for_create_file(self, file_name, file_path, file_data, mime_type):
 
         logger.log_value('Show pane for create file', file_path)
@@ -807,15 +795,6 @@ class FilesTab:
         # Add the new child to the scrolled window.
         view_port = model.builder.get_object(self.CREATE_FILE_VIEW_PORT)
         scrolled_window.add(view_port)
-
-    def show_pane_for_selected_create_directory(self):
-
-        if self.files_tree:
-            file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
-            # logger.log_value('Show pane for create directory', file_path)
-            self.show_pane_for_create_directory(file_name, file_path, file_data, mime_type)
-        else:
-            logger.log_value('Warning. Unable to show pane for create directory', 'The tree is None')
 
     def show_pane_for_create_directory(self, file_name, file_path, file_data, mime_type):
 
@@ -854,15 +833,6 @@ class FilesTab:
         view_port = model.builder.get_object(self.CREATE_DIRECTORY_VIEW_PORT)
         scrolled_window.add(view_port)
 
-    def show_pane_for_selected_rename_directory(self):
-
-        if self.files_tree:
-            file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
-            # logger.log_value('Show pane for rename directory', file_path)
-            self.show_pane_for_rename_directory(file_name, file_path, file_data, mime_type)
-        else:
-            logger.log_value('Warning. Unable to show pane for rename directory', 'The tree is None')
-
     def show_pane_for_rename_directory(self, file_name, file_path, file_data, mime_type):
 
         logger.log_value('Show pane for rename directory', file_path)
@@ -898,15 +868,6 @@ class FilesTab:
         # Add the new child to the scrolled window.
         view_port = model.builder.get_object(self.RENAME_DIRECTORY_VIEW_PORT)
         scrolled_window.add(view_port)
-
-    def show_pane_for_selected_delete_directory(self):
-
-        if self.files_tree:
-            file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
-            # logger.log_value('Show pane for selected directory', file_path)
-            self.show_pane_for_delete_directory(file_name, file_path, file_data, mime_type)
-        else:
-            logger.log_value('Warning. Unable to show pane for delete directory', 'The tree is None')
 
     def show_pane_for_delete_directory(self, file_name, file_path, file_data, mime_type):
 
@@ -945,15 +906,6 @@ class FilesTab:
     # File
     #-------------------------------------------------------------------
 
-    def show_pane_for_selected_rename_file(self):
-
-        if self.files_tree:
-            file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
-            # logger.log_value('Show pane for rename file', file_path)
-            self.show_pane_for_rename_file(file_name, file_path, file_data, mime_type)
-        else:
-            logger.log_value('Warning. Unable to show pane for rename file', 'The tree is None')
-
     def show_pane_for_rename_file(self, file_name, file_path, file_data, mime_type):
 
         logger.log_value('Show pane for rename file', file_path)
@@ -988,15 +940,6 @@ class FilesTab:
         # Add the new child to the scrolled window.
         view_port = model.builder.get_object(self.RENAME_FILE_VIEW_PORT)
         scrolled_window.add(view_port)
-
-    def show_pane_for_selected_delete_file(self):
-
-        if self.files_tree:
-            file_name, file_path, file_data, mime_type = self.files_tree.get_selected()
-            # logger.log_value('Show pane for delete file', file_path)
-            self.show_pane_for_delete_file(file_name, file_path, file_data, mime_type)
-        else:
-            logger.log_value('Warning. Unable to show pane for delete file', 'The tree is None')
 
     def show_pane_for_delete_file(self, file_name, file_path, file_data, mime_type):
 
@@ -1079,10 +1022,7 @@ class FilesTab:
         This method is used by options_page.
         """
 
-        if self.files_tree:
-            return self.files_tree.get_required_file_paths()
-        else:
-            return []
+        return self.files_tree.get_required_file_paths()
 
     def get_full_file_path(self, file_path):
 
@@ -1091,6 +1031,9 @@ class FilesTab:
         return file_path
 
     def get_relative_file_path(self, file_path):
+        """
+        This method is not used.
+        """
 
         file_path = os.path.relpath(file_path, model.project.custom_disk_directory)
 

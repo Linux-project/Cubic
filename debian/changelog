@@ -1,5 +1,10 @@
 cubic (2021.03) bionic focal groovy hirsute; urgency=low
 
+  * Issues fixed in version 2021.03-47:
+
+  - Fixed Bug LP:#1921961, The file choosers' side pane lists the installation
+    directory "cubic" (/usr/share/cubic) as favorite location.
+
   * Issues fixed in version 2021.03-46:
 
   - Fixed Bug LP:#1918741, Drag and drop text onto terminal doesn't work.
@@ -92,4 +97,4 @@ cubic (2021.03) bionic focal groovy hirsute; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Wed, 24 Mar 2021 18:16:05 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Tue, 30 Mar 2021 21:51:28 -0400

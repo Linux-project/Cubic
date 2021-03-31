@@ -138,6 +138,9 @@ IS_EDITED = 4
 # [TREE_ITER, SHOW_FILE, FILE_DATA, MIME_TYPE, IS_EDITED]
 EMPTY_FILE_INFO = [None, False, None, None, False]
 
+TREE_VIEW_UI_FILE_PATH = os.path.join(model.application.directory, 'cubic', 'utilities', 'tree_view.ui')
+SOURCE_VIEW_UI_FILE_PATH = os.path.join(model.application.directory, 'cubic', 'utilities', 'source_view.ui')
+
 ########################################################################
 # File Event Handlers Class
 ########################################################################
@@ -226,7 +229,7 @@ class FilesTree:
         logger.log_value('The required file paths are', required_file_paths)
 
         # Create a new tree view.
-        builder = Gtk.Builder.new_from_file('cubic/utilities/tree_view.ui')
+        builder = Gtk.Builder.new_from_file(TREE_VIEW_UI_FILE_PATH)
         self.tree_view = builder.get_object('tree_view')
 
         # Set the watch manager.
@@ -266,8 +269,8 @@ class FilesTree:
             self.build_tree(root_file_path)
             # Get the full file path.
             full_file_path = self.get_full_file_path(root_file_path)
-            # TODO: Is there a way to only add the root file paths, and
-            # then update the watch_manager with auto_add=True ?
+            # TODO: Is it possible to only add the root file paths, and
+            #       then update the watch_manager with auto_add=True ?
             if os.path.exists(full_file_path):
                 logger.log_value('Adding watch for', full_file_path)
                 watch_descriptors = self.watch_manager.add_watch(full_file_path, MASK, rec=True, auto_add=True)
@@ -318,6 +321,9 @@ class FilesTree:
         file's mime type. Notify the client that that the tree selection
         has changed by invoking the client's callback method with
         details about the selected file.
+
+        Arguments:
+        tree_selection - Helper object to manage the TreeView selection.
         """
 
         # Note: This method is similar to search_and_replace_in_file()
@@ -446,7 +452,7 @@ class FilesTree:
             with open(full_file_path, 'r') as file:
 
                 # Create a new source view.
-                builder = Gtk.Builder.new_from_file('cubic/utilities/source_view.ui')
+                builder = Gtk.Builder.new_from_file(SOURCE_VIEW_UI_FILE_PATH)
                 source_view = builder.get_object('source_view')
 
                 # Set font, style, language, and content of the source buffer.
@@ -487,8 +493,8 @@ class FilesTree:
         Handle unmap events for a GtkSource.View.
 
         Arguments:
-        source_view - GtkSource.View with source_view.file_path as
-                      the full file path.
+        source_view - GtkSource.View with source_view.file_path as the
+                      full file path.
         """
 
         logger.log_value('Close source view for', source_view.file_path)
@@ -510,8 +516,8 @@ class FilesTree:
         a full file path.
 
         Arguments:
-        source_view - GtkSource.View with source_view.file_path as
-                      the full file path.
+        source_view - GtkSource.View with source_view.file_path as the
+                      full file path.
         """
 
         source_buffer = source_view.get_buffer()
@@ -547,6 +553,11 @@ class FilesTree:
         file's mime type. Notify the client that that the tree selection
         has changed by invoking the client's callback method with
         details about the selected file.
+
+        Arguments:
+        file_path             - The file path of the file to update.
+        search_replace_tuples - List of tuples containing (search text,
+                                replacement text).
         """
 
         # Note: This method is similar to change_tree_selection()
@@ -625,9 +636,10 @@ class FilesTree:
 
     def search_and_replace_in_source_view(self, source_view, search_replace_tuples):
         """
-        source_view           - the source view to update
-        search_replace_tuples - a list of tuples containing (search text,
-                                replacement text)
+        Arguments:
+        source_view           - The source view to update.
+        search_replace_tuples - List of tuples containing (search text,
+                                replacement text).
         """
 
         # logger.log_label('Search and replace in source view')
@@ -767,8 +779,8 @@ class FilesTree:
 
                 # There is no existing file in the file map.
 
-                # Recreate the original file path by replacing the initial
-                # portion of the path with the source file path.
+                # Recreate the original file path by replacing the
+                # initial portion of the path with the source file path.
                 relative_file_path = os.path.relpath(file_path, target_base_path)
                 original_file_path = os.path.join(source_base_path, relative_file_path)
                 original_file_path = os.path.normpath(original_file_path)
@@ -807,8 +819,8 @@ class FilesTree:
 
                 # There is an existing file in the file map.
 
-                # Recreate the original file path by replacing the initial
-                # portion of the path with the source file path.
+                # Recreate the original file path by replacing the
+                # initial portion of the path with the source file path.
                 relative_file_path = os.path.relpath(file_path, target_base_path)
                 original_file_path = os.path.join(source_base_path, relative_file_path)
                 original_file_path = os.path.normpath(original_file_path)
@@ -956,10 +968,10 @@ class FilesTree:
         tree iter. This method is used by files_tab.
 
         Returns:
-        file_name   - The displayable name of the file.
-        file_path   - The relative file path of the file.
-        file_data   - The data (Pixbuf or GtkSource.View) associated to
-                      the file.
+        file_name - The displayable name of the file.
+        file_path - The relative file path of the file.
+        file_data - The data (Pixbuf or GtkSource.View) associated to
+                    the file.
         """
 
         tree_selection = self.tree_view.get_selection()
@@ -1025,13 +1037,13 @@ class FilesTree:
                 # modified outside of Cubic, mark the buffer as
                 # unmodified. Each time a displayed file is edited, its
                 # buffer is marked as modified. If the file is
-                # overwritten outside of Cubic, the file will reload, but
-                # its buffer will still contain the recent edits. When
-                # this file is unmapped, the modified buffer will be
-                # saved, overwriting the file with old buffer data. The
-                # save_source_buffer() method checks to see if the buffer
-                # has been modified before saving a file, so marking the
-                # buffer as unmodified will prevented this.
+                # overwritten outside of Cubic, the file will reload,
+                # but its buffer will still contain the recent edits.
+                # When this file is unmapped, the modified buffer will
+                # be saved, overwriting the file with old buffer data.
+                # The save_source_buffer() method checks to see if the
+                # buffer has been modified before saving a file, so
+                # marking the buffer as unmodified will prevented this.
                 logger.log_value('Undo buffer', 'Reset')
                 source_buffer = source_view.get_buffer()
                 source_buffer.set_modified(False)

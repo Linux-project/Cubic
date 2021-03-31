@@ -38,6 +38,7 @@
 ########################################################################
 
 import gi
+import os
 
 gi.require_version('Gtk', '3.0')
 
@@ -63,14 +64,16 @@ class KernelTab():
     def __init__(self):
         """
         Create a new KernelTab.
-        This method is invoked using GLib.idle_add() from options_page.
+        This method must be invoked using GLib.idle_add().
         """
 
         logger.log_label('Initialize Kernel Tab')
 
         # Load the user interface and immediately connect the signals to
         # the handlers.
-        model.builder.add_from_file('cubic/pages/kernel_tab.ui')
+
+        file_path = os.path.join(model.application.directory, 'cubic', 'pages', 'kernel_tab.ui')
+        model.builder.add_from_file(file_path)
         model.builder.connect_signals({'on_toggled__kernel_tab__kernels_radio_button': self.on_toggled__kernel_tab__kernels_radio_button})
 
         # REFERENCE: https://whyareyoureadingthisurl.wordpress.com/2012/01/21/howto-pack-gtk-cellrenderers-vertically-in-a-gtk-treeview/

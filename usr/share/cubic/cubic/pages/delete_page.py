@@ -246,28 +246,6 @@ def on_clicked__delete_page__custom_iso_file_name_open_button(widget):
         file_utilities.open_directory_in_browser(model.custom.iso_directory)
 
 
-# ------------------------------------------------------------------------------
-
-
-def on_clicked__delete_page__project_directory_open_button_ORIGINAL(widget):
-
-    command = 'xdg-open "%s" &' % model.project.directory
-    os.system(command)
-
-
-def on_clicked__delete_page__custom_iso_file_name_open_button_ORIGINAL(widget):
-
-    if os.path.isfile('/bin/nautilus'):
-        file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
-        if not os.path.isfile(file_path):
-            file_path = model.custom.iso_directory
-        command = 'nautilus "%s" &' % file_path
-        os.system(command)
-    else:
-        command = 'xdg-open "%s" &' % model.custom.iso_directory
-        os.system(command)
-
-
 ########################################################################
 # Support Functions
 ########################################################################
