@@ -998,9 +998,15 @@ class FilesTab:
 
     def _search_and_replace_in_files(self, file_paths, search_replace_tuples):
         """
-        file_path             - a list of relative file paths
-        search_replace_tuples - a list of tuples containing (search
-                                text, replacement text)
+        Replace text in the specified files. The files tree containing
+        the specified files must exist prior to calling this method,
+        because the text replacements are made in the source buffer
+        stored in the tree, prior to being saved.
+
+        file_path : list of path
+            A list of relative file paths
+        search_replace_tuples : list of tuple (str, str)
+            List of tuples containing (search text, replacement text).
         """
 
         # logger.log_label('Search and replace in files')

@@ -136,7 +136,7 @@ def enter(action, old_page=None):
             add_message_to_boot_kernels_box(
                 'To correct this issue, click the Back button and install missing Linux kernel packages on the Terminal page, or select the original disk image on the Project page.'
             )
-            return 'error'
+            return  # Stay on this page.
         time.sleep(SLEEP_0500_MS)
 
         #
@@ -157,7 +157,7 @@ def enter(action, old_page=None):
             logger.log_value('Error. Number of installed packages found', 0)
             displayer.update_label('prepare_page__installed_packages_message', 'Error. No installed packages found.')
             displayer.update_status('prepare_page__installed_packages', ERROR)
-            return 'error'
+            return  # Stay on this page.
         time.sleep(SLEEP_0500_MS)
 
         #
@@ -232,8 +232,7 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('prepare_page__save_package_manifest', ERROR)
             displayer.update_label('prepare_page__save_package_manifest_message', 'Unable to save the package manifest file.')
-        # time.sleep(SLEEP_0500_MS)
-
+            return  # Stay on this page.
         time.sleep(SLEEP_1000_MS)
 
         return 'next'

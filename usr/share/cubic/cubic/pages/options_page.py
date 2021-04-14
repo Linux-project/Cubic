@@ -504,6 +504,9 @@ def update_boot_configurations(file_paths, kernel_details_list, selected_index):
 
     The contents of the boot configurations files is also replaced in
     kernel_tab.on_toggled__kernel_tab__kernels_radio_button().
+
+    The files_tree must exist prior to invoking this function, and the
+    tree must contain tree iters corresponding to the specified files.
     """
 
     logger.log_label('Update boot configurations')

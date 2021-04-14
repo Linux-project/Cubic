@@ -147,6 +147,8 @@ def setup(action, old_page=None):
 
     elif action == 'error':
 
+        # Handle the error from the leave() function.
+
         return
 
     else:
@@ -161,6 +163,8 @@ def enter(action, old_page=None):
         return
 
     elif action == 'error':
+
+        # Handle the error from the leave() function.
 
         return
 
@@ -196,18 +200,12 @@ def leave(action, new_page=None):
 
         is_error = delete_project_files()
 
-        if is_error:
-            # Stay on this page.
-            return 'error'
-        else:
-            # Reset the model.
-            reset_model()
-            # Pause to allow the user to see the results.
-            time.sleep(SLEEP_1000_MS)
-            return
+        if is_error: return 'error'  # Stay on this page.
 
-    elif action == 'error':
-
+        # Reset the model.
+        reset_model()
+        # Pause to allow the user to see the results.
+        time.sleep(SLEEP_1000_MS)
         return
 
     elif action == 'quit':

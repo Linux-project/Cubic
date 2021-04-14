@@ -101,6 +101,12 @@ def setup(action, old_page=None):
 
         return
 
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
+
+        return
+
     else:
 
         return 'unknown'
@@ -109,6 +115,12 @@ def setup(action, old_page=None):
 def enter(action, old_page=None):
 
     if action == 'migrate':
+
+        return
+
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
 
         return
 
@@ -142,13 +154,13 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         is_error = migrate_configuration()
-        if is_error: return 'error'
+        if is_error: return 'error'  # Stay on this page.
 
         is_error = migrate_custom_root()
-        if is_error: return 'error'
+        if is_error: return 'error'  # Stay on this page.
 
         is_error = migrate_custom_disk()
-        if is_error: return 'error'
+        if is_error: return 'error'  # Stay on this page.
 
         return
 

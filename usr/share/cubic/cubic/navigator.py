@@ -40,73 +40,186 @@ All pages that work with the navigation module must have the following
 parameter and three functions:
 
 name
-- The page name as a string.
-- Must match the module name.
-- Valid page names must be suffixed with '_page' and contain lower case
+• The page name as a string.
+• Must match the module name.
+• Valid page names must be suffixed with '_page' and contain lower case
   alpha characters, numbers, or underscore characters ('_').
-- Examples: 'start_page', 'project_page'
+• Examples: 'start_page', 'project_page'
 
 setup(action, old_page=None)
-- Prepare the current page before displaying it.
-- Setup navigation buttons' style, visibility, sensitivity, and actions.
-- Activate navigation buttons, and show other buttons as necessary.
-- Executed prior to the enter() function.
-- Process the action from the prior page (such as 'back' or 'next').
-- Return 'error' to automatically transfer to an error page (as
+• Prepare the current page before displaying it.
+• Setup navigation buttons' style, visibility, sensitivity, and actions.
+• Activate navigation buttons, and show other buttons as necessary.
+• Executed prior to the enter() function.
+• Process the action from the prior page (such as 'back' or 'next').
+• Return 'error' to automatically transfer to an error page (as
   specified in the navigation module's get_new_page() function).
-- Return None to display the current page and execute the the enter()
+• Return None to display the current page and execute the the enter()
   function.
 
 enter(action, old_page=None)
-- Process the current page after displaying it.
-- Only change buttons during validation.
-- Executed after the setup() function.
-- Process the action from the prior page (such as 'back' or 'next').
-- Return 'error' to automatically transfer to an error page (as
+• Process the current page after displaying it.
+• Only change buttons during validation.
+• Executed after the setup() function.
+• Process the action from the prior page (such as 'back' or 'next').
+• Return 'error' to automatically transfer to an error page (as
   specified in the navigation module's get_new_page() function).
-- Return None to stay on the current page.
-- Return an action (such as 'next') to automatically transfer to a page
+• Return None to stay on the current page.
+• Return an action (such as 'next') to automatically transfer to a page
   corresponding to the action (as specified in the navigation module's
   get_new_page() function).
 
 leave(action, new_page=None)
-- Process the current page after a user action (such as clicking the
+• Process the current page after a user action (such as clicking the
   Back, Next, Copy, Delete, or Quit buttons).
-- Deactivate navigation buttons, and hide other buttons as necessary.
-- Process the action from the current page (such as 'back', 'next',
+• Deactivate navigation buttons, and hide other buttons as necessary.
+• Process the action from the current page (such as 'back', 'next',
   'copy', 'delete', or 'quit').
-- Return 'error' to automatically transfer to an error page (as
+• Return 'error' to automatically transfer to an error page (as
   specified in the navigation module's get_new_page() function); in most
   cases, the current page should be the 'error' page, since error
   messages will be displayed directly on the current page.
-- Return None to automatically transfer to a page corresponding to the
+• Return None to automatically transfer to a page corresponding to the
   action from the current page (as specified in the navigation module's
   get_new_page() function).
 
-Handling Errors During Automatic Transitions
---------------------------------------------
+Handling Errors
+---------------
 
-There are two options to handle errors on a page during automatic
-transitions.
+Note, in the instructions below:
+• PAGE is the current page module, such as 'extract_page'
+• CURRENT_PAGE is also the current page module, such as 'extract_page'
+• ERROR_PAGE is an error page module
+• ACTION is an action such as 'back', 'next', or 'migrate'
 
-1. The page can return 'error' from the enter() function. This is the
-   preferred option for automatic transitions because error pages can be
-   explicitly configured in the get_new_page() function.
-   a. The new page for action 'error' can be the current page. This is
-      the preferred approach when the current page is able to display
-      the appropriate error information. The Next button must be
-      disabled, and the error must be displayed on the current page.
-   b. The new page for action 'error' can be a different page.  Use this
-      approach when the current page is not able to display the full
-      error information.
-2. The page can return None from the enter() function. This is not the
-   preferred option for automatic transitions because the enter()
-   function inconsistently returns None actions (for error situations)
-   and non-None actions (for non-error) situations, and because the
-   error pages are not explicitly configured in the get_new_page()
-   function. In this case, the application will not automatically
-   navigate to a new page. The error must be displayed on the current
-   page, and the Next button must be disabled.
+1. Stay on the current page.
+
+   a. If the error occurs in the page's setup() function:
+      ▸ Changes in PAGE:
+        • PAGE.setup()
+          ◦ Return 'error' to automatically navigate to CURRENT_PAGE
+          ◦ This will bypass PAGE.enter()
+          ◦ This will invoke PAGE.setup() again, with action = 'error'
+        • PAGE.setup()
+          ◦ Add "if action == 'error' return None"
+          ◦ This will invoke PAGE.enter(), keeping action = 'error'
+        • PAGE.enter():
+          ◦ Add "if action == 'error'"
+          ◦ Display the error on the page
+          ◦ Return None to stay on the page
+        • PAGE.leave():
+          ◦ If navigation is allowed, add "if action == ACTION"
+      ▸ Changes in navigator:
+        • navigator.get_new_page()
+          ◦ In the CURRENT_PAGE section,
+            add "if action == 'error': new_page_name = CURRENT_PAGE"
+
+   b. If the error occurs in the page's enter() function:
+      ▸ Changes in PAGE:
+        • PAGE.setup()
+          ◦ Do not add "if action == 'error'"
+        • PAGE.enter():
+          ◦ Do not add "if action == 'error'"
+          ◦ Display the error on the page
+          ◦ Return None to stay on the page
+        • PAGE.leave():
+          ◦ If navigation is allowed, add "if action == ACTION"
+      ▸ Changes in navigator:
+        • navigator.get_new_page()
+          ◦ In the CURRENT_PAGE section,
+            do not add "if action == 'error'"
+
+   c. If the error occurs in the page's leave() function:
+      ▸ Changes in PAGE:
+        • PAGE.setup()
+          ◦ Add "if action == 'error' return None"
+          ◦ This will invoke PAGE.enter(), keeping action = 'error'
+        • PAGE.enter():
+          ◦ Add "if action == 'error'"
+          ◦ Display the error on the page
+          ◦ Return None to stay on the page
+        • PAGE.leave()
+          ◦ Return 'error' to automatically navigate to CURRENT_PAGE
+          ◦ This will invoke PAGE.setup() again, with action = 'error'
+      ▸ Changes in navigator:
+        • navigator.get_new_page()
+          ◦ In the CURRENT_PAGE section,
+            add "if action == 'error': new_page_name = CURRENT_PAGE"
+
+2. Navigate to an error page.
+
+   a. If the error occurs in the page's setup() function:
+      ▸ Changes in PAGE:
+        • PAGE.setup()
+          ◦ Do not add "if action == 'error'"
+          ◦ Return 'error' to automatically navigate to ERROR_PAGE
+          ◦ This will bypass PAGE.enter()
+        • PAGE.enter():
+          ◦ Do not add "if action == 'error'"
+          ◦ PAGE.enter() will be bypassed
+          ◦ PAGE.leave() will not be bypassed
+        • PAGE.leave():
+          ◦ Add "if action == 'error'"
+          ◦ Return 'error' to automatically navigate to ERROR_PAGE
+          ◦ PAGE.leave() will not be bypassed
+      ▸ Changes in navigator:
+        • navigator.get_new_page()
+          ◦ In the CURRENT_PAGE section,
+            add "if action == 'error': new_page_name = ERROR_PAGE"
+          ◦ Add a section for ERROR_PAGE
+      ▸ Changes in ERROR_PAGE:
+        • ERROR_PAGE.setup()
+          ◦ Add "if action == 'error'"
+        • ERROR_PAGE.enter():
+          ◦ Add "if action == 'error'"
+          ◦ Return None to stay on the page
+        • ERROR_PAGE.leave():
+          ◦ If navigation is allowed, add "if action == ACTION"
+
+   b. If the error occurs in the page's enter() function:
+      ▸ Changes in PAGE:
+        • PAGE.setup()
+          ◦ Do not add "if action == 'error'"
+        • PAGE.enter():
+          ◦ Do not add "if action == 'error'"
+          ◦ Return 'error' to automatically navigate to ERROR_PAGE
+        • PAGE.leave():
+          ◦ Add "if action == 'error'"
+          ◦ Return 'error' to automatically navigate to ERROR_PAGE
+      ▸ Changes in navigator:
+        • navigator.get_new_page()
+          ◦ In the CURRENT_PAGE section,
+            add "if action == 'error': new_page_name = ERROR_PAGE"
+      ▸ Changes in ERROR_PAGE:
+        • ERROR_PAGE.setup()
+          ◦ Add "if action == 'error'"
+        • ERROR_PAGE.enter():
+          ◦ Add "if action == 'error'"
+          ◦ Return None to stay on the page
+        • ERROR_PAGE.leave():
+          ◦ If navigation is allowed, add "if action == ACTION"
+
+   c. If the error occurs in the page's leave() function:
+      ▸ Changes in PAGE:
+        • PAGE.setup()
+          ◦ Do not add "if action == 'error'"
+        • PAGE.enter():
+          ◦ Do not add "if action == 'error'"
+        • PAGE.leave():
+          ◦ Add "if action == 'error'"
+          ◦ Return 'error' to automatically navigate to ERROR_PAGE
+      ▸ Changes in navigator:
+        • navigator.get_new_page()
+          ◦ In the CURRENT_PAGE section,
+            add "if action == 'error': new_page_name = ERROR_PAGE"
+      ▸ Changes in ERROR_PAGE:
+        • ERROR_PAGE.setup()
+          ◦ Add "if action == 'error'"
+        • ERROR_PAGE.enter():
+          ◦ Add "if action == 'error'"
+          ◦ Return None to stay on the page
+        • ERROR_PAGE.leave():
+          ◦ If navigation is allowed, add "if action == ACTION"
 
 Summary
 -------
@@ -120,17 +233,18 @@ Summary
    a. Always return None to stay on the current page.
    b. Always return a non-None action, such as 'next', to automatically
       transition to a new page.
-   c. Always return an 'error' action if an error occurs prior to an
-      automatic transition. Optionally:
-      - Configure the current page as the error page. Ensure the error
-        is displayed on the current page.
-      - Configure a different page as the error page.
-   d. If an error occurs when an automatic transition is not required,
-      optionally:
-      - Disable the Next button, display the error, and return a None
+   c. If an error occurs prior to an automatic transition, optionally:
+      • Disable the Next button, display the error, and return a None
         action to stay on the current page. This is the preferred
         approach.
-      - Return an 'error' action to automatically transition to a
+      • Return an 'error' action to automatically transition to a
+        configured error page.
+   d. If an error occurs when an automatic transition is not required,
+      optionally:
+      • Disable the Next button, display the error, and return a None
+        action to stay on the current page. This is the preferred
+        approach.
+      • Return an 'error' action to automatically transition to a
         configured error page.
 5. To handle multiple errors on a page (from the setup(), enter(), or
    leave() functions) configure unique error actions (such as 'error_1',
@@ -184,7 +298,7 @@ class InterruptException(Exception):
         purposes.
 
         Returns:
-            (str): 'Interrupt Exception'
+        str, 'Interrupt Exception'
         """
 
         return 'Interrupt Exception'
@@ -198,9 +312,11 @@ class InvalidActionException(Exception):
 
     def __init__(self, action, page):
         """
-        Args:
-            action (str): The action.
-            page (module): The page module.
+        Arguments:
+        action : str
+            The action.
+        page : module
+            The page module.
         """
 
         action_label = get_action_label(action)
@@ -303,13 +419,14 @@ def handle_navigation(action):
     determine the new page based on the user initiated action, and
     create and start a new navigation thread.
 
-    Args:
-        action (str): The user action (such as 'back', 'next', 'copy',
-            'delete', 'quit', etc.). Valid actions for each page must be
-            configured in the get_new_page() function.
+    Arguments:
+    action : str
+        The user action (such as 'back', 'next', 'copy', 'delete',
+        'quit', etc.). Valid actions for each page must be configured in
+        the get_new_page() function.
 
     Returns:
-        None
+    None
     """
 
     page_label = get_page_label(model.page)
@@ -385,14 +502,17 @@ def navigate(action, page, new_page, effect):
     Whenever the current navigation thread is terminated, the running
     process will be terminated first.
 
-    Args:
-        action (str): The automatic action to process.
-        page (str): The current page that the action occurred on.
-        new_page (str): The new page that should be displayed, as
-             configured in the get_new_page() function.
+    Arguments:
+    action : str
+        The automatic action to process.
+    page : str
+        The current page that the action occurred on.
+    new_page : str
+        The new page that should be displayed, as configured in the
+        get_new_page() function.
 
     Returns:
-        None
+    None
     """
 
     page_label = get_page_label(page)
@@ -467,12 +587,14 @@ def get_page(page_name):
     """
     Get the page corresponding to the page name.
 
-    Args:
-        page_name (str): The name of the page.
+    Arguments:
+    page_name : str
+        The name of the page.
 
     Returns:
-        (module): The page corresponding to the page name or None,
-            if a module matching page name is not found.
+    module
+        The page corresponding to the page name or None, if a module
+        matching page name is not found.
     """
 
     page = None
@@ -491,12 +613,14 @@ def get_page_name(page):
     """
     Get the page name from the page.
 
-    Args:
-        page (module): The page.
+    Arguments:
+    page : module
+        The page.
 
     Returns:
-        (str): The name from the page (i.e., page.name), or None if page
-            is None.
+    str
+        The name from the page (i.e., page.name), or None if page is
+        None.
     """
 
     return page.name if page else None
@@ -506,13 +630,15 @@ def get_page_label(page):
     """
     Get the displayable page name for the page.
 
-    Args:
-        page (module): The page.
+    Arguments:
+    page : module
+        The page.
 
     Returns:
-        (str): The name from the page with underscore ('_') characters
-            replaced with space (' ') characters. If page is None,
-            'no page' is returned.
+    str
+        The name from the page with underscore ('_') characters replaced
+        with space (' ') characters. If page is None, 'no page' is
+        returned.
     """
 
     return page.name.replace('_', ' ') if page else 'no page'
@@ -522,13 +648,15 @@ def get_action_label(action):
     """
     Get the displayable action name for the action.
 
-    Args:
-        action: The action.
+    Arguments:
+    action : str
+        The action.
 
     Returns:
-        (str): The name from the action with dash ('-') characters
-            replaced with space (' ') characters. If action is None,
-            'no action' is returned.
+    str
+        The name from the action with dash ('-') characters replaced
+        with space (' ') characters. If action is None, 'no action' is
+        returned.
     """
 
     return action.replace('-', ' ') if action else 'no action'
@@ -541,33 +669,21 @@ def get_new_page(action, page):
     an action has not been configured, then an InvalidActionException
     will be raised.
 
-    Args:
-        page (module): The current page.
-        action (str): The action.
+    Arguments:
+    page : module
+        The current page.
+    action : str
+        The action.
 
     Returns:
-        (module): The new page.
+    module
+        The new page.
 
     Raises:
-        InvalidActionException: If the specified action has not been
-        configured for the specified page.
+    InvalidActionException
+        If the specified action has not been configured for the
+        specified page.
     """
-
-    # There are two ways to handle errors on a page.
-    #
-    # 1) The page can return 'error' from the enter function.
-    #
-    #    In this case, there must be an action specified below.
-    #    a) The next page for action 'error' can be the current page.
-    #    b) The next page for action 'error' can be a new page.
-    #       This is the preferred approach when the current page is able
-    #       to display the appropriate error information.
-    #
-    # 2) The page can return None.
-    #    In this case, the page will not automatically navigate to a
-    #    new page. The error must be displayed on the current page.
-    #    This is the preferred approach when the current page is able to
-    #    display the appropriate error information.
 
     page_name = get_page_name(page)
 
@@ -637,7 +753,7 @@ def get_new_page(action, page):
             effect = SLIDE_NONE
         elif action == 'delete':
             new_page_name = 'project_page'
-            effect = SLIDE_NONE
+            effect = SLIDE_LEFT
         elif action == 'error':
             new_page_name = 'delete_page'
             effect = SLIDE_NONE
@@ -651,9 +767,6 @@ def get_new_page(action, page):
         if action == 'back':
             new_page_name = 'project_page'
             effect = SLIDE_RIGHT
-        elif action == 'error':
-            new_page_name = 'extract_page'
-            effect = SLIDE_NONE
         elif action == 'next':
             new_page_name = 'terminal_page'
             effect = SLIDE_LEFT
@@ -696,9 +809,6 @@ def get_new_page(action, page):
         if action == 'back':
             new_page_name = 'terminal_page'
             effect = SLIDE_RIGHT
-        elif action == 'error':
-            new_page_name = 'prepare_page'
-            effect = SLIDE_NONE
         elif action == 'next':
             new_page_name = 'packages_page'
             effect = SLIDE_LEFT

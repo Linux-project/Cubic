@@ -50,7 +50,6 @@ from gi.repository import Gio
 from gi.repository import Gtk
 
 import os
-import re
 import time
 
 from cubic.constants import SLEEP_0250_MS

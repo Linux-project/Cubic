@@ -1,4 +1,11 @@
-cubic (2021.03) bionic focal groovy hirsute; urgency=low
+cubic (2021.04) bionic focal groovy hirsute; urgency=low
+
+  * Issues fixed in version 2021.04-48:
+
+  - Fixed Bug LP:#1922407, UnboundLocalError after copying files on the Boot
+    tab.
+  - Fixed Bug LP:#1922147, Cubic hangs on the Prepare page if the original ISO
+    is not available.
 
   * Issues fixed in version 2021.03-47:
 
@@ -97,4 +104,4 @@ cubic (2021.03) bionic focal groovy hirsute; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 30 Mar 2021 21:51:28 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Wed, 14 Apr 2021 16:32:10 -0400

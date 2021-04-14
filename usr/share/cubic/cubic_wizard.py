@@ -124,11 +124,8 @@ try:
     file_paths = sorted(glob.glob(pattern))
     for file_path in file_paths:
 
-        # Get the file name.
-        file_name = os.path.basename(file_path)
-
         # Get the module name.
-        module_name = file_name[:-3]
+        module_name = os.path.basename(file_path)[:-3]
         logger.log_value('Setup', module_name.replace('_', ' '))
 
         # Load the user interface.
@@ -188,13 +185,10 @@ try:
     file_paths = sorted(glob.glob(pattern))
     for file_path in file_paths:
 
-        # Get the file name.
-        file_name = os.path.basename(file_path)
-
         print()
 
         # Get the module name.
-        module_name = file_name[:-3]
+        module_name = os.path.basename(file_path)[:-3]
         logger.log_value('Setup (ignore warnings)', module_name.replace('_', ' '))
 
         # Load the user interface.

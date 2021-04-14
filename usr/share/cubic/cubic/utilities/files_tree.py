@@ -158,7 +158,8 @@ class FileEventHandlers(pyinotify.ProcessEvent):
         directory.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
+            The inotify event to handle.
         """
 
         GLib.idle_add(self.files_tree.process_file_close_write, event)
@@ -169,7 +170,8 @@ class FileEventHandlers(pyinotify.ProcessEvent):
         directory.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
+            The inotify event to handle.
         """
 
         GLib.idle_add(self.files_tree.process_file_create, event)
@@ -180,7 +182,8 @@ class FileEventHandlers(pyinotify.ProcessEvent):
         directory.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
+            The inotify event to handle.
         """
 
         GLib.idle_add(self.files_tree.process_file_delete, event)
@@ -191,7 +194,8 @@ class FileEventHandlers(pyinotify.ProcessEvent):
         specified watched directory.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
+            The inotify event to handle.
         """
 
         GLib.idle_add(self.files_tree.process_file_moved_to, event)
@@ -208,19 +212,20 @@ class FilesTree:
         """
         Create a new FilesTree.
 
-        Notes:
-        tree_model: Gtk.TreeModelFilter
-        tree_store: Gtk.TreeStore
+        In this method:
+        - tree_model is a Gtk.TreeModelFilter
+        - tree_store is a Gtk.TreeStore
 
         Arguments:
-        root_file_paths     - Tree root file paths relative to the
-                              custom disk directory ("../custom-disk").
-        selection_changed   - The callback function invoked when the
-                              tree selection changes. Specifically this
-                              is FilesTab.show_pane_for_file().
-        required_file_paths - List of files to always show in the tree,
-                              relative to the custom disk directory
-                              ("../custom-disk").
+        root_file_paths : path
+            Tree root file paths relative to the custom disk directory
+            ("../custom-disk").
+        selection_changed : function
+            The callback function invoked when the tree selection
+            changes. Specifically this is FilesTab.show_pane_for_file().
+        required_file_paths : list of path
+            List of files to always show in the tree, relative to the
+            custom disk directory ("../custom-disk").
         """
 
         logger.log_label('Initialize files tree')
@@ -323,16 +328,17 @@ class FilesTree:
         details about the selected file.
 
         Arguments:
-        tree_selection - Helper object to manage the TreeView selection.
+        tree_selection : Gtk.TreeSelection
+            Helper object to manage the TreeView selection.
         """
 
         # Note: This method is similar to search_and_replace_in_file()
 
         tree_model, tree_iter = tree_selection.get_selected()
 
-        # If noting is selected, simply return. This situation is rare
-        # but may occur if a file is moved, and the parent tree iter has
-        # not been selected in time.
+        # If noting is selected, simply return.
+        # This situation is rare but may occur if a file is moved, and
+        # the parent tree iter has not been selected in time.
         if not tree_iter:
             logger.log_value('Waring', 'Nothing is selected')
             return
@@ -408,10 +414,12 @@ class FilesTree:
         Create a new pixbuf for an image file.
 
         Arguments:
-        full_file_path - Full file path of the file.
+        full_file_path : path
+            Full file path of the file.
 
         Returns:
-        pixbuf - Pixbuf with the image from the file.
+        pixbuf : Pixbuf
+            Pixbuf with the image from the file.
         """
 
         logger.log_value('Create pixbuf for', full_file_path)
@@ -438,11 +446,13 @@ class FilesTree:
         Create a new source view for a text file.
 
         Arguments:
-        full_file_path - Full file path of the file.
+        full_file_path : path
+            Full file path of the file.
 
         Returns:
-        source_view - GtkSource.View containing text from the file and
-                      with source_view.file_path as the full file path.
+        source_view : GtkSource.View
+            A source_view containing text from the file and with
+            source_view.file_path as the full file path.
         """
 
         logger.log_value('Create source view for', full_file_path)
@@ -493,8 +503,8 @@ class FilesTree:
         Handle unmap events for a GtkSource.View.
 
         Arguments:
-        source_view - GtkSource.View with source_view.file_path as the
-                      full file path.
+        source_view : GtkSource.View
+            A source_view with source_view.file_path as the full file path.
         """
 
         logger.log_value('Close source view for', source_view.file_path)
@@ -516,8 +526,8 @@ class FilesTree:
         a full file path.
 
         Arguments:
-        source_view - GtkSource.View with source_view.file_path as the
-                      full file path.
+        source_view : GtkSource.View
+            A source_view with source_view.file_path as the full file path.
         """
 
         source_buffer = source_view.get_buffer()
@@ -548,16 +558,115 @@ class FilesTree:
 
     def search_and_replace_in_file(self, file_path, search_replace_tuples):
         """
-        Read the file corresponding to the selected tree iter and store
-        the text or image data. Correct the file icon based on the
-        file's mime type. Notify the client that that the tree selection
-        has changed by invoking the client's callback method with
-        details about the selected file.
+        Read the file corresponding to the tree iter for the specified
+        file path, and store the text or image data. If the file is a
+        text file, then replace the specified text in the source buffer,
+        and save the updated source buffer. Correct the file icon based
+        on the file's mime type.
 
         Arguments:
-        file_path             - The file path of the file to update.
-        search_replace_tuples - List of tuples containing (search text,
-                                replacement text).
+        file_path : path
+            The file path of the file to update.
+        search_replace_tuples : list of tuple (str, str)
+            List of tuples containing (search text, replacement text).
+        """
+
+        # Note: This method is similar to change_tree_selection()
+
+        logger.log_label('Search and replace in file')
+        logger.log_value('File path', file_path)
+
+        file_info = self.file_map.get(file_path, EMPTY_FILE_INFO)
+        tree_iter = file_info[TREE_ITER]
+
+        # If the tree iter is not found, simply return.
+        # This situation is rare but may occur if the tree model is out
+        # of sync with model.options.boot_configurations.
+        if not tree_iter:
+            logger.log_value('Waring', 'No tree iter found')
+            return
+
+        file_data = file_info[FILE_DATA]
+        mime_type = file_info[MIME_TYPE]
+        is_edited = file_info[IS_EDITED]
+
+        # Get the correct mime type and file icon by reading the file.
+        # If the file is a text file or image, load the data.
+        if mime_type != 'directory':
+
+            tree_model = self.tree_model.get_model()
+
+            full_file_path = self.get_full_file_path(file_path)
+            mime_type = file_utilities.read_mime_type(full_file_path)
+            if mime_type != file_info[MIME_TYPE]: file_data = None
+            file_icon = file_utilities.get_icon_name(mime_type)
+
+            if mime_type == 'text':
+
+                if not file_data:
+                    # Get the file data if the file can be read.
+                    file_data = self.create_source_view(full_file_path)
+                    is_edited = False
+
+                if not file_data:
+                    # If the file could not be read, use a generic icon.
+                    file_icon = 'application-x-executable'
+
+                # Set the correct icon, mime type, and file data.
+                # (File data may be None).
+                tree_model.set_value(tree_iter, FILE_ICON, file_icon)
+
+                self.file_map[file_path][MIME_TYPE] = mime_type
+                self.file_map[file_path][FILE_DATA] = file_data
+                self.file_map[file_path][IS_EDITED] = is_edited
+
+                if file_data:
+                    self.search_and_replace_in_source_view(file_data, search_replace_tuples)
+                    self.save_source_buffer(file_data)
+
+            elif mime_type == 'image':
+
+                if not file_data:
+                    # Get the file data if the file can be read.
+                    file_data = self.create_pixbuf(full_file_path)
+                    is_edited = False
+
+                if not file_data:
+                    # If the file could not be read, use a generic icon.
+                    file_icon = 'application-x-executable'
+
+                # Set the correct icon, mime type, and file data.
+                # (File data may be None).
+                tree_model.set_value(tree_iter, FILE_ICON, file_icon)
+
+                self.file_map[file_path][MIME_TYPE] = mime_type
+                self.file_map[file_path][FILE_DATA] = file_data
+                self.file_map[file_path][IS_EDITED] = is_edited
+
+            else:
+
+                # Use a generic icon.
+                file_icon = 'application-x-executable'
+                tree_model.set_value(tree_iter, FILE_ICON, file_icon)
+                self.file_map[file_path][MIME_TYPE] = mime_type
+
+    def search_and_replace_in_file_ORIGINAL(self, file_path, search_replace_tuples):
+        """
+        Replace text in the specified file. The tree iter corresponding
+        to the specified file must exist prior to calling this method,
+        because the text replacements are made in the source buffer
+        associated to the tree iter, prior to being saved.
+
+        Read the specified file and store the text or image data. If
+        the file is a text file, then replace the specified text in the
+        source buffer, and save the updated source buffer. Correct the
+        file icon based on the file's mime type.
+
+        Arguments:
+        file_path : path
+            The file path of the file to update.
+        search_replace_tuples : list of tuple (str, str)
+            List of tuples containing (search text, replacement text).
         """
 
         # Note: This method is similar to change_tree_selection()
@@ -631,15 +740,17 @@ class FilesTree:
 
                     # Use a generic icon.
                     file_icon = 'application-x-executable'
+                    tree_model = self.tree_model.get_model()
                     tree_model.set_value(tree_iter, FILE_ICON, file_icon)
                     self.file_map[file_path][MIME_TYPE] = mime_type
 
     def search_and_replace_in_source_view(self, source_view, search_replace_tuples):
         """
         Arguments:
-        source_view           - The source view to update.
-        search_replace_tuples - List of tuples containing (search text,
-                                replacement text).
+        source_view : GtkSource.View
+            The source view to update.
+        search_replace_tuples : list of tuple
+            List of tuples containing (search text, replacement text).
         """
 
         # logger.log_label('Search and replace in source view')
@@ -677,13 +788,16 @@ class FilesTree:
         specified.
 
         Arguments:
-        file_path        - The relative file path for the new tree iter
-                           to be inserted into the tree.
-        source_file_path - The relative file path of the original file,
-                           supplied when a file is being moved.
+        file_path : path
+            The relative file path for the new tree iter to be inserted
+            into the tree.
+        source_file_path : path
+            The relative file path of the original file, supplied when a
+            file is being moved.
 
         Returns:
-        The tree iter of the file path inserted into the tree.
+        tree_iter : Gtk.TreeIter
+            The tree iter of the file path inserted into the tree.
         """
 
         logger.log_label('Build tree')
@@ -707,23 +821,25 @@ class FilesTree:
         is being moved, then the source file path must be specified.
 
         Arguments:
-        file_path        - The relative file path for the new tree iter
-                           to be inserted into the tree.
-        parent_tree_iter - The tree iter where the new tree iter(s) will
-                           be added. If parent tree iter is None, then
-                           the file path will be inserted as a root tree
-                           iter.
-        source_base_path - The relative file path of the original file,
-                           supplied when a file is being moved. This
-                           value is propagated unchanged through each
-                           recursion.
-        target_base_path - The relative file path of the new file,
-                           supplied when a file is being moved. This
-                           value is propagated unchanged through each
-                           recursion.
+        file_path : path
+            The relative file path for the new tree iter to be inserted
+            into the tree.
+        parent_tree_iter : Gtk.TreeIter
+            The tree iter where the new tree iter(s) will be added. If
+            parent tree iter is None, then the file path will be
+            inserted as a root tree iter.
+        source_base_path : path
+            The relative file path of the original file, supplied when a
+            file is being moved. This value is propagated unchanged
+            through each recursion.
+        target_base_path : path
+            The relative file path of the new file, supplied when a file
+            is being moved. This value is propagated unchanged through
+            each recursion.
 
         Returns:
-        The tree iter of the file path inserted into the tree.
+        tree_iter : Gtk.TreeIter
+            The tree iter of the file path inserted into the tree.
         """
 
         full_file_path = self.get_full_file_path(file_path)
@@ -859,8 +975,8 @@ class FilesTree:
         used by files_tab.
 
         Arguments:
-        is_show_all_files - True to show all files, or False to only
-                            show required files.
+        is_show_all_files : bool
+            True to show all files, or False to only show required files.
         """
 
         # Set the show all files state.
@@ -892,12 +1008,16 @@ class FilesTree:
         ("../custom-disk").
 
         Arguments:
-        tree_store - Gtk.TreeStore
-        tree_iter  - Gtk.TreeIter
-        data       - This is unused
+        tree_store : Gtk.TreeStore
+            The tree store for the tree iter.
+        tree_iter : Gtk.TreeIter
+            The tree iter to be checked.
+        data : object
+            This is unused.
 
         Returns:
-        True if the tree iter should be visible, False otherwise.
+        show_file : bool
+            True if the tree iter should be visible, False otherwise.
         """
 
         if self.is_show_all_files:
@@ -913,15 +1033,20 @@ class FilesTree:
         is used to sort the tree.
 
         Arguments:
-        tree_store  - Gtk.TreeStore
-        tree_iter_a - Gtk.TreeIter
-        tree_iter_b - Gtk.TreeIter
-        data        - This is unused
+        tree_store : Gtk.TreeStore
+            The tree store for the tree iters.
+        tree_iter_a : Gtk.TreeIter
+            The first tree iter to compare.
+        tree_iter_b : Gtk.TreeIter
+            The second tree iter to compare.
+        data : object
+            This is unused.
 
         Returns:
-        -1, if tree_iter_a is less than tree_iter_b
-         0, if tree_iter_a is equal to tree_iter_b
-         1, if tree_iter_a is greater than tree_iter_b
+        int
+            -1, if tree_iter_a is less than tree_iter_b
+             0, if tree_iter_a is equal to tree_iter_b
+             1, if tree_iter_a is greater than tree_iter_b
         """
 
         file_name_a = tree_store.get_value(tree_iter_a, FILE_NAME)
@@ -938,7 +1063,8 @@ class FilesTree:
         This method is used in FilesTab.show_pane_for_file()
 
         Arguments:
-        file_path - The relative file path of the file.
+        file_path : path
+            The relative file path of the file.
         """
 
         # Get the tree store (Gtk.TreeStore).
@@ -955,8 +1081,8 @@ class FilesTree:
         This method is not used.
 
         Arguments:
-        tree_model - Gtk.TreeStore or Gtk.TreeModelFilter
-        tree_iter  - Gtk.TreeIter
+        tree_model : Gtk.TreeStore or Gtk.TreeModelFilter
+        tree_iter : Gtk.TreeIter
         """
 
         return not bool(tree_model.iter_parent(tree_iter))
@@ -968,10 +1094,12 @@ class FilesTree:
         tree iter. This method is used by files_tab.
 
         Returns:
-        file_name - The displayable name of the file.
-        file_path - The relative file path of the file.
-        file_data - The data (Pixbuf or GtkSource.View) associated to
-                    the file.
+        file_name : str
+            The displayable name of the file.
+        file_path : path
+            The relative file path of the file.
+        file_data : Pixbuf or GtkSource.View
+            The data (Pixbuf or GtkSource.View) associated to the file.
         """
 
         tree_selection = self.tree_view.get_selection()
@@ -1013,7 +1141,7 @@ class FilesTree:
         Update the tree when a file or directory is created.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
         """
 
         logger.log_label('Process close write')
@@ -1076,7 +1204,7 @@ class FilesTree:
         Update the tree when a file or directory is created.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
         """
 
         logger.log_label('Process file create')
@@ -1129,7 +1257,7 @@ class FilesTree:
         a directory that is deleted.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
         """
 
         logger.log_label('Process file delete')
@@ -1197,7 +1325,7 @@ class FilesTree:
         directory in the tree.
 
         Arguments:
-        event - pyinotify.Event
+        event : pyinotify.Event
         """
 
         logger.log_label('Process file moved to')
@@ -1261,9 +1389,10 @@ class FilesTree:
         corresponding tree_iter and its parents as 'required'.
 
         Arguments:
-        tree_model          - Gtk.TreeStore or Gtk.TreeModel
-        required_file_paths - list of required relative file paths,
-                              excluding paths ending in directories.
+        tree_model : Gtk.TreeStore or Gtk.TreeModel
+        required_file_paths : list of path
+            List of required relative file paths, excluding paths ending
+            in directories.
         """
 
         for file_path in required_file_paths:
@@ -1278,8 +1407,9 @@ class FilesTree:
         root tree_iter is reached.
 
         Arguments:
-        tree_model - Gtk.TreeStore or Gtk.TreeModel
-        tree_iter  - Gtk.TreeIter for Gtk.TreeStore or Gtk.TreeModel
+        tree_model : Gtk.TreeStore or Gtk.TreeModel
+        tree_iter : Gtk.TreeIter
+            A tree_iter for the tree_model.
         """
 
         # Stop processing if the tree iter is None. This will happen
@@ -1336,11 +1466,13 @@ class FilesTree:
         the custom disk directory ("../custom-disk").
 
         Arguments:
-        file_path - File path, relative to the custom disk directory
-                    ("../custom-disk").
+        file_path : path
+            File path, relative to the custom disk directory
+            ("../custom-disk").
 
         Returns:
-        A full file path.
+        file_path : path
+            A full file path.
         """
 
         file_path = os.path.join(model.project.custom_disk_directory, file_path)
@@ -1353,11 +1485,13 @@ class FilesTree:
         the custom disk directory ("../custom-disk") from the beginning.
 
         Arguments:
-        file_path - Full path, containing the custom disk directory
-                    ("../custom-disk").
+        file_path : path
+            Full path, containing the custom disk directory
+            ("../custom-disk").
 
         Returns:
-        A relative file path.
+        file_path : path
+            A relative file path.
         """
 
         file_path = os.path.relpath(file_path, model.project.custom_disk_directory)
