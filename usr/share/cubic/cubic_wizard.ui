@@ -31,11 +31,11 @@
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Cubic</property>
-    <property name="copyright" translatable="yes">© 2015, 2020 PJ Singh (Cubic PPA)</property>
+    <property name="copyright" translatable="yes">© 2015, 2020 PJ Singh</property>
     <property name="comments" translatable="yes">Custom Ubuntu ISO Creator</property>
     <property name="website">https://launchpad.net/cubic</property>
     <property name="website_label" translatable="yes">Cubic on Launchpad</property>
-    <property name="authors">PJ Singh</property>
+    <property name="authors">PJ Singh (Cubic PPA)</property>
     <property name="logo_icon_name">cubic</property>
     <property name="license_type">gpl-3-0</property>
     <signal name="delete-event" handler="on_close_about_dialog" swapped="no"/>

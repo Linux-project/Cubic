@@ -76,11 +76,11 @@ def make_directories(file_path):
     """
     Create all directories in the specified file path.
     """
-    logger.log_value('Create directories', file_path)
+    logger.log_value('Create all directories in the path', file_path)
     if not os.path.exists(file_path):
         os.makedirs(file_path, exist_ok=True)
     else:
-        logger.log_value('Cannot create directories', 'Directories already exists')
+        logger.log_value('Cannot create directories', 'The directory path already exists')
 
 
 # TODO: Check if this function is terminated when the thread is killed?

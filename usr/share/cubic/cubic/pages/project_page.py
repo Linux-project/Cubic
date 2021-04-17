@@ -443,7 +443,8 @@ def leave(action, new_page=None):
         model.options.boot_configurations = options.boot_configurations
 
         # Save the model values.
-        save_model_values()
+        configuration.save()
+        save_iso_release_notes_url()
 
         if custom.is_valid and custom != custom_history.current():
             custom_history.insert(custom)
@@ -497,7 +498,8 @@ def leave(action, new_page=None):
         model.options.boot_configurations = options.boot_configurations
 
         # Save the model values.
-        save_model_values()
+        configuration.save()
+        save_iso_release_notes_url()
 
         return
 
@@ -2146,20 +2148,42 @@ def is_url(url):
 ########################################################################
 
 
-def save_model_values():
-
-    configuration.save()
-    save_iso_release_notes_url()
-
-
 def save_iso_release_notes_url():
+
+    # https://docs.python.org/3/library/functions.html#open
+    #
+    # r   Open text file for reading. The stream is positioned at the
+    #     beginning of the file.
+    #
+    # r+  Open for reading and writing. The stream is positioned at the
+    #     beginning of the file.
+    #
+    # w   Truncate file to zero length or create text file for writing.
+    #     The stream is positioned at the beginning of the file.
+    #
+    # w+  Open for reading and writing. The file is created if it does
+    #     not exist, otherwise it is truncated. The stream is positioned
+    #     at the beginning of the file.
+    #
+    # a   Open for writing. The file is created if it does not exist.
+    #     The stream is positioned at the end of the file.  Subsequent
+    #     writes to the file will always end up at the then current end
+    #     of file, irrespective of any intervening fseek(3) or similar.
+    #
+    # a+  Open for reading and writing. The file is created if it does
+    #     not exist. The stream is positioned at the end of the file.
+    #     Subsequent writes to the file will always end up at the then
+    #     current end of file, irrespective of any intervening fseek(3)
+    #     or similar.
 
     logger.log_label('Update the custom iso release notes url')
 
     directory = os.path.join(model.project.custom_disk_directory, '.disk')
     file_path = os.path.join(directory, 'release_notes_url')
     try:
-        file_utilities.make_directory(directory)
+        # Create the full directory path "custom-disk/.disk" because
+        # these directories may not exist yet.
+        file_utilities.make_directories(directory)
         logger.log_value('Write the custom iso release notes url to', file_path)
         logger.log_value('The custom iso release notes url is', model.custom.iso_release_notes_url)
         with open(file_path, 'w') as file:

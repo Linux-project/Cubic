@@ -163,17 +163,13 @@ def enter(action, old_page=None):
 
                 # Set model.status.iso_template.
                 is_error = identify_iso_template()
-                if is_error:
-                    # Stay on this page.
-                    return
+                if is_error: return  # Stay on this page.
 
             # Identify the casper relative directory.
             if not model.status.casper_directory:
 
                 is_error = identify_casper_directory()
-                if is_error:
-                    # Stay on this page.
-                    return
+                if is_error: return  # Stay on this page.
 
             #-----------------------------------------------------------
             # TODO: Remove this section in a future release. (12/27/2020)

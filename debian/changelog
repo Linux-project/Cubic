@@ -1,5 +1,9 @@
 cubic (2021.04) bionic focal groovy hirsute; urgency=low
 
+  * Issues fixed in version 2021.04-49:
+
+  - Fixed Bug LP:#1924784, The Release URL is not saved for the custom ISO.
+
   * Issues fixed in version 2021.04-48:
 
   - Fixed Bug LP:#1922407, UnboundLocalError after copying files on the Boot
@@ -104,4 +108,4 @@ cubic (2021.04) bionic focal groovy hirsute; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Wed, 14 Apr 2021 16:32:10 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 16 Apr 2021 20:04:48 -0400
