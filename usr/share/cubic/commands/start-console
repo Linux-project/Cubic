@@ -105,9 +105,17 @@ directory_path=${2}
 # --machine "${machine_name}"       \
 # --directory "${directory_path}"
 
-if [[ -L ${bind_path} ]]; then
-    # Bind resolv.conf only if it is a symlink.
-    # This will bind the link's target as read-only.
+# if [[ -L ${bind_path} ]]; then
+#     # Bind the host's /etc/resolv.conf file only if it is a symlink.
+
+if [[ -e ${bind_path} ]]; then
+    # Bind the host's resolv.conf file to the container's resolv.conf
+    # file, as read only, if the host's resolv.conf file exists. If the
+    # host's resolv.conf file is a link, then the target of the host's
+    # link will be bind mounted to the container's resolv.conf. If the
+    # container's resolv.conf file is a link, then the host's
+    # resolv.conf will be bind mounted to the target of container's
+    # link.
     systemd-nspawn                  \
     --quiet                         \
     --notify-ready=yes              \
