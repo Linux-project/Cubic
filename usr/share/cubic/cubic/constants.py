@@ -39,6 +39,12 @@
 # Imports
 ########################################################################
 
+import gi
+
+gi.require_version('Gdk', '3.0')
+
+from gi.repository import Gdk
+
 import locale
 
 ########################################################################
@@ -183,3 +189,10 @@ NORMAL = '\033[0m'
 # Moves the cursor backward by COUNT columns; the default count is 1.
 # NEW_LINE = '\033[50D\033[-1C\n'
 NEW_LINE = '\033[99D\n'
+
+########################################################################
+# Keys
+########################################################################
+
+CONTROL_SHIFT_KEYS_1 = (Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK)
+CONTROL_SHIFT_KEYS_2 = (Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MODIFIER_RESERVED_25_MASK)

@@ -31,7 +31,7 @@
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Cubic</property>
-    <property name="copyright" translatable="yes">© 2015, 2020 PJ Singh</property>
+    <property name="copyright" translatable="yes">© 2015, 2020 PJ Singh (Cubic PPA)</property>
     <property name="comments" translatable="yes">Custom Ubuntu ISO Creator</property>
     <property name="website">https://launchpad.net/cubic</property>
     <property name="website_label" translatable="yes">Cubic on Launchpad</property>

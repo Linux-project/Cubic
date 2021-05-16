@@ -53,6 +53,7 @@ import os
 import time
 
 from cubic.constants import SLEEP_0250_MS
+from cubic.constants import CONTROL_SHIFT_KEYS_1, CONTROL_SHIFT_KEYS_2
 from cubic.choosers import copy_file_chooser
 from cubic.navigator import handle_navigation
 from cubic.utilities.displayer import MONOSPACE_FONT
@@ -427,11 +428,11 @@ def on_key_press_event__terminal_page(widget, event):
     # logger.log_value('Key press event', chr(event.keyval))
 
     # The event.type is Gdk.EventType.KEY_PRESS.
-    if event.state == Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MODIFIER_RESERVED_25_MASK or event.state == Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK:
+    if event.state == CONTROL_SHIFT_KEYS_1 or event.state == CONTROL_SHIFT_KEYS_2:
 
-        # Copy
+        # Copy (<Ctrl><Shift><C> or <Ctrl><Shift><c>)
         if event.keyval == 99 or event.keyval == 67:
-            # logger.log_value('Copy key press event', '<ctrl><shift><%s>' % chr(event.keyval))
+            # logger.log_value('Copy key press event', '<Ctrl><Shift><%s>' % chr(event.keyval))
             terminal = model.builder.get_object('terminal_page__terminal')
             terminal_has_selection = terminal.get_has_selection()
             if terminal_has_selection:
@@ -441,18 +442,18 @@ def on_key_press_event__terminal_page(widget, event):
             # the Terminal.
             return True
 
-        # Paste
-        elif event.keyval == 86 or event.keyval == 118:
-            # logger.log_value('Paste key press event', '<ctrl><shift><%s>' % chr(event.keyval))
+        # Paste (<Ctrl><Shift><V> or <Ctrl><Shift><v>)
+        if event.keyval == 86 or event.keyval == 118:
+            # logger.log_value('Paste key press event', '<Ctrl><Shift><%s>' % chr(event.keyval))
             terminal = model.builder.get_object('terminal_page__terminal')
             terminal.paste_clipboard()
             # Return True to prevent the event from being propagated to
             # the Terminal.
             return True
 
-        # Select All
-        elif event.keyval == 65 or event.keyval == 97:
-            # logger.log_value('Paste key press event', '<ctrl><shift><%s>' % chr(event.keyval))
+        # Select All (<Ctrl><Shift><A> or <Ctrl><Shift><a>)
+        if event.keyval == 65 or event.keyval == 97:
+            # logger.log_value('Paste key press event', '<Ctrl><Shift><%s>' % chr(event.keyval))
             terminal = model.builder.get_object('terminal_page__terminal')
             terminal.select_all()
             # Return True to prevent the event from being propagated to
