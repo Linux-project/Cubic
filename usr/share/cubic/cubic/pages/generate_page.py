@@ -1000,7 +1000,22 @@ def create_iso_image():
 def get_xorriso_command():
 
     template = constructor.decode(model.status.iso_template)
-    complete = template.format(volume_id=model.custom.iso_volume_id, boot_image_directory=model.project.directory)
+
+    # In the xorriso command, the volume_id and boot_image_directory are
+    # single quoted bash strings, so these values may not internally
+    # contain single quote characters. Therefore, escape each single
+    # quote character (') by replacing it with the sequence '"'"'. This
+    # sequence is defied as:
+    #   ' = terminate the original single quoted bash string
+    #   " = start a new double quoted bash string
+    #   ' = apply the single quite character
+    #   " = terminate the new double quoted bash string
+    #   ' = restart the original single quoted bash string
+    # Note, the triple quotes below delineate the python string.
+    volume_id = model.custom.iso_volume_id.replace("'", """'"'"'""")
+    boot_image_directory=model.project.directory.replace("'", """'"'"'""")
+
+    complete = template.format(volume_id=volume_id, boot_image_directory=boot_image_directory)
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
     command = ('xorriso '      \
                '-as mkisofs '  \
