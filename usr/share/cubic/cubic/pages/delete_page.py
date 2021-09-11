@@ -41,6 +41,7 @@ import glob
 import os
 import time
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import IMAGE_FILE_NAME, LOCK_FILE_NAME
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0500_MS, SLEEP_1000_MS
@@ -153,6 +154,8 @@ def setup(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -170,6 +173,8 @@ def enter(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+
         return 'unknown'
 
 
@@ -178,6 +183,11 @@ def leave(action, new_page=None):
     if action == 'cancel':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # Use "button_style='text-button'" if the buttons are reset in
+        # the leave/error section.
+        #
+        # displayer.reset_buttons(back_button_style='text-button', is_back_sensitive=False, next_button_style='text-button', is_next_sensitive=False)
 
         return
 
@@ -216,11 +226,38 @@ def leave(action, new_page=None):
 
         return
 
+    elif action == 'error':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
+
+        # If the following is used, use use button_style='text-button'
+        # in the leave/cancel section.
+        #
+        # displayer.reset_buttons(
+        #     back_button_label='❬Back',
+        #     back_action='cancel',
+        #     back_button_style='suggested-action',
+        #     is_back_sensitive=True,
+        #     is_back_visible=True,
+        #     next_button_label='Delete',
+        #     next_action='delete',
+        #     next_button_style='destructive-action',
+        #     is_next_sensitive=False,
+        #     is_next_visible=True)
+
+        return
+
     else:
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 

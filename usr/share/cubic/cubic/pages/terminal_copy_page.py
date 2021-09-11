@@ -40,6 +40,7 @@
 import os
 import urllib
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import FINAL_PERCENT
 from cubic.utilities import console
 from cubic.utilities import constructor
@@ -87,6 +88,8 @@ def setup(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -109,6 +112,8 @@ def enter(action, old_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
 
         return 'unknown'
 
@@ -158,6 +163,8 @@ def leave(action, new_page=None):
         console.exit_virtual_environment()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 

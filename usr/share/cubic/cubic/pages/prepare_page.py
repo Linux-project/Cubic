@@ -45,6 +45,7 @@ import re
 import string
 import time
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0125_MS, SLEEP_0250_MS, SLEEP_0500_MS, SLEEP_1000_MS
 from cubic.utilities import constructor
@@ -108,6 +109,8 @@ def setup(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -146,8 +149,10 @@ def enter(action, old_page=None):
         displayer.update_status('prepare_page__installed_packages', PROCESSING)
         time.sleep(SLEEP_0500_MS)
         installed_packages_list = create_installed_packages_list()
+        package_details_list = None
         if installed_packages_list:
-            count = len(installed_packages_list)
+            package_details_list = create_package_details_list(installed_packages_list)
+            count = len(package_details_list)
             logger.log_value('Number of installed packages found', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('package', 'packages', count)
@@ -166,25 +171,24 @@ def enter(action, old_page=None):
 
         displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
         time.sleep(SLEEP_0500_MS)
+        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
         file_name = 'filesystem.manifest-remove'
-        is_exists = is_exists_file_system_manifest_remove(file_name)
-        if is_exists:
-            removable_packages_list_1 = get_removable_packages_list(file_name)
-            count_1 = len(removable_packages_list_1)
-            logger.log_value('Number of packages matching typical install list', count_1)
-            number_text = constructor.number_as_text(count_1, True)
-            plural_text = constructor.get_plural('package is', 'packages are', count_1)
+        if file_utilities.file_exists(directory, file_name):
+            removable_packages_list = get_removable_packages_list(file_name)
+            count = populate_package_details_list_for_typical_install(package_details_list, removable_packages_list)
+            logger.log_value('Number of installed packages matching typical install list', count)
+            number_text = constructor.number_as_text(count)
+            plural_text = constructor.get_plural('package', 'packages', count)
             displayer.update_label(
                 'prepare_page__package_manifest_1_message',
-                '%s %s flagged for removal during a typical install.' % (number_text,
-                                                                         plural_text))
+                'Identified %s %s for removal during a typical install.' % (number_text,
+                                                                            plural_text))
             displayer.update_status('prepare_page__package_manifest_1', OK)
         else:
-            removable_packages_list_1 = []
             displayer.update_status('prepare_page__package_manifest_1', OPTIONAL)
             displayer.update_label(
                 'prepare_page__package_manifest_1_message',
-                'This disk does not have a list of packages to be removed during a typical install.')
+                'This disk does not have a list of packages to be removed for a typical install.')
         time.sleep(SLEEP_0500_MS)
 
         #
@@ -193,40 +197,37 @@ def enter(action, old_page=None):
 
         displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
         time.sleep(SLEEP_0500_MS)
+        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
         file_name = 'filesystem.manifest-minimal-remove'
-        is_exists = is_exists_file_system_manifest_remove(file_name)
-        if is_exists:
-            removable_packages_list_2 = get_removable_packages_list(file_name)
-            count_2 = len(removable_packages_list_2)
-            logger.log_value('Number of packages matching minimal install list', count_2)
-            number_text = constructor.number_as_text(count_1 + count_2, True)
-            plural_text = constructor.get_plural('package is', 'packages are', count_1 + count_2)
+        if file_utilities.file_exists(directory, file_name):
+            removable_packages_list = get_removable_packages_list(file_name)
+            count = populate_package_details_list_for_minimal_install(package_details_list, removable_packages_list)
+            logger.log_value('Number of installed packages matching minimal install list', count)
+            number_text = constructor.number_as_text(count)
+            plural_text = constructor.get_plural('package', 'packages', count)
             displayer.update_label(
                 'prepare_page__package_manifest_2_message',
-                '%s %s flagged for removal during a minimal install.' % (number_text,
-                                                                         plural_text))
+                'Identified %s %s for removal during a minimal install.' % (number_text,
+                                                                            plural_text))
             displayer.update_status('prepare_page__package_manifest_2', OK)
+            displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
         else:
-            removable_packages_list_2 = []
             displayer.update_status('prepare_page__package_manifest_2', OPTIONAL)
             displayer.update_label(
                 'prepare_page__package_manifest_2_message',
-                'This disk does not have a list of packages to be removed during a minimal install.')
+                'This disk does not have a list of packages to be removed for a minimal install.')
+            displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
         time.sleep(SLEEP_0500_MS)
 
         #
-        # Save the package manifests.
+        # Save the package manifest.
         #
 
         displayer.update_status('prepare_page__save_package_manifest', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        model.package_details_list = create_package_details_list(installed_packages_list, removable_packages_list_1, removable_packages_list_2)
-        if installed_packages_list:
-            if removable_packages_list_2:
-                displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
-            else:
-                displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
-            save_file_system_manifest_file(installed_packages_list)
+        model.package_details_list = package_details_list
+        is_success = save_file_system_manifest_file(installed_packages_list)
+        if is_success:
             displayer.update_status('prepare_page__save_package_manifest', OK)
             displayer.update_label('prepare_page__save_package_manifest_message', 'Saved the package manifest file.')
         else:
@@ -236,6 +237,12 @@ def enter(action, old_page=None):
         time.sleep(SLEEP_1000_MS)
 
         return 'next'
+
+    else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+
+        return 'unknown'
 
 
 def leave(action, new_page=None):
@@ -265,6 +272,8 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 
@@ -1086,23 +1095,6 @@ def print_details_list(details_list, default_widths={}):
 ########################################################################
 
 
-# TODO: This function is needed on multiple pages. Consider refactoring.
-#       - packages_page
-#       - prepare_page
-def is_exists_file_system_manifest_remove(file_name):
-
-    # Check custom disk directory
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
-
-    is_exists = os.path.exists(file_path)
-    if is_exists:
-        logger.log_value('%s found in' % file_name, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
-        return True
-    else:
-        logger.log_value('%s not found in' % file_name, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
-        return False
-
-
 def create_installed_packages_list():
 
     logger.log_label('Create list of installed packages')
@@ -1126,11 +1118,15 @@ def save_file_system_manifest_file(installed_packages_list):
 
     logger.log_label('Create new file system manifest file')
 
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.manifest')
+    directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
+    file_name = 'filesystem.manifest'
+    file_path = os.path.join(directory, file_name)
     logger.log_value('Write file system manifest to', file_path)
     with open(file_path, 'w') as file:
         for line in installed_packages_list:
             file.write('%s\n' % line)
+
+    return file_utilities.file_exists(directory, file_name)
 
 
 def get_removable_packages_list(file_name):
@@ -1145,59 +1141,134 @@ def get_removable_packages_list(file_name):
     return removable_packages_list
 
 
-def create_package_details_list(installed_packages_list, removable_packages_list_1, removable_packages_list_2):
+def create_package_details_list(installed_packages_list):
+
     logger.log_label('Create package details list')
 
-    # List installed packages and mark packages that will be removed.
-
-    number_of_packages_to_remove_1 = 0
-    number_of_packages_to_retain_1 = 0
-    number_of_packages_to_remove_2 = 0
-    number_of_packages_to_retain_2 = 0
+    # Create an empty package details list.
     package_details_list = []
 
     for line in installed_packages_list:
 
-        package_details = line.split()
-        package_name = package_details[0]
+        # Create a new package details for the current package.
 
-        # Somme package names in installed_packages_list specify the
-        # architecture suffix (ex. gir1.2-rb-3.0:amd64).
-        # However, removable_packages_list may or may not contain
-        # packages with the architectre suffix (ex. gir1.2-rb-3.0).
-        # • filesystem.manifest-remove lists packages with the
-        #   architectre suffix.
-        # • filesystem.manifest-minimal-remove lists packages without
-        #   the architectre suffix.
-        # Therefore, check the package name with and without the
-        # architectre suffix.
+        # 0: is typical selected?
+        # 1: is minimal selected?
+        # 2: is minimal selected initial?
+        # 3: is minimal active?
+        # 4: package name
+        # 5: package version
 
-        is_remove_1 = (package_name in removable_packages_list_1) or (package_name.rpartition(':')[0] in removable_packages_list_1)
-        number_of_packages_to_remove_1 += is_remove_1
-        number_of_packages_to_retain_1 += not is_remove_1
+        package_name, package_version = line.split()
 
-        is_remove_2 = (package_name in removable_packages_list_2) or (package_name.rpartition(':')[0] in removable_packages_list_2)
-        number_of_packages_to_remove_2 += is_remove_2
-        number_of_packages_to_retain_2 += not is_remove_2
+        package_details = [False, False, False, False, package_name, package_version]
+        # package_details = [None, None, None, None, package_name, package_version]
 
-        # Insert columns at the beginning of package_details to indicate if the
-        # package_name should be removed (True) or kept (False).
-
-        # Set typical check button selected or unselected
-        package_details.insert(0, is_remove_1)
-        # Set minimal check button selected or unselected
-        package_details.insert(1, is_remove_2 or is_remove_1)
-        # Backup original minimal check button value
-        package_details.insert(2, is_remove_2)
-        # Set minimal check button active or inactive
-        package_details.insert(3, not is_remove_1)
-
+        # Add the new package details to the package details list.
         package_details_list.append(package_details)
 
-    logger.log_value('Total number of installed packages', len(installed_packages_list))
-    logger.log_value('Number of packages to be removed during a typical install', number_of_packages_to_remove_1)
-    logger.log_value('Number of packages to be retained during a typical install', number_of_packages_to_retain_1)
-    logger.log_value('Number of packages to be removed during a minimal install', number_of_packages_to_remove_2)
-    logger.log_value('Number of packages to be retained during a minimal install', number_of_packages_to_retain_2)
+    # logger.log_value('Total number of installed packages', len(installed_packages_list))
+    logger.log_value('Total number of installed packages', len(package_details_list))
 
     return package_details_list
+
+
+def populate_package_details_list_for_typical_install(package_details_list, removable_packages_list):
+
+    logger.log_label('Identify removable packages for a typical install')
+
+    number_of_packages_total = len(package_details_list)
+    number_of_packages_to_remove = 0
+    number_of_packages_to_retain = 0
+
+    for package_details in package_details_list:
+
+        # Check the package name with or without the architecture suffix.
+        # Some package names include the architecture as a suffix, using
+        # ":" as a delimiter (ex. gir1.2-rb-3.0:amd64).
+        # • filesystem.manifest may list packages with the
+        #   architecture suffix.
+        # • filesystem.manifest-remove lists packages with the
+        #   architecture suffix.
+        # • filesystem.manifest-minimal-remove lists packages without
+        #   the architecture suffix.
+        package_name = package_details[4]
+        package_name_without_architecture = package_name.rpartition(':')[0]
+        is_remove_typical = (package_name in removable_packages_list) or (package_name_without_architecture in removable_packages_list)
+
+        # 0: is typical selected?
+        # 1: is minimal selected?
+        # 2: is minimal selected initial?
+        # 3: is minimal active?
+        # 4: package name
+        # 5: package version
+
+        # Set is typical selected or unselected?
+        package_details[0] = is_remove_typical
+
+        number_of_packages_to_remove += is_remove_typical
+
+    number_of_packages_to_retain = number_of_packages_total - number_of_packages_to_remove
+
+    logger.log_value('Total number of installed packages', number_of_packages_total)
+    logger.log_value('Number of packages to be removed for a typical install', number_of_packages_to_remove)
+    logger.log_value('Number of packages to be retained for a typical install', number_of_packages_to_retain)
+
+    return number_of_packages_to_remove
+
+
+def populate_package_details_list_for_minimal_install(package_details_list, removable_packages_list):
+
+    logger.log_label('Identify removable packages for a minimal install')
+
+    number_of_packages_total = len(package_details_list)
+    number_of_packages_to_remove = 0
+    number_of_packages_to_retain = 0
+
+    for package_details in package_details_list:
+
+        # Check the package name with or without the architecture suffix.
+        # Some package names include the architecture as a suffix, using
+        # ":" as a delimiter (ex. gir1.2-rb-3.0:amd64).
+        # • filesystem.manifest may list packages with the
+        #   architecture suffix.
+        # • filesystem.manifest-remove lists packages with the
+        #   architecture suffix.
+        # • filesystem.manifest-minimal-remove lists packages without
+        #   the architecture suffix.
+        package_name = package_details[4]
+        package_name_without_architecture = package_name.rpartition(':')[0]
+        is_remove_minimal = (package_name in removable_packages_list) or (package_name_without_architecture in removable_packages_list)
+
+        # 0: is typical selected?
+        # 1: is minimal selected?
+        # 2: is minimal selected initial?
+        # 3: is minimal active?
+        # 4: package name
+        # 5: package version
+
+        # Get is typical selected or unselected?
+        is_remove_typical = package_details[0]
+
+        # Set is minimal selected or unselected?
+        package_details[1] = is_remove_minimal or is_remove_typical
+
+        # Backup original minimal check button value. If the typical
+        # check button is unselected, then set the minimal check button
+        # with this backup value.
+        package_details[2] = is_remove_minimal
+
+        # Set minimal check button active or inactive. If the typical
+        # check button is active, then the minimal check button must not
+        # be active.
+        package_details[3] = not is_remove_typical
+
+        number_of_packages_to_remove += (is_remove_minimal or is_remove_typical)
+
+    number_of_packages_to_retain = number_of_packages_total - number_of_packages_to_remove
+
+    logger.log_value('Total number of installed packages', number_of_packages_total)
+    logger.log_value('Number of packages to be removed for a minimal install', number_of_packages_to_remove)
+    logger.log_value('Number of packages to be retained for a minimal install', number_of_packages_to_retain)
+
+    return number_of_packages_to_remove

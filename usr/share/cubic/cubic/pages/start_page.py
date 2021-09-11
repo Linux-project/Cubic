@@ -39,6 +39,7 @@
 
 import os
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CUBIC_VERSION_2020, CUBIC_VERSION_2021
 from cubic.constants import OK, ERROR, EXCLUDED_FILESYSTEM_TYPES
 from cubic.choosers import directory_chooser
@@ -126,6 +127,8 @@ def setup(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -149,6 +152,8 @@ def enter(action, old_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
 
         return 'unknown'
 
@@ -218,6 +223,8 @@ def leave(action, new_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 

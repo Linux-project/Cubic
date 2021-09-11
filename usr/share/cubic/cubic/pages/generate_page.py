@@ -43,6 +43,7 @@ import os
 import re
 import time
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import FINAL_PERCENT
 from cubic.constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
 from cubic.constants import SLEEP_0500_MS
@@ -123,6 +124,8 @@ def setup(action, old_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
 
         return 'unknown'
 
@@ -217,6 +220,8 @@ def enter(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+
         return 'unknown'
 
 
@@ -269,6 +274,8 @@ def leave(action, new_page=None):
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         configuration.save()
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 
@@ -982,10 +989,18 @@ def create_iso_image():
     else:
         if size_in_bytes > GIB:
             logger.log_value('The size of the custom disk is', '%.2f MiB (%i bytes)' % (size_in_gib, size_in_bytes))
-            displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f GiB disk image %s.' % (size_in_gib, model.custom.iso_file_name))
+            # displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f GiB disk image %s.' % (size_in_gib, model.custom.iso_file_name))
+            displayer.update_label(
+                'generate_page__create_iso_image_message',
+                'Generated %s. The disk image size is %.2f GiB.' % (model.custom.iso_file_name,
+                                                                    size_in_gib))
         else:
             logger.log_value('The size of the custom disk is', '%.2f MiB (%i bytes)' % (size_in_mib, size_in_bytes))
-            displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f MiB disk image %s.' % (size_in_mib, model.custom.iso_file_name))
+            # displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f MiB disk image %s.' % (size_in_mib, model.custom.iso_file_name))
+            displayer.update_label(
+                'generate_page__create_iso_image_message',
+                'Generated %s. The disk image size is %.2f MiB.' % (model.custom.iso_file_name,
+                                                                    size_in_mib))
         displayer.update_status('generate_page__create_iso_image', displayer.OK)
         is_error = False
 
@@ -1013,7 +1028,7 @@ def get_xorriso_command():
     #   ' = restart the original single quoted bash string
     # Note, the triple quotes below delineate the python string.
     volume_id = model.custom.iso_volume_id.replace("'", """'"'"'""")
-    boot_image_directory=model.project.directory.replace("'", """'"'"'""")
+    boot_image_directory = model.project.directory.replace("'", """'"'"'""")
 
     complete = template.format(volume_id=volume_id, boot_image_directory=boot_image_directory)
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)

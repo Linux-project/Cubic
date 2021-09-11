@@ -221,6 +221,20 @@ def get_text_file_paths(start_path):
 ########################################################################
 
 
+def file_exists(directory, file_name):
+
+    # Check custom disk directory
+    file_path = os.path.join(directory, file_name)
+
+    is_exists = os.path.exists(file_path)
+    if is_exists:
+        logger.log_value('%s found in' % file_name, directory)
+        return True
+    else:
+        logger.log_value('%s not found in' % file_name, directory)
+        return False
+
+
 def get_file_system_type(file_path):
 
     # ext, ext2, ext3, ext4, nfs, ntfs, vfat, zfs

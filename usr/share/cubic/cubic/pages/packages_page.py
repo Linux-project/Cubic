@@ -39,7 +39,9 @@
 
 import os
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.utilities import displayer
+from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -112,6 +114,8 @@ def setup(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -126,6 +130,8 @@ def enter(action, old_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
 
         return 'unknown'
 
@@ -147,27 +153,30 @@ def leave(action, new_page=None):
         displayer.set_visible('packages_page__header_bar_box', False)
 
         # Update filesystem.manifest-remove file.
-        # Always save the filesystem.manifest-remove file, even if there are no
-        # packages to remove. If the does not exist an empty file will be created.
-        # This function will create the file if it does not exist.
+        # Always save the filesystem.manifest-remove file, even if there
+        # are no packages to remove. If the file does not exist an empty
+        # will be created. This function will create the file if it does
+        # file not exist.
+        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
         file_name = 'filesystem.manifest-remove'
         removable_packages_list = create_typical_removable_packages_list()
-        save_file_system_manifest_remove_file(file_name, removable_packages_list)
+        is_success = save_file_system_manifest_remove_file(removable_packages_list, directory, file_name)
+
+        # TODO: If failure, action should be 'error' and navigate to an error page.
 
         # Update filesystem.manifest-minimal-remove file.
+        # Save the filesystem.manifest-minimal-remove file if there are
+        # packages to remove or if the file already exists. If the file
+        # does not exist, there will not be any packages to remove.
+        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
         file_name = 'filesystem.manifest-minimal-remove'
-        is_exists = is_exists_file_system_manifest_remove(file_name)
+        is_exists = file_utilities.file_exists(directory, file_name)
         removable_packages_list = create_minimal_removable_packages_list()
-        # Save the filesystem.manifest-minimal-remove file if there are packages to
-        # remove or if the file already exists. If the file does not exist, there
-        # will not be any packages to remove. (In the future, if we may show the
-        # minimal remove column even when the file does not exist).
         if is_exists or removable_packages_list:
             # This function will create the file if it does not exist.
-            save_file_system_manifest_remove_file(file_name, removable_packages_list)
+            is_success = save_file_system_manifest_remove_file(removable_packages_list, directory, file_name)
 
-        # TODO: If either of the above fails, action should be 'error'
-        #       and we should navigate to an error page.
+        # TODO: If failure, action should be 'error' and navigate to an error page.
 
         return
 
@@ -185,6 +194,8 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+
         return 'unknown'
 
 
@@ -197,6 +208,13 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
 
     global undo_index
     global undo_list
+
+    # 0: is typical selected?
+    # 1: is minimal selected?
+    # 2: is minimal selected initial?
+    # 3: is minimal active?
+    # 4: package name
+    # 5: package version
 
     list_store = model.builder.get_object('packages_page__list_store')
 
@@ -224,9 +242,10 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
 
         if column == 0:
             list_store[row][0] = not list_store[row][0]
-            # Even though the minimal check button column may not be visible (if
-            # 'filesystem.manifest-minimal-remove' does not exist, still update
-            # the list_store. It's a little inefficient, but does no harm.
+            # Even though the minimal check button column may not be
+            # visible (if 'filesystem.manifest-minimal-remove' does not
+            # exist), still update the list_store. This is a little
+            # inefficient, but does no harm.
             if list_store[row][0]:
                 # Backup original minimal check button value
                 list_store[row][2] = list_store[row][1]
@@ -268,6 +287,13 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
 
     undo_index -= 1
 
+    # 0: is typical selected?
+    # 1: is minimal selected?
+    # 2: is minimal selected initial?
+    # 3: is minimal active?
+    # 4: package name
+    # 5: package version
+
     list_store = model.builder.get_object('packages_page__list_store')
 
     row, column = undo_list[undo_index]
@@ -290,9 +316,10 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
-        # Even though the minimal check button column may not be visible (if
-        # 'filesystem.manifest-minimal-remove' does not exist, still update
-        # the list_store. It's a little inefficient, but does no harm.
+        # Even though the minimal check button column may not be
+        # visible (if 'filesystem.manifest-minimal-remove' does not
+        # exist), still update the list_store. This is a little
+        # inefficient, but does no harm.
         if list_store[row][0]:
             # Backup original minimal check button value
             list_store[row][2] = list_store[row][1]
@@ -332,6 +359,13 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
     global undo_index
     global undo_list
 
+    # 0: is typical selected?
+    # 1: is minimal selected?
+    # 2: is minimal selected initial?
+    # 3: is minimal active?
+    # 4: package name
+    # 5: package version
+
     list_store = model.builder.get_object('packages_page__list_store')
 
     row, column = undo_list[undo_index]
@@ -354,9 +388,10 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
-        # Even though the minimal check button column may not be visible (if
-        # 'filesystem.manifest-minimal-remove' does not exist, still update
-        # the list_store. It's a little inefficient, but does no harm.
+        # Even though the minimal check button column may not be
+        # visible (if 'filesystem.manifest-minimal-remove' does not
+        # exist), still update the list_store. This is a little
+        # inefficient, but does no harm.
         if list_store[row][0]:
             # Backup original minimal check button value
             list_store[row][2] = list_store[row][1]
@@ -398,6 +433,13 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     global undo_index
     global undo_list
 
+    # 0: is typical selected?
+    # 1: is minimal selected?
+    # 2: is minimal selected initial?
+    # 3: is minimal active?
+    # 4: package name
+    # 5: package version
+
     list_store = model.builder.get_object('packages_page__list_store')
 
     # column = 0
@@ -415,9 +457,10 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
 
     list_store[row][0] = not list_store[row][0]
 
-    # Even though the minimal check button column may not be visible (if
-    # 'filesystem.manifest-minimal-remove' does not exist, still update
-    # the list_store. It's a little inefficient, but does no harm.
+    # Even though the minimal check button column may not be
+    # visible (if 'filesystem.manifest-minimal-remove' does not
+    # exist), still update the list_store. This is a little
+    # inefficient, but does no harm.
     if list_store[row][0]:
         # Backup original minimal check button value
         list_store[row][2] = list_store[row][1]
@@ -465,6 +508,13 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 
     global undo_index
     global undo_list
+
+    # 0: is typical selected?
+    # 1: is minimal selected?
+    # 2: is minimal selected initial?
+    # 3: is minimal active?
+    # 4: package name
+    # 5: package version
 
     list_store = model.builder.get_object('packages_page__list_store')
 
@@ -518,24 +568,6 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 ########################################################################
 
 
-# TODO: This function is needed on multiple pages. Consider refactoring.
-#       - extract_page
-#       - generate_page
-#       - options_page
-def is_exists_file_system_manifest_remove(file_name):
-
-    # Check custom live iso directory
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
-
-    is_exists = os.path.exists(file_path)
-    if is_exists:
-        logger.log_value('%s found in' % file_name, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
-        return True
-    else:
-        logger.log_value('%s not found in' % file_name, os.path.join(model.project.custom_disk_directory, model.status.casper_directory))
-        return False
-
-
 def create_typical_removable_packages_list():
 
     logger.log_label('Create typical removable packages list')
@@ -546,13 +578,26 @@ def create_typical_removable_packages_list():
     removable_packages_list = []
     item = list_store.get_iter_first()
     while item is not None:
+
+        # 0: is typical selected?
+        # 1: is minimal selected?
+        # 2: is minimal selected initial?
+        # 3: is minimal active?
+        # 4: package name
+        # 5: package version
+
         flag = list_store.get_value(item, 0)
         package_name = list_store.get_value(item, 4)
         if flag:
             removable_packages_list.append(package_name)
         item = list_store.iter_next(item)
-    removable_packages_list
-    logger.log_value('New number of packages to be removed', len(removable_packages_list))
+
+    number_of_packages_total = len(model.package_details_list)
+    number_of_packages_to_remove = len(removable_packages_list)
+    number_of_packages_to_retain = number_of_packages_total - number_of_packages_to_remove
+    logger.log_value('Total number of installed packages', number_of_packages_total)
+    logger.log_value('New number of packages to be removed for a typical install', number_of_packages_to_remove)
+    logger.log_value('New number of packages to be retained for a typical install', number_of_packages_to_retain)
 
     return removable_packages_list
 
@@ -567,22 +612,43 @@ def create_minimal_removable_packages_list():
     removable_packages_list = []
     item = list_store.get_iter_first()
     while item is not None:
-        flag = list_store.get_value(item, 1) and list_store.get_value(item, 3)
+
+        # 0: is typical selected?
+        # 1: is minimal selected?
+        # 2: is minimal selected initial?
+        # 3: is minimal active?
+        # 4: package name
+        # 5: package version
+
+        # Include packages that are selected for removal for a minimal
+        # install and are not selected for removal for a typical
+        # install.
+        # flag = list_store.get_value(item, 1) and list_store.get_value(item, 3)
+
+        # Include packages that are selected for removal for a minimal
+        # install, even if they are selected for removal for a typical
+        # install.
+        flag = list_store.get_value(item, 1)
         package_name = list_store.get_value(item, 4)
         if flag:
             removable_packages_list.append(package_name)
         item = list_store.iter_next(item)
-    removable_packages_list
-    logger.log_value('New number of packages to be removed', len(removable_packages_list))
+
+    number_of_packages_total = len(model.package_details_list)
+    number_of_packages_to_remove = len(removable_packages_list)
+    number_of_packages_to_retain = number_of_packages_total - number_of_packages_to_remove
+    logger.log_value('Total number of installed packages', number_of_packages_total)
+    logger.log_value('New number of packages to be removed for a minimal install', number_of_packages_to_remove)
+    logger.log_value('New number of packages to be retained for a minimal install', number_of_packages_to_retain)
 
     return removable_packages_list
 
 
-def save_file_system_manifest_remove_file(file_name, removable_packages_list):
+def save_file_system_manifest_remove_file(removable_packages_list, directory, file_name):
 
     logger.log_label('Create new file system manifest remove file')
 
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    file_path = os.path.join(directory, file_name)
     logger.log_value('Write file system manifest remove file to', file_path)
     with open(file_path, 'w') as file:
         first_line = True
@@ -592,3 +658,5 @@ def save_file_system_manifest_remove_file(file_name, removable_packages_list):
                 first_line = False
             else:
                 file.write('\n%s' % packages_name)
+
+    return file_utilities.file_exists(directory, file_name)

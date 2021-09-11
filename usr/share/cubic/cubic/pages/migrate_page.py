@@ -41,6 +41,7 @@ import getpass
 import os
 import time
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_1000_MS
 from cubic.utilities import configuration
@@ -109,6 +110,8 @@ def setup(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -125,6 +128,8 @@ def enter(action, old_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
 
         return 'unknown'
 
@@ -171,6 +176,8 @@ def leave(action, new_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 

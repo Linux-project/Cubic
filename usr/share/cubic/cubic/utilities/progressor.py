@@ -239,6 +239,7 @@ def process_command(command, progress_tracker, working_directory=None):
     try:
         process = processor.execute_asynchronous(command, working_directory)
         done = False
+        percent = START_PERCENT
         while not done:
             try:
                 process.expect(PERCENT_PATTERN)

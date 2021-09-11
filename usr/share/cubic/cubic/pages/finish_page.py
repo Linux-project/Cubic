@@ -40,6 +40,7 @@
 import os
 import time
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import IMAGE_FILE_NAME, LOCK_FILE_NAME
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0500_MS, SLEEP_1500_MS
@@ -121,6 +122,8 @@ def setup(action, old_page=None):
         return
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -137,6 +140,8 @@ def enter(action, old_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
 
         return 'unknown'
 
@@ -177,6 +182,8 @@ def leave(action, new_page=None):
     else:
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 

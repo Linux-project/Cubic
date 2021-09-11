@@ -50,6 +50,7 @@ gi.require_version('GLib', '2.0')
 
 from gi.repository import GLib
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.pages.boot_tab import BootTab
 from cubic.pages.kernel_tab import KernelTab
 from cubic.pages.preseed_tab import PreseedTab
@@ -189,6 +190,8 @@ def setup(action, old_page=None):
 
     else:
 
+        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+
         return 'unknown'
 
 
@@ -215,6 +218,8 @@ def enter(action, old_page=None):
         return
 
     else:
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
 
         return 'unknown'
 
@@ -302,6 +307,8 @@ def leave(action, new_page=None):
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
         configuration.save()
+
+        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
 
         return 'unknown'
 
