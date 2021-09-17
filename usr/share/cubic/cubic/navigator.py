@@ -267,7 +267,7 @@ import os
 import re
 import sys
 import threading
-import traceback
+# import traceback
 
 from cubic.utilities.displayer import SLIDE_NONE, SLIDE_LEFT, SLIDE_RIGHT
 from cubic.utilities import displayer

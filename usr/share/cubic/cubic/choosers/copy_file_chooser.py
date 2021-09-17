@@ -53,13 +53,23 @@ callback = None
 ########################################################################
 
 
-def open(calback, file_path=None):
+def open(calback, initial_file_path=None):
+
+    selected_uris = get_selected_uris()
+    if selected_uris:
+        displayer.set_sensitive('copy_file_chooser__select_button_1', True)
+        displayer.set_sensitive('copy_file_chooser__select_button_2', True)
+    else:
+        displayer.set_sensitive('copy_file_chooser__select_button_1', False)
+        displayer.set_sensitive('copy_file_chooser__select_button_2', False)
 
     displayer.set_sensitive('window', False)
-    if file_path:
-        displayer.show_file_chooser(name, file_path)
+
+    if initial_file_path:
+        displayer.show_file_chooser(name, initial_file_path)
     else:
         displayer.show_file_chooser(name, model.application.user_home)
+
     set_callback(calback)
 
 
@@ -80,7 +90,6 @@ def get_selected_file_paths():
 
     dialog = model.builder.get_object(name)
     file_paths = dialog.get_filenames()
-
     return file_paths
 
 
@@ -88,7 +97,6 @@ def get_selected_uris():
 
     dialog = model.builder.get_object(name)
     uris = dialog.get_uris()
-
     return uris
 
 
@@ -98,13 +106,27 @@ def on_clicked__copy_file_chooser__cancel_button(widget):
     close()
 
 
+def on_copy_file_chooser__selection_changed(widget):
+
+    uris = get_selected_uris()
+    if uris:
+        displayer.set_sensitive('copy_file_chooser__select_button_1', True)
+        displayer.set_sensitive('copy_file_chooser__select_button_2', True)
+    else:
+        displayer.set_sensitive('copy_file_chooser__select_button_1', False)
+        displayer.set_sensitive('copy_file_chooser__select_button_2', False)
+
+
 def on_clicked__copy_file_chooser__select_button(widget):
 
     logger.log_title('Clicked copy file chooser select button')
-    close()
-
     uris = get_selected_uris()
-    callback(uris)
+    if uris:
+        close()
+        callback(uris)
+    else:
+        logger.log_value('Error.', 'No files or directories selected')
+        uris = None
 
 
 def on_map__copy_file_chooser__header_bar(header_bar):

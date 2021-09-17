@@ -449,7 +449,11 @@ def _setup_preseed_tab():
         header_bar.add(box)
         box.set_visible(False)
 
-    # If the preseed directory does not exist, create it.
+    # Ensure root directories in the files tree exist, in order to avoid
+    # FileNotFoundError errors and to allow adding new items to them.
+
+    # If the preseed directory does not exist, create it. The preseed
+    # directory is optional.
     file_path = os.path.join(model.project.custom_disk_directory, 'preseed')
     file_utilities.make_directory(file_path)
 
@@ -488,13 +492,17 @@ def _setup_boot_tab():
         header_bar.add(box)
         box.set_visible(False)
 
+    # Ensure root directories in the files tree exist, in order to avoid
+    # FileNotFoundError errors and to allow adding new items to them.
+
     # If the boot/grub directory does not exist, create it.
     file_path = os.path.join(model.project.custom_disk_directory, 'boot/grub')
     file_utilities.make_directories(file_path)
 
-    # The isolinux directory is optional.
-    # file_path = os.path.join(model.project.custom_disk_directory, 'isolinux')
-    # file_utilities.make_directory(file_path)
+    # If the isolinux directory does not exist, create it. The isolinux
+    # directory is optional.
+    file_path = os.path.join(model.project.custom_disk_directory, 'isolinux')
+    file_utilities.make_directory(file_path)
 
     # Create the list of boot configurations files.
     boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)

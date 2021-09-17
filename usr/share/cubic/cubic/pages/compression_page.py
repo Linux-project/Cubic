@@ -44,6 +44,7 @@ from cubic.pages import options_page
 from cubic.utilities import configuration
 from cubic.utilities import displayer
 from cubic.utilities import iso_utilities
+from cubic.utilities import logger
 from cubic.utilities import model
 
 ########################################################################

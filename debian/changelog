@@ -1,5 +1,12 @@
 cubic (2021.09) bionic focal groovy hirsute; urgency=low
 
+  * Issues fixed in version 2021.09-54:
+
+  - Fixed Bug LP:#1943613, Error when selecting "isolinux" on the Boot tab while
+    customizing Xubuntu.
+  - Fixed Bug LP:#1943669, User can click the File Chooser Select button without
+    selecting any items.
+
   * Issues fixed in version 2021.09-53:
 
   - Fixed Bug LP:#1943054 Additional packages are installed with a minimal
@@ -132,4 +139,4 @@ cubic (2021.09) bionic focal groovy hirsute; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 11 Sep 2021 12:21:46 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 17 Sep 2021 00:06:39 -0400

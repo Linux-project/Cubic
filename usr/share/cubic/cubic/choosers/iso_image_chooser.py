@@ -38,7 +38,6 @@
 ########################################################################
 
 import os
-import traceback
 
 from cubic.utilities import displayer
 from cubic.utilities import logger
@@ -56,13 +55,23 @@ callback = None
 ########################################################################
 
 
-def open(calback, file_path=None):
+def open(calback, initial_file_path=None):
+
+    selected_file_path = get_selected_file_path()
+    if selected_file_path and os.path.isfile(selected_file_path):
+        displayer.set_sensitive('iso_image_chooser__select_button_1', True)
+        displayer.set_sensitive('iso_image_chooser__select_button_2', True)
+    else:
+        displayer.set_sensitive('iso_image_chooser__select_button_1', False)
+        displayer.set_sensitive('iso_image_chooser__select_button_2', False)
 
     displayer.set_sensitive('window', False)
-    if file_path:
-        displayer.show_file_chooser(name, file_path)
+
+    if initial_file_path:
+        displayer.show_file_chooser(name, initial_file_path)
     else:
         displayer.show_file_chooser(name, model.application.user_home)
+
     set_callback(calback)
 
 
@@ -92,19 +101,27 @@ def on_clicked__iso_image_chooser__cancel_button(widget):
     close()
 
 
+def on_iso_image_chooser__selection_changed(widget):
+
+    file_path = get_selected_file_path()
+    if file_path and os.path.isfile(file_path):
+        displayer.set_sensitive('iso_image_chooser__select_button_1', True)
+        displayer.set_sensitive('iso_image_chooser__select_button_2', True)
+    else:
+        displayer.set_sensitive('iso_image_chooser__select_button_1', False)
+        displayer.set_sensitive('iso_image_chooser__select_button_2', False)
+
+
 def on_clicked__iso_image_chooser__select_button(widget):
 
     logger.log_title('Clicked ISO image chooser select button')
     file_path = get_selected_file_path()
-    try:
-        os.path.isfile(file_path)
+    logger.log_value('The selected file path is', file_path)
+    if file_path and os.path.isfile(file_path):
         close()
-        logger.log_value('The selected file path is', file_path)
         callback(file_path)
-    except TypeError as exception:
-        logger.log_value('Error. The selected file path is', file_path)
-        logger.log_value('The exception is', exception)
-        logger.log_value('The trace back is', traceback.format_exc())
+    else:
+        logger.log_value('Error.', 'No *.iso file selected')
         file_path = None
 
 

@@ -790,7 +790,6 @@ def update_checksums():
     if result:
         file_path = result.group(1).strip(os.path.sep)
         file_path = os.path.join(model.project.custom_disk_directory, file_path)
-        print('File path: %s' % file_path)
         exclude_paths.append(file_path)
 
     # Exclude the boot catalog file path (if it exists).
@@ -798,7 +797,6 @@ def update_checksums():
     if result:
         file_path = result.group(1).strip(os.path.sep)
         file_path = os.path.join(model.project.custom_disk_directory, file_path)
-        print('File path: %s' % file_path)
         exclude_paths.append(file_path)
 
     logger.log_value('Write MD5 checksums to', checksums_file_path)
