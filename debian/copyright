@@ -2,11 +2,23 @@ Files: debian/*
 Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
 
+Files: usr/bin/*
+Copyright: 2015, 2020 PJ Singh
+License: /usr/share/common-licenses/GPL-3
+
 Files: usr/share/applications/*
 Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
 
 Files: usr/share/cubic/*
+Copyright: 2015, 2020 PJ Singh
+License: /usr/share/common-licenses/GPL-3
+
+Files: usr/share/man/*
+Copyright: 2015, 2020 PJ Singh
+License: /usr/share/common-licenses/GPL-3
+
+Files: usr/share/polkit-1/*
 Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
 

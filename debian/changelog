@@ -1,4 +1,9 @@
-cubic (2021.09) bionic focal groovy hirsute; urgency=low
+cubic (2021.09) bionic focal groovy hirsute impish; urgency=low
+
+  * Issues fixed in version 2021.09-55:
+
+  - Fixed Bug LP:#1944049, The user can select an NTFS directory as the Project
+    directory, even though Linux can not be customized on an NTFS partition.
 
   * Issues fixed in version 2021.09-54:
 
@@ -139,4 +144,4 @@ cubic (2021.09) bionic focal groovy hirsute; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Fri, 17 Sep 2021 00:06:39 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 18 Sep 2021 17:01:57 -0400

@@ -237,13 +237,25 @@ def file_exists(directory, file_name):
 
 def get_file_system_type(file_path):
 
-    # ext, ext2, ext3, ext4, nfs, ntfs, vfat, zfs
+    # • btrfs is reported as btrfs
+    # • exfat is reported as exfat (or fuseblk?)
+    # • ext2  is reported as ext2
+    # • ext3  is reported as ext3
+    # • ext4  is reported as ext4
+    # • fat12 is reported as vfat (?)
+    # • fat16 is reported as vfat
+    # • fat32 is reported as vfat
+    # • ntfs  is reported as fuseblk
+    # • swap  is reported as devtmpfs
+    # • xfs   is reported as xfs
+    # • zfs   is reported as zfs
+
     logger.log_value('Get file system type', file_path)
     command = 'df --output=fstype "%s"' % file_path
     result, exit_status, signal_status = execute_synchronous(command)
     file_system_type = None
     if not exit_status and not signal_status:
-        file_system_type = result.splitlines()[1].upper()
+        file_system_type = result.splitlines()[1].lower()
     logger.log_value('The file system type is', file_system_type)
     return file_system_type
 

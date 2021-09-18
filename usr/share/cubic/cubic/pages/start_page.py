@@ -41,7 +41,7 @@ import os
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CUBIC_VERSION_2020, CUBIC_VERSION_2021
-from cubic.constants import OK, ERROR, EXCLUDED_FILESYSTEM_TYPES
+from cubic.constants import OK, ERROR, EXCLUDED_FILE_SYSTEM_TYPES, FILE_SYSTEM_TYPES
 from cubic.choosers import directory_chooser
 from cubic.utilities import configuration
 from cubic.utilities import constructor
@@ -328,7 +328,7 @@ def validate_page():
     #
 
     file_system_type = file_utilities.get_file_system_type(model.project.directory)
-    if file_system_type in EXCLUDED_FILESYSTEM_TYPES:
+    if file_system_type in EXCLUDED_FILE_SYSTEM_TYPES:
 
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -344,7 +344,7 @@ def validate_page():
 
         displayer.update_label(
             'start_page__project_directory_message',
-            '<span foreground="red">Error. Cannot customize Linux on the %s file system.</span>' % file_system_type)
+            '<span foreground="red">Error. Cannot customize Linux on the %s file system.</span>' % FILE_SYSTEM_TYPES[file_system_type])
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
 
         return

@@ -118,9 +118,40 @@ ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
 
-# Excluded file system types.
-# ext, ext2, ext3, ext4, nfs, ntfs, vfat, zfs; FAT16, FAT32, and exFAT
-EXCLUDED_FILESYSTEM_TYPES = ['FAT', 'FAT16', 'FAT32', 'NTFS', 'VFAT']
+# Map Linux file system types to display names.
+# • btrfs is reported as btrfs
+# • exfat is reported as exfat (or fuseblk?)
+# • ext2  is reported as ext2
+# • ext3  is reported as ext3
+# • ext4  is reported as ext4
+# • fat12 is reported as vfat (?)
+# • fat16 is reported as vfat
+# • fat32 is reported as vfat
+# • ntfs  is reported as fuseblk
+# • swap  is reported as devtmpfs
+# • xfs   is reported as xfs
+# • zfs   is reported as zfs
+# For completeness, this dictionary includes file system types that are
+# not reported by `df --print-type` (i.e. fat12, fat16, fat32, ntfs).
+FILE_SYSTEM_TYPES = {
+    'btrfs': 'btrfs',
+    'exfat': 'exFAT',
+    'ext2': 'ext2',
+    'ext3': 'ext3',
+    'ext4': 'ext4',
+    'fat12': 'FAT12',
+    'fat16': 'FAT16',
+    'fat32': 'FAT32',
+    'ntfs': 'NTFS',
+    'fuseblk': 'NTFS',
+    'vfat': 'FAT',
+    'xfs': 'XFS',
+    'zfs': 'ZFS'
+}
+
+# For completeness, this list includes file system types that are
+# not reported by `df --print-type` (i.e. fat12, fat16, fat32, ntfs).
+EXCLUDED_FILE_SYSTEM_TYPES = ['exfat', 'fat12', 'fat16', 'fat32', 'fuseblk', 'ntfs', 'vfat']
 
 IMAGE_FILE_NAME = 'partition-%s.img'
 LOCK_FILE_NAME = '.#custom-root.lck'
