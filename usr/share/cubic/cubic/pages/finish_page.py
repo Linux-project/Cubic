@@ -44,7 +44,10 @@ from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import IMAGE_FILE_NAME, LOCK_FILE_NAME
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0500_MS, SLEEP_1500_MS
+from cubic.navigator import handle_navigation
+from cubic.pages import options_page
 from cubic.utilities import displayer
+from cubic.utilities import emulator
 from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
@@ -63,19 +66,27 @@ name = 'finish_page'
 
 def setup(action, old_page=None):
 
-    if action == 'finish':
+    if action == 'cancel':
 
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
-            back_button_style=None,
-            is_back_sensitive=False,
-            is_back_visible=False,
+            back_button_style='text-button',
+            is_back_sensitive=True,
+            is_back_visible=True,
             next_button_label='Close',
             next_action='close',
-            next_button_style='suggested-action',
+            next_button_style='destructive-action',
             is_next_sensitive=True,
             is_next_visible=True)
+
+        validate_test_header_bar_button()
+
+        return
+
+    if action == 'finish':
+
+        store_generated_iso_values()
 
         displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
         displayer.update_entry('finish_page__custom_iso_file_name_entry', model.custom.iso_file_name)
@@ -88,6 +99,20 @@ def setup(action, old_page=None):
 
         displayer.update_status('finish_page__delete_project_files', BLANK)
         displayer.activate_check_button('finish_page__delete_project_files_check_button', False)
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Close',
+            next_action='close',
+            next_button_style='destructive-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        validate_test_header_bar_button()
 
         return
 
@@ -95,18 +120,6 @@ def setup(action, old_page=None):
 
         # TODO: FOR TESTING ONLY
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=False,
-            is_back_visible=False,
-            next_button_label='Close',
-            next_action='close',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
-
         displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
         displayer.update_entry('finish_page__custom_iso_file_name_entry', model.custom.iso_file_name)
         displayer.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
@@ -118,6 +131,20 @@ def setup(action, old_page=None):
 
         displayer.update_status('finish_page__delete_project_files', BLANK)
         displayer.activate_check_button('finish_page__delete_project_files_check_button', False)
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=False,
+            is_back_visible=False,
+            next_button_label='Close',
+            next_action='close',
+            next_button_style='destructive-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+        validate_test_header_bar_button()
 
         return
     else:
@@ -129,7 +156,11 @@ def setup(action, old_page=None):
 
 def enter(action, old_page=None):
 
-    if action == 'finish':
+    if action == 'cancel':
+
+        return
+
+    elif action == 'finish':
 
         return
 
@@ -148,15 +179,34 @@ def enter(action, old_page=None):
 
 def leave(action, new_page=None):
 
+    if action == 'back':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        displayer.set_visible('finish_page__test_header_bar_button', False)
+
+        return
+
+    elif action == 'test':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        displayer.set_visible('finish_page__test_header_bar_button', False)
+
+        return
+
     if action == 'close':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        displayer.set_sensitive('finish_page__test_header_bar_button', False)
+
         displayer.set_sensitive('finish_page__delete_project_files_check_button', False)
 
-        # The original disk is unmounted when leaving the Generate page,
-        # so there is no need to unmount it here.
-        # iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+        options_page.preseed_tab.remove_tree()
+        options_page.boot_tab.remove_tree()
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         # Delete project files.
 
@@ -177,6 +227,13 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        displayer.set_sensitive('finish_page__test_header_bar_button', False)
+
+        options_page.preseed_tab.remove_tree()
+        options_page.boot_tab.remove_tree()
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
         return
 
     else:
@@ -191,6 +248,13 @@ def leave(action, new_page=None):
 ########################################################################
 # Handler Functions
 ########################################################################
+
+
+def on_clicked__finish_page__test_header_bar_button(widget):
+
+    logger.log_value('Clicked', 'Test')
+
+    handle_navigation('test')
 
 
 def on_clicked__finish_page__custom_iso_file_name_open_button(widget):
@@ -214,6 +278,34 @@ def on_clicked__finish_page__custom_iso_checksum_file_name_open_button(widget):
 ########################################################################
 # Support Functions
 ########################################################################
+
+
+def store_generated_iso_values():
+    """
+    Save the generated iso values from the model.
+      - iso_version_number
+      - iso_file_name
+      - iso_directory
+      - iso_volume_id
+      - iso_release_name
+      - iso_disk_name
+      - iso_release_notes_url
+      - iso_checksum
+      - iso_checksum_file_name
+    """
+
+    logger.log_label('Save the generated iso values from the model')
+
+    # Update fields.
+    model.generated.iso_version_number = model.custom.iso_version_number
+    model.generated.iso_file_name = model.custom.iso_file_name
+    model.generated.iso_directory = model.custom.iso_directory
+    model.generated.iso_volume_id = model.custom.iso_volume_id
+    model.generated.iso_release_name = model.custom.iso_release_name
+    model.generated.iso_disk_name = model.custom.iso_disk_name
+    model.generated.iso_release_notes_url = model.custom.iso_release_notes_url
+    model.generated.iso_checksum = model.status.iso_checksum
+    model.generated.iso_checksum_file_name = model.status.iso_checksum_file_name
 
 
 def unmount_original_iso():
@@ -344,3 +436,33 @@ def delete_project_files():
 def validate_page():
 
     return True
+
+
+########################################################################
+# Test Functions
+########################################################################
+
+
+def validate_test_header_bar_button():
+
+    custom_iso_file_path = os.path.join(model.generated.iso_directory, model.generated.iso_file_name)
+    logger.log_value('The generated iso file path is', custom_iso_file_path)
+    if os.path.exists(custom_iso_file_path):
+        # Enable the Test button if the system has at least 1.5 GiB
+        # available memory.
+        is_adequate = emulator.check_available_memory()
+        if is_adequate:
+            displayer.set_sensitive('finish_page__test_header_bar_button', True)
+            displayer.set_visible('finish_page__test_header_bar_button', True)
+            logger.log_value('System has adequate available memory to enable testing?', 'Yes')
+            logger.log_value('Enable testing?', 'Yes')
+        else:
+            displayer.set_sensitive('finish_page__test_header_bar_button', False)
+            displayer.set_visible('finish_page__test_header_bar_button', True)
+            logger.log_value('System has adequate available memory to enable testing?', 'No')
+            logger.log_value('Enable testing?', 'No')
+    else:
+        logger.log_value('Does the custom iso file exist?', 'No')
+        displayer.set_sensitive('finish_page__test_header_bar_button', False)
+        displayer.set_sensitive('finish_page__test_header_bar_button', False)
+        logger.log_value('Enable testing?', 'No')

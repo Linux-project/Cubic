@@ -86,6 +86,11 @@ def setup(action, old_page=None):
 
     elif action == 'next':
 
+        undo_index = 0
+        undo_list = []
+
+        displayer.update_list_store('packages_page__list_store', model.package_details_list)
+
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -100,11 +105,6 @@ def setup(action, old_page=None):
 
         displayer.set_visible('packages_page__header_bar_box', True)
         displayer.set_visible('options_page__stack_switcher', False)
-
-        displayer.update_list_store('packages_page__list_store', model.package_details_list)
-
-        undo_index = 0
-        undo_list = []
 
         displayer.set_sensitive('packages_page__redo_header_bar_button', False)
         displayer.set_sensitive('packages_page__revert_header_bar_button', False)

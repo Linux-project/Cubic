@@ -91,6 +91,8 @@ SOURCE_STYLE_SCHEME = style_scheme_manager.get_scheme(scheme_name)
 SLIDE_NONE = Gtk.StackTransitionType.NONE
 SLIDE_LEFT = Gtk.StackTransitionType.SLIDE_LEFT
 SLIDE_RIGHT = Gtk.StackTransitionType.SLIDE_RIGHT
+SLIDE_UP = Gtk.StackTransitionType.SLIDE_UP
+SLIDE_DOWN = Gtk.StackTransitionType.SLIDE_DOWN
 
 ########################################################################
 # General Functions
@@ -302,6 +304,17 @@ def update_label(label_name, text):
     # logger.log_value('Update label %s' % label_name, text)
     label = model.builder.get_object(label_name)
     GLib.idle_add(Gtk.Label.set_markup, label, text)
+
+
+def set_label_error(widget_name, is_error):
+
+    # logger.log_value('Set error for label %s' % widget_name, is_error)
+    label = model.builder.get_object(widget_name)
+    context = label.get_style_context()
+    if is_error:
+        GLib.idle_add(Gtk.StyleContext.add_class, context, 'error')
+    else:
+        GLib.idle_add(Gtk.StyleContext.remove_class, context, 'error')
 
 
 ########################################################################

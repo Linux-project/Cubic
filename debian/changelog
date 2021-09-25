@@ -1,5 +1,22 @@
 cubic (2021.09) bionic focal groovy hirsute impish; urgency=low
 
+  * Issues fixed in version 2021.09-56:
+
+  - Fixed Bug LP:#1944062, Add capability to test generated ISO. Added a Test
+    button on the Project page and a Test button on the Finish page. Added a new
+    emulator module and two new Test pages to Cubic. Made the transition from
+    the Generate page to the Finish page automatic. Added python3-psutil and
+    qemu-system-x86 as dependencies to install Cubic. Updated the Cubic help
+    pages at https://answers.launchpad.net/cubic/+faqs. Added Test page
+    instructions. Updated the help pages for the Project page, the Generate
+    page, and the Finish page to include instructions for the new testing
+    capability. Updated links for Cubic's "Help on this page" application menu
+    items accordingly.
+  - Fixed Bug #1944063, Prohibit the user from creating a Cubic project on a
+    remote file system.
+  - Fixed issue where header bar buttons appear before the page contents when
+    navigating to certain pages, such as the Project page.
+
   * Issues fixed in version 2021.09-55:
 
   - Fixed Bug LP:#1944049, The user can select an NTFS directory as the Project
@@ -144,4 +161,4 @@ cubic (2021.09) bionic focal groovy hirsute impish; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 18 Sep 2021 17:01:57 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 25 Sep 2021 14:46:23 -0400

@@ -52,16 +52,17 @@ import os
 import re
 import urllib
 
+from cubic.choosers import directory_chooser
+from cubic.choosers import iso_image_chooser
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
-from cubic.choosers import directory_chooser
-from cubic.choosers import iso_image_chooser
 from cubic.navigator import handle_navigation
 from cubic.utilities.fields import Fields, IsoFields, IsoFieldsHistory
 from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
+from cubic.utilities import emulator
 from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
@@ -108,6 +109,9 @@ def setup(action, old_page=None):
         # subsequent pages (Extract page, Options page).
         status = initialize_status_from_model()
 
+        # Validation is not required since nothing changed.
+        # validate_page()
+
         # Navigation buttons are also set in the validate_page() function.
         if status.is_success_copy and status.is_success_extract and status.iso_template and status.casper_directory:
             displayer.reset_buttons(
@@ -134,59 +138,56 @@ def setup(action, old_page=None):
                 is_next_sensitive=True,
                 is_next_visible=True)
 
-        displayer.set_visible('project_page__header_bar_box', True)
+        validate_test_header_bar_button()
 
         # Show the Delete button because the project already exists.
         displayer.set_visible('project_page__delete_header_bar_button', True)
 
-        # Validation is not required since nothing except status may
-        # have changed.
-        # validate_page()
+        displayer.set_visible('project_page__header_bar_box', True)
 
         return
 
     elif action == 'cancel':
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
+        # Validation is not required since nothing changed.
+        # validate_page()
 
-        displayer.set_visible('project_page__header_bar_box', True)
+        # Navigation buttons are also set in the validate_page() function.
+        if status.is_success_copy and status.is_success_extract and status.iso_template and status.casper_directory:
+            displayer.reset_buttons(
+                back_button_label='❬Back',
+                back_action='back',
+                back_button_style='text-button',
+                is_back_sensitive=True,
+                is_back_visible=True,
+                next_button_label='Customize❭',
+                next_action='next-terminal',
+                next_button_style='suggested-action',
+                is_next_sensitive=True,
+                is_next_visible=True)
+        else:
+            displayer.reset_buttons(
+                back_button_label='❬Back',
+                back_action='back',
+                back_button_style='text-button',
+                is_back_sensitive=True,
+                is_back_visible=True,
+                next_button_label='Next❭',
+                next_action='next',
+                next_button_style='suggested-action',
+                is_next_sensitive=True,
+                is_next_visible=True)
+
+        validate_test_header_bar_button()
 
         # Show the Delete button because the project already exists.
         displayer.set_visible('project_page__delete_header_bar_button', True)
 
-        # Validation is not required since nothing changed.
-        # validate_page()
+        displayer.set_visible('project_page__header_bar_box', True)
 
         return
 
     elif action == 'delete':
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=False,
-            is_next_visible=True)
-
-        displayer.set_visible('project_page__header_bar_box', True)
-
-        # Hide the Delete button because the project was deleted.
-        displayer.set_visible('project_page__delete_header_bar_button', False)
 
         original = None
         custom = None
@@ -198,6 +199,7 @@ def setup(action, old_page=None):
 
         original = initialize_original()
         custom = initialize_custom()
+        store_generated_iso_values()
 
         custom_history.reset()
 
@@ -206,23 +208,16 @@ def setup(action, old_page=None):
 
         validate_page()
 
+        validate_test_header_bar_button()
+
+        # Hide the Delete button because the project was deleted.
+        displayer.set_visible('project_page__delete_header_bar_button', False)
+
+        displayer.set_visible('project_page__header_bar_box', True)
+
         return
 
     elif action == 'next':
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=False,
-            is_next_visible=True)
-
-        displayer.set_visible('project_page__header_bar_box', True)
 
         original = None
         custom = None
@@ -230,9 +225,6 @@ def setup(action, old_page=None):
         if os.path.isfile(model.project.configuration_file_path):
 
             # There is a saved configuration.
-
-            # Show the Delete button because the project already exists.
-            displayer.set_visible('project_page__delete_header_bar_button', True)
 
             configured_original_iso_file_path = os.path.join(model.original.iso_directory, model.original.iso_file_name)
             mount_original_iso(configured_original_iso_file_path)
@@ -251,6 +243,7 @@ def setup(action, old_page=None):
 
             original = initialize_original_from_model()
             custom = initialize_custom_from_model()
+            store_generated_iso_values()
 
             custom_history.reset()
             if custom.is_valid:
@@ -261,12 +254,16 @@ def setup(action, old_page=None):
 
             validate_page()
 
+            validate_test_header_bar_button()
+
+            # Show the Delete button because the project already exists.
+            displayer.set_visible('project_page__delete_header_bar_button', True)
+
+            displayer.set_visible('project_page__header_bar_box', True)
+
         else:
 
             # There is no saved configuration.
-
-            # Hide the Delete button because the project does not exist.
-            displayer.set_visible('project_page__delete_header_bar_button', False)
 
             # Set the original and custom iso release notes urls on the
             # model.
@@ -288,29 +285,54 @@ def setup(action, old_page=None):
 
             validate_page()
 
+            validate_test_header_bar_button()
+
+            # Hide the Delete button because the project does not exist.
+            displayer.set_visible('project_page__delete_header_bar_button', False)
+
+            displayer.set_visible('project_page__header_bar_box', True)
+
         return
 
     elif action == 'migrate':
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
+        # There is a saved configuration.
 
-        displayer.set_visible('project_page__header_bar_box', True)
+        # Validation is not required since nothing changed.
+        # validate_page()
+
+        # Navigation buttons are also set in the validate_page() function.
+        if status.is_success_copy and status.is_success_extract and status.iso_template and status.casper_directory:
+            displayer.reset_buttons(
+                back_button_label='❬Back',
+                back_action='back',
+                back_button_style=None,
+                is_back_sensitive=True,
+                is_back_visible=True,
+                next_button_label='Customize❭',
+                next_action='next-terminal',
+                next_button_style='suggested-action',
+                is_next_sensitive=True,
+                is_next_visible=True)
+        else:
+            displayer.reset_buttons(
+                back_button_label='❬Back',
+                back_action='back',
+                back_button_style=None,
+                is_back_sensitive=True,
+                is_back_visible=True,
+                next_button_label='Next❭',
+                next_action='next',
+                next_button_style='suggested-action',
+                is_next_sensitive=True,
+                is_next_visible=True)
+
+        validate_test_header_bar_button()
 
         # Show the Delete button because the project already exists.
         displayer.set_visible('project_page__delete_header_bar_button', True)
 
-        # Validation is not required since nothing changed.
-        # validate_page()
+        displayer.set_visible('project_page__header_bar_box', True)
 
         return
 
@@ -383,10 +405,25 @@ def leave(action, new_page=None):
 
         displayer.set_visible('project_page__header_bar_box', False)
 
+        displayer.set_visible('project_page__test_header_bar_button', False)
+
         # Hide the Delete button on other pages.
         displayer.set_visible('project_page__delete_header_bar_button', False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        return
+
+    elif action == 'test':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        displayer.set_visible('project_page__header_bar_box', False)
+
+        displayer.set_visible('project_page__test_header_bar_button', False)
+
+        # Hide the Delete button on other pages.
+        displayer.set_visible('project_page__delete_header_bar_button', False)
 
         return
 
@@ -395,6 +432,8 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         displayer.set_visible('project_page__header_bar_box', False)
+
+        displayer.set_visible('project_page__test_header_bar_button', False)
 
         # Hide the Delete button on other pages.
         displayer.set_visible('project_page__delete_header_bar_button', False)
@@ -406,6 +445,8 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         displayer.set_visible('project_page__header_bar_box', False)
+
+        displayer.set_visible('project_page__test_header_bar_button', False)
 
         # Hide the Delete button on other pages.
         displayer.set_visible('project_page__delete_header_bar_button', False)
@@ -462,6 +503,8 @@ def leave(action, new_page=None):
 
         displayer.set_visible('project_page__header_bar_box', False)
 
+        displayer.set_visible('project_page__test_header_bar_button', False)
+
         # Hide the Delete button on other pages.
         displayer.set_visible('project_page__delete_header_bar_button', False)
 
@@ -512,8 +555,11 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('project_page__header_bar_box', False)
-        displayer.set_visible('project_page__delete_header_bar_button', False)
+        displayer.set_sensitive('project_page__header_bar_box', False)
+
+        displayer.set_sensitive('project_page__test_header_bar_button', False)
+
+        displayer.set_sensitive('project_page__delete_header_bar_button', False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -524,6 +570,9 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         displayer.set_visible('project_page__header_bar_box', False)
+
+        displayer.set_visible('project_page__test_header_bar_button', False)
+
         displayer.set_visible('project_page__delete_header_bar_button', False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
@@ -1013,7 +1062,7 @@ def initialize_custom_from_model():
     return fields
 
 
-def initialize_status_from_model():
+def initialize_status_from_model_ORIGINAL():
     """
     Initialize the following status fields from the model.
       - is_success_copy
@@ -1044,6 +1093,33 @@ def initialize_status_from_model():
     return fields
 
 
+def initialize_status_from_model():
+    """
+    Initialize the following status fields from the model.
+      - is_success_copy
+      - is_success_extract
+      - iso_template
+      - casper_directory
+      - iso_checksum = None
+      - iso_checksum_file_name = None
+    """
+
+    logger.log_label('Initialize the status fields from the model')
+
+    fields = Fields('status')
+
+    fields.is_success_copy = model.status.is_success_copy
+    fields.is_success_extract = model.status.is_success_extract
+    fields.iso_template = model.status.iso_template
+    fields.casper_directory = model.status.casper_directory
+    # The saved iso checksum is never used.
+    fields.iso_checksum = model.status.iso_checksum
+    # The iso checksum file_name is always constructed.
+    fields.iso_checksum_file_name = model.status.iso_checksum_file_name
+
+    return fields
+
+
 def initialize_options_from_model():
     """
     Initialize the following options fields from the model.
@@ -1064,6 +1140,34 @@ def initialize_options_from_model():
     fields.boot_configurations = model.options.boot_configurations
 
     return fields
+
+
+def store_generated_iso_values():
+    """
+    Save the generated iso values from the model.
+      - iso_version_number
+      - iso_file_name
+      - iso_directory
+      - iso_volume_id
+      - iso_release_name
+      - iso_disk_name
+      - iso_release_notes_url
+      - iso_checksum
+      - iso_checksum_file_name
+    """
+
+    logger.log_label('Save the generated iso values from the model')
+
+    # Update fields.
+    model.generated.iso_version_number = model.custom.iso_version_number
+    model.generated.iso_file_name = model.custom.iso_file_name
+    model.generated.iso_directory = model.custom.iso_directory
+    model.generated.iso_volume_id = model.custom.iso_volume_id
+    model.generated.iso_release_name = model.custom.iso_release_name
+    model.generated.iso_disk_name = model.custom.iso_disk_name
+    model.generated.iso_release_notes_url = model.custom.iso_release_notes_url
+    model.generated.iso_checksum = model.status.iso_checksum
+    model.generated.iso_checksum_file_name = model.status.iso_checksum_file_name
 
 
 ########################################################################
@@ -1300,8 +1404,17 @@ def unblock_custom_handlers():
 #-----------------------------------------------------------------------
 
 
+def on_clicked__project_page__test_header_bar_button(widget):
+
+    logger.log_value('Clicked', 'Test')
+
+    handle_navigation('test')
+
+
 def on_clicked__project_page__delete_header_bar_button(widget):
+
     logger.log_value('Clicked', 'Delete')
+
     handle_navigation('delete')
 
 
@@ -1618,6 +1731,12 @@ def on_toggled__project_page__custom_options_update_os_release_check_button(widg
 
     validate_page()
 
+
+########################################################################
+# Support Functions
+########################################################################
+
+# N/A
 
 ########################################################################
 # Validation Functions
@@ -2148,6 +2267,36 @@ def is_url(url):
         return all([result.scheme, result.netloc])
     except ValueError:
         return False
+
+
+########################################################################
+# Test Functions
+########################################################################
+
+
+def validate_test_header_bar_button():
+
+    custom_iso_file_path = os.path.join(model.generated.iso_directory, model.generated.iso_file_name)
+    logger.log_value('The generated iso file path is', custom_iso_file_path)
+    if os.path.exists(custom_iso_file_path):
+        # Enable the Test button if the system has at least 1.5 GiB
+        # available memory.
+        is_adequate = emulator.check_available_memory()
+        if is_adequate:
+            displayer.set_sensitive('project_page__test_header_bar_button', True)
+            displayer.set_visible('project_page__test_header_bar_button', True)
+            logger.log_value('System has adequate available memory to enable testing?', 'Yes')
+            logger.log_value('Enable testing?', 'Yes')
+        else:
+            displayer.set_sensitive('project_page__test_header_bar_button', False)
+            displayer.set_visible('project_page__test_header_bar_button', True)
+            logger.log_value('System has adequate available memory to enable testing?', 'No')
+            logger.log_value('Enable testing?', 'No')
+    else:
+        logger.log_value('Does the custom iso file exist?', 'No')
+        displayer.set_sensitive('project_page__test_header_bar_button', False)
+        displayer.set_visible('project_page__test_header_bar_button', False)
+        logger.log_value('Enable testing?', 'No')
 
 
 ########################################################################

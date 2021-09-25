@@ -48,6 +48,26 @@ from gi.repository import Gdk
 import locale
 
 ########################################################################
+# Memory / Storage Units
+########################################################################
+
+KIB = 1024**1  # 1 kibibytes (KiB) =          1024 bytes
+MIB = 1024**2  # 1 mibibytes (MiB) =       1048576 bytes
+GIB = 1024**3  # 1 gibibytes (GiB) =    1073741824 bytes
+TIB = 1024**4  # 1 tebibytes (TiB) = 1099511627776 bytes
+
+########################################################################
+# Sleep Times
+########################################################################
+
+# Sleep in milliseconds.
+SLEEP_0125_MS = 0.125
+SLEEP_0250_MS = 0.250
+SLEEP_0500_MS = 0.500
+SLEEP_1000_MS = 1.000
+SLEEP_1500_MS = 1.500
+
+########################################################################
 # Localization
 ########################################################################
 
@@ -68,7 +88,7 @@ TIME_STAMP_FORMAT_YYYYMMDD = '%Y%m%d'
 VERSION_NUMBER_FORMAT = '%Y.%m.%d'
 
 ########################################################################
-# Application
+# Application Versions
 ########################################################################
 
 # Cubic release versions:
@@ -90,18 +110,9 @@ CUBIC_VERSION_2019 = '2015.11-1'  # Releases 2015.11-1 thru 2020.02-62
 CUBIC_VERSION_2020 = '2020.04-1'  # Releases 2020.04-1 thru 2020.10-35
 CUBIC_VERSION_2021 = '2020.12-36'  # Releases 2020.12-36 thru present
 
-# Sleep in milliseconds.
-SLEEP_0125_MS = 0.125
-SLEEP_0250_MS = 0.250
-SLEEP_0500_MS = 0.500
-SLEEP_1000_MS = 1.000
-SLEEP_1500_MS = 1.500
-
-# Size measurements.
-KIB = 1024**1  # 1 kibibytes (KiB) =          1024 bytes
-MIB = 1024**2  # 1 mibibytes (MiB) =       1048576 bytes
-GIB = 1024**3  # 1 gibibytes (GiB) =    1073741824 bytes
-TIB = 1024**4  # 1 tebibytes (TiB) = 1099511627776 bytes
+###############################################################
+# File Sizes
+###############################################################
 
 # Units for xorriso command: 1024, 1024k, 1024m, 1024g, 2048, 512.
 MULTIPLES = {'k': KIB, 'm': MIB, 'g': GIB, 't': TIB, 's': 2048, 'd': 512}
@@ -117,42 +128,6 @@ MAXIMUM_DISK_SIZE_GIB = MAXIMUM_DISK_SIZE_BYTES / GIB
 ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
-
-# Map Linux file system types to display names.
-# • btrfs is reported as btrfs
-# • exfat is reported as exfat (or fuseblk?)
-# • ext2  is reported as ext2
-# • ext3  is reported as ext3
-# • ext4  is reported as ext4
-# • fat12 is reported as vfat (?)
-# • fat16 is reported as vfat
-# • fat32 is reported as vfat
-# • ntfs  is reported as fuseblk
-# • swap  is reported as devtmpfs
-# • xfs   is reported as xfs
-# • zfs   is reported as zfs
-# For completeness, this dictionary includes file system types that are
-# not reported by `df --print-type` (i.e. fat12, fat16, fat32, ntfs).
-FILE_SYSTEM_TYPES = {
-    'btrfs': 'btrfs',
-    'exfat': 'exFAT',
-    'ext2': 'ext2',
-    'ext3': 'ext3',
-    'ext4': 'ext4',
-    'fat12': 'FAT12',
-    'fat16': 'FAT16',
-    'fat32': 'FAT32',
-    'ntfs': 'NTFS',
-    'fuseblk': 'NTFS',
-    'vfat': 'FAT',
-    'xfs': 'XFS',
-    'zfs': 'ZFS'
-}
-
-# For completeness, this list includes file system types that are
-# not reported by `df --print-type` (i.e. fat12, fat16, fat32, ntfs).
-EXCLUDED_FILE_SYSTEM_TYPES = ['exfat', 'fat12', 'fat16', 'fat32', 'fuseblk', 'ntfs', 'vfat']
-
 IMAGE_FILE_NAME = 'partition-%s.img'
 LOCK_FILE_NAME = '.#custom-root.lck'
 
@@ -178,6 +153,53 @@ NUMBERS_TITLE_CASE = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven
 NUMBERS_UPPER_CASE = ['NO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE']
 
 ########################################################################
+# File System Types
+########################################################################
+
+# Local file system types:
+# • btrfs is reported as btrfs
+# • exfat is reported as exfat (or fuseblk?)
+# • ext2  is reported as ext2
+# • ext3  is reported as ext3
+# • ext4  is reported as ext4
+# • fat12 is reported as vfat (?)
+# • fat16 is reported as vfat
+# • fat32 is reported as vfat
+# • ntfs  is reported as fuseblk
+# • swap  is reported as devtmpfs
+# • xfs   is reported as xfs
+# • zfs   is reported as zfs
+
+# Remote file system types:
+# • fuse.gvfsd-fuse
+# • fuse.sshfs
+
+# Map Linux file system types to display names.
+# For completeness, this dictionary includes file system types that are
+# not reported by `df --print-type` (i.e. fat12, fat16, fat32, ntfs).
+FILE_SYSTEM_TYPES = {
+    'btrfs': 'btrfs',
+    'exfat': 'exFAT',
+    'ext2': 'ext2',
+    'ext3': 'ext3',
+    'ext4': 'ext4',
+    'fat12': 'FAT12',
+    'fat16': 'FAT16',
+    'fat32': 'FAT32',
+    'ntfs': 'NTFS',
+    'fuseblk': 'NTFS',
+    'vfat': 'FAT',
+    'xfs': 'XFS',
+    'zfs': 'ZFS',
+    'fuse.gvfsd-fuse': 'remote',
+    'fuse.sshfs': 'remote'
+}
+
+# For completeness, this list includes file system types that are
+# not reported by `df --print-type` (i.e. fat12, fat16, fat32, ntfs).
+EXCLUDED_FILE_SYSTEM_TYPES = ['exfat', 'fat12', 'fat16', 'fat32', 'fuseblk', 'ntfs', 'vfat', 'fuse.gvfsd-fuse', 'fuse.sshfs']
+
+########################################################################
 # Progress
 ########################################################################
 
@@ -190,7 +212,7 @@ START_PERCENT = 0  # %
 FINAL_PERCENT = 100  # %
 
 ########################################################################
-# Terminal & Font Colors
+# Terminal Font Colors & Console Codes
 ########################################################################
 
 # TODO: Replace colors in other modules with these
@@ -222,8 +244,24 @@ NORMAL = '\033[0m'
 NEW_LINE = '\033[99D\n'
 
 ########################################################################
-# Keys
+# Control Keys
 ########################################################################
 
 CONTROL_SHIFT_KEYS_1 = (Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK)
 CONTROL_SHIFT_KEYS_2 = (Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MODIFIER_RESERVED_25_MASK)
+
+########################################################################
+# Emulator
+########################################################################
+
+# Allocate memory to the emulator in increments of 256 MiB.
+MEMORY_INCREMENT = 256 * MIB
+
+# The minimum system memory to reserve after allocating memory to the
+# emulator.
+MIN_RESERVE_MEMORY = 1 * 512 * MIB  # Bytes (512 MiB, 0.5 GiB)
+
+# The minimum available memory to reserve while testing.
+MIN_AVAILABLE_MEMORY = 3 * 512 * MIB  # Bytes (1536 MiB, 1.5 GiB)
+MIN_AVAILABLE_MEMORY_MIB = MIN_AVAILABLE_MEMORY / MIB
+MIN_AVAILABLE_MEMORY_GIB = MIN_AVAILABLE_MEMORY / GIB

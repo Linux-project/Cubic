@@ -149,12 +149,15 @@
         </child>
         <child>
           <object class="GtkButton" id="donate_menu_button">
-            <property name="label" translatable="yes">Donate</property>
+            <property name="label" translatable="yes">Fund Cubic</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
             <property name="image_position">right</property>
             <signal name="clicked" handler="on_clicked_donate_menu_button" swapped="no"/>
+            <style>
+              <class name="suggested-action"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>

@@ -31,7 +31,7 @@
 # References
 ########################################################################
 
-# N/A
+# https://pexpect.readthedocs.io/en/stable/index.html
 
 ########################################################################
 # Imports
@@ -97,7 +97,7 @@ def execute_synchronous(command, working_directory=None):
     exit_status = None
     signal_status = None
     global process
-    if process and process.isalive():
+    if is_alive(process):
         logger.log_value('Warning, the process is running', process.pid)
         logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
         logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
@@ -121,7 +121,7 @@ def execute_synchronous(command, working_directory=None):
         if process: process.close()
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracek back is', traceback.format_exc())
+        logger.log_value('The trace back is', traceback.format_exc())
 
     os.sync()  # Write data to disk.
     process = None
@@ -162,7 +162,7 @@ def execute_synchronous_unregistered(command, working_directory=None):
     except pexpect.ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracek back is', traceback.format_exc())
+        logger.log_value('The trace back is', traceback.format_exc())
 
     os.sync()  # Write data to disk.
     process = None
@@ -189,7 +189,7 @@ def execute_asynchronous(command, working_directory=None):
     logger.log_value('Execute asynchronously', display_command)
 
     global process
-    if process and process.isalive():
+    if is_alive(process):
         logger.log_value('Warning, the process is running', process.pid)
         logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
         logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
@@ -205,14 +205,43 @@ def execute_asynchronous(command, working_directory=None):
     except pexpect.ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracek back is', traceback.format_exc())
+        logger.log_value('The trace back is', traceback.format_exc())
 
     return process
 
 
 ########################################################################
-# Process Functions
+# Support Functions
 ########################################################################
+
+
+def is_alive(process):
+    """
+    Check if the process is exists and is running.
+
+    Arguments:
+    process
+        The process to check.
+
+    Returns:
+    bool
+        True if the process is alive, False otherwise.
+    """
+
+    try:
+        return process.isalive()
+    except AttributeError as exception:
+        # The process does not exist (process = None).
+        # 'NoneType' object has no attribute 'is_alive'.
+        return False
+    except pexpect.ExceptionPexpect as exception:
+        # There process is not running.
+        # pexpect.exceptions.ExceptionPexpect: isalive() encountered
+        # condition where "terminated" is 0, but there was no child
+        # process. Did someone else call waitpid() on our process?
+        return False
+    except Exception as exception:
+        return False
 
 
 def terminate_process():
@@ -230,7 +259,7 @@ def _terminate_user_process():
     # terminated.
     global process
     current_process = process
-    if current_process and current_process.isalive():
+    if is_alive(current_process):
         logger.log_value('Terminate process', current_process.pid)
         try:
             current_process.kill(signal.SIGTERM)
@@ -241,10 +270,10 @@ def _terminate_user_process():
             process = None
         except PermissionError as exception:
             logger.log_value('The exception is', exception)
-            logger.log_value('The tracek back is', traceback.format_exc())
+            logger.log_value('The trace back is', traceback.format_exc())
         except Exception as exception:
             logger.log_value('The exception is', exception)
-            logger.log_value('The tracek back is', traceback.format_exc())
+            logger.log_value('The trace back is', traceback.format_exc())
 
 
 def _terminate_root_process():
@@ -254,7 +283,7 @@ def _terminate_root_process():
     # terminated.
     global process
     current_process = process
-    if current_process and current_process.isalive():
+    if is_alive(current_process):
         logger.log_value('Terminate process', current_process.pid)
         try:
             program = os.path.join(model.application.directory, 'commands', 'stop-process')

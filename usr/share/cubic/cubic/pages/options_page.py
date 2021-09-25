@@ -162,6 +162,15 @@ def setup(action, old_page=None):
 
     elif action == 'next':
 
+        # Setup the Kernel tab.
+        setup_kernel_tab()
+
+        # Setup the Preseed tab.
+        setup_preseed_tab()
+
+        # Setup the Boot tab.
+        setup_boot_tab()
+
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -176,15 +185,6 @@ def setup(action, old_page=None):
 
         displayer.set_visible('title_label', False)
         displayer.set_visible('options_page__stack_switcher', True)
-
-        # Setup the Kernel tab.
-        setup_kernel_tab()
-
-        # Setup the Preseed tab.
-        setup_preseed_tab()
-
-        # Setup the Boot tab.
-        setup_boot_tab()
 
         return
 

@@ -71,18 +71,6 @@ def setup(action, old_page=None):
 
     if action == 'migrate':
 
-        displayer.reset_buttons(
-            back_button_label='❬Cancel',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Migrate❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
-
         display_version = constructor.get_major_minor_version(model.project.cubic_version)
         displayer.update_entry('migrate_page__project_cubic_version_entry', display_version)
         displayer.update_entry('migrate_page__project_directory_entry', model.project.directory)
@@ -99,6 +87,18 @@ def setup(action, old_page=None):
 
         displayer.update_status('migrate_page__custom_disk', BULLET)
         displayer.update_label('migrate_page__custom_disk_message', '')
+
+        displayer.reset_buttons(
+            back_button_label='❬Cancel',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Migrate❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
 
         return
 

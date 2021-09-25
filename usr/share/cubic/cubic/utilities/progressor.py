@@ -176,12 +176,12 @@ class ProgressTracker(threading.Thread):
 
         except InterruptException as exception:
             logger.log_value('Interrupted the progress tracker', exception)
-            # logger.log_value('The tracek back is', traceback.format_exc())
+            # logger.log_value('The trace back is', traceback.format_exc())
             # return exception
 
         except Exception as exception:
             logger.log_value('Error while running the progress tracker', exception)
-            # logger.log_value('The tracek back is', traceback.format_exc())
+            # logger.log_value('The trace back is', traceback.format_exc())
             # return exception
 
         logger.log_value('The progress tracker', 'Stopped')
@@ -261,7 +261,7 @@ def process_command(command, progress_tracker, working_directory=None):
         logger.log_value('The process stopped at', formatted_time)
         logger.log_value('The exit status, signal status is', '%s, %s' % (process.exitstatus, process.signalstatus))
         logger.log_value('The exception is', exception)
-        logger.log_value('The tracek back is', traceback.format_exc())
+        logger.log_value('The trace back is', traceback.format_exc())
         message = process.before.strip().replace('\r\n', '\n')
         logger.log_value('The message is', message)
         if is_debug: print_message_and_exception(message, exception)

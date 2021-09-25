@@ -78,18 +78,6 @@ def setup(action, old_page=None):
 
     if action == 'next':
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=False,
-            is_next_visible=True)
-
         displayer.update_status('prepare_page__boot_kernels', BULLET)
         displayer.empty_box('prepare_page__boot_kernels_box')
 
@@ -104,6 +92,18 @@ def setup(action, old_page=None):
 
         displayer.update_status('prepare_page__save_package_manifest', BULLET)
         displayer.update_label('prepare_page__save_package_manifest_message', '...')
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=False,
+            is_next_visible=True)
 
         return
 

@@ -77,18 +77,6 @@ def setup(action, old_page=None):
 
     if action == 'generate':
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Finish❭',
-            next_action='finish',
-            next_button_style=None,
-            is_next_sensitive=False,
-            is_next_visible=True)
-
         displayer.update_status('generate_page__copy_boot_files', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__copy_boot_files_progress_bar', 0)
         # displayer.update_progress_bar_text('generate_page__copy_boot_files_progress_bar', ' ')
@@ -120,6 +108,18 @@ def setup(action, old_page=None):
 
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.BULLET)
         displayer.update_label('generate_page__calculate_iso_image_checksum_message', '...')
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Finish❭',
+            next_action='finish',
+            next_button_style=None,
+            is_next_sensitive=False,
+            is_next_visible=True)
 
         return
 
@@ -214,9 +214,10 @@ def enter(action, old_page=None):
         if is_error: return  # Stay on this page.
         time.sleep(SLEEP_0500_MS)
 
-        displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=True)
+        # Success. Pause to allow the user to see the page.
+        time.sleep(SLEEP_0500_MS)
 
-        return
+        return 'finish'
 
     else:
 
@@ -244,11 +245,6 @@ def leave(action, new_page=None):
     elif action == 'finish':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
-        options_page.preseed_tab.remove_tree()
-        options_page.boot_tab.remove_tree()
-
-        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         configuration.save()
 
@@ -281,6 +277,12 @@ def leave(action, new_page=None):
 
     return
 
+
+########################################################################
+# Handler Functions
+########################################################################
+
+# N/A
 
 ########################################################################
 # Support Functions

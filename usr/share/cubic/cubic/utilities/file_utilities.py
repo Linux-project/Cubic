@@ -237,6 +237,7 @@ def file_exists(directory, file_name):
 
 def get_file_system_type(file_path):
 
+    # Local file system types:
     # • btrfs is reported as btrfs
     # • exfat is reported as exfat (or fuseblk?)
     # • ext2  is reported as ext2
@@ -249,6 +250,10 @@ def get_file_system_type(file_path):
     # • swap  is reported as devtmpfs
     # • xfs   is reported as xfs
     # • zfs   is reported as zfs
+
+    # Remote file system types:
+    # • fuse.gvfsd-fuse
+    # • fuse.sshfs
 
     logger.log_value('Get file system type', file_path)
     command = 'df --output=fstype "%s"' % file_path

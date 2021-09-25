@@ -39,10 +39,10 @@
 
 import os
 
+from cubic.choosers import directory_chooser
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CUBIC_VERSION_2020, CUBIC_VERSION_2021
 from cubic.constants import OK, ERROR, EXCLUDED_FILE_SYSTEM_TYPES, FILE_SYSTEM_TYPES
-from cubic.choosers import directory_chooser
 from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
@@ -67,6 +67,12 @@ def setup(action, old_page=None):
 
         # Initialize button labels, actions, and styles.
 
+        display_version = constructor.get_major_minor_version(model.application.cubic_version)
+        about_dialog = model.builder.get_object('about_dialog')
+        about_dialog.set_version('<small>%s</small>' % display_version)
+        displayer.update_label('start_page__version_label', 'Version %s' % display_version)
+        displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
+
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -78,12 +84,6 @@ def setup(action, old_page=None):
             next_button_style='suggested-action',
             is_next_sensitive=False,
             is_next_visible=True)
-
-        display_version = constructor.get_major_minor_version(model.application.cubic_version)
-        about_dialog = model.builder.get_object('about_dialog')
-        about_dialog.set_version('<small>%s</small>' % display_version)
-        displayer.update_label('start_page__version_label', 'Version %s' % display_version)
-        displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
 
         return
 
@@ -344,7 +344,7 @@ def validate_page():
 
         displayer.update_label(
             'start_page__project_directory_message',
-            '<span foreground="red">Error. Cannot customize Linux on the %s file system.</span>' % FILE_SYSTEM_TYPES[file_system_type])
+            '<span foreground="red">Error. Cannot customize Linux using the %s file system.</span>' % FILE_SYSTEM_TYPES[file_system_type])
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
 
         return

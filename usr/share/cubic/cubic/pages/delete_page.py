@@ -68,18 +68,6 @@ def setup(action, old_page=None):
 
     if action == 'delete':
 
-        displayer.reset_buttons(
-            back_button_label='Cancel',
-            back_action='cancel',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Delete',
-            next_action='delete',
-            next_button_style='destructive-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
-
         displayer.update_entry('delete_page__project_directory_entry', model.project.directory)
 
         # TODO: If custom.iso_file_name does not exist, then display a message below the entry.
@@ -139,6 +127,18 @@ def setup(action, old_page=None):
         else:
             label = 'There are no ISO files or MD5 files in this project directory.'
             enable = False
+
+        displayer.reset_buttons(
+            back_button_label='Cancel',
+            back_action='cancel',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Delete',
+            next_action='delete',
+            next_button_style='destructive-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
 
         displayer.update_check_button_label('delete_page__custom_iso_and_checksum_check_button', label)
         displayer.activate_check_button('delete_page__custom_iso_and_checksum_check_button', enable)
@@ -234,8 +234,8 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
 
-        # If the following is used, use use button_style='text-button'
-        # in the leave/cancel section.
+        # If the following is used, use button_style='text-button' in
+        # the leave/cancel section.
         #
         # displayer.reset_buttons(
         #     back_button_label='❬Back',

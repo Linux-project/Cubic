@@ -156,6 +156,9 @@ try:
     header_bar = model.builder.get_object('header_bar')
 
     # Project page
+    widget = model.builder.get_object('project_page__test_header_bar_button')
+    header_bar.add(widget)
+
     widget = model.builder.get_object('project_page__delete_header_bar_button')
     header_bar.add(widget)
 
@@ -173,6 +176,10 @@ try:
 
     # Terminal page
     widget = model.builder.get_object('terminal_page__copy_header_bar_button')
+    header_bar.add(widget)
+
+    # Finish page
+    widget = model.builder.get_object('finish_page__test_header_bar_button')
     header_bar.add(widget)
 
     #-------------------------------------------------------------------
@@ -216,4 +223,4 @@ try:
 
 except Exception as exception:
     logger.log_value('Exception', exception)
-    logger.log_value('The tracek back is', traceback.format_exc())
+    logger.log_value('The trace back is', traceback.format_exc())

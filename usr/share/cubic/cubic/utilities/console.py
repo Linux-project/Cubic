@@ -605,7 +605,7 @@ def is_virtual_environment_running():
 
 
 ########################################################################
-# Miscellaneous Virtual Terminal Functions
+# Support Functions
 ########################################################################
 '''
 def get_bash_process_id(pseudo_terminal_process_id):

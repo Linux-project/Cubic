@@ -52,10 +52,10 @@ from gi.repository import Gtk
 import os
 import time
 
-from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import SLEEP_0250_MS
-from cubic.constants import CONTROL_SHIFT_KEYS_1, CONTROL_SHIFT_KEYS_2
 from cubic.choosers import copy_file_chooser
+from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import CONTROL_SHIFT_KEYS_1, CONTROL_SHIFT_KEYS_2
+from cubic.constants import SLEEP_0250_MS
 from cubic.navigator import handle_navigation
 from cubic.utilities.displayer import MONOSPACE_FONT
 from cubic.utilities import console

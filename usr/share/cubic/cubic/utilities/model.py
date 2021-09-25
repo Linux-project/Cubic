@@ -104,6 +104,21 @@ status.iso_checksum = None
 status.iso_checksum_file_name = None
 
 ########################################################################
+# Generated
+########################################################################
+
+generated = Fields('generated')
+generated.iso_version_number = None
+generated.iso_file_name = None
+generated.iso_directory = None
+generated.iso_volume_id = None
+generated.iso_release_name = None
+generated.iso_disk_name = None
+generated.iso_release_notes_url = None
+generated.iso_checksum = None
+generated.iso_checksum_file_name = None
+
+########################################################################
 # Options
 ########################################################################
 
@@ -150,9 +165,10 @@ package_details_list = None
 ########################################################################
 
 help_urls = {
-    'start_page': 'https://answers.launchpad.net/cubic/+faq/3232',
-    'migrate_page': 'https://answers.launchpad.net/cubic/+faq/3230',
-    'project_page': 'https://answers.launchpad.net/cubic/+faq/3229',
+    'start_page': 'https://answers.launchpad.net/cubic/+faq/3310',
+    'migrate_page': 'https://answers.launchpad.net/cubic/+faq/3232',
+    'project_page': 'https://answers.launchpad.net/cubic/+faq/3230',
+    'test_1_page': 'https://answers.launchpad.net/cubic/+faq/3229',
     'delete_page': 'https://answers.launchpad.net/cubic/+faq/3228',
     'extract_page': 'https://answers.launchpad.net/cubic/+faq/3227',
     'terminal_page': 'https://answers.launchpad.net/cubic/+faq/3226',
@@ -164,5 +180,6 @@ help_urls = {
     'boot_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
     'compression_page': 'https://answers.launchpad.net/cubic/+faq/3221',
     'generate_page': 'https://answers.launchpad.net/cubic/+faq/3220',
-    'finish_page': 'https://answers.launchpad.net/cubic/+faq/3219'
+    'finish_page': 'https://answers.launchpad.net/cubic/+faq/3219',
+    'test_2_page': 'https://answers.launchpad.net/cubic/+faq/3229'
 }

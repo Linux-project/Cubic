@@ -34,13 +34,17 @@ Build-Depends:
                     python3-icu (>=1.9.8),
 #                   Required for magic
                     python3-magic (>=2:0.4.15),
-#                   Required for pexpect.
+#                   Required for pexpect
                     python3-pexpect (>=4.2.1),
+#                   Required to get system memory information
+                    python3-psutil (>=5.4.2-1),
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
                     gir1.2-gtk-3.0 (>=3.22.30),
 #                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
+#                   Required for qemu-system-x86_64
+                    qemu-system-x86 (>=1:2.11),
 #                   Required for rsync; usually preinstalled
                     rsync (>=3.1.2),
 #                   Required for mksquashfs, unsquashfs
@@ -84,13 +88,17 @@ Depends:
                     python3-icu (>=1.9.8),
 #                   Required for magic
                     python3-magic (>=2:0.4.15),
-#                   Required for pexpect.
+#                   Required for pexpect
                     python3-pexpect (>=4.2.1),
+#                   Required to get system memory information
+                    python3-psutil (>=5.4.2-1),
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
                     gir1.2-gtk-3.0 (>=3.22.30),
 #                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
+#                   Required for qemu-system-x86_64
+                    qemu-system-x86 (>=1:2.11),
 #                   Required for rsync; usually preinstalled
                     rsync (>=3.1.2),
 #                   Required for mksquashfs, unsquashfs

@@ -79,18 +79,6 @@ def setup(action, old_page=None):
 
     if action == 'next':
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Customize❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=False,
-            is_next_visible=True)
-
         # The template must always be None if is success copy is None.
         # This should be set correctly on the Project page, but set it
         # here as a precaution (in case the user edited the
@@ -124,6 +112,18 @@ def setup(action, old_page=None):
         # displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
         displayer.update_label('extract_page__unsquashfs_message', '')
         displayer.update_status('extract_page__unsquashfs', displayer.BULLET)
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Customize❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=False,
+            is_next_visible=True)
 
         return
 
