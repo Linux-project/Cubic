@@ -149,12 +149,40 @@ def get_kernel_version():
     return result
 
 
-def get_package_version(package_name):
+def get_package_version_ORIGINAL(package_name):
 
     command = 'dpkg-query --showformat="${Version}\n" --show "%s"' % package_name
     result, exit_status, signal_status = execute_synchronous(command)
 
     return result
+
+
+def get_package_version_01(package_name):
+
+    command = 'dpkg-query --show "%s"' % package_name
+    result, exit_status, signal_status = execute_synchronous(command)
+    logger.log_value('Result', result)
+    logger.log_value('Exit status', exit_status)
+    logger.log_value('Signal status', signal_status)
+
+    if exit_status:
+        return None
+    else:
+        return result.split()[1]
+
+
+def get_package_version(package_name):
+
+    command = 'dpkg-query --showformat="${Version}\n" --show "%s"' % package_name
+    result, exit_status, signal_status = execute_synchronous(command)
+    logger.log_value('Result', result)
+    logger.log_value('Exit status', exit_status)
+    logger.log_value('Signal status', signal_status)
+
+    if exit_status:
+        return None
+    else:
+        return result
 
 
 def get_major_minor_version(package_version):

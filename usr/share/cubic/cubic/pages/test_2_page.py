@@ -65,6 +65,9 @@ def setup(action, old_page=None):
 
         displayer.update_label('test_2_page__banner_label', '\n')
         displayer.set_label_error('test_2_page__banner_label', False)
+
+        displayer.empty_box('test_2_page__warnings_box')
+
         displayer.update_entry('test_2_page__custom_iso_version_number_entry', model.generated.iso_version_number)
         displayer.update_entry('test_2_page__custom_iso_file_name_entry', model.generated.iso_file_name)
         displayer.update_entry('test_2_page__custom_iso_directory_entry', model.generated.iso_directory)
@@ -87,6 +90,8 @@ def setup(action, old_page=None):
             is_next_visible=False)
         '''
 
+        emulator.start_emulator(update_status)
+
         return
 
     else:
@@ -99,8 +104,6 @@ def setup(action, old_page=None):
 def enter(action, old_page=None):
 
     if action == 'test':
-
-        emulator.start_emulator(update_status)
 
         return
 
@@ -204,6 +207,25 @@ def update_status(status):
         displayer.update_label('test_2_page__banner_label', 'Testing the generated disk image...')
         displayer.set_label_error('test_2_page__banner_label', False)
 
+        is_virtualization_supported = emulator.host_has_virtualization_support()
+        if not is_virtualization_supported:
+            message = 'Warning. The host system does not support virtualization. Performance will be degraded.'
+            displayer.insert_box_label('test_2_page__warnings_box', message, is_error=True)
+        else:
+            message = 'The host system supports virtualization for improved performance.'
+            displayer.insert_box_label('test_2_page__warnings_box', message)
+
+        # is_gtk_display_supported = emulator.host_has_gtk_display_support()
+        # if not is_gtk_display_supported:
+        #     message = 'Warning. The host system does not support GTK display features.'
+        #     displayer.insert_box_label('test_2_page__warnings_box', message, is_error=True)
+        # else:
+        #     message = 'The host system supports GTK display features.'
+        #     displayer.insert_box_label('test_2_page__warnings_box', message)
+
+        message = 'Use Ctrl-Alt-G to toggle mouse and keyboard capture.'
+        displayer.insert_box_label('test_2_page__warnings_box', message)
+
         displayer.reset_buttons(
             back_button_label='❬Stop',
             back_action='cancel',
@@ -213,6 +235,8 @@ def update_status(status):
             is_next_visible=False)
 
     elif status == emulator.ERROR:
+
+        displayer.empty_box('test_2_page__warnings_box')
 
         displayer.update_label('test_2_page__banner_label', 'Error. Unable to test the generated disk image.')
         displayer.set_label_error('test_2_page__banner_label', True)

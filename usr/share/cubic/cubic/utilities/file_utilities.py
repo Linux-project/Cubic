@@ -325,6 +325,15 @@ def delete_file(file_path):
     return result, exit_status, signal_status
 
 
+def file_contains_any_word(file_path, *words):
+    with open(file_path, 'r') as file:
+        for line in file:
+            for word in words:
+                if word in line:
+                    return True
+    return False
+
+
 def replace_text_in_file(file_path, search_text, replacement_text):
     logger.log_label('Replace text in file')
     logger.log_value('Filepath', file_path)

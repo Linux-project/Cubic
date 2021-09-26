@@ -51,8 +51,11 @@ import psutil
 gi.require_version('GLib', '2.0')
 from gi.repository import GLib
 
+from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import MEMORY_INCREMENT, MIN_RESERVE_MEMORY, MIN_AVAILABLE_MEMORY, MIN_AVAILABLE_MEMORY_MIB, MIN_AVAILABLE_MEMORY_GIB
 from cubic.constants import MIB, GIB
+from cubic.utilities import constructor
+from cubic.utilities import file_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
 from cubic.utilities.processor import execute_asynchronous
@@ -101,19 +104,70 @@ def _start_emulator():
     # Escape ',' in file path with ',,' per qemu requirements.
     custom_iso_file_path = custom_iso_file_path.replace(',', ',,')
 
-    command = (
-        'qemu-system-x86_64'
-        ' --name "Cubic"'
-        ' -M pc'
-        ' -enable-kvm'
-        ' -cpu host'
-        ' -m {emulator_memory_mib:d}M'
-        ' -display gtk,zoom-to-fit=on'
-        ' -device intel-hda'
-        ' -device hda-duplex'
-        ' -drive format=raw,file="{custom_iso_file_path}"').format(
-            emulator_memory_mib=emulator_memory_mib,
-            custom_iso_file_path=custom_iso_file_path)
+    # Check if the host CPU supports Kernel-based virtualization (KVM).
+    # • vms - Intel flag
+    # • svm - AMD flag
+    is_virtualization_supported = host_has_virtualization_support()
+    logger.log_value('System supports virtualization', is_virtualization_supported)
+
+    # Check if the host supports gtk.
+    is_gtk_display_supported = host_has_gtk_display_support()
+    logger.log_value('System supports GTK display', is_gtk_display_supported)
+
+    if is_virtualization_supported and is_gtk_display_supported:
+        command = (
+            'qemu-system-x86_64'
+            ' --name "Cubic"'
+            ' -M pc'
+            ' -enable-kvm'
+            ' -cpu host'
+            ' -m {emulator_memory_mib:d}M'
+            ' -display gtk,zoom-to-fit=on'
+            ' -device intel-hda'
+            ' -device hda-duplex'
+            ' -drive format=raw,file="{custom_iso_file_path}"').format(
+                emulator_memory_mib=emulator_memory_mib,
+                custom_iso_file_path=custom_iso_file_path)
+    elif is_virtualization_supported:
+        logger.log_value('Warning', BOLD_RED + 'System does not support GTk display' + NORMAL)
+        command = (
+            'qemu-system-x86_64'
+            ' --name "Cubic"'
+            ' -M pc'
+            ' -enable-kvm'
+            ' -cpu host'
+            ' -m {emulator_memory_mib:d}M'
+            ' -device intel-hda'
+            ' -device hda-duplex'
+            ' -drive format=raw,file="{custom_iso_file_path}"').format(
+                emulator_memory_mib=emulator_memory_mib,
+                custom_iso_file_path=custom_iso_file_path)
+    elif is_gtk_display_supported:
+        logger.log_value('Warning', BOLD_RED + 'System does not support virtualization' + NORMAL)
+        command = (
+            'qemu-system-x86_64'
+            ' --name "Cubic"'
+            ' -M pc'
+            ' -m {emulator_memory_mib:d}M'
+            ' -display gtk,zoom-to-fit=on'
+            ' -device intel-hda'
+            ' -device hda-duplex'
+            ' -drive format=raw,file="{custom_iso_file_path}"').format(
+                emulator_memory_mib=emulator_memory_mib,
+                custom_iso_file_path=custom_iso_file_path)
+    else:
+        logger.log_value('Warning', BOLD_RED + 'System does not support virtualization' + NORMAL)
+        logger.log_value('Warning', BOLD_RED + 'System does not support GTk display' + NORMAL)
+        command = (
+            'qemu-system-x86_64'
+            ' --name "Cubic"'
+            ' -M pc'
+            ' -m {emulator_memory_mib:d}M'
+            ' -device intel-hda'
+            ' -device hda-duplex'
+            ' -drive format=raw,file="{custom_iso_file_path}"').format(
+                emulator_memory_mib=emulator_memory_mib,
+                custom_iso_file_path=custom_iso_file_path)
 
     # Start the emulator.
     process = execute_asynchronous(command)
@@ -173,6 +227,30 @@ def remove_status_callback():
 ########################################################################
 # Support Functions
 ########################################################################
+
+
+def host_has_virtualization_support():
+    """
+    Check if the host CPU supports Kernel-based virtualization (KVM).
+    • vms - Intel flag
+    • svm - AMD flag
+    """
+
+    has_support = file_utilities.file_contains_any_word('/proc/cpuinfo', 'vmx', 'svm')
+    logger.log_value('The host system supports virtualization?', has_support)
+
+    return has_support
+
+
+def host_has_gtk_display_support():
+    """
+    Check if the host supports gtk.
+    """
+
+    has_support = bool(constructor.get_package_version('qemu-system-gui'))
+    logger.log_value('The host system supports GTK display?', has_support)
+
+    return has_support
 
 
 def get_total_system_memory():

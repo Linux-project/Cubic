@@ -509,7 +509,7 @@ def empty_box(box_name):
         GLib.idle_add(Gtk.Widget.destroy, child)
 
 
-def insert_box_label(box_name, text, opacity):
+def insert_box_label(box_name, text, opacity=1.00, is_error=False):
 
     # Since label is not displayed, there is no need to call GLib.idle_add().
     label = Gtk.Label(text)
@@ -518,6 +518,9 @@ def insert_box_label(box_name, text, opacity):
     label.set_xalign(0.00)
     label.set_visible(True)
     label.set_opacity(opacity)
+    if is_error:
+        context = label.get_style_context()
+        context.add_class('error')
     label.set_justify(Gtk.Justification.LEFT)
     label.set_line_wrap(True)
     # label.set_max_width_chars(0)

@@ -1,5 +1,10 @@
 cubic (2021.09) bionic focal groovy hirsute impish; urgency=low
 
+  * Issues fixed in version 2021.09-57:
+
+  - Fixed Bug LP:#1945071, Unable to test the generated disk image on Ubuntu
+    18.04 Bionic Beaver.
+
   * Issues fixed in version 2021.09-56:
 
   - Fixed Bug LP:#1944062, Add capability to test generated ISO. Added a Test
@@ -161,4 +166,4 @@ cubic (2021.09) bionic focal groovy hirsute impish; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 25 Sep 2021 14:46:23 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 26 Sep 2021 10:20:16 -0400
