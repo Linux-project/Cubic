@@ -223,7 +223,7 @@ def update_status(status):
         #     message = 'The host system supports GTK display features.'
         #     displayer.insert_box_label('test_2_page__warnings_box', message)
 
-        message = 'Use Ctrl-Alt-G to toggle mouse and keyboard capture.'
+        message = 'Use Ctrl-Alt-G (or Ctrl-Alt) to toggle mouse and keyboard capture.'
         displayer.insert_box_label('test_2_page__warnings_box', message)
 
         displayer.reset_buttons(

@@ -269,7 +269,7 @@ import sys
 import threading
 # import traceback
 
-from cubic.utilities.displayer import SLIDE_NONE, SLIDE_LEFT, SLIDE_RIGHT, SLIDE_DOWN, SLIDE_UP
+from cubic.utilities.displayer import SLIDE_NONE, SLIDE_LEFT, SLIDE_RIGHT, SLIDE_DOWN, SLIDE_UP, CROSS_FADE
 from cubic.utilities import displayer
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -734,7 +734,7 @@ def get_new_page(action, page):
             effect = SLIDE_RIGHT
         elif action == 'test':
             new_page_name = 'test_1_page'
-            effect = SLIDE_DOWN
+            effect = CROSS_FADE  # SLIDE_DOWN
         elif action == 'delete':
             new_page_name = 'delete_page'
             effect = SLIDE_NONE
@@ -753,7 +753,7 @@ def get_new_page(action, page):
     elif page_name == 'test_1_page':
         if action == 'cancel':
             new_page_name = 'project_page'
-            effect = SLIDE_UP
+            effect = CROSS_FADE  # SLIDE_UP
         elif action == 'quit':
             new_page_name = None
             effect = SLIDE_NONE
@@ -921,7 +921,7 @@ def get_new_page(action, page):
             effect = SLIDE_RIGHT
         elif action == 'test':
             new_page_name = 'test_2_page'
-            effect = SLIDE_DOWN
+            effect = CROSS_FADE  # SLIDE_DOWN
         elif action == 'close':
             new_page_name = None
             effect = SLIDE_NONE
@@ -934,7 +934,7 @@ def get_new_page(action, page):
     elif page_name == 'test_2_page':
         if action == 'cancel':
             new_page_name = 'finish_page'
-            effect = SLIDE_UP
+            effect = CROSS_FADE  # SLIDE_UP
         elif action == 'quit':
             new_page_name = None
             effect = SLIDE_NONE

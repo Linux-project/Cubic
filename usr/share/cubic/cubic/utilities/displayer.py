@@ -93,6 +93,7 @@ SLIDE_LEFT = Gtk.StackTransitionType.SLIDE_LEFT
 SLIDE_RIGHT = Gtk.StackTransitionType.SLIDE_RIGHT
 SLIDE_UP = Gtk.StackTransitionType.SLIDE_UP
 SLIDE_DOWN = Gtk.StackTransitionType.SLIDE_DOWN
+CROSS_FADE = Gtk.StackTransitionType.CROSSFADE
 
 ########################################################################
 # General Functions
