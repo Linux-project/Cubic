@@ -1,4 +1,26 @@
-cubic (2021.09) bionic focal groovy hirsute impish; urgency=low
+cubic (2021.10) bionic focal groovy hirsute impish; urgency=low
+
+  * Issues fixed in version 2021.10-58:
+
+  - Fixed Bug LP:#1945244, QEMU window does no open on Ubuntu 21.04 when Test
+    button is clicked. Update dependencies to require qemu-system-x86 for all
+    Ubuntu versions. Update dependencies to require qemu-system-gui for Ubuntu
+    versions > 18.04 Bionic.
+    Ubuntu 18.04 Bionic:
+    - Require qemu-system-x86 1:2.11
+    - qemu-system-gui is not available and is not required for zoom to fit
+    Ubuntu 20.04 Focal:
+    - Require qemu-system-x86 1:4.2
+    - Require qemu-system-gui 1:4.2; does not depend on qemu-system-x86
+    Ubuntu 20.10 Groovy (unsupported, so there is no Cubic build for 20.10)
+    - Require qemu-system-x86 1:5.0
+    - Require qemu-system-gui 1:5.0; does not depend on qemu-system-x86
+    Ubuntu 21.04 Hirsute:
+    - Require qemu-system-x86 1:5.2
+    - Require qemu-system-gui 1:5.2; depends on qemu-system-x86
+    Ubuntu 21.10 Impish:
+    - Require qemu-system-x86 1:6.0
+    - Require qemu-system-gui 1:6.0; depends on qemu-system-x86
 
   * Issues fixed in version 2021.09-57:
 
@@ -166,4 +188,4 @@ cubic (2021.09) bionic focal groovy hirsute impish; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 26 Sep 2021 10:20:16 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 10 Oct 2021 00:37:45 -0400

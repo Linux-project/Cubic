@@ -45,6 +45,8 @@ Build-Depends:
                     python3-pyinotify (>=0.9.6),
 #                   Required for qemu-system-x86_64
                     qemu-system-x86 (>=1:2.11),
+#                   Required for QEMU Gtk Zoom To Fit for Ubuntu > 18.04 LTS
+                    qemu-system-gui (>=1:4.2) | base-files (<11),
 #                   Required for rsync; usually preinstalled
                     rsync (>=3.1.2),
 #                   Required for mksquashfs, unsquashfs
@@ -99,6 +101,8 @@ Depends:
                     python3-pyinotify (>=0.9.6),
 #                   Required for qemu-system-x86_64
                     qemu-system-x86 (>=1:2.11),
+#                   Required for QEMU Gtk Zoom To Fit for Ubuntu > 18.04 LTS
+                    qemu-system-gui (>=1:4.2) | base-files (<11),
 #                   Required for rsync; usually preinstalled
                     rsync (>=3.1.2),
 #                   Required for mksquashfs, unsquashfs
