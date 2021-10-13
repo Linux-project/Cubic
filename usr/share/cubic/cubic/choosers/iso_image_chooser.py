@@ -68,9 +68,9 @@ def open(calback, initial_file_path=None):
     displayer.set_sensitive('window', False)
 
     if initial_file_path:
-        displayer.show_file_chooser(name, initial_file_path)
+        displayer.show_file_chooser(name, os.path.join(initial_file_path, '*'))
     else:
-        displayer.show_file_chooser(name, model.application.user_home)
+        displayer.show_file_chooser(name, os.path.join(model.application.user_home, '*'))
 
     set_callback(calback)
 

@@ -63,7 +63,7 @@ def setup(action, old_page=None):
 
     if action == 'test':
 
-        displayer.update_label('test_1_page__banner_label', '\n')
+        displayer.update_label('test_1_page__banner_label', '')
         displayer.set_label_error('test_1_page__banner_label', False)
 
         displayer.empty_box('test_1_page__warnings_box')
@@ -123,7 +123,7 @@ def leave(action, new_page=None):
         # by the status call back function.
         emulator.remove_status_callback()
 
-        displayer.update_label('test_1_page__banner_label', '\n')
+        displayer.update_label('test_1_page__banner_label', '')
         displayer.set_label_error('test_1_page__banner_label', False)
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)

@@ -323,10 +323,10 @@ def set_label_error(widget_name, is_error):
 ########################################################################
 
 
-def update_entry(entry_name, text):
+def update_entry(widget_name, text):
 
-    # logger.log_value('Update entry %s' % entry_name, text)
-    entry = model.builder.get_object(entry_name)
+    # logger.log_value('Update entry %s' % widget_name, text)
+    entry = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Entry.set_text, entry, text)
 
 
@@ -347,6 +347,41 @@ def set_entry_editable(widget_name, is_editable):
     entry = model.builder.get_object(widget_name)
     # entry.set_editable(is_editable)
     GLib.idle_add(Gtk.Entry.set_editable, entry, is_editable)
+
+
+########################################################################
+# Combo Box Text Functions
+########################################################################
+
+
+def append_combo_box_text(widget_name, text):
+    """
+    Add text to the beginning of the specified combo box text.
+    """
+
+    # logger.log_value('Append combo box text %s' % widget_name, text)
+    combo_box_text = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.ComboBoxText.append_text, combo_box_text, text)
+
+
+def prepend_combo_box_text(widget_name, text):
+    """
+    Add text to the end of the specified combo box text.
+    """
+
+    # logger.log_value('Prepend combo box text %s' % widget_name, text)
+    combo_box_text = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.ComboBoxText.prepend_text, combo_box_text, text)
+
+
+def remove_all_combo_box_text(widget_name):
+    """
+    Remove all text from the the specified combo box text.
+    """
+
+    # logger.log_value('Remove all text from combo box text', widget_name)
+    combo_box_text = model.builder.get_object(widget_name)
+    GLib.idle_add(Gtk.ComboBoxText.remove_all, combo_box_text)
 
 
 ########################################################################

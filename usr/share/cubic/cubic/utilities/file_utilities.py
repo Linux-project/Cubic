@@ -220,6 +220,32 @@ def get_text_file_paths(start_path):
 # File Functions
 ########################################################################
 
+# https://docs.python.org/3/library/functions.html#open
+#
+# r   Open text file for reading. The stream is positioned at the
+#     beginning of the file.
+#
+# r+  Open for reading and writing. The stream is positioned at the
+#     beginning of the file.
+#
+# w   Truncate file to zero length or create text file for writing.
+#     The stream is positioned at the beginning of the file.
+#
+# w+  Open for reading and writing. The file is created if it does
+#     not exist, otherwise it is truncated. The stream is positioned
+#     at the beginning of the file.
+#
+# a   Open for writing. The file is created if it does not exist.
+#     The stream is positioned at the end of the file.  Subsequent
+#     writes to the file will always end up at the then current end
+#     of file, irrespective of any intervening fseek(3) or similar.
+#
+# a+  Open for reading and writing. The file is created if it does
+#     not exist. The stream is positioned at the end of the file.
+#     Subsequent writes to the file will always end up at the then
+#     current end of file, irrespective of any intervening fseek(3)
+#     or similar.
+
 
 def file_exists(directory, file_name):
 
@@ -233,6 +259,42 @@ def file_exists(directory, file_name):
     else:
         logger.log_value('%s not found in' % file_name, directory)
         return False
+
+
+def read_lines(file_path):
+
+    logger.log_value('Read lines from file', file_path)
+
+    # Read the file if it exists.
+    lines = []
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.read().strip().splitlines()
+    except FileNotFoundError as exception:
+        logger.log_value('File does not exist', file_path)
+    else:
+        logger.log_value('Number of lines read', len(lines))
+
+    return lines
+
+
+def write_lines(file_path, lines):
+
+    logger.log_value('Write lines to file', file_path)
+
+    # Write the lines to a new empty file.
+    try:
+        with open(file_path, 'w') as file:
+            first = True
+            for line in lines:
+                if first:
+                    file.write(line)
+                    first = False
+                else:
+                    file.write(os.linesep + line)
+    except Exception as exception:
+        logger.log_value('Unable to write lines to file', file_path)
+        logger.log_value('The exception is', exception)
 
 
 def get_file_system_type(file_path):

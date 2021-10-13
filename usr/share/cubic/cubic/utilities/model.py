@@ -51,6 +51,7 @@ application.directory = None
 application.user_home = None
 application.cubic_version = None
 application.kernel_version = None
+application.projects = None
 
 ########################################################################
 # Project

@@ -73,6 +73,11 @@ def setup(action, old_page=None):
         displayer.update_label('start_page__version_label', 'Version %s' % display_version)
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
 
+        # Initialize the list of previous projects.
+        displayer.remove_all_combo_box_text('start_page__project_directory_combo_box_text')
+        for directory in model.application.projects:
+            displayer.append_combo_box_text('start_page__project_directory_combo_box_text', directory)
+
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -92,6 +97,11 @@ def setup(action, old_page=None):
         # Do not change button labels, actions, and styles.
         # The validate_page() function in the enter action will assign
         # the correct button labels, actions, and styles.
+
+        # Initialize the list of previous projects.
+        displayer.remove_all_combo_box_text('start_page__project_directory_combo_box_text')
+        for directory in model.application.projects:
+            displayer.append_combo_box_text('start_page__project_directory_combo_box_text', directory)
 
         displayer.reset_buttons(
             back_button_label=None,
@@ -186,6 +196,8 @@ def leave(action, new_page=None):
         # model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
         # model.project.custom_disk_directory = constructor.construct_custom_disk_directory(model.project.directory)
 
+        save_previous_projects_list()
+
         return
 
     elif action == 'migrate':
@@ -213,6 +225,8 @@ def leave(action, new_page=None):
         # model.project.iso_mount_point = constructor.construct_original_iso_mount_point(model.project.directory)
         # model.project.custom_root_directory = constructor.construct_custom_root_directory(model.project.directory)
         # model.project.custom_disk_directory = constructor.construct_custom_disk_directory(model.project.directory)
+
+        save_previous_projects_list()
 
         return
 
@@ -270,6 +284,22 @@ def selected_project_directory(directory):
     displayer.update_entry('start_page__project_directory_entry', directory)
 
 
+def save_previous_projects_list():
+
+    # Append the selected project directory to the list of previous
+    # project directories, ensuring there are no duplicates. Truncate
+    # the list to five items.
+    model.application.projects = list(dict.fromkeys([model.project.directory] + model.application.projects))[0:5]
+
+    # Ensure the Cubic configuration directory exists.
+    file_path = os.path.join(model.application.user_home, '.config', 'cubic')
+    file_utilities.make_directories(file_path)
+
+    # Save the list of project directories.
+    file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'projects.conf')
+    file_utilities.write_lines(file_path, model.application.projects)
+
+
 ########################################################################
 # Validation Functions
 ########################################################################
@@ -318,6 +348,9 @@ def validate_page():
             is_next_sensitive=False,
             is_next_visible=True)
 
+        # Remove the invalid directory from list of previous projects.
+        model.application.projects.remove(model.project.directory)
+
         displayer.update_label('start_page__project_directory_message', '<span foreground="red">Error. Cannot access directory.</span>')
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
 
@@ -341,6 +374,9 @@ def validate_page():
             next_button_style='suggested-action',
             is_next_sensitive=False,
             is_next_visible=True)
+
+        # Remove the invalid directory from list of previous projects.
+        model.application.projects.remove(model.project.directory)
 
         displayer.update_label(
             'start_page__project_directory_message',
