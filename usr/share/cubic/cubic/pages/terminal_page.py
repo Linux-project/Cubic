@@ -634,7 +634,8 @@ def update_release_descriptions():
 
     # logger.log_label('Update the release descriptions')
 
-    description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
+    # description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
+    description = '%s (Cubic %s)' % (model.custom.iso_volume_id, model.project.modify_date)
 
     file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
     if os.path.isfile(file_path) and not os.path.islink(file_path):

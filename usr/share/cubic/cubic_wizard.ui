@@ -175,6 +175,7 @@
   <object class="GtkWindow" id="window">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
+    <property name="window_position">center</property>
     <property name="icon_name">cubic</property>
     <signal name="destroy" handler="on_window_destroy" swapped="no"/>
     <child type="titlebar">

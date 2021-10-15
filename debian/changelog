@@ -1,5 +1,15 @@
 cubic (2021.10) bionic focal groovy hirsute impish; urgency=low
 
+  * Issues fixed in version 2021.10-61:
+
+  - Fixed Bug LP:#1947060, The "OS Release" check box on the Project page does
+    not show an error when the "Volume ID" field is blank.
+  - Fixed Bug LP:#1947212, ValueError when selecting an invalid directory from
+    the previous projects list on the Start page.
+  - Refactored code for previously fixed Bug LP:#1946670.
+  - Shortened the release description.
+  - Center Cubic window upon launch.
+
   * Issues fixed in version 2021.10-60:
 
   - Fixed Bug LP:#1946670, Add ability to select an existing project on the
@@ -199,4 +209,4 @@ cubic (2021.10) bionic focal groovy hirsute impish; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 12 Oct 2021 21:11:30 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 14 Oct 2021 20:51:34 -0400

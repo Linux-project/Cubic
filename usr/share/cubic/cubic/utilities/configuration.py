@@ -385,25 +385,6 @@ def _load_from_2021_layout():
 ########################################################################
 
 
-def save_ORIGINAL():
-
-    logger.log_label('Save configuration')
-
-    if model.project.cubic_version < CUBIC_VERSION_2020:
-        # Initialize the configuration file to the current layout.
-        _initialize_2021_layout()
-        # Save using the current layout.
-        _save_using_2021_layout()
-    elif model.project.cubic_version < CUBIC_VERSION_2021:
-        # Initialize the configuration file to the current layout.
-        _initialize_2021_layout()
-        # Save using the current layout.
-        _save_using_2021_layout()
-    else:
-        # Save using the current layout.
-        _save_using_2021_layout()
-
-
 def save():
 
     logger.log_label('Save configuration')

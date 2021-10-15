@@ -662,7 +662,7 @@ def selected_original_iso_file_path(original_iso_file_path):
                 # validator requires is_success_copy and is_success_extract.
                 status = initialize_status_from_model()
                 # Overwrite iso configuration and boot files.
-                # Always set is success copy to False whenever ISO
+                # Always set is success copy to False whenever iso
                 # template is set to None.
                 status.is_success_copy = False
                 # status.is_success_extract = False or True
@@ -1058,37 +1058,6 @@ def initialize_custom_from_model():
     fields.iso_disk_name.validator = validate_custom_iso_disk_name
     fields.iso_release_notes_url.validator = validate_custom_iso_release_notes_url
     fields.options_update_os_release.validator = validate_custom_options_update_os_release
-
-    return fields
-
-
-def initialize_status_from_model_ORIGINAL():
-    """
-    Initialize the following status fields from the model.
-      - is_success_copy
-      - is_success_extract
-      - iso_template
-      - casper_directory
-
-    The following fields are not initialized from the model.
-      - iso_checksum = None
-      - iso_checksum_file_name = None
-    """
-
-    logger.log_label('Initialize the status fields from the model')
-
-    fields = Fields('status')
-
-    fields.is_success_copy = model.status.is_success_copy
-    fields.is_success_extract = model.status.is_success_extract
-    fields.iso_template = model.status.iso_template
-    fields.casper_directory = model.status.casper_directory
-    # The saved iso checksum is never used.
-    # fields.iso_checksum = model.status.iso_checksum
-    fields.iso_checksum = None
-    # The iso checksum file_name is always constructed.
-    # fields.iso_checksum_file_name = model.status.iso_checksum_file_name
-    fields.iso_checksum_file_name = None
 
     return fields
 
@@ -1665,7 +1634,14 @@ def on_changed__project_page__custom_iso_volume_id_entry(widget):
 
     # custom.options_update_os_release.value will be updated
     # automatically when the on_toggled handler is invoked.
-    displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', True)
+    if bool(custom.iso_volume_id.value):
+        # Toggle the check box to be selected if iso volume id is valid.
+        if bool(custom.options_update_os_release.value): displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', False)
+        displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', True)
+    else:
+        # Toggle the check box.
+        displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', not bool(custom.options_update_os_release.value))
+        displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', bool(custom.options_update_os_release.value))
 
     validate_page()
 
@@ -2240,8 +2216,8 @@ def validate_custom_options_update_os_release(fields):
         message = None
         status = BLANK
     else:
-        if fields.iso_volume_id.value:
-            if fields.options_update_os_release.value:
+        if fields.iso_volume_id.is_valid:
+            if bool(fields.options_update_os_release.value):
                 is_valid = True
                 message = None
                 status = OK
@@ -2250,7 +2226,7 @@ def validate_custom_options_update_os_release(fields):
                 message = None
                 status = OPTIONAL
         else:
-            if fields.options_update_os_release.value:
+            if bool(fields.options_update_os_release.value):
                 is_valid = False
                 message = None
                 status = ERROR

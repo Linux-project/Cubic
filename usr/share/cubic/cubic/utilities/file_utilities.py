@@ -262,16 +262,25 @@ def file_exists(directory, file_name):
 
 
 def read_lines(file_path):
+    """
+    Read lines from a file; exclude blank lines and trim each line.
+
+    Returns:
+    lines : list
+        A list of strings. The list may be empty.
+    """
 
     logger.log_value('Read lines from file', file_path)
 
-    # Read the file if it exists.
     lines = []
     try:
         with open(file_path, 'r') as file:
-            lines = file.read().strip().splitlines()
+            lines = [line.strip() for line in file.readlines() if line.strip()]
     except FileNotFoundError as exception:
         logger.log_value('File does not exist', file_path)
+    except Exception as exception:
+        logger.log_value('Unable to read lines from file', file_path)
+        logger.log_value('The exception is', exception)
     else:
         logger.log_value('Number of lines read', len(lines))
 
@@ -279,6 +288,16 @@ def read_lines(file_path):
 
 
 def write_lines(file_path, lines):
+    """
+    Write the specified lines to the specified file path. If the file
+    path does not exist, it will be created.
+
+    Arguments:
+    file_path : string
+        The file path to write to.
+    lines : list
+        A list of strings. lines may be an empty list.
+    """
 
     logger.log_value('Write lines to file', file_path)
 

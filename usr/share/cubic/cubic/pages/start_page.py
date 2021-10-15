@@ -74,6 +74,7 @@ def setup(action, old_page=None):
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
 
         # Initialize the list of previous projects.
+        load_previous_projects_list()
         displayer.remove_all_combo_box_text('start_page__project_directory_combo_box_text')
         for directory in model.application.projects:
             displayer.append_combo_box_text('start_page__project_directory_combo_box_text', directory)
@@ -284,6 +285,13 @@ def selected_project_directory(directory):
     displayer.update_entry('start_page__project_directory_entry', directory)
 
 
+def load_previous_projects_list():
+
+    # Initialize the list of previous projects.
+    file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'projects.conf')
+    model.application.projects = file_utilities.read_lines(file_path)
+
+
 def save_previous_projects_list():
 
     # Append the selected project directory to the list of previous
@@ -349,7 +357,9 @@ def validate_page():
             is_next_visible=True)
 
         # Remove the invalid directory from list of previous projects.
-        model.application.projects.remove(model.project.directory)
+        if model.project.directory in model.application.projects:
+            logger.log_value('Remove inaccessible directory from projects list', model.project.directory)
+            model.application.projects.remove(model.project.directory)
 
         displayer.update_label('start_page__project_directory_message', '<span foreground="red">Error. Cannot access directory.</span>')
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
@@ -376,7 +386,9 @@ def validate_page():
             is_next_visible=True)
 
         # Remove the invalid directory from list of previous projects.
-        model.application.projects.remove(model.project.directory)
+        if model.project.directory in model.application.projects:
+            logger.log_value('Remove excluded directory from projects list', model.project.directory)
+            model.application.projects.remove(model.project.directory)
 
         displayer.update_label(
             'start_page__project_directory_message',

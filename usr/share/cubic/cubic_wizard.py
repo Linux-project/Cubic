@@ -67,7 +67,6 @@ import traceback
 
 from cubic import navigator
 from cubic.utilities import constructor
-from cubic.utilities import file_utilities
 from cubic.utilities import model
 
 ########################################################################
@@ -106,10 +105,6 @@ try:
     # Get the running kernel version.
     model.application.cubic_version = constructor.get_package_version('cubic')
     model.application.kernel_version = constructor.get_kernel_version()
-
-    # Initialize the list of previous projects.
-    file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'projects.conf')
-    model.application.projects = file_utilities.read_lines(file_path)
 
     # Load the user interface.
     file_path = os.path.join(model.application.directory, 'cubic_wizard.ui')
