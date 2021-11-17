@@ -190,7 +190,7 @@ def setup(action, old_page=None):
 
         return
 
-    if action == 'copy-into-terminal':
+    if action == 'copy-terminal':
 
         # Do not assume the virtual environment is running.
 
@@ -211,6 +211,27 @@ def setup(action, old_page=None):
 
         return
 
+    elif action == 'back-terminal':
+
+        # The virtual environment will be started in enter().
+
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=False,
+            is_next_visible=True)
+
+        displayer.set_visible('terminal_page__copy_header_bar_button', True)
+        displayer.set_sensitive('terminal_page__copy_header_bar_button', False)
+
+        return
+
     elif action == 'next':
 
         # The virtual environment will be started in enter().
@@ -255,7 +276,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -273,7 +294,14 @@ def enter(action, old_page=None):
 
         return
 
-    elif action == 'copy-into-terminal':
+    elif action == 'copy-terminal':
+
+        return
+
+    elif action == 'back-terminal':
+
+        # Attempt to enter the virtual environment.
+        console.enter_virtual_environment(update_status)
 
         return
 
@@ -301,7 +329,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -323,7 +351,7 @@ def leave(action, new_page=None):
 
         return
 
-    elif action == 'copy-into-terminal':
+    elif action == 'copy-terminal':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -376,7 +404,7 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -404,7 +432,7 @@ def selected_uris(uris):
     # page. The pseudo terminal process must be explicitly killed by
     # executing the exit_virtual_environment() function of the
     # console module.
-    handle_navigation('copy-into-terminal')
+    handle_navigation('copy-terminal')
 
 
 ########################################################################
@@ -417,7 +445,7 @@ def on_terminal_page__terminal_child_exited(*args):
     This function is not used.
     """
 
-    logger.log_title('On terminal page terminal child exited')
+    logger.log_label('On terminal page terminal child exited')
     logger.log_value('The arcuments are', args)
     for arg in args:
         logger.log_value('The argument is', arg)
@@ -425,7 +453,7 @@ def on_terminal_page__terminal_child_exited(*args):
 
 def on_clicked__terminal_page__copy_header_bar_button(widget):
 
-    logger.log_title('Clicked terminal page copy button')
+    logger.log_label('Clicked terminal page copy header bar button')
 
     copy_file_chooser.open(selected_uris)
 
@@ -439,7 +467,7 @@ def on_key_press_event__terminal_page(widget, event):
 
         # Copy (<Ctrl><Shift><C> or <Ctrl><Shift><c>)
         if event.keyval == 99 or event.keyval == 67:
-            # logger.log_value('Copy key press event', '<Ctrl><Shift><%s>' % chr(event.keyval))
+            # logger.log_value('Copy key press event', f'<Ctrl><Shift><{event.keyval:c}>')
             terminal = model.builder.get_object('terminal_page__terminal')
             terminal_has_selection = terminal.get_has_selection()
             if terminal_has_selection:
@@ -451,7 +479,7 @@ def on_key_press_event__terminal_page(widget, event):
 
         # Paste (<Ctrl><Shift><V> or <Ctrl><Shift><v>)
         if event.keyval == 86 or event.keyval == 118:
-            # logger.log_value('Paste key press event', '<Ctrl><Shift><%s>' % chr(event.keyval))
+            # logger.log_value('Copy key press event', f'<Ctrl><Shift><{event.keyval:c}>')
             terminal = model.builder.get_object('terminal_page__terminal')
             terminal.paste_clipboard()
             # Return True to prevent the event from being propagated to
@@ -460,7 +488,7 @@ def on_key_press_event__terminal_page(widget, event):
 
         # Select All (<Ctrl><Shift><A> or <Ctrl><Shift><a>)
         if event.keyval == 65 or event.keyval == 97:
-            # logger.log_value('Paste key press event', '<Ctrl><Shift><%s>' % chr(event.keyval))
+            # logger.log_value('Copy key press event', f'<Ctrl><Shift><{event.keyval:c}>')
             terminal = model.builder.get_object('terminal_page__terminal')
             terminal.select_all()
             # Return True to prevent the event from being propagated to
@@ -505,7 +533,7 @@ def on_drag_data_received__terminal_page(widget, drag_context, x, y, data, info,
         # page. The pseudo terminal process must be explicitly killed by
         # executing the exit_virtual_environment() function of the
         # console module.
-        handle_navigation('copy-into-terminal')
+        handle_navigation('copy-terminal')
 
 
 def on_button_press_event__terminal_page(widget, event):
@@ -540,7 +568,7 @@ def on_button_press_event__terminal_page(widget, event):
         clipboard_has_uris = clipboard.wait_is_uris_available()
         if (is_running and clipboard_has_uris and not terminal_has_selection):
             count = len(clipboard.wait_for_uris())
-            label = 'Paste File' if count == 1 else 'Paste %s Files' % count
+            label = 'Paste File' if count == 1 else f'Paste {count} Files'
             displayer.update_menu_item('terminal_page__paste_file_menu_item', label)
             displayer.set_sensitive('terminal_page__paste_file_menu_item', True)
         else:
@@ -577,7 +605,7 @@ def on_button_release_event__terminal_page__paste_file_menu_item(*args):
     # page. The pseudo terminal process must be explicitly killed by
     # executing the exit_virtual_environment() function of the
     # console module.
-    handle_navigation('copy-into-terminal')
+    handle_navigation('copy-terminal')
 
 
 def on_button_release_event__terminal_page__paste_text_menu_item(*args):
@@ -620,7 +648,7 @@ def update_status(status):
         message = 'You are in the virtual environment.'
         displayer.update_status_image('terminal_page__status', displayer.OK)
         displayer.update_label('terminal_page__status_label', message)
-        displayer.update_label('terminal_page__kernel_version_label', 'kernel ' + model.application.kernel_version)
+        displayer.update_label('terminal_page__kernel_version_label', f'kernel {model.application.kernel_version}')
     else:
         message = 'You are not in the virtual environment.'
         displayer.update_status_image('terminal_page__status', displayer.ERROR)
@@ -634,8 +662,7 @@ def update_release_descriptions():
 
     # logger.log_label('Update the release descriptions')
 
-    # description = '%s customized using Cubic on %s' % (model.custom.iso_volume_id, model.project.modify_date)
-    description = '%s (Cubic %s)' % (model.custom.iso_volume_id, model.project.modify_date)
+    description = f'{model.custom.iso_volume_id} (Cubic {model.project.modify_date})'
 
     file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
     if os.path.isfile(file_path) and not os.path.islink(file_path):
@@ -667,7 +694,7 @@ def update_release_description(target_file_path, key, value):
     new_lines = []
     for line in lines:
         if line.startswith(key):
-            line = '%s="%s"' % (key, value)
+            line = f'{key}="{value}"'
         new_lines.append(line.strip())
 
     target_file_name = os.path.basename(target_file_path)
@@ -678,7 +705,8 @@ def update_release_description(target_file_path, key, value):
             file.write(line + os.linesep)
 
     program = os.path.join(model.application.directory, 'commands', 'move-path')
-    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, temp_file_path, target_file_path, 'root')
+    user = 'root'
+    command = f'pkexec "{program}" "{temp_file_path}" "{target_file_path}" "{user}"'
     result, exit_status, signal_status = execute_synchronous(command)
     if not exit_status:
         logger.log_value('Updated', target_file_path)

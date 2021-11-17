@@ -97,7 +97,7 @@ def get_selected_file_path():
 
 def on_clicked__iso_image_chooser__cancel_button(widget):
 
-    logger.log_title('Clicked ISO image chooser cancel button')
+    logger.log_label('Clicked ISO image chooser cancel button')
     close()
 
 
@@ -114,7 +114,7 @@ def on_iso_image_chooser__selection_changed(widget):
 
 def on_clicked__iso_image_chooser__select_button(widget):
 
-    logger.log_title('Clicked ISO image chooser select button')
+    logger.log_label('Clicked ISO image chooser select button')
     file_path = get_selected_file_path()
     logger.log_value('The selected file path is', file_path)
     if file_path and os.path.isfile(file_path):
@@ -137,6 +137,6 @@ def on_map__iso_image_chooser__header_bar(header_bar):
 
 def on_delete_event__iso_image_chooser(widget, event):
 
-    logger.log_title('Delete ISO image chooser')
+    logger.log_label('Delete ISO image chooser')
     close()
     return True

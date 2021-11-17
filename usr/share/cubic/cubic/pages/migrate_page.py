@@ -110,7 +110,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -129,7 +129,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -177,7 +177,7 @@ def leave(action, new_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -219,7 +219,7 @@ def migrate_configuration():
         logger.log_value('Error. Unable to migrate', model.project.configuration_file_path)
         logger.log_value('The exception is', exception)
         displayer.update_status('migrate_page__configuration', ERROR)
-        displayer.update_label('migrate_page__configuration_message', 'Error. Unable to migrate %s.' % model.project.configuration_file_path)
+        displayer.update_label('migrate_page__configuration_message', f'Error. Unable to migrate {model.project.configuration_file_path}.')
         is_error = True
 
     # Pause to allow the user to see the result.
@@ -252,7 +252,7 @@ def migrate_custom_root():
     if os.path.exists(source_path):
 
         program = os.path.join(model.application.directory, 'commands', 'move-path')
-        command = 'pkexec "%s" "%s" "%s"' % (program, source_path, target_path)
+        command = f'pkexec "{program}" "{source_path}" "{target_path}"'
         result, exit_status, signal_status = execute_synchronous(command)
 
         if not exit_status:
@@ -263,14 +263,14 @@ def migrate_custom_root():
             logger.log_value('Error. Unable to migrate', source_path)
             logger.log_value('The result is', result)
             displayer.update_status('migrate_page__custom_root', ERROR)
-            displayer.update_label('migrate_page__custom_root_message', 'Error. Unable to migrate %s.' % source_path)
+            displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_path}.')
             is_error = True
 
     else:
 
         logger.log_value('Error. Unable to migrate because the source directory does not exist', source_path)
         displayer.update_status('migrate_page__custom_root', ERROR)
-        displayer.update_label('migrate_page__custom_root_message', 'Error. Unable to migrate %s.' % source_path)
+        displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_path}.')
         is_error = True
 
     # Pause to allow the user to see the result.
@@ -308,7 +308,7 @@ def migrate_custom_disk():
     if os.path.exists(source_path):
 
         program = os.path.join(model.application.directory, 'commands', 'move-path')
-        command = 'pkexec "%s" "%s" "%s" "%s"' % (program, source_path, target_path, user)
+        command = f'pkexec "{program}" "{source_path}" "{target_path}" "{user}"'
         result, exit_status, signal_status = execute_synchronous(command)
 
         if not exit_status:
@@ -319,14 +319,14 @@ def migrate_custom_disk():
             logger.log_value('Error. Unable to migrate', source_path)
             logger.log_value('The result is', result)
             displayer.update_status('migrate_page__custom_disk', ERROR)
-            displayer.update_label('migrate_page__custom_disk_message', 'Error. Unable to migrate %s.' % source_path)
+            displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_path}.')
             is_error = True
 
     else:
 
         logger.log_value('Error. Unable to migrate because the source directory does not exist', source_path)
         displayer.update_status('migrate_page__custom_disk', ERROR)
-        displayer.update_label('migrate_page__custom_disk_message', 'Error. Unable to migrate %s.' % source_path)
+        displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_path}.')
         is_error = True
 
     # Pause to allow the user to see the result.

@@ -99,8 +99,8 @@ def execute_synchronous(command, working_directory=None):
     global process
     if is_alive(process):
         logger.log_value('Warning, the process is running', process.pid)
-        logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
-        logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
+        logger.log_value(f'The exit status of process {process.pid} is', process.exitstatus)
+        logger.log_value(f'The signal status of process {process.pid} is', process.signalstatus)
     process = None
     try:
         # Using pexpect.split_command_line removes the spaces in the
@@ -191,8 +191,8 @@ def execute_asynchronous(command, working_directory=None):
     global process
     if is_alive(process):
         logger.log_value('Warning, the process is running', process.pid)
-        logger.log_value('The exit status of process %s is' % process.pid, process.exitstatus)
-        logger.log_value('The signal status of process %s is' % process.pid, process.signalstatus)
+        logger.log_value(f'The exit status of process {process.pid} is', process.exitstatus)
+        logger.log_value(f'The signal status of process {process.pid} is', process.signalstatus)
     process = None
     try:
         # Using pexpect.split_command_line removes the spaces in the
@@ -264,8 +264,8 @@ def _terminate_user_process():
         try:
             current_process.kill(signal.SIGTERM)
             # Get the exit status and signal status of the process that was killed.
-            logger.log_value('The exit status of process %s is' % current_process.pid, current_process.exitstatus)
-            logger.log_value('The signal status of process %s is' % current_process.pid, current_process.signalstatus)
+            logger.log_value(f'The exit status of process {current_process.pid} is', current_process.exitstatus)
+            logger.log_value(f'The signal status of process {current_process.pid} is', current_process.signalstatus)
             # Set the global process to None.
             process = None
         except PermissionError as exception:
@@ -287,17 +287,17 @@ def _terminate_root_process():
         logger.log_value('Terminate process', current_process.pid)
         try:
             program = os.path.join(model.application.directory, 'commands', 'stop-process')
-            command = 'pkexec "%s" "%s"' % (program, current_process.pid)
+            command = f'pkexec "{program}" "{current_process.pid}"'
             # Get the exit status and signal status of the terminator process.
             terminator_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command, model.application.directory)
             # Set the global process to None.
             process = None
             # logger.log_value('The result is', result)
-            logger.log_value('The exit status of terminator process %s is' % terminator_pid, exit_status)
-            logger.log_value('The signal status of terminator process %s is' % terminator_pid, signal_status)
+            logger.log_value(f'The exit status of terminator process {terminator_pid} is', exit_status)
+            logger.log_value(f'The signal status of terminator process {terminator_pid} is', signal_status)
             # Get the exit status and signal status of the process that was killed.
-            logger.log_value('The exit status of process %s is' % current_process.pid, current_process.exitstatus)
-            logger.log_value('The signal status of process %s is' % current_process.pid, current_process.signalstatus)
+            logger.log_value(f'The exit status of process {current_process.pid} is', current_process.exitstatus)
+            logger.log_value(f'The signal status of process {current_process.pid} is', current_process.signalstatus)
         except Exception as exception:
             logger.log_value('The exception is', exception)
             logger.log_value('The tracek back is', traceback.format_exc())

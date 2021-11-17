@@ -526,7 +526,7 @@ class FilesTab:
         ### self.files_tree.update_required_file_paths(source_file_path, target_file_path)
 
         # Rename the file.
-        logger.log_value('Rename directory', 'from %s to %s' % (source_file_path, target_file_path))
+        logger.log_value('Rename directory', f'from {source_file_path} to {target_file_path}')
         full_source_file_path = self.get_full_file_path(source_file_path)
         full_target_file_path = self.get_full_file_path(target_file_path)
         os.rename(full_source_file_path, full_target_file_path)
@@ -628,7 +628,7 @@ class FilesTab:
         # self.files_tree.update_required_file_paths(source_file_path, target_file_path)
 
         # Rename the file.
-        logger.log_value('Rename file', 'from %s to %s' % (source_file_path, target_file_path))
+        logger.log_value('Rename file', f'from {source_file_path} to {target_file_path}')
         full_source_file_path = self.get_full_file_path(source_file_path)
         full_target_file_path = self.get_full_file_path(target_file_path)
         os.rename(full_source_file_path, full_target_file_path)
@@ -776,7 +776,7 @@ class FilesTab:
         # Display information.
 
         label = model.builder.get_object(self.CREATE_FILE_FILE_PATH_LABEL)
-        # label.set_markup('<span font_family="monospace">%s</span>' % file_path)
+        # label.set_markup(f'<span font_family="monospace">{file_path}</span>')
         label.set_markup(file_path)
 
         # entry = model.builder.get_object(self.CREATE_FILE_FILE_NAME_ENTRY)
@@ -813,7 +813,7 @@ class FilesTab:
         # Display information.
 
         label = model.builder.get_object(self.CREATE_DIRECTORY_FILE_PATH_LABEL)
-        # label.set_markup('<span font_family="monospace">%s</span>' % file_path)
+        # label.set_markup(f'<span font_family="monospace">{file_path}</span>')
         label.set_markup(file_path)
 
         # entry = model.builder.get_object(self.CREATE_DIRECTORY_FILE_NAME_ENTRY)
@@ -850,7 +850,7 @@ class FilesTab:
         # Display information.
 
         label = model.builder.get_object(self.RENAME_DIRECTORY_FILE_PATH_LABEL)
-        # label.set_markup('<span font_family="monospace">%s</span>' % file_path)
+        # label.set_markup(f'<span font_family="monospace">{file_path}</span>')
         label.set_markup(file_path)
 
         entry = model.builder.get_object(self.RENAME_DIRECTORY_SOURCE_FILE_NAME_ENTRY)
@@ -886,7 +886,7 @@ class FilesTab:
         # Display information.
 
         label = model.builder.get_object(self.DELETE_DIRECTORY_FILE_PATH_LABEL)
-        # label.set_markup('<span font_family="monospace">%s</span>' % file_path)
+        # label.set_markup(f'<span font_family="monospace">{file_path}</span>')
         label.set_markup(file_path)
 
         entry = model.builder.get_object(self.DELETE_DIRECTORY_FILE_NAME_ENTRY)

@@ -1,4 +1,23 @@
-cubic (2021.10) bionic focal groovy hirsute impish; urgency=low
+cubic (2021.11) bionic focal groovy hirsute impish; urgency=low
+
+  * Issues fixed in version 2021.11-62:
+
+  - Fixed Bug LP:#1949237, Can not customize Ubuntu Server 21.10 using Cubic.
+    Automatically determine if "ubuntu-server-minimal.squashfs" or
+    "filesystem.squashfs" should be extracted. Added "squashfs_file_name"
+    parameter to the "cubic.conf" file.
+  - Fixed Bug LP:#1950865, The Packages page should only be shown if Ubiquity is
+    installed. Added logic to bypass the Packages page if Ubiquity is not
+    installed, and added logic to display the minimal install check boxes on the
+    Packages page if the version of Ubiquity is >= 18.04. Added python3-apt
+    (>=1.6.5) and python3-packaging (>=17.1) as required dependencies.
+  - Fixed Bug LP:#1950923, The Release name is not correct in Ubuntu 21.04+. Use
+    ".disk/info" to determine the Release name.
+  - Fixed Bug LP:#1951001, Display numbers in localized format. Introduced
+    Python f-strings to format all strings in Cubic.
+  - Fixed Bug LP:#1951170, The Finish page does not show the ISO size.
+  - Fixed Bug LP:#1951171, Show the memory used for testing on the Test pages.
+  - Preformed code refactoring and code clean up.
 
   * Issues fixed in version 2021.10-61:
 
@@ -209,4 +228,4 @@ cubic (2021.10) bionic focal groovy hirsute impish; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 14 Oct 2021 20:51:34 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Tue, 16 Nov 2021 20:08:22 -0500

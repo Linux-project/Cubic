@@ -80,17 +80,7 @@ def setup(action, old_page=None):
 
     if action == 'back':
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
+        validate_page()
 
         displayer.set_visible('title_label', False)
         displayer.set_visible('options_page__stack_switcher', True)
@@ -99,19 +89,7 @@ def setup(action, old_page=None):
 
     if action == 'cancel':
 
-        # Do not assume the virtual environment is running.
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=True,
-            is_next_visible=True)
+        validate_page()
 
         displayer.set_visible('title_label', False)
         displayer.set_visible('options_page__stack_switcher', True)
@@ -120,40 +98,16 @@ def setup(action, old_page=None):
 
     if action == 'copy-preseed':
 
-        # Do not assume the virtual environment is running.
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=True,
-            is_next_visible=True)
+        validate_page()
 
         displayer.set_visible('title_label', False)
         displayer.set_visible('options_page__stack_switcher', True)
 
         return
 
-    if action == 'copy-boot-configuration':
+    if action == 'copy-boot':
 
-        # Do not assume the virtual environment is running.
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=True,
-            is_next_visible=True)
+        validate_page()
 
         displayer.set_visible('title_label', False)
         displayer.set_visible('options_page__stack_switcher', True)
@@ -171,17 +125,25 @@ def setup(action, old_page=None):
         # Setup the Boot tab.
         setup_boot_tab()
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
+        validate_page()
+
+        displayer.set_visible('title_label', False)
+        displayer.set_visible('options_page__stack_switcher', True)
+
+        return
+
+    elif action == 'next-options':
+
+        # Setup the Kernel tab.
+        setup_kernel_tab()
+
+        # Setup the Preseed tab.
+        setup_preseed_tab()
+
+        # Setup the Boot tab.
+        setup_boot_tab()
+
+        validate_page()
 
         displayer.set_visible('title_label', False)
         displayer.set_visible('options_page__stack_switcher', True)
@@ -190,7 +152,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -209,7 +171,7 @@ def enter(action, old_page=None):
 
         return
 
-    elif action == 'copy-boot-configuration':
+    elif action == 'copy-boot':
 
         return
 
@@ -217,9 +179,13 @@ def enter(action, old_page=None):
 
         return
 
+    elif action == 'next-options':
+
+        return
+
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -227,6 +193,8 @@ def enter(action, old_page=None):
 def leave(action, new_page=None):
 
     if action == 'back':
+
+        # Show the Packages page.
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -257,7 +225,7 @@ def leave(action, new_page=None):
 
         return
 
-    elif action == 'copy-boot-configuration':
+    elif action == 'copy-boot':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -266,6 +234,27 @@ def leave(action, new_page=None):
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
         configuration.save()
+
+        return
+
+    elif action == 'back-terminal':
+
+        # Do not show the Packages page.
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        displayer.set_visible('title_label', True)
+        displayer.set_visible('options_page__stack_switcher', False)
+
+        # displayer.set_visible('kernel_tab__header_box', False)
+        displayer.set_visible('preseed_tab__header_box', False)
+        displayer.set_visible('boot_tab__header_box', False)
+
+        model.options.boot_configurations = boot_tab.get_required_file_paths()
+        configuration.save()
+
+        preseed_tab.remove_tree()
+        boot_tab.remove_tree()
 
         return
 
@@ -308,7 +297,7 @@ def leave(action, new_page=None):
         model.options.boot_configurations = boot_tab.get_required_file_paths()
         configuration.save()
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -567,3 +556,42 @@ def update_boot_configurations(file_paths, kernel_details_list, selected_index):
          replacement_text_4),
         (search_text_5,
          replacement_text_5))
+
+
+########################################################################
+# Validation Functions
+########################################################################
+
+
+def validate_page():
+    """
+    Determine if the Packages page should be skipped.
+    """
+
+    if model.ubiquity_version:
+        # Show the Packages page.
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)
+
+    else:
+        # Do not show the Packages page.
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back-terminal',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style='suggested-action',
+            is_next_sensitive=True,
+            is_next_visible=True)

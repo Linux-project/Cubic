@@ -104,7 +104,7 @@ def get_selected_uris():
 
 def on_clicked__copy_file_chooser__cancel_button(widget):
 
-    logger.log_title('Clicked copy file chooser cancel button')
+    logger.log_label('Clicked copy file chooser cancel button')
     close()
 
 
@@ -121,7 +121,7 @@ def on_copy_file_chooser__selection_changed(widget):
 
 def on_clicked__copy_file_chooser__select_button(widget):
 
-    logger.log_title('Clicked copy file chooser select button')
+    logger.log_label('Clicked copy file chooser select button')
     uris = get_selected_uris()
     if uris:
         close()
@@ -143,6 +143,6 @@ def on_map__copy_file_chooser__header_bar(header_bar):
 
 def on_delete_event__copy_file_chooser(widget, event):
 
-    logger.log_title('Delete copy file chooser')
+    logger.log_label('Delete copy file chooser')
     close()
     return True

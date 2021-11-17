@@ -82,8 +82,6 @@ status_callback = None
 
 def start_emulator(new_status_callback):
 
-    logger.log_title('Clicked generate page test button')
-
     global status_callback
     status_callback = new_status_callback
 
@@ -121,53 +119,45 @@ def _start_emulator():
             ' -M pc'
             ' -enable-kvm'
             ' -cpu host'
-            ' -m {emulator_memory_mib:d}M'
+            f' -m {emulator_memory_mib:d}M'
             ' -display gtk,zoom-to-fit=on'
             ' -device intel-hda'
             ' -device hda-duplex'
-            ' -drive format=raw,file="{custom_iso_file_path}"').format(
-                emulator_memory_mib=emulator_memory_mib,
-                custom_iso_file_path=custom_iso_file_path)
+            f' -drive format=raw,file="{custom_iso_file_path}"')
     elif is_virtualization_supported:
-        logger.log_value('Warning', BOLD_RED + 'System does not support GTk display' + NORMAL)
+        logger.log_value('Warning', f'{BOLD_RED}System does not support GTk display{NORMAL}')
         command = (
             'qemu-system-x86_64'
             ' --name "Cubic"'
             ' -M pc'
             ' -enable-kvm'
             ' -cpu host'
-            ' -m {emulator_memory_mib:d}M'
+            f' -m {emulator_memory_mib:d}M'
             ' -device intel-hda'
             ' -device hda-duplex'
-            ' -drive format=raw,file="{custom_iso_file_path}"').format(
-                emulator_memory_mib=emulator_memory_mib,
-                custom_iso_file_path=custom_iso_file_path)
+            f' -drive format=raw,file="{custom_iso_file_path}"')
     elif is_gtk_display_supported:
-        logger.log_value('Warning', BOLD_RED + 'System does not support virtualization' + NORMAL)
+        logger.log_value('Warning', f'{BOLD_RED}System does not support virtualization{NORMAL}')
         command = (
             'qemu-system-x86_64'
             ' --name "Cubic"'
             ' -M pc'
-            ' -m {emulator_memory_mib:d}M'
+            f' -m {emulator_memory_mib:d}M'
             ' -display gtk,zoom-to-fit=on'
             ' -device intel-hda'
             ' -device hda-duplex'
-            ' -drive format=raw,file="{custom_iso_file_path}"').format(
-                emulator_memory_mib=emulator_memory_mib,
-                custom_iso_file_path=custom_iso_file_path)
+            f' -drive format=raw,file="{custom_iso_file_path}"')
     else:
-        logger.log_value('Warning', BOLD_RED + 'System does not support virtualization' + NORMAL)
-        logger.log_value('Warning', BOLD_RED + 'System does not support GTk display' + NORMAL)
+        logger.log_value('Warning', f'{BOLD_RED}System does not support virtualization{NORMAL}')
+        logger.log_value('Warning', f'{BOLD_RED}System does not support GTk display{NORMAL}')
         command = (
             'qemu-system-x86_64'
             ' --name "Cubic"'
             ' -M pc'
-            ' -m {emulator_memory_mib:d}M'
+            f' -m {emulator_memory_mib:d}M'
             ' -device intel-hda'
             ' -device hda-duplex'
-            ' -drive format=raw,file="{custom_iso_file_path}"').format(
-                emulator_memory_mib=emulator_memory_mib,
-                custom_iso_file_path=custom_iso_file_path)
+            f' -drive format=raw,file="{custom_iso_file_path}"')
 
     # Start the emulator.
     process = execute_asynchronous(command)
@@ -271,7 +261,7 @@ def get_total_system_memory():
     memory_mib = memory / MIB
     memory_gib = memory / GIB
 
-    # logger.log_value('Total system memory', '%.2f GiB (%.2f MiB)' % (memory_gib, memory_mib))
+    # logger.log_value('Total system memory', f'{memory_gib:.2f} GiB ({memory_mib:.2f} MiB)')
 
     return memory, memory_mib, memory_gib
 
@@ -294,7 +284,7 @@ def get_available_system_memory():
     memory_mib = memory / MIB
     memory_gib = memory / GIB
 
-    # logger.log_value('Available system memory', '%.2f GiB (%.2f MiB)' % (memory_gib, memory_mib))
+    # logger.log_value('Available system memory', f'{memory_gib:.2f} GiB ({memory_mib:.2f} MiB)')
 
     return memory, memory_mib, memory_gib
 
@@ -302,12 +292,12 @@ def get_available_system_memory():
 def check_available_memory():
 
     total_memory, total_memory_mib, total_memory_gib = get_total_system_memory()
-    logger.log_value('Total system memory', '%.2f GiB (%.2f MiB)' % (total_memory_gib, total_memory_mib))
+    logger.log_value('Total system memory', f'{total_memory_gib:.2f} GiB ({total_memory_mib:.2f} MiB)')
 
-    logger.log_value('Minimum available memory required to enable testing', '%.2f GiB (%.2f MiB)' % (MIN_AVAILABLE_MEMORY_GIB, MIN_AVAILABLE_MEMORY_MIB))
+    logger.log_value('Minimum available memory required to enable testing', f'{MIN_AVAILABLE_MEMORY_GIB:.2f} GiB ({MIN_AVAILABLE_MEMORY_MIB:.2f} MiB)')
 
     available_memory, available_memory_mib, available_memory_gib = get_available_system_memory()
-    logger.log_value('Available system memory', '%.2f GiB (%.2f MiB)' % (available_memory_gib, available_memory_mib))
+    logger.log_value('Available system memory', f'{available_memory_gib:.2f} GiB ({available_memory_mib:.2f} MiB)')
 
     # Enable testing if the system has at least 1.5 GiB available memory.
     is_adequate = available_memory > MIN_AVAILABLE_MEMORY
@@ -331,21 +321,22 @@ def allocate_emulator_memory():
     """
 
     total_memory, total_memory_mib, total_memory_gib = get_total_system_memory()
-    logger.log_value('Total system memory', '%.2f GiB (%.2f MiB)' % (total_memory_gib, total_memory_mib))
+    logger.log_value('Total system memory', f'{total_memory_gib:.2f} GiB ({total_memory_mib:.2f} MiB)')
 
     available_memory, available_memory_mib, available_memory_gib = get_available_system_memory()
-    logger.log_value('Available system memory', '%.2f GiB (%.2f MiB)' % (available_memory_gib, available_memory_mib))
+    logger.log_value('Available system memory', f'{available_memory_gib:.2f} GiB ({available_memory_mib:.2f} MiB)')
 
     # Calculate the memory to allocate to the emulator in bytes.
     emulator_memory = int((int((available_memory - MIN_RESERVE_MEMORY) / MEMORY_INCREMENT)) * MEMORY_INCREMENT)
     emulator_memory_mib = int(emulator_memory / MIB)
     emulator_memory_gib = int(emulator_memory / GIB)
-    logger.log_value('Memory allocated to the emulator', '%.2f GiB (%.2f MiB)' % (emulator_memory_gib, emulator_memory_mib))
+    model.emulator_memory = emulator_memory
+    logger.log_value('Memory allocated to the emulator', f'{emulator_memory_gib:.2f} GiB ({emulator_memory_mib:.2f} MiB)')
 
     # Calculate the reserved system memory.
     reserve_system_memory_bytes = available_memory - emulator_memory
     reserve_system_memory_mib = reserve_system_memory_bytes / MIB
     reserve_system_memory_gib = reserve_system_memory_bytes / GIB
-    logger.log_value('Reserved system memory', '%.2f GiB (%.2f MiB)' % (reserve_system_memory_gib, reserve_system_memory_mib))
+    logger.log_value('Reserved system memory', f'{reserve_system_memory_gib:.2f} GiB ({reserve_system_memory_mib:.2f} MiB)')
 
     return emulator_memory, emulator_memory_mib, emulator_memory_gib

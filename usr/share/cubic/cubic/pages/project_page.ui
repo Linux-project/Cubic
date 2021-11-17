@@ -679,7 +679,7 @@
                 <property name="tooltip_text" translatable="yes">Refresh the version number</property>
                 <property name="image">project_page__version_image</property>
                 <property name="always_show_image">True</property>
-                <signal name="clicked" handler="on_clicked__project_page__refresh_button" swapped="no"/>
+                <signal name="clicked" handler="on_clicked__project_page__custom_iso_version_number_refresh_button" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">2</property>

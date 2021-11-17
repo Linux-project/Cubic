@@ -64,24 +64,24 @@ def mount(iso_file_path, iso_mount_point, user_id=None, group_id=None):
     """
     If user, group, or other has the execute permission for a file, all
     three will be assigned the execute permission for the file when the
-    iso is mounted.
+    ISO is mounted.
     """
 
-    logger.log_label('Mount the iso image')
-    logger.log_value('The iso file path is', iso_file_path)
+    logger.log_label('Mount the ISO image')
+    logger.log_value('The ISO file path is', iso_file_path)
     logger.log_value('The mount point is', iso_mount_point)
     logger.log_value('The user id is', user_id)
     logger.log_value('The group id is', group_id)
 
     program = os.path.join(model.application.directory, 'commands', 'mount-iso')
     if user_id and group_id:
-        command = 'pkexec "%s" "%s" "%s" "%s" "%s"' % (program, iso_file_path, iso_mount_point, user_id, group_id)
+        command = f'pkexec "{program}" "{iso_file_path}" "{iso_mount_point}" "{user_id}" "{group_id}"'
     else:
-        command = 'pkexec "%s" "%s" "%s"' % (program, iso_file_path, iso_mount_point)
+        command = f'pkexec "{program}" "{iso_file_path}" "{iso_mount_point}"'
     result, exit_status, signal_status = execute_synchronous(command)
 
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     return result, exit_status, signal_status
 
@@ -91,11 +91,11 @@ def unmount(iso_mount_point):
     logger.log_value('Unmount iso', iso_mount_point)
 
     program = os.path.join(model.application.directory, 'commands', 'unmount-iso')
-    command = 'pkexec "%s" "%s"' % (program, iso_mount_point)
+    command = f'pkexec "{program}" "{iso_mount_point}"'
     result, exit_status, signal_status = execute_synchronous(command)
 
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     return result, exit_status, signal_status
 
@@ -110,9 +110,9 @@ def is_mounted(iso_mount_point, iso_file_path=None):
 
 def _is_mounted_1(iso_mount_point, iso_file_path):
 
-    logger.log_label('Check if the iso image is mounted')
+    logger.log_label('Check if the ISO image is mounted')
     logger.log_value('The mount point is', iso_mount_point)
-    logger.log_value('The iso file path is', iso_file_path)
+    logger.log_value('The ISO file path is', iso_file_path)
 
     # Real path is necessary here.
     # The the output of the mount command only includes real paths.
@@ -126,7 +126,7 @@ def _is_mounted_1(iso_mount_point, iso_file_path):
         logger.log_value('The mount point is a link to', iso_mount_point)
     if iso_file_path != real_iso_file_path:
         iso_file_path = real_iso_file_path
-        logger.log_value('The iso file path is a link to', iso_file_path)
+        logger.log_value('The ISO file path is a link to', iso_file_path)
 
     command = 'mount'
     result, exit_status, signal_status = execute_synchronous(command)
@@ -194,9 +194,9 @@ def get_iso_volume_id(iso_file_path):
     logger.log_value('ISO image', iso_file_path)
 
     # Get the original ISO image volume id.
-    command = 'isoinfo -d -i "%s"' % iso_file_path
+    command = f'isoinfo -d -i "{iso_file_path}"'
     result, exit_status, signal_status = execute_synchronous(command)
-    # iso_volume_id = 'Unknown iso image volume id'
+    # iso_volume_id = 'Unknown ISO image volume id'
     iso_volume_id = ''
     if not exit_status and not signal_status:
         iso_volume_id = re.sub(r'.*Volume id:\s+(.*[^\n]).*Volume\s+set\s+id.*', r'\1', result, 0, re.DOTALL)[:32]
@@ -210,16 +210,19 @@ def get_iso_release_name(iso_mount_point):
     logger.log_value('ISO image mount point', iso_mount_point)
 
     # Read the original ISO image README.diskdefines file.
-    command = 'cat "%s"' % os.path.join(iso_mount_point, 'README.diskdefines')
-    result, exit_status, signal_status = execute_synchronous(command)
-    # Get the original ISO image release name.
-    # iso_release_name = 'Unknown iso image release name'
-    iso_release_name = ''
-    if not exit_status and not signal_status:
-        iso_release_name_infromation = re.search(r'DISKNAME.*"(.*)"', result)
-        if iso_release_name_infromation:
-            iso_release_name = iso_release_name_infromation.group(1)
-    logger.log_value('ISO image release name', iso_release_name)
+    # file_path = os.path.join(iso_mount_point, 'README.diskdefines')
+
+    # Read the original ISO image .disk/info file.
+    file_path = os.path.join(iso_mount_point, '.disk', 'info')
+
+    iso_release_name = None
+    matches = file_utilities.find_in_file(r'"(.*)"', file_path)
+    if matches:
+        iso_release_name = matches[0]
+        logger.log_value('ISO image release name', iso_release_name)
+    else:
+        logger.log_value('ISO image release name', 'Not found')
+
     return iso_release_name
 
 
@@ -229,10 +232,70 @@ def get_iso_disk_name(iso_mount_point):
     logger.log_value('ISO image mount point', iso_mount_point)
 
     # Read the original ISO image README.diskdefines file.
-    command = 'cat "%s"' % os.path.join(iso_mount_point, 'README.diskdefines')
+    file_path = os.path.join(iso_mount_point, 'README.diskdefines')
+
+    iso_disk_name = None
+    matches = file_utilities.find_in_file(r'DISKNAME *(.*)', file_path)
+    if matches:
+        iso_disk_name = matches[0]
+        logger.log_value('ISO image disk name', iso_disk_name)
+    else:
+        logger.log_value('ISO image disk name', 'Not found')
+
+    return iso_disk_name
+
+
+def get_iso_release_notes_url(iso_mount_point):
+
+    logger.log_label('Get ISO image release notes URL')
+    logger.log_value('ISO image mount point', iso_mount_point)
+
+    # Read the original ISO image release_notes_url file.
+    file_path = os.path.join(iso_mount_point, '.disk', 'release_notes_url')
+    iso_release_notes_url = file_utilities.read_file(file_path)
+
+    return iso_release_notes_url
+
+
+########################################################################
+# ORIGINAL
+########################################################################
+"""
+These functions use threads which can be terminated.
+"""
+
+
+def get_iso_release_name_ORIGINAL(iso_mount_point):
+
+    logger.log_label('Get ISO image release name')
+    logger.log_value('ISO image mount point', iso_mount_point)
+
+    # Read the original ISO image README.diskdefines file.
+    file_path = os.path.join(iso_mount_point, 'README.diskdefines')
+    command = f'cat "{file_path}"'
+    result, exit_status, signal_status = execute_synchronous(command)
+    # Get the original ISO image release name.
+    # iso_release_name = 'Unknown ISO image release name'
+    iso_release_name = ''
+    if not exit_status and not signal_status:
+        iso_release_name_infromation = re.search(r'DISKNAME.*"(.*)"', result)
+        if iso_release_name_infromation:
+            iso_release_name = iso_release_name_infromation.group(1)
+    logger.log_value('ISO image release name', iso_release_name)
+    return iso_release_name
+
+
+def get_iso_disk_name_ORIGINAL(iso_mount_point):
+
+    logger.log_label('Get ISO image disk name')
+    logger.log_value('ISO image mount point', iso_mount_point)
+
+    # Read the original ISO image README.diskdefines file.
+    file_path = os.path.join(iso_mount_point, 'README.diskdefines')
+    command = f'cat "{file_path}"'
     result, exit_status, signal_status = execute_synchronous(command)
     # Get the original ISO image disk name.
-    # iso_disk_name = 'Unknown iso image disk name'
+    # iso_disk_name = 'Unknown ISO image disk name'
     iso_disk_name = ''
     if not exit_status and not signal_status:
         iso_disk_name_information = re.search(r'DISKNAME *(.*)', result)
@@ -242,16 +305,17 @@ def get_iso_disk_name(iso_mount_point):
     return iso_disk_name
 
 
-def get_iso_release_notes_url(directory):
+def get_iso_release_notes_url_ORIGINAL(directory):
 
     logger.log_label('Get ISO image release notes URL')
     logger.log_value('ISO image mount point', directory)
 
     # Read the original ISO image release_notes_url file.
-    command = 'cat "%s"' % os.path.join(directory, '.disk', 'release_notes_url')
+    file_path = os.path.join(directory, '.disk', 'release_notes_url')
+    command = f'cat "{file_path}"'
     result, exit_status, signal_status = execute_synchronous(command)
     # Get the original ISO image release notes URL.
-    # iso_release_notes_url = 'Unknown iso image release notes URL'
+    # iso_release_notes_url = 'Unknown ISO image release notes URL'
     iso_release_notes_url = ''
     if not exit_status and not signal_status:
         iso_release_notes_url = result
@@ -266,16 +330,16 @@ def get_iso_release_notes_url(directory):
 
 def get_iso_report():
 
-    # logger.log_label('Get iso report')
+    # logger.log_label('Get ISO report')
 
     iso_file_path = os.path.join(model.original.iso_directory, model.original.iso_file_name)
 
-    logger.log_value('Get iso report for', iso_file_path)
+    logger.log_value('Get ISO report for', iso_file_path)
 
-    command = 'xorriso -indev "%s" -report_el_torito as_mkisofs' % iso_file_path
+    command = f'xorriso -indev "{iso_file_path}" -report_el_torito as_mkisofs'
     result, exit_status, signal_status = execute_synchronous(command)
     # logger.log_value('The result is', result)
-    # logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    # logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     # The exit status and signal status can not be used to assess
     # failure or success. On failure exit status may be 0 or any number
@@ -286,7 +350,7 @@ def get_iso_report():
     # information will be an empty string ''.
     iso_report = ''.join(result.partition('-V')[1:])
 
-    logger.log_value('The iso report is', iso_report)
+    logger.log_value('The ISO report is', iso_report)
 
     return iso_report
 
@@ -391,7 +455,7 @@ def handle_interval_path(line):
 
     if '--interval' not in line: return False, line
 
-    logger.log_value('Interval path', line)
+    logger.log_value('The interval path is', line)
 
     # Format: interval:"Flags":"Interval":"Zeroizers":"Source"
     # [1] = text before
@@ -431,13 +495,13 @@ def handle_interval_path(line):
         # Get the original ISO image file path.
         iso_file_path = os.path.join(model.original.iso_directory, model.original.iso_file_name)
 
-        # Get the iso partition image file name.
+        # Get the ISO partition image file name.
         image_file_name = get_iso_partition_image_file_name()
 
-        # Get the iso partition image file path.
+        # Get the ISO partition image file path.
         image_file_path = os.path.join(model.project.directory, image_file_name)
 
-        # Create the iso partition image file.
+        # Create the ISO partition image file.
         is_error = extract_image(iso_file_path, image_file_path, block_size, start_block, block_count)
 
         # Return if error.
@@ -446,15 +510,15 @@ def handle_interval_path(line):
         # Create a new interval in units of "d" (512).
         # start_block = 0
         # stop_block = int((block_count - 1) * block_size / 512)
-        # interval = '%dd-%dd' % (start_block, stop_block)
+        # interval = f'{start_block}d-{stop_block}d'
 
         # Create a new interval using the original units.
         start_block = 0
         stop_block = block_count - 1
-        interval = '{start}{units}-{stop}{units}'.format(start=start_block, stop=stop_block, units=block_units)
+        interval = f'{start_block}{block_units}-{stop_block}{block_units}'
 
         # Get the source.
-        source = "'{{boot_image_directory}}{separator}{image_file_name}'".format(separator=os.path.sep, image_file_name=image_file_name)
+        source = f"'{{boot_image_directory}}{os.path.sep}{image_file_name}'"
 
     elif flags.startswith('appended_partition'):
 
@@ -477,17 +541,9 @@ def handle_interval_path(line):
     space_before, space_after = get_spacers(before, after)
 
     # Assemble the new line.
-    line = "{before}{space_before}--interval:{flags}:{interval}:{zeroizers}:{source}{space_after}{after}".format(
-        before=before,
-        flags=flags,
-        interval=interval,
-        zeroizers=zeroizers,
-        source=source,
-        after=after,
-        space_before=space_before,
-        space_after=space_after)
+    line = f"{before}{space_before}--interval:{flags}:{interval}:{zeroizers}:{source}{space_after}{after}"
 
-    logger.log_value('Interval path', line)
+    logger.log_value('The interval path is', line)
 
     return False, line
 
@@ -610,13 +666,17 @@ def extract_image(iso_file_path, imgage_file_path, block_size, skip_blocks, bloc
     # logger.log_value('The block size is', block_size)
     # logger.log_value('The skip blocks is', skip_blocks)
     # logger.log_value('The block count is', block_count)
-    logger.log_value('Extract image blocks', 'block size: %s, skip blocks: %s, block count: %s' % (block_size, skip_blocks, block_count))
+    logger.log_value('Extract image blocks', f'block size: {block_size}, skip blocks: {skip_blocks}, block count: {block_count}')
 
-    command = ('dd if="%s" ' 'bs="%s" ' 'skip="%s" ' 'count="%s" ' 'of="%s"' % (iso_file_path, block_size, skip_blocks, block_count, imgage_file_path))
+    command = (f'dd if="{iso_file_path}" ' \
+               f'bs="{block_size}" '       \
+               f'skip="{skip_blocks}" '    \
+               f'count="{block_count}" '   \
+               f'of="{imgage_file_path}"')
     result, exit_status, signal_status = execute_synchronous(command)
 
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     if not exit_status:
         is_error = False

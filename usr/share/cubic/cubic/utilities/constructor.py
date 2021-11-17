@@ -31,14 +31,16 @@
 # References
 ########################################################################
 
-# https://time.strftime.org/
+# https://apt-team.pages.debian.net/python-apt/library/index.html
 # https://docs.python.org/3/library/time.html#time.strftime
 # https://docs.python.org/3/library/time.html#time.strptime
+# https://time.strftime.org/
 
 ########################################################################
 # Imports
 ########################################################################
 
+import apt
 import os
 import re
 import time
@@ -62,6 +64,20 @@ from cubic.utilities.processor import execute_synchronous
 
 
 def number_as_text(number, title_case=False):
+    """
+    Get the word or localized numeral format of the number
+
+    Arguments:
+    number : int
+        The number to format.
+    title_case : bool
+        Use title case for the word representation of the number.
+    Returns:
+    : str
+        The word format of the number in title or lower case, or the
+        localized numeral format of the number if the number is greater
+        than 9.
+    """
 
     if number < len(NUMBERS_TITLE_CASE):
         if title_case:
@@ -69,12 +85,26 @@ def number_as_text(number, title_case=False):
         else:
             return NUMBERS_LOWER_CASE[number]
     else:
-        return str(number)
+        return f'{number:n}'
 
 
-def get_plural(singular_text, plural_text, count):
+def get_plural(singular_text, plural_text, number):
+    """
+    Select the singular or plural text.
 
-    return singular_text if count == 1 else plural_text
+    Arguments:
+    singular_text : str
+        Text that should be used if the number is one.
+    plural_text : str
+        Text that should be used if the number is not one (i.e. if the
+        number is 0, 2, 3, etc.).
+
+    Returns:
+    : str
+        The singular text if the number is 1, or plural text otherwise.
+    """
+
+    return singular_text if number == 1 else plural_text
 
 
 def get_os_distribution(root_directory='/'):
@@ -149,23 +179,71 @@ def get_kernel_version():
     return result
 
 
-def get_package_version(package_name):
-
-    command = 'dpkg-query --showformat="${Version}\n" --show "%s"' % package_name
-    result, exit_status, signal_status = execute_synchronous(command)
-    logger.log_value('Result', result)
-    logger.log_value('Exit status', exit_status)
-    logger.log_value('Signal status', signal_status)
-
-    if exit_status:
-        return None
-    else:
-        return result
-
-
 def get_major_minor_version(package_version):
+    """
+    Get displayable Cubic version.
+    Ex. '2021.10-61-release~202110150101~ubuntu21.10.1' --> '2021.10.61'
+    """
 
     return '.'.join(package_version.split('-')[0:2])
+
+
+def get_installed_packages_list(root_directory):
+    """
+    This function is not used.
+
+    Get a list of installed packages.
+
+    Arguments:
+    root_directory : str
+        The root directory of var/lib/dpkg (the dpkg database).
+
+    Returns:
+    installed_packages_list : list
+        A list of tuples (package name, package version).
+    """
+
+    installed_packages_list = []
+
+    apt_cache = apt.Cache(rootdir=root_directory)
+    for package in apt_cache:
+        if apt_cache[package.name].is_installed:
+            # package_details = f'{package.name}\t{package.installed.version}'
+            package_details = (package.name, package.installed.version)
+            installed_packages_list.append(package_details)
+    package_count = len(installed_packages_list)
+    logger.log_value('Total number of installed packages', len(installed_packages_list))
+
+    return installed_packages_list
+
+
+def get_package_version(package_name, root_directory=os.path.sep):
+    """
+    Get the version of the specified package.
+
+    Arguments:
+    package_name : str
+        The name of the package.
+    root_directory : str
+        Optional root directory of var/lib/dpkg (the dpkg database). The
+        default root directory is "/".
+
+    Returns:
+    version : str
+        The version of the specified package, or None if the package
+        does not exist.
+    """
+
+    try:
+        apt_cache = apt.Cache(rootdir=root_directory)
+        package = apt_cache[package_name]
+        return package.installed.version
+    except AttributeError as exception:
+        # AttributeError: 'NoneType' object has no attribute 'version'
+        return None
+    except KeyError as exception:
+        # KeyError: "The cache has no package named '___'".
+        return None
 
 
 def construct_custom_iso_version_number():
@@ -321,8 +399,7 @@ def construct_custom_iso_file_name(original_iso_file_name, custom_iso_version_nu
                 if not point_release:
                     point_release = '.0'
                     logger.log_value('new point_release', point_release)
-                    # text_a = text_c + release + point_release + text_d
-                    text_a = '%s%s%s%s' % (text_c, release, point_release, text_d)
+                    text_a = f'{text_c}{release}{point_release}{text_d}'
                     logger.log_value('new text a', text_a)
             else:
                 # text_b ◀ (text_c)(release)(point_release)(text_d)
@@ -340,11 +417,9 @@ def construct_custom_iso_file_name(original_iso_file_name, custom_iso_version_nu
                     if not point_release:
                         point_release = '.0'
                         logger.log_value('new point_release', point_release)
-                        # text_b = text_c + release + point_release + text_d
-                        text_b = '%s%s%s%s' % (text_c, release, point_release, text_d)
+                        text_b = f'{text_c}{release}{point_release}{text_d}'
                         logger.log_value('new text b', text_b)
-            # custom_iso_file_name = text_a + custom_iso_version_number + text_b + '.iso'
-            custom_iso_file_name = '%s%s%s.iso' % (text_a, custom_iso_version_number, text_b)
+            custom_iso_file_name = f'{text_a}{custom_iso_version_number}{text_b}.iso'
         else:
             # original_volume_id ◀ (text_a)(release)(point_release)(text_b)
             pattern = r'(^.*?)(\d{2}\.\d{1,2})(\.\d{1,2}){0,1}(.*$)'
@@ -362,11 +437,9 @@ def construct_custom_iso_file_name(original_iso_file_name, custom_iso_version_nu
                 if not point_release:
                     point_release = '.0'
                     logger.log_value('new point_release', point_release)
-                # custom_iso_file_name = text_a + release + point_release + '-' + custom_iso_version_number + text_b + '.iso'
-                custom_iso_file_name = '%s%s%s-%s%s.iso' % (text_a, release, point_release, custom_iso_version_number, text_b)
+                custom_iso_file_name = f'{text_a}{release}{point_release}-{custom_iso_version_number}{text_b}.iso'
             else:
-                # custom_iso_file_name = original_iso_file_name + '-' + custom_iso_version_number + '.iso'
-                custom_iso_file_name = '%s-%s.iso' % (original_iso_file_name, custom_iso_version_number)
+                custom_iso_file_name = f'{original_iso_file_name}-{custom_iso_version_number}.iso'
         # logger.log_value('The constructed custom disk image file name is', custom_iso_file_name)
     else:
         custom_iso_file_name = None
@@ -409,8 +482,7 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
                 if not point_release:
                     point_release = '.0'
                     logger.log_value('new point_release', point_release)
-                    # text_a = text_c + release + point_release + text_d
-                    text_a = '%s%s%s%s' % (text_c, release, point_release, text_d)
+                    text_a = f'{text_c}{release}{point_release}{text_d}'
                     logger.log_value('new text a', text_a)
             else:
                 # text_b ◀ (text_c)(release)(point_release)(text_d)
@@ -428,11 +500,9 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
                     if not point_release:
                         point_release = '.0'
                         logger.log_value('new point_release', point_release)
-                        # text_b = text_c + release + point_release + text_d
-                        text_b = '%s%s%s%s' % (text_c, release, point_release, text_d)
+                        text_b = f'{text_c}{release}{point_release}{text_d}'
                         logger.log_value('new text b', text_b)
-            # custom_iso_volume_id = text_a + custom_iso_version_number + text_b
-            custom_iso_volume_id = '%s%s%s' % (text_a, custom_iso_version_number, text_b)
+            custom_iso_volume_id = f'{text_a}{custom_iso_version_number}{text_b}'
         else:
             # original_volume_id ◀ (text_a)(release)(point_release)(text_b)
             pattern = r'(^.*?)(\d{2}\.\d{1,2})(\.\d{1,2}){0,1}(.*$)'
@@ -450,21 +520,19 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
                 if not point_release:
                     point_release = '.0'
                     logger.log_value('new point_release', point_release)
-                # custom_iso_volume_id = text_a + release + point_release + ' ' + custom_iso_version_number + text_b
-                custom_iso_volume_id = '%s%s%s %s%s' % (text_a, release, point_release, custom_iso_version_number, text_b)
+                custom_iso_volume_id = f'{text_a}{release}{point_release} {custom_iso_version_number}{text_b}'
             else:
-                # custom_iso_volume_id = original_iso_volume_id + ' ' + custom_iso_version_number
-                custom_iso_volume_id = '%s %s' % (original_iso_volume_id, custom_iso_version_number)
+                custom_iso_volume_id = f'{original_iso_volume_id} {custom_iso_version_number}'
         # If volume id is longer than 32 characters, and there is a space
         # within the last five positions, trim the space and subsequent
         # characters.
         if len(custom_iso_volume_id) > 32:
             try:
                 index_of_space = custom_iso_volume_id.rindex(' ', 27, 32)
-                logger.log_value('The custom iso volume id is too long', 'Trim all characters after the space at index %s' % index_of_space)
+                logger.log_value('The custom ISO volume id is too long', f'Trim all characters after the space at index {index_of_space}')
             except ValueError as exception:
                 custom_iso_volume_id = custom_iso_volume_id[:32]
-                logger.log_value('The custom iso volume id is too long', 'Trim to 32 characters')
+                logger.log_value('The custom ISO volume id is too long', 'Trim to 32 characters')
             else:
                 custom_iso_volume_id = custom_iso_volume_id[:index_of_space]
         # logger.log_value('The constructed custom disk image volume id is', custom_iso_volume_id)
@@ -481,7 +549,9 @@ def construct_custom_iso_release_name(original_iso_release_name):
     # logger.log_value('The original disk image release name is', original_iso_release_name)
 
     try:
-        custom_iso_release_name = 'Custom %s' % re.sub(r'^Custom\s*', '', original_iso_release_name)
+        # Remove the prefix "Custom" if it exists.
+        original_iso_release_name = re.sub(r'^Custom\s*', '', original_iso_release_name)
+        custom_iso_release_name = f'Custom {original_iso_release_name}'
     except Exception as exception:
         logger.log_value('Encountered exception while creating custom disk image release name', exception)
         custom_iso_release_name = ''
@@ -497,11 +567,11 @@ def construct_custom_iso_disk_name(custom_iso_volume_id, custom_iso_release_name
     # logger.log_value('The custom disk image release name is', custom_iso_release_name)
 
     if custom_iso_volume_id and custom_iso_release_name:
-        custom_iso_disk_name = '%s "%s"' % (custom_iso_volume_id, custom_iso_release_name)
+        custom_iso_disk_name = f'{custom_iso_volume_id} "{custom_iso_release_name}"'
     elif custom_iso_volume_id:
-        custom_iso_disk_name = '%s' % custom_iso_volume_id
+        custom_iso_disk_name = f'{custom_iso_volume_id}'
     elif custom_iso_release_name:
-        custom_iso_disk_name = '"%s"' % custom_iso_release_name
+        custom_iso_disk_name = f'"{custom_iso_release_name}"'
     else:
         custom_iso_disk_name = ''
 
@@ -519,7 +589,7 @@ def construct_custom_iso_checksum_file_name(custom_iso_file_name):
         # file_name_root = splitext(custom_iso_file_name)[0]
         # file_name_root = re.search(r'(.*?)\.iso*', custom_iso_file_name).group(1)
         # file_name_root = re.search(r'(.*?)(?:(?:\.iso)*)$', custom_iso_file_name).group(1)
-        custom_iso_checksum_file_name = '%s.md5' % custom_iso_file_name[:-4]
+        custom_iso_checksum_file_name = f'{custom_iso_file_name[:-4]}.md5'
     except Exception as exception:
         logger.log_value('Encountered exception while creating custom disk image checksum file name', exception)
         custom_iso_checksum_file_name = 'custom.md5'

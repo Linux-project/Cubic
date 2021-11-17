@@ -39,12 +39,15 @@
 ########################################################################
 
 import getpass
+import locale
 import os
 import re
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import EXTENSION_SIZE, EXTENSION_SQUASHFS
 from cubic.constants import FINAL_PERCENT
+from cubic.constants import GAP
 from cubic.constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
 from cubic.constants import SLEEP_0500_MS
 from cubic.constants import TIME_STAMP_FORMAT_YYYYMMDD
@@ -125,7 +128,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -190,7 +193,7 @@ def enter(action, old_page=None):
 
         displayer.update_status('generate_page__check_custom_disk_size', displayer.PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        is_error = check_custom_directory_size()
+        is_error = check_custom_disk_directory_size()
         if is_error: return  # Stay on this page.
         time.sleep(SLEEP_0500_MS)
 
@@ -221,7 +224,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -271,7 +274,7 @@ def leave(action, new_page=None):
 
         configuration.save()
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -359,7 +362,7 @@ def copy_kernel_files():
     # Create a symlink from vmlinuz.eft to vmlinuz.
     # Workaround for Bug #1900917, "Kernel Panic on Boot After
     # Installation (No initrd in grub.cfg)."
-    # Reference Bug #1898749, "Pop!_OS expects vmlinuz on the iso to
+    # Reference Bug #1898749, "Pop!_OS expects vmlinuz on the ISO to
     # have the *.efi extension."
     # Reference Bug #1895770, "Pop!_OS expects the initramfs bootstrap
     # file to be explicitly named "initrd.gz"
@@ -369,19 +372,8 @@ def copy_kernel_files():
         target_file_name = 'vmlinuz.efi'
         target_file_path = os.path.join(target_directory, target_file_name)
         if source_file_name != target_file_name and not os.path.exists(target_file_path):
-            logger.log_value('For Pop!_OS, create symlink', 'from %s to %s' % (source_file_name, target_file_name))
+            logger.log_value('For Pop!_OS, create symlink', f'from {source_file_name} to {target_file_name}')
             os.symlink(source_file_name, target_file_path)
-    '''
-    # TODO: Remove the following eight lines in a future release (2020-06-19).
-    #       As of version 2020.06-28, the copy-path command will not use
-    #       temporary files, so this code is no longer needed.
-    # Delete ephemeral .vmlinuz* files created by rsync in the target directory.
-    file_names = os.listdir(target_directory)
-    for file_name in file_names:
-        if file_name.startswith('.vmlinuz'):
-            file_path = os.path.join(target_directory, file_name)
-            if os.path.isfile(file_path): file_utilities.delete_path_as_root(file_path)
-    '''
 
     if is_error:
         displayer.update_label('generate_page__copy_boot_files_message', '<span foreground="red">Error. Unable to update the vmlinuz boot file.</span>')
@@ -439,25 +431,25 @@ def copy_file(source_file_path, target_file_path, user, file_number, total_files
 
     # TODO: Can this function be consolidated outside this module?
 
-    logger.log_label('Copy file number %s of %s' % (file_number + 1, total_files))
+    logger.log_label(f'Copy file number {file_number+1} of {total_files}')
 
     logger.log_value('The source file path is', source_file_path)
     logger.log_value('The target file path is', target_file_path)
 
     program = os.path.join(model.application.directory, 'commands', 'copy-path')
-    command = 'pkexec "%s" "%s" "%s" "%s"' % (program, source_file_path, target_file_path, user)
+    command = f'pkexec "{program}" "{source_file_path}" "{target_file_path}" "{user}"'
 
     # TODO: Do error handling.
     # result, exit_status, signal_status = execute_synchronous(command)
     # logger.log_value('The result is', result)
-    # logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    # logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     # The progress callback function.
     def progress_callback(percent):
         total_percent = (FINAL_PERCENT * file_number + percent) / total_files
         displayer.update_progress_bar_percent('generate_page__copy_boot_files_progress_bar', total_percent)
         if total_percent % 10 == 0:
-            logger.log_value('Completed', '%i%%' % total_percent)
+            logger.log_value('Completed', f'{total_percent:n}%')
 
     exception, message = show_progress(command, progress_callback)
 
@@ -485,30 +477,33 @@ def _create_squashfs():
 
     logger.log_label('Compress the Linux file system')
 
+    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
+
     source_path = model.project.custom_root_directory
     logger.log_value('The source path is', source_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
     logger.log_value('The target path is', target_path)
 
-    displayer.update_label('generate_page__create_squashfs_message', 'Using %s compression.' % model.options.compression)
+    displayer.update_label('generate_page__create_squashfs_message', f'Using {model.options.compression} compression.')
 
-    # Create filesystem.squashfs.
+    # Create filesystem.squashfs or
+    # ubuntu-server-minimal.ubuntu-server.squashfs.
 
     # Pkexec is required.
     program = os.path.join(model.application.directory, 'commands', 'compress-root')
-    command = 'pkexec "%s" "%s" "%s" %s' % (program, source_path, target_path, model.options.compression)
+    command = f'pkexec "{program}" "{source_path}" "{target_path}" {model.options.compression}'
 
     # Show % in progress by setting text to None.
     # displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
-    displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '0.0 %')
+    displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', f'0.0{GAP}%')
 
     # The progress callback function.
     def progress_callback(percent):
-        displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', '%.1f %%' % float(percent))
+        displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', f'{locale.format_string("%.1f", percent, True)}{GAP}%')
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('Completed', '%i%%' % percent)
+            logger.log_value('Completed', f'{percent:n}%')
 
     exception, message = show_progress(command, progress_callback)
 
@@ -532,10 +527,12 @@ def _create_squashfs_TESTING_1():
 
     logger.log_label('Create squashfs (Testing)')
 
+    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
+
     source_path = model.project.custom_root_directory
     logger.log_value('The source path is', source_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
     logger.log_value('The target path is', target_path)
 
     is_error = False
@@ -548,23 +545,27 @@ def _create_squashfs_TESTING_1():
 
 def _create_squashfs_TESTING_2():
     """
-    This function copies the original filesystem.squashfs file.
+    This function simply copies the original filesystem.squashfs file or
+    the ubuntu-server-minimal.ubuntu-server.squashfs file.
     """
 
     logger.log_label('Create squashfs (Testing)')
 
-    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
+    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
+
+    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
     logger.log_value('The source path is', source_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.squashfs')
+    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
     logger.log_value('The target path is', target_path)
 
-    # Copy the original filesystem.squashfs.
+    # Copy the original filesystem.squashfs or
+    # ubuntu-server-minimal.ubuntu-server.squashfs.
     file_utilities.copy_file(source_path, target_path)
 
     is_error = os.path.exists(target_path)
     if is_error:
-        displayer.update_label('generate_page__create_squashfs_message', 'Testing. Error. filesystem.squashfs already exists.')
+        displayer.update_label('generate_page__create_squashfs_message', f'Testing. Error. {file_name} already exists.')
         displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
     else:
         displayer.update_label('generate_page__create_squashfs_message', 'Testing.')
@@ -585,19 +586,20 @@ def update_file_system_size():
     try:
         # Pkexec is required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
-        command = 'pkexec "%s" "%s"' % (program, model.project.custom_root_directory)
+        command = f'pkexec "{program}" "{model.project.custom_root_directory}"'
         result, exit_status, signal_status = execute_synchronous(command)
         size_information = re.search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
         size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
-        logger.log_value('The file system size is', '%.2f GiB (%s bytes)' % (size_in_gib, size_in_bytes))
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, 'filesystem.size')
+        logger.log_value('The file system size is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SIZE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
         logger.log_value('Write file system size to', file_path)
         with open(file_path, 'w') as file:
-            file.write('%s' % size_in_bytes)
+            file.write(str(size_in_bytes))
     except Exception as exception:
-        logger.log_value('Unable to get file system size for %s' % model.project.custom_root_directory, result)
+        logger.log_value(f'Unable to get file system size for {model.project.custom_root_directory}', result)
         logger.log_value('The exception is', exception)
         displayer.update_label('generate_page__update_file_system_size_message', 'Error. Unable to get file system size.')
         displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
@@ -606,13 +608,11 @@ def update_file_system_size():
         if size_in_bytes > GIB:
             displayer.update_label(
                 'generate_page__update_file_system_size_message',
-                'The file system size is %.2f GiB (%s bytes).' % (size_in_gib,
-                                                                  size_in_bytes))
+                f'The file system size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).')
         else:
             displayer.update_label(
                 'generate_page__update_file_system_size_message',
-                'The file system size is %.2f MiB (%s bytes).' % (size_in_mib,
-                                                                  size_in_bytes))
+                f'The file system size is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).')
         displayer.update_status('generate_page__update_file_system_size', displayer.OK)
         is_error = False
     return is_error
@@ -690,13 +690,13 @@ def update_disk_name():
     # Create the new lines.
     new_lines = []
     # Append the new disk name line.
-    line = '#define DISKNAME  %s' % model.custom.iso_disk_name
+    line = f'#define DISKNAME  {model.custom.iso_disk_name}'
     new_lines.append(line)
     logger.log_value('Update disk name', line)
     # Append the new disk note line.
     display_version = constructor.get_major_minor_version(model.application.cubic_version)
     # Use the modify date from the model.
-    line = '#define DISKNOTE  Generated using Cubic version %s on %s based on %s' % (display_version, model.project.modify_date, model.original.iso_file_name)
+    line = f'#define DISKNOTE  Generated using Cubic version {display_version} on {model.project.modify_date} based on {model.original.iso_file_name}'
     new_lines.append(line)
     logger.log_value('Update disk note', line)
     # Append only existing lines that should be retained.
@@ -737,12 +737,12 @@ def update_disk_info():
     try:
         # Use the modify date from the model.
         time_stamp = constructor.reformat_time_stamp(model.project.modify_date, TIME_STAMP_FORMAT_YYYYMMDD)
-        text = '%s (%s)' % (model.custom.iso_disk_name, time_stamp)
+        text = f'{model.custom.iso_disk_name} ({time_stamp})'
         logger.log_value('The custom disk image name and release date are', text)
         file_path = os.path.join(model.project.custom_disk_directory, '.disk', 'info')
-        logger.log_value('Write disk information to %s.', file_path)
+        logger.log_value(f'Write disk information to {file_path}.')
         with open(file_path, 'w') as file:
-            file.write('%s' % text)
+            file.write(text)
     except Exception as exception:
         logger.log_value('Unable to update the disk information in', file_path)
         logger.log_value('The exception is', exception)
@@ -831,15 +831,15 @@ def update_checksums():
     try:
         with open(checksums_file_path, 'w') as file:
             for file_number, file_path in enumerate(file_paths, start=1):
-                # displayer.update_label('generate_page__update_checksums_message', 'Calculating checksum for file %i of %i.' % (file_number, total_files))
+                # displayer.update_label('generate_page__update_checksums_message', f'Calculating checksum for file {file_number} of {total_files}.')
                 checksum = file_utilities.calculate_md5_hash(file_path)
                 relative_file_path = os.path.relpath(file_path, start_directory)
-                file.write('%s  ./%s\n' % (checksum, relative_file_path))
-                displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 100 * file_number / total_files)
+                file.write(f'{checksum}  ./{relative_file_path}{os.linesep}')
+                percent = 100 * file_number / total_files
+                displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', percent)
                 displayer.update_progress_bar_text(
                     'generate_page__update_checksums_progress_bar',
-                    'Calculating checksum for file %i of %i' % (file_number,
-                                                                total_files))
+                    f'Calculating checksum for file {file_number:n} of {total_files:n}')
 
     except Exception as exception:
         logger.log_value('Unable to update checksums', checksums_file_path)
@@ -852,9 +852,9 @@ def update_checksums():
         return True
 
     else:
-        logger.log_value('Calculated checksums for', '%i files' % total_files)
+        logger.log_value('Calculated checksums for', f'{total_files} files')
         displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', '100%')
-        displayer.update_label('generate_page__update_checksums_message', 'Calculated checksums for %i files.' % total_files)
+        displayer.update_label('generate_page__update_checksums_message', f'Calculated checksums for {total_files} files.')
         displayer.update_status('generate_page__update_checksums', displayer.OK)
         return False
 
@@ -864,14 +864,14 @@ def update_checksums():
 #-----------------------------------------------------------------------
 
 
-def check_custom_directory_size():
+def check_custom_disk_directory_size():
 
     logger.log_label('Get the custom disk size')
 
     try:
         # Pkexec is not required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
-        command = 'pkexec "%s" "%s"' % (program, model.project.custom_disk_directory)
+        command = f'pkexec "{program}" "{model.project.custom_disk_directory}"'
         result, exit_status, signal_status = execute_synchronous(command)
         size_information = re.search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
@@ -884,30 +884,28 @@ def check_custom_directory_size():
         displayer.update_status('generate_page__check_custom_disk_size', displayer.ERROR)
         is_error = True
     else:
-        logger.log_value('The total size is', '%.2f GiB (%i bytes)' % (size_in_gib, size_in_bytes))
-        logger.log_value('The maximum size limit for all files on the disk is', '%.2f GiB (%i bytes)' % (MAXIMUM_DISK_SIZE_GIB, MAXIMUM_DISK_SIZE_BYTES))
+        # f'{locale.format_string("%.2f", size, True)}
+        logger.log_value('The total size is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
+
+        logger.log_value('The maximum size limit for all files on the disk is', f'{MAXIMUM_DISK_SIZE_GIB:.2f} GiB ({MAXIMUM_DISK_SIZE_BYTES:n} bytes)')
         if size_in_bytes > MAXIMUM_DISK_SIZE_BYTES:
             logger.log_value('Error', 'The total size exceeds the maximum size')
             displayer.update_label(
                 'generate_page__check_custom_disk_size_message',
-                'The the custom disk directory size is %.2f GiB (%s bytes).' % (size_in_gib,
-                                                                                size_in_bytes) + os.linesep +
-                'This is larger than the %.2f GiB (%i bytes) limit.' % (MAXIMUM_DISK_SIZE_GIB,
-                                                                        MAXIMUM_DISK_SIZE_BYTES) + os.linesep +
-                'Click the Back button, and reduce the size of the Linux file system.')
+                f'The the custom disk directory size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).{os.linesep}'
+                f'This is larger than the {MAXIMUM_DISK_SIZE_GIB:.2f} GiB ({MAXIMUM_DISK_SIZE_BYTES:n} bytes) limit.{os.linesep}'
+                f'Click the Back button, and reduce the size of the Linux file system.')
             displayer.update_status('generate_page__check_custom_disk_size', displayer.ERROR)
             is_error = True
         else:
             if size_in_bytes > GIB:
                 displayer.update_label(
                     'generate_page__check_custom_disk_size_message',
-                    'The total size of all files is %.2f GiB (%s bytes).' % (size_in_gib,
-                                                                             size_in_bytes))
+                    f'The total size of all files is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).')
             else:
                 displayer.update_label(
                     'generate_page__check_custom_disk_size_message',
-                    'The total size of all files is %.2f MiB (%s bytes).' % (size_in_mib,
-                                                                             size_in_bytes))
+                    f'The total size of all files is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).')
             displayer.update_status('generate_page__check_custom_disk_size', displayer.OK)
             is_error = False
     return is_error
@@ -938,14 +936,14 @@ def create_iso_image():
     if command:
         # Show % in progress by setting text to None.
         # displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', None)
-        displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '0.0 %')
+        displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', f'0.0{GAP}%')
 
         # The progress callback function.
         def progress_callback(percent):
             displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', percent)
-            displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', '%.1f %%' % float(percent))
+            displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', f'{locale.format_string("%.1f", percent, True)}{GAP}%')
             if percent % 10 == 0:
-                logger.log_value('Completed', '%i%%' % percent)
+                logger.log_value('Completed', f'{percent:n}%')
 
         exception, message = show_progress(command, progress_callback, working_directory=model.project.custom_disk_directory)
         is_error = bool(exception)
@@ -974,12 +972,13 @@ def create_iso_image():
     try:
         # Pkexec is not required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
-        command = 'pkexec "%s" "%s"' % (program, iso_file_path)
+        command = f'pkexec "{program}" "{iso_file_path}"'
         result, exit_status, signal_status = execute_synchronous(command)
         size_information = re.search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
         size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
+        model.iso_file_size = size_in_bytes
     except Exception as exception:
         logger.log_value('Unable to get the size of the custom disk', iso_file_path)
         logger.log_value('The exception is', exception)
@@ -988,19 +987,16 @@ def create_iso_image():
         is_error = True
     else:
         if size_in_bytes > GIB:
-            logger.log_value('The size of the custom disk is', '%.2f MiB (%i bytes)' % (size_in_gib, size_in_bytes))
-            # displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f GiB disk image %s.' % (size_in_gib, model.custom.iso_file_name))
+            logger.log_value('The size of the custom disk is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
             displayer.update_label(
                 'generate_page__create_iso_image_message',
-                'Generated %s. The disk image size is %.2f GiB.' % (model.custom.iso_file_name,
-                                                                    size_in_gib))
+                f'Generated {model.custom.iso_file_name}. The disk image size is {locale.format_string("%.2f", size_in_gib, True)} GiB.')
         else:
-            logger.log_value('The size of the custom disk is', '%.2f MiB (%i bytes)' % (size_in_mib, size_in_bytes))
-            # displayer.update_label('generate_page__create_iso_image_message', 'Created %.2f MiB disk image %s.' % (size_in_mib, model.custom.iso_file_name))
+            logger.log_value('The size of the custom disk is', f'{locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes)')
             displayer.update_label(
                 'generate_page__create_iso_image_message',
-                'Generated %s. The disk image size is %.2f MiB.' % (model.custom.iso_file_name,
-                                                                    size_in_mib))
+                f'Generated {model.custom.iso_file_name}. The disk image size is {locale.format_string("%.2f", size_in_mib, True)} MiB.')
+
         displayer.update_status('generate_page__create_iso_image', displayer.OK)
         is_error = False
 
@@ -1030,17 +1026,17 @@ def get_xorriso_command():
     volume_id = model.custom.iso_volume_id.replace("'", """'"'"'""")
     boot_image_directory = model.project.directory.replace("'", """'"'"'""")
 
-    complete = template.format(volume_id=volume_id, boot_image_directory=boot_image_directory)
+    complete_template = template.format(volume_id=volume_id, boot_image_directory=boot_image_directory)
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
-    command = ('xorriso '      \
-               '-as mkisofs '  \
-               '-r '           \
-               '-J '           \
-               '-joliet-long ' \
-               '-l '           \
-               '-iso-level 3 ' \
-               '{0} '          \
-               '-o "{1}" .').format(complete, iso_file_path)
+    command = ('xorriso '               \
+               '-as mkisofs '           \
+               '-r '                    \
+               '-J '                    \
+               '-joliet-long '          \
+               '-l '                    \
+               '-iso-level 3 '          \
+               f'{complete_template} '  \
+               f'-o "{iso_file_path}" .')
 
     return command
 
@@ -1062,25 +1058,23 @@ def calculate_checksum_for_iso():
     checksum = file_utilities.calculate_md5_hash(custom_iso_file_path)
     model.status.iso_checksum = checksum
 
-    displayer.update_label('generate_page__calculate_iso_image_checksum_message', 'The checksum is %s.' % model.status.iso_checksum)
+    displayer.update_label('generate_page__calculate_iso_image_checksum_message', f'The checksum is {model.status.iso_checksum}.')
     time.sleep(SLEEP_0500_MS)
 
     try:
-        logger.log_value('Write checksum for iso to', custom_iso_checksum_file_path)
+        logger.log_value('Write checksum for ISO to', custom_iso_checksum_file_path)
         with open(custom_iso_checksum_file_path, 'w') as file:
-            file.write('%s  %s' % (checksum, model.custom.iso_file_name))
+            file.write(f'{checksum}  {model.custom.iso_file_name}')
     except:
         displayer.update_label(
             'generate_page__calculate_iso_image_checksum_message',
-            'Unable to save the checksum file %s.\nThe checksum file is %s.' % (model.status.iso_checksum,
-                                                                                model.status.iso_checksum_file_name))
+            f'Unable to save the checksum file {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.')
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.ERROR)
         is_error = True
     else:
         displayer.update_label(
             'generate_page__calculate_iso_image_checksum_message',
-            'The checksum is %s.\nThe checksum file is %s.' % (model.status.iso_checksum,
-                                                               model.status.iso_checksum_file_name))
+            f'The checksum is {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.')
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.OK)
         is_error = False
 

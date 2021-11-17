@@ -52,8 +52,10 @@ import os
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import EXTENSION_MANIFEST, EXTENSION_SIZE, EXTENSION_SQUASHFS, EXTENSION_SQUASHFS_GPG
 from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import SLEEP_1000_MS
+from cubic.constants import SQUASHFS_FILE_NAMES
 from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
@@ -83,21 +85,31 @@ def setup(action, old_page=None):
         # This should be set correctly on the Project page, but set it
         # here as a precaution (in case the user edited the
         # configuration file.
-        if not model.status.is_success_copy: model.status.iso_template = None
+        if not model.status.is_success_copy:
+            model.status.iso_template = None
 
         # The casper directory must always be None if is success extract
         # is None. This should be set correctly on the Project page, but
         # set it here as a precaution (in case the user edited the
         # configuration file.
-        if not model.status.is_success_extract: model.status.casper_directory = None
+        if not model.status.is_success_extract:
+            model.status.casper_directory = None
+            model.status.squashfs_file_name = None
 
+        # --------------------------------------------------------------
         # Identify important files on the original disk image.
+        # --------------------------------------------------------------
 
-        displayer.set_visible('extract_page__analyze_original_iso_section', not model.status.iso_template or not model.status.casper_directory)
+        displayer.set_visible('extract_page__analyze_original_iso_section',
+                              not model.status.iso_template or \
+                              not model.status.casper_directory or \
+                              not model.status.squashfs_file_name)
         displayer.update_label('extract_page__analyze_original_iso_message', '...')
         displayer.update_status('extract_page__analyze_original_iso', displayer.BULLET)
 
+        # --------------------------------------------------------------
         # Copy important files from the original disk image.
+        # --------------------------------------------------------------
 
         displayer.set_visible('extract_page__copy_original_iso_files_section', not model.status.is_success_copy)
         displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', 0)
@@ -105,7 +117,9 @@ def setup(action, old_page=None):
         displayer.update_label('extract_page__copy_original_iso_files_message', '')
         displayer.update_status('extract_page__copy_original_iso_files', displayer.BULLET)
 
+        # --------------------------------------------------------------
         # Extract the compressed Linux file system.
+        # --------------------------------------------------------------
 
         displayer.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
@@ -129,7 +143,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -140,19 +154,28 @@ def enter(action, old_page=None):
     functions, but the display status the model status values should be
     set here because they depend on the outcome of multiple functions.
 
-    Assume that prior to entering this page:
+    The following values are checked and set to None accordingly, in the
+    setup() function, prior to entering this page.
 
     - model.status.iso_template is set to None whenever
       model.status.is_success_copy is set to False.
 
     - model.status.casper_directory is set to None whenever
       model.status.is_success_extract is set to False.
+
+    - model.status.squashfs_file_name is set to None whenever
+      model.status.is_success_extract is set to False.
     """
 
     if action == 'next':
 
+        # --------------------------------------------------------------
         # Identify important files on the original disk image.
-        if not model.status.iso_template or not model.status.casper_directory:
+        # --------------------------------------------------------------
+
+        if not model.status.iso_template or     \
+           not model.status.casper_directory or \
+           not model.status.squashfs_file_name:
 
             displayer.update_status('extract_page__analyze_original_iso', displayer.PROCESSING)
             time.sleep(SLEEP_1000_MS)
@@ -161,20 +184,22 @@ def enter(action, old_page=None):
             if not model.status.iso_template:
 
                 # Delete the old image files. Ignore errors.
-                pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
-                file_utilities.delete_files_with_pattern(pattern)
+                file_path_pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
+                file_utilities.delete_files_with_pattern(file_path_pattern)
 
                 # Set model.status.iso_template.
                 is_error = identify_iso_template()
                 if is_error: return  # Stay on this page.
 
-            # Identify the casper relative directory.
-            if not model.status.casper_directory:
+            # Identify the casper relative directory and the squashfs
+            # file name.
+            if not model.status.casper_directory or \
+               not model.status.squashfs_file_name:
 
-                is_error = identify_casper_directory()
+                is_error = identify_casper_and_squashfs()
                 if is_error: return  # Stay on this page.
 
-            #-----------------------------------------------------------
+            # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
             # TODO: Remove this section in a future release. (12/27/2020)
             #       Also, remove similar code from start_page and extract_page.
 
@@ -184,14 +209,17 @@ def enter(action, old_page=None):
                 if '{{volume_id}}' in template:
                     template = template.replace('{{volume_id}}', '{volume_id}')
                     model.status.iso_template = constructor.encode(template)
-            #-----------------------------------------------------------
+            # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
             # Success. Pause to allow the user to see the result.
             displayer.update_label('extract_page__analyze_original_iso_message', 'Success.')
             displayer.update_status('extract_page__analyze_original_iso', displayer.OK)
             time.sleep(SLEEP_1000_MS)
 
-        # Copy original disk files.
+        # --------------------------------------------------------------
+        # Copy important files from the original disk image.
+        # --------------------------------------------------------------
+
         if not model.status.is_success_copy:
 
             displayer.update_status('extract_page__copy_original_iso_files', displayer.PROCESSING)
@@ -205,7 +233,10 @@ def enter(action, old_page=None):
             displayer.update_status('extract_page__copy_original_iso_files', displayer.OK)
             time.sleep(SLEEP_1000_MS)
 
-        # Extract the Linux file system.
+        # --------------------------------------------------------------
+        # Extract the compressed Linux file system.
+        # --------------------------------------------------------------
+
         if not model.status.is_success_extract:
 
             displayer.update_status('extract_page__unsquashfs', displayer.PROCESSING)
@@ -222,7 +253,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -261,7 +292,7 @@ def leave(action, new_page=None):
 
         configuration.save()
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -304,37 +335,35 @@ def identify_iso_template():
     return is_error
 
 
-def identify_casper_directory():
+def identify_casper_and_squashfs():
     """
-    Set the relative casper directory.
+    Set the relative casper directory and the squashfs file name.
     """
 
     logger.log_label('Find the compressed Linux file system')
 
-    # Look for the casper relative directory in the mounted iso directory.
-    if not model.status.casper_directory:
-        try:
-            directory = file_utilities.get_directory_for_file('filesystem.squashfs', model.project.iso_mount_point)
-            model.status.casper_directory = os.path.relpath(directory, model.project.iso_mount_point)
-            # logger.log_value('The compressed Linux file system directory is', model.status.casper_directory)
-        except ValueError as exception:
-            logger.log_value('Unable to find the compressed Linux file system in %s' % model.project.iso_mount_point, exception)
+    # model.status.casper_directory = None
+    # model.status.squashfs_file_name = None
 
-    # Look for the casper relative directory in the custom disk directory.
-    if not model.status.casper_directory:
-        try:
-            directory = file_utilities.get_directory_for_file('filesystem.squashfs', model.project.custom_disk_directory)
-            model.status.casper_directory = os.path.relpath(directory, model.project.custom_disk_directory)
-            # logger.log_value('The compressed Linux file system directory is', model.status.casper_directory)
-        except ValueError as exception:
-            logger.log_value('Unable to find the compressed Linux file system in %s' % model.project.custom_disk_directory, exception)
-
-    # TODO: If the casper directory in the mounted iso is different from
-    #       the casper directory in the custom disk directory, then
-    #       rename the casper directory in the custom disk directory to
-    #       match the casper directory in mounted iso. The casper
-    #       directory in the mounted iso will become the new casper
-    #       directory, and all files will be copied from there.
+    # Look for the casper relative directory in the
+    # • mounted ISO directory
+    # • custom disk directory
+    search_directories = [model.project.iso_mount_point, model.project.custom_disk_directory]
+    for search_directory in search_directories:
+        for squashfs_file_name in SQUASHFS_FILE_NAMES:
+            casper_directory = file_utilities.get_directory_for_file(squashfs_file_name, search_directory)
+            if casper_directory:
+                casper_directory = os.path.relpath(casper_directory, search_directory)
+                logger.log_value('Found the compressed Linux file system', os.path.join(casper_directory, squashfs_file_name))
+                model.status.casper_directory = casper_directory
+                model.status.squashfs_file_name, _ = os.path.splitext(squashfs_file_name)
+                # Stop searching for other squashfs file names.
+                break
+            else:
+                logger.log_value('Unable to locate the compressed Linux file system ', squashfs_file_name)
+        if model.status.casper_directory:
+            # Stop searching in other directories.
+            break
 
     if not model.status.casper_directory:
         is_error = True
@@ -352,6 +381,43 @@ def identify_casper_directory():
 
 
 def copy_original_iso_files():
+    """
+    Exclude or copy the following files as indicated.
+
+    do not copy: /md5sum.txt
+    do not copy: /MD5SUMS (for Linux Mint)
+
+    ~ ~ ~  copy: /casper/filesystem.manifest-remove
+    ~ ~ ~  copy: /casper/filesystem.manifest-minimal-remove
+
+    do not copy: /casper/filesystem.manifest
+    do not copy: /casper/filesystem.size
+    do not copy: /casper/filesystem.squashfs
+    do not copy: /casper/filesystem.squashfs.gpg
+
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.manifest
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.size
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.squashfs
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.squashfs.gpg
+
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.manifest
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.size
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs.gpg
+
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.manifest
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.size
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.squashfs
+    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.squashfs.gpg
+
+    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.manifest
+    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.size
+    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.squashfs
+    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.squashfs.gpg
+
+    ~ ~ ~  copy: /casper/initrd
+    ~ ~ ~  copy: /casper/vmlinuz
+    """
 
     logger.log_label('Copy important files from the original disk image')
 
@@ -368,19 +434,6 @@ def copy_original_iso_files():
 
     # Copy files from the original iso.
 
-    # Exclude or copy the following files as indicated.
-    #
-    # do not copy: /md5sum.txt
-    # do not copy: /MD5SUMS (for Linux Mint)
-    # do not copy: /casper/filesystem.manifest
-    # ~ ~ ~  copy: /casper/filesystem.manifest-remove
-    # ~ ~ ~  copy: /casper/filesystem.manifest-minimal-remove
-    # do not copy: /casper/filesystem.size
-    # do not copy: /casper/filesystem.squashfs
-    # do not copy: /casper/filesystem.squashfs.gpg
-    # ~ ~ ~  copy: /casper/initrd
-    # ~ ~ ~  copy: /casper/vmlinuz
-    #
     # Some important rsync options:
     #
     #   -rlptgoD
@@ -397,9 +450,10 @@ def copy_original_iso_files():
     # progress for individual files.
     # Add read and write permissions for the user.
     # Set read and write permissions for group and other.
+
     command = (
         'rsync'
-        ' --info=progress2 "{source_path}" "{target_path}"'
+        f' --info=progress2 "{source_path}" "{target_path}"'
         ' --delete'
         # ' --archive'
         ' --recursive'
@@ -408,19 +462,16 @@ def copy_original_iso_files():
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
         ' --exclude=".disk/release_notes_url"'
-        ' --exclude="/{casper_directory}/filesystem.manifest"'
-        ' --exclude="/{casper_directory}/filesystem.size"'
-        ' --exclude="/{casper_directory}/filesystem.squashfs"'
-        ' --exclude="/{casper_directory}/filesystem.squashfs.gpg"').format(
-            source_path=source_path,
-            target_path=target_path,
-            casper_directory=model.status.casper_directory)
+        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}"'
+        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_SIZE}"'
+        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}"'
+        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS_GPG}"')
 
     # The progress callback function.
     def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('Completed', '%i%%' % percent)
+            logger.log_value('Completed', f'{percent:n}%')
 
     exception, message = show_progress(command, progress_callback)
 
@@ -458,17 +509,18 @@ def extract_squashfs():
     target_path = model.project.custom_root_directory
     logger.log_value('The target path is', target_path)
 
-    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, 'filesystem.squashfs')
+    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
+    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
     logger.log_value('The source path is', source_path)
 
     program = os.path.join(model.application.directory, 'commands', 'extract-root')
-    command = 'pkexec "%s" "%s" "%s"' % (program, target_path, source_path)
+    command = f'pkexec "{program}" "{target_path}" "{source_path}"'
 
     # The progress callback function.
     def progress_callback(percent):
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
         if percent % 10 == 0:
-            logger.log_value('Completed', '%i%%' % percent)
+            logger.log_value('Completed', f'{percent:n}%')
 
     exception, message = show_progress(command, progress_callback)
 

@@ -98,31 +98,31 @@ def setup(action, old_page=None):
         displayer.update_status('delete_page__custom_iso_and_checksum', BULLET)
 
         file_path_pattern = os.path.join(model.project.directory, '*.iso')
-        iso_file_path_list = glob.glob(file_path_pattern)
+        iso_file_paths = glob.glob(file_path_pattern)
 
         file_path_pattern = os.path.join(model.project.directory, '*.md5')
-        iso_checksum_file_path_list = glob.glob(file_path_pattern)
+        iso_checksum_file_paths = glob.glob(file_path_pattern)
 
-        if iso_checksum_file_path_list and iso_file_path_list:
-            count = len(iso_file_path_list)
+        if iso_checksum_file_paths and iso_file_paths:
+            count = len(iso_file_paths)
             iso_count_text = constructor.number_as_text(count)
             iso_files_text = constructor.get_plural('file', 'files', count)
-            count = len(iso_checksum_file_path_list)
+            count = len(iso_checksum_file_paths)
             md5_count_text = constructor.number_as_text(count)
             md5_files_text = constructor.get_plural('file', 'files', count)
-            label = 'Delete %s ISO disk image %s and %s MD5 checksum %s.' % (iso_count_text, iso_files_text, md5_count_text, md5_files_text)
+            label = f'Delete {iso_count_text} ISO disk image {iso_files_text} and {md5_count_text} MD5 checksum {md5_files_text}.'
             enable = True
-        elif iso_file_path_list:
-            count = len(iso_file_path_list)
+        elif iso_file_paths:
+            count = len(iso_file_paths)
             iso_count_text = constructor.number_as_text(count)
             iso_files_text = constructor.get_plural('file', 'files', count)
-            label = 'Delete %s ISO disk image %s.' % (iso_count_text, iso_files_text)
+            label = f'Delete {iso_count_text} ISO disk image {iso_files_text}.'
             enable = True
-        elif iso_checksum_file_path_list:
-            count = len(iso_checksum_file_path_list)
+        elif iso_checksum_file_paths:
+            count = len(iso_checksum_file_paths)
             md5_count_text = constructor.number_as_text(count)
             md5_files_text = constructor.get_plural('file', 'files', count)
-            label = 'Delete %s MD5 checksum %s.' % (md5_count_text, md5_files_text)
+            label = f'Delete {md5_count_text} MD5 checksum {md5_files_text}.'
             enable = True
         else:
             label = 'There are no ISO files or MD5 files in this project directory.'
@@ -154,7 +154,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -173,7 +173,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -257,7 +257,7 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -443,32 +443,32 @@ def delete_project_files():
     time.sleep(SLEEP_1000_MS)
 
     #
-    # Delete the custom disk directory and iso partition image files.
+    # Delete the custom disk directory and ISO partition image files.
     #
     logger.log_value('Delete the custom disk directory', model.project.custom_disk_directory)
     # displayer.update_label('delete_page__custom_disk_directory_message', model.project.custom_disk_directory)
     displayer.update_status('delete_page__custom_disk_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
 
-    image_file_pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
-    image_file_files = file_utilities.get_files_with_pattern(image_file_pattern)
-    if os.path.exists(model.project.custom_disk_directory) or image_file_files:
+    file_path_pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
+    image_file_paths = glob.glob(file_path_pattern)
+    if os.path.exists(model.project.custom_disk_directory) or image_file_paths:
 
         is_error_1 = False
         if os.path.exists(model.project.custom_disk_directory):
             # Delete the custom disk directory
             result, exit_status, signal_status = file_utilities.delete_directory(model.project.custom_disk_directory)
             logger.log_value('The result is', result)
-            logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+            logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
             if signal_status:
                 is_error_1 = True
 
         is_error_2 = False
-        if image_file_files:
-            file_utilities.delete_files_with_pattern(image_file_pattern)
+        if image_file_paths:
+            file_utilities.delete_files_with_pattern(file_path_pattern)
             # Check if all image files were deleted.
-            image_file_files = file_utilities.get_files_with_pattern(image_file_pattern)
-            if image_file_files:
+            image_file_paths = glob.glob(file_path_pattern)
+            if image_file_paths:
                 is_error_2 = True
 
         if is_error_1 or is_error_2:
@@ -499,29 +499,29 @@ def delete_project_files():
         time.sleep(SLEEP_1000_MS)
 
         file_path_pattern = os.path.join(model.project.directory, '*.md5')
-        iso_checksum_file_path_list = glob.glob(file_path_pattern)
+        iso_checksum_file_paths = glob.glob(file_path_pattern)
 
         file_path_pattern = os.path.join(model.project.directory, '*.iso')
-        iso_file_path_list = glob.glob(file_path_pattern)
+        iso_file_paths = glob.glob(file_path_pattern)
 
         is_error_1 = False
-        for file_path in iso_checksum_file_path_list:
+        for file_path in iso_checksum_file_paths:
             # file_name = os.path.basename(file_path)
             logger.log_value('Delete the custom disk checksum file', file_path)
             result, exit_status, signal_status = file_utilities.delete_file(file_path)
             logger.log_value('The result is', result)
-            logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+            logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
             if signal_status:
                 is_error_1 = True
 
         is_error_2 = False
-        for file_path in iso_file_path_list:
+        for file_path in iso_file_paths:
             # file_name = os.path.basename(file_path)
             logger.log_value('Delete the custom disk image file', file_path)
             result, exit_status, signal_status = file_utilities.delete_file(file_path)
             logger.log_value('The result is', result)
-            logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+            logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
             if signal_status:
                 is_error_2 = True
@@ -558,6 +558,7 @@ def reset_model():
     model.original.iso_volume_id = None
     model.original.iso_release_name = None
     model.original.iso_disk_name = None
+    model.original.iso_release_notes_url = None
 
     model.custom.iso_version_number = None
     model.custom.iso_file_name = None
@@ -565,10 +566,13 @@ def reset_model():
     model.custom.iso_volume_id = None
     model.custom.iso_release_name = None
     model.custom.iso_disk_name = None
+    model.custom.iso_release_notes_url = None
 
     model.status.is_success_copy = False
     model.status.is_success_extract = False
+    model.status.iso_template = None
     model.status.casper_directory = None
+    model.status.squashfs_file_name = None
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 

@@ -142,7 +142,7 @@ class ProgressTracker(threading.Thread):
         previous_target_position = self.target_position
         target_position = percent * SCALE_FACTOR
         if target_position > previous_target_position:
-            if is_debug: print(CYAN + '▹ Progress: {:6.2f} %'.format(percent) + NORMAL)
+            if is_debug: print(f'{CYAN}▹ Progress: {percent:6.2f} %{NORMAL}')
             previous_time = self.time
             self.time = time.time()
             delta_time = self.time - previous_time
@@ -206,7 +206,7 @@ class ProgressTracker(threading.Thread):
                 position / SCALE_FACTOR,
                 target_position / SCALE_FACTOR,
                 delay,
-                RED + 'Blocked  ' + NORMAL if is_blocked else GREEN + 'Unblocked' + NORMAL))
+                f'{RED}Blocked  {NORMAL}' if is_blocked else f'{GREEN}Unblocked{NORMAL}'))
         if is_blocked: print('=' * 71)
 
 
@@ -233,7 +233,7 @@ def process_command(command, progress_tracker, working_directory=None):
     """
 
     current_time = datetime.datetime.now()
-    formatted_time = '{:%H:%M:%S.%f}'.format(current_time)
+    formatted_time = f'{current_time:%H:%M:%S.%f}'
     logger.log_value('The process started at', formatted_time)
 
     try:
@@ -257,9 +257,9 @@ def process_command(command, progress_tracker, working_directory=None):
         progress_tracker.stop()
         process.close()
         logger.log_value('Error', 'An exception occurred.')
-        formatted_time = '{:%H:%M:%S.%f}'.format(current_time)
+        formatted_time = f'{current_time:%H:%M:%S.%f}'
         logger.log_value('The process stopped at', formatted_time)
-        logger.log_value('The exit status, signal status is', '%s, %s' % (process.exitstatus, process.signalstatus))
+        logger.log_value('The exit status, signal status is', f'{process.exitstatus}, {process.signalstatus}')
         logger.log_value('The exception is', exception)
         logger.log_value('The trace back is', traceback.format_exc())
         message = process.before.strip().replace('\r\n', '\n')
@@ -273,12 +273,12 @@ def process_command(command, progress_tracker, working_directory=None):
         process.wait()
         current_time = datetime.datetime.now()
         if percent < FINAL_PERCENT:
-            logger.log_value('Adjust the final percent', 'from {:.2f}% to {:.2f}%'.format(percent, FINAL_PERCENT))
+            logger.log_value('Adjust the final percent', f'from {percent:.2f}% to {FINAL_PERCENT:.2f}%')
             progress_tracker.update(FINAL_PERCENT)
         progress_tracker.join()
-        formatted_time = '{:%H:%M:%S.%f}'.format(current_time)
+        formatted_time = f'{current_time:%H:%M:%S.%f}'
         logger.log_value('The process finished at', formatted_time)
-        logger.log_value('The exit status, signal status is', '%s, %s' % (process.exitstatus, process.signalstatus))
+        logger.log_value('The exit status, signal status is', f'{process.exitstatus}, {process.signalstatus}')
         message = process.before.strip().replace('\r\n', '\n')
         logger.log_value('The message is', message)
         if is_debug: print_message_and_exception(message)

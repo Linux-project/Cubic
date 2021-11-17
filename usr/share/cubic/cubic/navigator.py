@@ -321,7 +321,7 @@ class InvalidActionException(Exception):
 
         action_label = get_action_label(action)
         page_label = get_page_label(page)
-        message = 'Action "%s" is invalid for %s.' % (action_label, page_label)
+        message = f'Action "{action_label}" is invalid for {page_label}.'
         super().__init__(message)
 
 
@@ -352,7 +352,7 @@ def on_clicked_website_menu_button(button):
     logger.log_title('Clicked website_menu_button')
 
     url = 'https://launchpad.net/cubic'
-    command = 'xdg-open "%s" &' % url
+    command = f'xdg-open "{url}" &'
     os.system(command)
 
 
@@ -361,16 +361,16 @@ def on_clicked_help_menu_button(button):
     logger.log_title('Clicked help menu button')
 
     url = 'https://answers.launchpad.net/cubic'
-    command = 'xdg-open "%s" &' % url
+    command = f'xdg-open "{url}" &'
     os.system(command)
 
 
 def on_clicked_page_help_menu_button(button):
 
-    logger.log_title('Clicked help menu button')
+    logger.log_title('Clicked page help menu button')
 
     url = model.help_urls[model.page.name]
-    command = 'xdg-open "%s" &' % url
+    command = f'xdg-open "{url}" &'
     os.system(command)
 
 
@@ -379,7 +379,7 @@ def on_clicked_donate_menu_button(button):
     logger.log_title('Clicked donate menu button')
 
     url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5WJL2ZE3AWGQQ&currency_code=USD&source=url'
-    command = 'xdg-open "%s" &' % url
+    command = f'xdg-open "{url}" &'
     os.system(command)
 
 
@@ -395,7 +395,7 @@ def on_clicked_about_menu_button(button):
 
 def on_close_about_dialog(widget, event):
 
-    logger.log_title('Clicked close about dialog')
+    logger.log_label('Clicked close about dialog')
 
     displayer.hide('about_dialog')
     displayer.set_sensitive('window', True)
@@ -431,7 +431,7 @@ def handle_navigation(action):
 
     page_label = get_page_label(model.page)
     action_label = get_action_label(action)
-    logger.log_title('Handle navigation from %s on %s action' % (page_label, action_label))
+    logger.log_title(f'Handle navigation from {page_label} on {action_label} action')
 
     # Interrupt the previous navigation thread.
     interrupt_navigation_thread()
@@ -519,7 +519,7 @@ def navigate(action, page, new_page, effect):
     new_page_label = get_page_label(new_page)
     action_label = get_action_label(action)
 
-    logger.log_title('Navigate from %s to %s on %s action' % (page_label, new_page_label, action_label))
+    logger.log_title(f'Navigate from {page_label} to {new_page_label} on {action_label} action')
 
     # Leave the current page.
 
@@ -527,7 +527,7 @@ def navigate(action, page, new_page, effect):
         result = page.leave(action, new_page) if page else None
     except InterruptException as exception:
         page_label = get_page_label(page)
-        logger.log_value('Error leaving %s' % page_label, exception)
+        logger.log_value(f'Error leaving {page_label}', exception)
         # logger.log_value('The trace back is', traceback.format_exc())
         return
     if result:
@@ -546,7 +546,7 @@ def navigate(action, page, new_page, effect):
         result = new_page.setup(action, page) if new_page else None
     except InterruptException as exception:
         page_label = get_page_label(new_page)
-        logger.log_value('Error setting up %s' % page_label, exception)
+        logger.log_value(f'Error setting up {page_label}', exception)
         # logger.log_value('The trace back is', traceback.format_exc())
         return
     if result:
@@ -566,7 +566,7 @@ def navigate(action, page, new_page, effect):
         result = new_page.enter(action, page) if new_page else None
     except InterruptException as exception:
         page_label = get_page_label(new_page)
-        logger.log_value('Error entering %s' % page_label, exception)
+        logger.log_value(f'Error entering {page_label}', exception)
         # logger.log_value('The trace back is', traceback.format_exc())
         return
     page = new_page
@@ -601,7 +601,7 @@ def get_page(page_name):
 
     if page_name:
         try:
-            page = importlib.import_module('cubic.pages.%s' % page_name)
+            page = importlib.import_module(f'cubic.pages.{page_name}')
         except ModuleNotFoundError as exception:
             logger.log_value('Error', exception)
             raise exception
@@ -684,6 +684,8 @@ def get_new_page(action, page):
         If the specified action has not been configured for the
         specified page.
     """
+
+    logger.log_title('Get the new page')
 
     page_name = get_page_name(page)
 
@@ -793,7 +795,7 @@ def get_new_page(action, page):
         if action == 'back':
             new_page_name = 'project_page'
             effect = SLIDE_RIGHT
-        elif action == 'copy-into-terminal':
+        elif action == 'copy-terminal':
             new_page_name = 'terminal_copy_page'
             effect = SLIDE_NONE
         elif action == 'next':
@@ -809,7 +811,7 @@ def get_new_page(action, page):
         if action == 'cancel':
             new_page_name = 'terminal_page'
             effect = SLIDE_NONE
-        elif action == 'copy-into-terminal':
+        elif action == 'copy-terminal':
             new_page_name = 'terminal_page'
             effect = SLIDE_NONE
         elif action == 'quit':
@@ -824,6 +826,9 @@ def get_new_page(action, page):
             effect = SLIDE_RIGHT
         elif action == 'next':
             new_page_name = 'packages_page'
+            effect = SLIDE_LEFT
+        elif action == 'next-options':
+            new_page_name = 'options_page'
             effect = SLIDE_LEFT
         elif action == 'quit':
             new_page_name = None
@@ -848,10 +853,13 @@ def get_new_page(action, page):
         if action == 'back':
             new_page_name = 'packages_page'
             effect = SLIDE_RIGHT
+        elif action == 'back-terminal':
+            new_page_name = 'terminal_page'
+            effect = SLIDE_RIGHT
         elif action == 'copy-preseed':
             new_page_name = 'preseed_copy_page'
             effect = SLIDE_NONE
-        elif action == 'copy-boot-configuration':
+        elif action == 'copy-boot':
             new_page_name = 'boot_copy_page'
             effect = SLIDE_NONE
         elif action == 'next':
@@ -880,7 +888,7 @@ def get_new_page(action, page):
         if action == 'cancel':
             new_page_name = 'options_page'
             effect = SLIDE_NONE
-        elif action == 'copy-boot-configuration':
+        elif action == 'copy-boot':
             new_page_name = 'options_page'
             effect = SLIDE_NONE
         elif action == 'quit':

@@ -126,6 +126,8 @@ def transition(old_page, new_page, effect):
     property set to True in the *.ui file.
     """
 
+    logger.log_label('Transition pages')
+
     if old_page != new_page:
         # Get the Gtk.Stack.
         pages = model.builder.get_object('pages')
@@ -302,14 +304,14 @@ def set_sensitive(widget_name, is_sensitive):
 
 def update_label(label_name, text):
 
-    # logger.log_value('Update label %s' % label_name, text)
+    # logger.log_value(f'Update label {label_name}', text)
     label = model.builder.get_object(label_name)
     GLib.idle_add(Gtk.Label.set_markup, label, text)
 
 
 def set_label_error(widget_name, is_error):
 
-    # logger.log_value('Set error for label %s' % widget_name, is_error)
+    # logger.log_value(f'Set error for label {widget_name}', is_error)
     label = model.builder.get_object(widget_name)
     context = label.get_style_context()
     if is_error:
@@ -325,14 +327,14 @@ def set_label_error(widget_name, is_error):
 
 def update_entry(widget_name, text):
 
-    # logger.log_value('Update entry %s' % widget_name, text)
+    # logger.log_value(f'Update text for entry {widget_name}', text)
     entry = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Entry.set_text, entry, text)
 
 
 def set_entry_error(widget_name, is_error):
 
-    # logger.log_value('Set error for entry %s' % widget_name, is_error)
+    # logger.log_value(f'Set error for entry {widget_name}', is_error)
     entry = model.builder.get_object(widget_name)
     context = entry.get_style_context()
     if is_error:
@@ -343,7 +345,7 @@ def set_entry_error(widget_name, is_error):
 
 def set_entry_editable(widget_name, is_editable):
 
-    # logger.log_value('Set name property to editable is "%s" for entry' % is_editable, widget_name)
+    # logger.log_value(f'Set is editable for entry {widget_name}', is_editable)
     entry = model.builder.get_object(widget_name)
     # entry.set_editable(is_editable)
     GLib.idle_add(Gtk.Entry.set_editable, entry, is_editable)
@@ -359,7 +361,7 @@ def append_combo_box_text(widget_name, text):
     Add text to the beginning of the specified combo box text.
     """
 
-    # logger.log_value('Append combo box text %s' % widget_name, text)
+    # logger.log_value(f'Append combo box text {widget_name}', text)
     combo_box_text = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.ComboBoxText.append_text, combo_box_text, text)
 
@@ -369,7 +371,7 @@ def prepend_combo_box_text(widget_name, text):
     Add text to the end of the specified combo box text.
     """
 
-    # logger.log_value('Prepend combo box text %s' % widget_name, text)
+    # logger.log_value(f'Prepend combo box text {widget_name}', text)
     combo_box_text = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.ComboBoxText.prepend_text, combo_box_text, text)
 
@@ -421,7 +423,7 @@ def update_status(prefix, status):
     Object ids ending in '_spinner' are always spinners in the *.ui file.
     """
 
-    # logger.log_value('Set status for entry %s_status' % prefix, status)
+    # logger.log_value(f'Set status for entry {prefix}_status', status)
 
     # Valid icon sizes are:
     #
@@ -433,9 +435,9 @@ def update_status(prefix, status):
     #   5 = Gtk.IconSize.DND (Drag and Drop)
     #   6 = Gtk.IconSize.DIALOG
 
-    image = model.builder.get_object('%s_status' % prefix)
+    image = model.builder.get_object(f'{prefix}_status')
     GLib.idle_add(Gtk.Image.set_from_icon_name, image, icons[status], Gtk.IconSize.BUTTON)
-    spinner = model.builder.get_object('%s_spinner' % prefix)
+    spinner = model.builder.get_object(f'{prefix}_spinner')
     if spinner:
         if status == PROCESSING:
             GLib.idle_add(Gtk.Spinner.set_visible, spinner, True)
@@ -587,14 +589,14 @@ def set_column_visible(widget_name, is_visible):
 def scroll_to_tree_view_row(tree_view_name, row_number):
 
     tree_view = model.builder.get_object(tree_view_name)
-    tree_path = Gtk.TreePath.new_from_string('%s' % row_number)
+    tree_path = Gtk.TreePath.new_from_string(str(row_number))
     GLib.idle_add(Gtk.TreeView.scroll_to_cell, tree_view, tree_path, None, True, 0.5, 0.0)
 
 
 def select_tree_view_row(tree_view_name, row_number):
 
     tree_view = model.builder.get_object(tree_view_name)
-    tree_path = Gtk.TreePath.new_from_string('%s' % row_number)
+    tree_path = Gtk.TreePath.new_from_string(str(row_number))
     GLib.idle_add(Gtk.TreeView.set_cursor, tree_view, tree_path, None, False)
 
 
@@ -616,7 +618,7 @@ def _update_list_store_rows(list_store, data_list):
 
     list_store.clear()
     for number, data in enumerate(data_list):
-        # logger.log_value('%i. Adding an item to the list' % (number + 1), data)
+        # logger.log_value(f'{number+1}. Adding an item to the list', data)
         list_store.append(data)
 
 

@@ -28,12 +28,16 @@ Build-Depends:
                     mount (>=2.31.1),
 #                   Required for PolicyKit
                     policykit-1 (>=0.105),
+#                   Required for apt.cache
+                    python3-apt (>=1.6.5),
 #                   Required for GTK3 Python Library; usually preinstalled
                     python3-gi (>=3.26.1),
 #                   Required for sorting alphabetically
                     python3-icu (>=1.9.8),
 #                   Required for magic
                     python3-magic (>=2:0.4.15),
+#                   Required for packaging.version
+                    python3-packaging (>=17.1),
 #                   Required for pexpect
                     python3-pexpect (>=4.2.1),
 #                   Required to get system memory information
@@ -84,12 +88,16 @@ Depends:
                     mount (>=2.31.1),
 #                   Required for PolicyKit
                     policykit-1 (>=0.105),
+#                   Required for apt.cache
+                    python3-apt (>=1.6.5),
 #                   Required for GTK3 Python Library; usually preinstalled
                     python3-gi (>=3.26.1),
 #                   Required for sorting alphabetically
                     python3-icu (>=1.9.8),
 #                   Required for magic
                     python3-magic (>=2:0.4.15),
+#                   Required for packaging.version
+                    python3-packaging (>=17.1),
 #                   Required for pexpect
                     python3-pexpect (>=4.2.1),
 #                   Required to get system memory information

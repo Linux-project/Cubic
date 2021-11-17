@@ -670,7 +670,7 @@ class FilesTree:
         total_replacement_count = 0
         for search_replace_tuple in search_replace_tuples:
             search_text, replacement_text = search_replace_tuple
-            logger.log_value('Search and replace', '%s ⊳ %s' % (search_text, replacement_text))
+            logger.log_value('Search and replace', f'{search_text} ⊳ {replacement_text}')
             search_settings.set_search_text(search_text)
             search_context = GtkSource.SearchContext.new(source_buffer, search_settings)
             replacement_count = search_context.replace_all(replacement_text, -1)

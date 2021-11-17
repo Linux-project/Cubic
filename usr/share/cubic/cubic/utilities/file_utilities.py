@@ -65,7 +65,9 @@ def make_directory(directory):
     """
     Create a single directory when the parent directory path exists.
     """
+
     logger.log_value('Create directory', directory)
+
     if not os.path.exists(directory):
         os.mkdir(directory)
     else:
@@ -76,7 +78,9 @@ def make_directories(file_path):
     """
     Create all directories in the specified file path.
     """
+
     logger.log_value('Create all directories in the path', file_path)
+
     if not os.path.exists(file_path):
         os.makedirs(file_path, exist_ok=True)
     else:
@@ -89,71 +93,66 @@ def delete_directory(directory):
     If permissions prevent deleting the directory, use
     delete_path_as_root() instead.
     """
+
     logger.log_value('Delete directory', directory)
+
     if os.path.exists(directory):
         try:
             # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
             # rmtree(path, ignore_errors=False, onerror=HANDLER)
             # TODO: Path must point to a directory (but not a symbolic link to a directory).
             shutil.rmtree(directory)
-            result = 'Successfully deleted %s' % directory
+            result = f'Successfully deleted {directory}'
             exit_status = 0
             signal_status = None
         except OSError as exception:
             logger.log_value('Exception', exception)
             # type, value, traceback = sys.exc_info()
-            result = 'Error deleting %s' % directory
+            result = f'Error deleting {directory}'
             exit_status = None
             signal_status = 1
     else:
         logger.log_value('Cannot delete directory', 'Directory does not exist')
-        result = 'Directory %s does not exist.' % directory
+        result = f'Directory {directory} does not exist.'
         exit_status = None
         signal_status = 1
 
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     return result, exit_status, signal_status
 
 
-def get_files_with_pattern(pattern, exclusion_list=None):
-    if exclusion_list:
-        logger.log_value('Get files with pattern', pattern)
-        logger.log_value('Exclude files files from the list', exclusion_list)
-        return [file_path for file_path in glob.glob(pattern) if file_path not in exclusion_list]
-    else:
-        logger.log_value('Get files with pattern', pattern)
-        return [file_path for file_path in glob.glob(pattern)]
+def delete_files_with_pattern(file_path_pattern, exclude_file_paths=None):
 
-
-def delete_files_with_pattern(pattern, exclusion_list=None):
-    if exclusion_list:
-        logger.log_value('Delete existing files with pattern', pattern)
-        logger.log_value('Keep files', exclusion_list)
-        # [os.remove(file_path) for file_path in glob.glob(pattern) if file_path not in exclusion_list]
-        [delete_path_as_root(file_path) for file_path in glob.glob(pattern) if file_path not in exclusion_list]
+    if exclude_file_paths:
+        logger.log_value('Delete existing files with pattern', file_path_pattern)
+        logger.log_value('Keep files', exclude_file_paths)
+        [delete_path_as_root(file_path) for file_path in glob.glob(file_path_pattern) if file_path not in exclude_file_paths]
     else:
-        logger.log_value('Delete existing files with pattern', pattern)
-        # [os.remove(file_path) for file_path in glob.glob(pattern)]
-        [delete_path_as_root(file_path) for file_path in glob.glob(pattern)]
+        logger.log_value('Delete existing files with pattern', file_path_pattern)
+        [delete_path_as_root(file_path) for file_path in glob.glob(file_path_pattern)]
 
 
 # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
 def delete_path_as_root(file_path):
+
     logger.log_value('Delete file', file_path)
+
     program = os.path.join(model.application.directory, 'commands', 'delete-path')
-    command = 'pkexec "%s" "%s"' % (program, file_path)
+    command = f'pkexec "{program}" "{file_path}"'
     result, exit_status, signal_status = execute_synchronous(command)
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     return result, exit_status, signal_status
 
 
 def get_directory_size(start_path):
+
     logger.log_label('Calculate directory size')
     logger.log_value('Directory', start_path)
+
     total_size = 0
     for dirpath, dirnames, file_names in os.walk(start_path):
         for file_name in file_names:
@@ -161,19 +160,23 @@ def get_directory_size(start_path):
             total_size += os.path.getsize(file_path)
 
     logger.log_value('Directory size is', total_size)
+
     return total_size
 
 
 def directory_is_writable(directory):
+
     logger.log_value('Check if directory is writable', directory)
+
     is_writable = os.access(directory, os.R_OK | os.W_OK | os.X_OK)
     logger.log_value('Directory is writable?', is_writable)
+
     return is_writable
 
 
 def get_directory_for_file(file_name, start_path):
 
-    logger.log_value('Get directory for %s in' % file_name, start_path)
+    logger.log_value(f'Find the directory for {file_name} in', start_path)
 
     directory = ''
     # The directory may be a symlink.
@@ -182,26 +185,26 @@ def get_directory_for_file(file_name, start_path):
             directory = dirpath
             break
 
-    if directory:
-        logger.log_value('%s is in' % file_name, directory)
-    else:
-        logger.log_value('%s is not in' % file_name, directory)
-
     return directory
 
 
 def get_file_paths(start_path):
+
     logger.log_value('Get all file paths in the directory', start_path)
+
     file_paths = []
     for dirpath, dirnames, file_names in os.walk(start_path):
         for file_name in file_names:
             file_path = os.path.join(dirpath, file_name)
             file_paths.append(file_path)
+
     return file_paths
 
 
-def get_text_file_paths(start_path):
+def get_text_file_file_paths(start_path):
+
     logger.log_value('Get all text file paths in the directory', start_path)
+
     file_paths = []
     for dirpath, dirnames, file_names in os.walk(start_path):
         for file_name in file_names:
@@ -213,7 +216,40 @@ def get_text_file_paths(start_path):
                 pass
             else:
                 file_paths.append(file_path)
+
     return file_paths
+
+
+def get_file_system_type(file_path):
+
+    # Local file system types:
+    # • btrfs is reported as btrfs
+    # • exfat is reported as exfat (or fuseblk?)
+    # • ext2  is reported as ext2
+    # • ext3  is reported as ext3
+    # • ext4  is reported as ext4
+    # • fat12 is reported as vfat (?)
+    # • fat16 is reported as vfat
+    # • fat32 is reported as vfat
+    # • ntfs  is reported as fuseblk
+    # • swap  is reported as devtmpfs
+    # • xfs   is reported as xfs
+    # • zfs   is reported as zfs
+
+    # Remote file system types:
+    # • fuse.gvfsd-fuse
+    # • fuse.sshfs
+
+    logger.log_value('Get file system type', file_path)
+
+    command = f'df --output=fstype "{file_path}"'
+    result, exit_status, signal_status = execute_synchronous(command)
+    file_system_type = None
+    if not exit_status and not signal_status:
+        file_system_type = result.splitlines()[1].lower()
+    logger.log_value('The file system type is', file_system_type)
+
+    return file_system_type
 
 
 ########################################################################
@@ -249,21 +285,49 @@ def get_text_file_paths(start_path):
 
 def file_exists(directory, file_name):
 
-    # Check custom disk directory
     file_path = os.path.join(directory, file_name)
 
     is_exists = os.path.exists(file_path)
     if is_exists:
-        logger.log_value('%s found in' % file_name, directory)
+        logger.log_value(f'{file_name} found in', directory)
         return True
     else:
-        logger.log_value('%s not found in' % file_name, directory)
+        logger.log_value(f'{file_name} not found in', directory)
         return False
+
+
+def read_file(file_path):
+    """
+    Read the contents of a file.
+
+    Arguments:
+    file_path : str
+        The file to read.
+
+    Returns:
+    lines : list
+        A string containing the file contents.
+    """
+
+    logger.log_value('Read file', file_path)
+
+    file_contents = None
+    try:
+        with open(file_path, 'r') as file:
+            file_contents = file.read()
+    except FileNotFoundError as exception:
+        logger.log_value('File does not exist', file_path)
+
+    return file_contents
 
 
 def read_lines(file_path):
     """
     Read lines from a file; exclude blank lines and trim each line.
+
+    Arguments:
+    file_path : str
+        The file to read.
 
     Returns:
     lines : list
@@ -316,34 +380,95 @@ def write_lines(file_path, lines):
         logger.log_value('The exception is', exception)
 
 
-def get_file_system_type(file_path):
+def find_in_file(search_regex, file_path):
+    """
+    Search the file using the regular expression.
 
-    # Local file system types:
-    # • btrfs is reported as btrfs
-    # • exfat is reported as exfat (or fuseblk?)
-    # • ext2  is reported as ext2
-    # • ext3  is reported as ext3
-    # • ext4  is reported as ext4
-    # • fat12 is reported as vfat (?)
-    # • fat16 is reported as vfat
-    # • fat32 is reported as vfat
-    # • ntfs  is reported as fuseblk
-    # • swap  is reported as devtmpfs
-    # • xfs   is reported as xfs
-    # • zfs   is reported as zfs
+    Arguments:
+    search_regex : r-str
+        The regular expression to search for.
+        file_path
+    file_path : str
+        The file to search.
 
-    # Remote file system types:
-    # • fuse.gvfsd-fuse
-    # • fuse.sshfs
+    Returns:
+    results : list
+        A list of strings matching the regular expression, or an empty
+        list if nothing matched.
+    """
 
-    logger.log_value('Get file system type', file_path)
-    command = 'df --output=fstype "%s"' % file_path
-    result, exit_status, signal_status = execute_synchronous(command)
-    file_system_type = None
-    if not exit_status and not signal_status:
-        file_system_type = result.splitlines()[1].lower()
-    logger.log_value('The file system type is', file_system_type)
-    return file_system_type
+    try:
+        with open(file_path, 'r') as file:
+            file_contents = file.read()
+        return re.findall(search_regex, file_contents)
+    except FileNotFoundError as exception:
+        logger.log_value('File does not exist', file_path)
+        return []
+
+
+def file_contains_any_word(file_path, *words):
+    """
+    Searches the file for any of the specified words. Stops searching
+    when any word is found.
+
+    Arguments:
+    file_path : str
+        The file to search.
+    words : *args str
+        The words to search for.
+
+    Returns:
+    : boolean
+        True if one of the words appears in the file.
+        False if none of words appears in the file.
+    """
+
+    with open(file_path, 'r') as file:
+        for line in file:
+            for word in words:
+                if word in line:
+                    return True
+
+    return False
+
+
+def replace_text_in_file(file_path, search_text, replacement_text):
+
+    logger.log_label('Replace text in file')
+    logger.log_value('Filepath', file_path)
+    logger.log_value('Search text', search_text)
+    logger.log_value('Replacement text', replacement_text)
+
+    error = True
+
+    if not file_path:
+        logger.log_value('Cannot replace text', 'File not specified')
+        return error
+
+    if not os.path.exists(file_path):
+        logger.log_value('Cannot replace text', f'File {file_path} does not exist')
+        return error
+
+    if not search_text:
+        logger.log_value('Cannot replace text', 'Search text not specified')
+        return error
+
+    if not replacement_text:
+        logger.log_value('Cannot replace text', 'Replacement text not specified')
+        return error
+
+    # TODO: Add a try statement and return error accordingly.
+    #       Currently, this is done in repackage_iso_page.update_disk_name(), but it should be done here.
+    error = False
+
+    with open(file_path, 'r+') as file:
+        file_contents = file.read()
+        file_contents = re.sub(search_text, replacement_text, file_contents)
+        file.seek(0)
+        file.truncate()
+        file.write(file_contents)
+
+    return error
 
 
 def calculate_md5_hash(file_path, buffer_size=2**20):
@@ -381,76 +506,31 @@ def delete_file(file_path):
     If permissions prevent deleting the file path, use
     delete_path_as_root() instead.
     """
+
     logger.log_value('Delete file', file_path)
+
     if os.path.exists(file_path):
         try:
             os.remove(file_path)
-            result = 'Successfully deleted %s' % file_path
+            result = f'Successfully deleted {file_path}'
             exit_status = 0
             signal_status = None
         except OSError as exception:
             logger.log_value('Exception', exception)
             # type, value, traceback = sys.exc_info()
-            result = 'Error deleting %s' % file_path
+            result = f'Error deleting {file_path}'
             exit_status = None
             signal_status = 1
     else:
         logger.log_value('Cannot delete file', 'File does not exist')
-        result = 'File %s does not exist.' % file_path
+        result = f'File {file_path} does not exist.'
         exit_status = None
         signal_status = 1
 
     logger.log_value('The result is', result)
-    logger.log_value('The exit status, signal status is', '%s, %s' % (exit_status, signal_status))
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
 
     return result, exit_status, signal_status
-
-
-def file_contains_any_word(file_path, *words):
-    with open(file_path, 'r') as file:
-        for line in file:
-            for word in words:
-                if word in line:
-                    return True
-    return False
-
-
-def replace_text_in_file(file_path, search_text, replacement_text):
-    logger.log_label('Replace text in file')
-    logger.log_value('Filepath', file_path)
-    logger.log_value('Search text', search_text)
-    logger.log_value('Replacement text', replacement_text)
-
-    error = True
-
-    if not file_path:
-        logger.log_value('Cannot replace text', 'File not specified')
-        return error
-
-    if not os.path.exists(file_path):
-        logger.log_value('Cannot replace text', 'File %s does not exist' % file_path)
-        return error
-
-    if not search_text:
-        logger.log_value('Cannot replace text', 'Search text not specified')
-        return error
-
-    if not replacement_text:
-        logger.log_value('Cannot replace text', 'Replacement text not specified')
-        return error
-
-    # TODO: Add a try statement and return error accordingly.
-    #       Currently, this is done in repackage_iso_page.update_disk_name(), but it should be done here.
-    error = False
-
-    with open(file_path, 'r+') as file:
-        file_contents = file.read()
-        file_contents = re.sub(search_text, replacement_text, file_contents)
-        file.seek(0)
-        file.truncate()
-        file.write(file_contents)
-
-    return error
 
 
 def select_file_in_browser(file_path):
@@ -466,8 +546,8 @@ def select_file_in_browser(file_path):
         ' --type=method_call'
         ' /org/freedesktop/FileManager1'
         ' org.freedesktop.FileManager1.ShowItems'
-        ' array:string:"file://{file_path}"'
-        ' string:""').format(file_path=file_path)
+        f' array:string:"file://{file_path}"'
+        ' string:""')
     # logger.log_value(('Open in file browser', command)
     logger.log_value('Open in file browser', file_path)
     os.system(command)
@@ -486,8 +566,8 @@ def open_directory_in_browser(file_path):
         ' --type=method_call'
         ' /org/freedesktop/FileManager1'
         ' org.freedesktop.FileManager1.ShowFolders'
-        ' array:string:"file://{file_path}"'
-        ' string:""').format(file_path=file_path)
+        f' array:string:"file://{file_path}"'
+        ' string:""')
     # logger.log_value(('Open in file browser', command)
     logger.log_value('Open in file browser', file_path)
     os.system(command)

@@ -72,8 +72,7 @@ def setup(action, old_page=None):
         count = len(model.selected_uris)
         count_text = constructor.number_as_text(count)
         files_text = constructor.get_plural('file', 'files', count)
-        # label = 'Copy %s %s to <span font_family="monospace">%s</span>...' % (count_text, files_text, model.current_directory)
-        label = 'Copy %s %s to %s...' % (count_text, files_text, model.current_directory)
+        label = f'Copy {count_text} {files_text} to {model.current_directory}...'
 
         # Create a file details list of files to be copied.
         file_details_list = create_file_details_list(model.selected_uris)
@@ -87,7 +86,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -112,7 +111,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -149,7 +148,7 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -164,7 +163,6 @@ def leave(action, new_page=None):
 
 
 def create_file_details_list(uris):
-    # logger.log_value('List files to copy')
 
     file_details_list = []
 
@@ -207,11 +205,9 @@ def copy_files(current_directory, uris):
         file_path = urllib.parse.unquote(urllib.parse.urlparse(uri).path)
 
         if total_files == 1:
-            # label = 'Copying one file to <span font_family="monospace">%s</span>' % current_directory
-            label = 'Copying one file to %s...' % current_directory
+            label = f'Copying one file to {current_directory}...'
         else:
-            # label = 'Copying file %s of %s to <span font_family="monospace">%s</span>' % (file_number + 1, total_files, current_directory)
-            label = 'Copying file %s of %s to %s...' % (file_number + 1, total_files, current_directory)
+            label = f'Copying file {(file_number+1):n} of {total_files:n} to {current_directory}...'
 
         displayer.update_label('preseed_copy_page__progress_label', label)
         displayer.scroll_to_tree_view_row('preseed_copy_page__tree_view', file_number)
@@ -222,13 +218,13 @@ def copy_files(current_directory, uris):
 
 def copy_file(file_path, file_number, directory, total_files):
 
-    logger.log_label('Copy file number %s of %s' % (file_number + 1, total_files))
+    logger.log_label(f'Copy file number {file_number+1} of {total_files}')
 
     logger.log_value('The file is', file_path)
     logger.log_value('The target directory is', directory)
 
     program = os.path.join(model.application.directory, 'commands', 'copy-path')
-    command = 'pkexec "%s" "%s" "%s"' % (program, file_path, directory)
+    command = f'pkexec "{program}" "{file_path}" "{directory}"'
 
     # The progress callback function.
     def progress_callback(percent):
@@ -238,7 +234,7 @@ def copy_file(file_path, file_number, directory, total_files):
         displayer.update_progress_bar_percent('preseed_copy_page__copy_files_progress_bar', total_percent)
         displayer.update_list_store_progress_bar_percent('preseed_copy_page__file_details__list_store', file_number, percent)
         if total_percent % 10 == 0:
-            logger.log_value('Completed', '%i%%' % total_percent)
+            logger.log_value('Completed', f'{total_percent:n}%')
 
     exception, message = show_progress(command, progress_callback)
 

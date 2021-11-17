@@ -101,6 +101,7 @@ status.is_success_copy = None
 status.is_success_extract = None
 status.iso_template = None
 status.casper_directory = None
+status.squashfs_file_name = None
 status.iso_checksum = None
 status.iso_checksum_file_name = None
 
@@ -116,8 +117,8 @@ generated.iso_volume_id = None
 generated.iso_release_name = None
 generated.iso_disk_name = None
 generated.iso_release_notes_url = None
-generated.iso_checksum = None
-generated.iso_checksum_file_name = None
+# generated.iso_checksum = None
+# generated.iso_checksum_file_name = None
 
 ########################################################################
 # Options
@@ -129,20 +130,20 @@ options.boot_configurations = None
 options.compression = None
 
 ########################################################################
-# Page Specific
+# Page/Module Specific
 ########################################################################
 
 #-----------------------------------------------------------------------
-# Terminal page, Preseed tab, Iso Boot tab
+# Terminal page, Preseed tab, ISO Boot tab
 #-----------------------------------------------------------------------
 
 # Stores the current directory selected on the Terminal page, the
-# Preseed tab, or the Iso Boot tab. This is the directory to copy files
+# Preseed tab, or the ISO Boot tab. This is the directory to copy files
 # into.
 current_directory = None
 
 # Stores the uniform resource identifiers of files selected on the
-# Terminal page, the Preseed tab, or the Iso Boot tab. These are the
+# Terminal page, the Preseed tab, or the ISO Boot tab. These are the
 # files to be copied.
 selected_uris = None
 
@@ -160,6 +161,24 @@ kernel_details_list = None
 #-----------------------------------------------------------------------
 
 package_details_list = None
+
+#-----------------------------------------------------------------------
+# Prepare page, Packages page, Options page
+#-----------------------------------------------------------------------
+
+ubiquity_version = None
+
+#-----------------------------------------------------------------------
+# Generate page, Finish page
+#-----------------------------------------------------------------------
+
+iso_file_size = None
+
+#-----------------------------------------------------------------------
+# Emulator, Test 1 page, Test 2 page
+#-----------------------------------------------------------------------
+
+emulator_memory = None
 
 ########################################################################
 # Page Help

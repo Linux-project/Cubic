@@ -31,7 +31,7 @@
 # References
 ########################################################################
 
-# N/A
+# https://pypi.org/project/packaging/
 
 ########################################################################
 # Imports
@@ -39,9 +39,11 @@
 
 import os
 
+from packaging import version
+
+from cubic.constants import EXTENSION_MANIFEST_MINIMAL_REMOVE, EXTENSION_MANIFEST_REMOVE
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.utilities import displayer
-from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -110,11 +112,22 @@ def setup(action, old_page=None):
         displayer.set_sensitive('packages_page__revert_header_bar_button', False)
         displayer.set_sensitive('packages_page__undo_header_bar_button', False)
 
+        # The minimal install option was introduced in Ubuntu 18.04.
+        logger.log_value('The installed version of Ubiquity is', model.ubiquity_version)
+        if version.parse(model.ubiquity_version) >= version.parse('18.04'):
+            # Show the minimal install check box column.
+            logger.log_value('Show the minimal install column?', 'Yes')
+            displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
+        else:
+            # Do not show the minimal install check box column.
+            logger.log_value('Show the minimal install column?', 'Yes')
+            displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
+
         return
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -131,7 +144,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -152,29 +165,25 @@ def leave(action, new_page=None):
 
         displayer.set_visible('packages_page__header_bar_box', False)
 
-        # Update filesystem.manifest-remove file.
-        # Always save the filesystem.manifest-remove file, even if there
+        # Update *.manifest-remove file.
+        # Always save the *.manifest-remove file, even if there
         # are no packages to remove. If the file does not exist an empty
-        # will be created. This function will create the file if it does
-        # file not exist.
-        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
-        file_name = 'filesystem.manifest-remove'
+        # file will be created.
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
         removable_packages_list = create_typical_removable_packages_list()
-        is_success = save_file_system_manifest_remove_file(removable_packages_list, directory, file_name)
+        is_success = save_file_system_manifest_remove_file(removable_packages_list, file_path)
 
         # TODO: If failure, action should be 'error' and navigate to an error page.
 
-        # Update filesystem.manifest-minimal-remove file.
-        # Save the filesystem.manifest-minimal-remove file if there are
-        # packages to remove or if the file already exists. If the file
-        # does not exist, there will not be any packages to remove.
-        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
-        file_name = 'filesystem.manifest-minimal-remove'
-        is_exists = file_utilities.file_exists(directory, file_name)
+        # Update *.manifest-minimal-remove file.
+        # Always save the *.manifest-minimal-remove file, even if there
+        # are no packages to remove. If the file does not exist an empty
+        # file will be created.
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
         removable_packages_list = create_minimal_removable_packages_list()
-        if is_exists or removable_packages_list:
-            # This function will create the file if it does not exist.
-            is_success = save_file_system_manifest_remove_file(removable_packages_list, directory, file_name)
+        is_success = save_file_system_manifest_remove_file(removable_packages_list, file_path)
 
         # TODO: If failure, action should be 'error' and navigate to an error page.
 
@@ -194,7 +203,7 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -227,25 +236,25 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
         displayer.select_tree_view_row('packages_page__tree_view', row)
         # displayer.scroll_to_tree_view_row('packages_page__tree_view', row)
         # time.sleep(SLEEP_0250_MS)
-
-        # print(
-        #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-        #     % (
-        #         row,
-        #         column,
-        #         list_store[row][0],
-        #         list_store[row][1],
-        #         list_store[row][2],
-        #         list_store[row][3],
-        #         len(undo_list),
-        #         undo_index))
+        """
+        print(
+            ' -'
+            f' Row: {row},'
+            f' Column: {column},'
+            f' Typical: {list_store[row][0]},'
+            f' Minimal: {list_store[row][1]},'
+            f' Previous: {list_store[row][2]},'
+            f' Active: {list_store[row][3]},'
+            f' Length: {len(undo_list)},'
+            f' Index: {undo_index}')
+        """
 
         if column == 0:
             list_store[row][0] = not list_store[row][0]
             # Even though the minimal check button column may not be
-            # visible (if 'filesystem.manifest-minimal-remove' does not
-            # exist), still update the list_store. This is a little
-            # inefficient, but does no harm.
+            # visible (if '*.manifest-minimal-remove' does not exist),
+            # still update the list_store. This is a little inefficient,
+            # but does no harm.
             if list_store[row][0]:
                 # Backup original minimal check button value
                 list_store[row][2] = list_store[row][1]
@@ -266,18 +275,18 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
     displayer.set_sensitive('packages_page__undo_header_bar_button', False)
 
     displayer.set_sensitive('packages_page__redo_header_bar_button', True)
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
 
 def on_clicked__packages_page__undo_header_bar_button(widget):
@@ -301,25 +310,25 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
     displayer.select_tree_view_row('packages_page__tree_view', row)
     # displayer.scroll_to_tree_view_row('packages_page__tree_view', row)
     # time.sleep(SLEEP_0250_MS)
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
         # Even though the minimal check button column may not be
-        # visible (if 'filesystem.manifest-minimal-remove' does not
-        # exist), still update the list_store. This is a little
-        # inefficient, but does no harm.
+        # visible (if '*.manifest-minimal-remove' does not exist),
+        # still update the list_store. This is a little inefficient,
+        # but does no harm.
         if list_store[row][0]:
             # Backup original minimal check button value
             list_store[row][2] = list_store[row][1]
@@ -340,18 +349,18 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
         displayer.set_sensitive('packages_page__undo_header_bar_button', False)
 
     displayer.set_sensitive('packages_page__redo_header_bar_button', True)
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
 
 def on_clicked__packages_page__redo_header_bar_button(widget):
@@ -373,25 +382,25 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
     displayer.select_tree_view_row('packages_page__tree_view', row)
     # displayer.scroll_to_tree_view_row('packages_page__tree_view', row)
     # time.sleep(SLEEP_0250_MS)
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
         # Even though the minimal check button column may not be
-        # visible (if 'filesystem.manifest-minimal-remove' does not
-        # exist), still update the list_store. This is a little
-        # inefficient, but does no harm.
+        # visible (if '*.manifest-minimal-remove' does not exist),
+        # still update the list_store. This is a little inefficient,
+        # but does no harm.
         if list_store[row][0]:
             # Backup original minimal check button value
             list_store[row][2] = list_store[row][1]
@@ -414,18 +423,18 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
 
     displayer.set_sensitive('packages_page__revert_header_bar_button', True)
     displayer.set_sensitive('packages_page__undo_header_bar_button', True)
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
 
 def on_toggled__packages_page__remove_1_check_button(widget, row):
@@ -441,26 +450,27 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     # 5: package version
 
     list_store = model.builder.get_object('packages_page__list_store')
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
-    # column = 0
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    # Note: column = 0
 
     list_store[row][0] = not list_store[row][0]
 
     # Even though the minimal check button column may not be
-    # visible (if 'filesystem.manifest-minimal-remove' does not
-    # exist), still update the list_store. This is a little
-    # inefficient, but does no harm.
+    # visible (if '*.manifest-minimal-remove' does not exist),
+    # still update the list_store. This is a little inefficient,
+    # but does no harm.
     if list_store[row][0]:
         # Backup original minimal check button value
         list_store[row][2] = list_store[row][1]
@@ -475,13 +485,10 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
         list_store[row][3] = True
 
     if len(undo_list) > undo_index:
-        # print(' - Insert at %s, value %s' % (undo_index, [row, 0]))
+        # print(f' - Insert at {undo_index}, value {[row, 0]}')
         undo_list[undo_index] = [row, 0]
     else:
-        # print(
-        #     ' - Append at %s, value %s' % (undo_index + 1,
-        #                                    [row,
-        #                                     0]))
+        # print(f' - Append at {undo_index+1}, value {[row, 0]}')
         undo_list.append([row, 0])
 
     undo_index += 1
@@ -490,18 +497,18 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     displayer.set_sensitive('packages_page__undo_header_bar_button', True)
     displayer.set_sensitive('packages_page__redo_header_bar_button', False)
     del undo_list[undo_index:]
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
 
 def on_toggled__packages_page__remove_2_check_button(widget, row):
@@ -517,30 +524,28 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
     # 5: package version
 
     list_store = model.builder.get_object('packages_page__list_store')
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
-    # column = 1
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    # Note: column = 1
 
     list_store[row][1] = not list_store[row][1]
 
     if len(undo_list) > undo_index:
-        # print(' - Insert at %s, value %s' % (undo_index, [row, 1]))
+        # print(f' - Insert at {undo_index}, value {[row, 1]}')
         undo_list[undo_index] = [row, 1]
     else:
-        # print(
-        #     ' - Append at %s, value %s' % (undo_index + 1,
-        #                                    [row,
-        #                                     1]))
+        # print(f' - Append at {undo_index+1}, value {[row, 1]}')
         undo_list.append([row, 1])
 
     undo_index += 1
@@ -549,18 +554,18 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
     displayer.set_sensitive('packages_page__undo_header_bar_button', True)
     displayer.set_sensitive('packages_page__redo_header_bar_button', False)
     del undo_list[undo_index:]
-
-    # print(
-    #     ' - Row: %s, Column: %s, Typical: %s, Minimal: %s, Previous: %s, Active: %s, Length: %s, Index: %s'
-    #     % (
-    #         row,
-    #         column,
-    #         list_store[row][0],
-    #         list_store[row][1],
-    #         list_store[row][2],
-    #         list_store[row][3],
-    #         len(undo_list),
-    #         undo_index))
+    """
+    print(
+        ' -'
+        f' Row: {row},'
+        f' Column: {column},'
+        f' Typical: {list_store[row][0]},'
+        f' Minimal: {list_store[row][1]},'
+        f' Previous: {list_store[row][2]},'
+        f' Active: {list_store[row][3]},'
+        f' Length: {len(undo_list)},'
+        f' Index: {undo_index}')
+    """
 
 
 ########################################################################
@@ -644,19 +649,18 @@ def create_minimal_removable_packages_list():
     return removable_packages_list
 
 
-def save_file_system_manifest_remove_file(removable_packages_list, directory, file_name):
+def save_file_system_manifest_remove_file(removable_packages_list, file_path):
 
     logger.log_label('Create new file system manifest remove file')
 
-    file_path = os.path.join(directory, file_name)
     logger.log_value('Write file system manifest remove file to', file_path)
     with open(file_path, 'w') as file:
         first_line = True
         for packages_name in removable_packages_list:
             if first_line:
-                file.write('%s' % packages_name)
+                file.write(f'{packages_name}')
                 first_line = False
             else:
-                file.write('\n%s' % packages_name)
+                file.write(f'{os.linesep}{packages_name}')
 
-    return file_utilities.file_exists(directory, file_name)
+    return os.path.exists(file_path)

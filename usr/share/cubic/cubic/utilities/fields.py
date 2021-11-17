@@ -72,11 +72,13 @@ class Fields:
 
         if not hasattr(self, key):
             if is_log:
-                logger.log_value('Set %s %s' % (self.name, key.replace('_', ' ')), value)
+                display_key = key.replace('_', ' ')
+                logger.log_value(f'Set {self.name} {display_key}', value)
             super().__setattr__(key, value)
         elif self.__getattribute__(key) != value:
             if is_log:
-                logger.log_value('Set %s %s' % (self.name, key.replace('_', ' ')), value)
+                display_key = key.replace('_', ' ')
+                logger.log_value(f'Set {self.name} {display_key}', value)
             super().__setattr__(key, value)
 
     def __repr__(self):
@@ -188,12 +190,7 @@ class IsoField:
                 value = ''
             if self.name != value:
                 # if is_log:
-                #     logger.log_value(
-                #         'Set %s %s %s' %
-                #         (self.iso_fields.name,
-                #          self.name,
-                #          key),
-                #         value)
+                #     logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                 super().__setattr__(key, value)
         elif key == 'value':
             if value:
@@ -202,7 +199,7 @@ class IsoField:
                 value = ''
             if self.value != value:
                 if is_log:
-                    logger.log_value('Set %s %s %s' % (self.iso_fields.name, self.name, key), value)
+                    logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                 super().__setattr__(key, value)
                 # If a new value was set, validate it.
                 # In order to ensure that the validator is not invoked
@@ -219,18 +216,13 @@ class IsoField:
             value = bool(value)
             if self.is_valid != value:
                 if is_log:
-                    logger.log_value('Is %s %s valid?' % (self.iso_fields.name, self.name), value)
+                    logger.log_value(f'Is {self.iso_fields.name} {self.name} valid?', value)
                 super().__setattr__(key, value)
         elif key == 'status':
             value = 0 if not value else int(value)
             if self.status != value:
                 # if is_log:
-                #     logger.log_value(
-                #         'Set %s %s %s' %
-                #         (self.iso_fields.name,
-                #          self.name,
-                #          key),
-                #         value)
+                #     logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                 super().__setattr__(key, value)
         elif key == 'message':
             if value:
@@ -239,12 +231,7 @@ class IsoField:
                 value = ''
             if self.message != value:
                 # if is_log:
-                #     logger.log_value(
-                #         'Set %s %s %s' %
-                #         (self.iso_fields.name,
-                #          self.name,
-                #          key),
-                #         value)
+                #     logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                 super().__setattr__(key, value)
         elif key == 'validator':
             if self.validator != value:
@@ -256,12 +243,7 @@ class IsoField:
                 # options_update_os_release, has been assigned.
                 if self.validator and self.iso_fields.options_update_os_release:
                     # if is_log:
-                    #     logger.log_value(
-                    #         'Set %s %s %s' %
-                    #         (self.iso_fields.name,
-                    #          self.name,
-                    #          key),
-                    #         value)
+                    #     logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                     is_valid, status, message = self.validator(self.iso_fields)
                     self.is_valid = is_valid
                     self.status = status
@@ -269,18 +251,13 @@ class IsoField:
         elif key == 'iso_fields':
             if self.iso_fields != value:
                 # if is_log:
-                #     logger.log_value(
-                #         'Set %s %s %s' %
-                #         (self.iso_fields.name,
-                #          self.name,
-                #          key),
-                #         value)
+                #     logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                 super().__setattr__(key, value)
         else:
             # TODO: Consider ignoring or raising an exception.
             if self.key != value:
                 if is_log:
-                    logger.log_value('Set %s %s %s' % (self.iso_fields.name, self.name, key), value)
+                    logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                 super().__setattr__(key, value)
 
     def __repr__(self):
@@ -467,20 +444,20 @@ class IsoFieldsHistory:
         print()
         print('-' * 80)
         print(message)
-        print('The self.selected index is "%s"' % self.selected)
-        print('The id is "%s"' % id(iso_fields))
-        print('Custom iso fields are...')
+        print(f'The self.selected index is "{self.selected}"')
+        print(f'The id is "{id(iso_fields)}"')
+        print('Custom ISO fields are...')
         print(iso_fields)
-        print('Custom iso fields is valid...')
+        print('Custom ISO fields is valid...')
         print(iso_fields.is_valid)
         print('-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -')
-        print('The custom iso fields list has  "%s" items.' % len(self.history))
-        print('The custom iso fields has undo? "%s"' % self.has_undo())
+        print(f'The custom ISO fields list has  "{len(self.history)}" items.')
+        print(f'The custom ISO fields has undo? "{self.has_undo()}"')
 
         for i, c in enumerate(self.history):
-            print('The self.selected item is "%s"' % i)
-            print('The id is "%s"' % id(c))
-            print('The iso fields are...')
+            print(f'The self.selected item is "{i}"')
+            print(f'The id is "{id(c)}"')
+            print('The ISO fields are...')
             print(c)
             print()
         print('-' * 80)

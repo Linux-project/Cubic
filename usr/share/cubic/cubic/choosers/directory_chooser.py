@@ -97,7 +97,7 @@ def get_selected_file_path():
 
 def on_clicked__directory_chooser__cancel_button(widget):
 
-    logger.log_title('Clicked directory chooser cancel button')
+    logger.log_label('Clicked directory chooser cancel button')
     close()
 
 
@@ -114,7 +114,7 @@ def on_directory_chooser__selection_changed(widget):
 
 def on_clicked__directory_chooser__select_button(widget):
 
-    logger.log_title('Clicked directory chooser select button')
+    logger.log_label('Clicked directory chooser select button')
     file_path = get_selected_file_path()
     logger.log_value('The selected file path is', file_path)
     if file_path and os.path.isdir(file_path):
@@ -137,6 +137,6 @@ def on_map__directory_chooser__header_bar(header_bar):
 
 def on_delete_event__directory_chooser(widget, event):
 
-    logger.log_title('Delete directory chooser')
+    logger.log_label('Delete directory chooser')
     close()
     return True

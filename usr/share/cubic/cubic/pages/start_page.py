@@ -69,8 +69,8 @@ def setup(action, old_page=None):
 
         display_version = constructor.get_major_minor_version(model.application.cubic_version)
         about_dialog = model.builder.get_object('about_dialog')
-        about_dialog.set_version('<small>%s</small>' % display_version)
-        displayer.update_label('start_page__version_label', 'Version %s' % display_version)
+        about_dialog.set_version(f'<small>{display_version}</small>')
+        displayer.update_label('start_page__version_label', f'Version {display_version}')
         displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
 
         # Initialize the list of previous projects.
@@ -138,7 +138,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -164,7 +164,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -239,7 +239,7 @@ def leave(action, new_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -251,7 +251,7 @@ def leave(action, new_page=None):
 
 def on_clicked__start_page__project_directory_open_button(widget):
 
-    logger.log_title('Clicked project directory page project directory file chooser open button')
+    logger.log_label('Clicked start page project directory open button')
 
     directory_chooser.open(selected_project_directory, model.project.directory)
 
@@ -272,7 +272,7 @@ def on_changed__start_page__project_directory_entry(widget):
 
 def test(project_directory):
 
-    logger.log_title('Clicked project directory page project directory file chooser open button')
+    logger.log_label('Simulated clicked start page project directory open button')
 
     selected_project_directory(project_directory)
 
@@ -392,7 +392,7 @@ def validate_page():
 
         displayer.update_label(
             'start_page__project_directory_message',
-            '<span foreground="red">Error. Cannot customize Linux using the %s file system.</span>' % FILE_SYSTEM_TYPES[file_system_type])
+            f'<span foreground="red">Error. Cannot customize Linux using the {FILE_SYSTEM_TYPES[file_system_type]} file system.</span>')
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
 
         return
@@ -480,15 +480,14 @@ def validate_page():
             is_next_sensitive=True,
             is_next_visible=True)
 
+        boot_configurations_string = ', '.join(model.options.boot_configurations)
         displayer.update_label(
             'start_page__project_directory_message',
-            '<span foreground="red">Warning. Cubic will require the'       \
-            ' original disk image to copy important files and may'         \
-            ' overwrite your changes to the disk boot configurations (%s)' \
-            ' or preseed files. Before proceeding, make backups of these'  \
-            ' files located in %s.</span>'
-            % (', '.join(model.options.boot_configurations),
-               model.project.custom_disk_directory))
+            '<span foreground="red">Warning. Cubic will require the'
+            ' original disk image to copy important files and may'
+            f' overwrite your changes to the disk boot configurations ({boot_configurations_string})'
+            ' or preseed files. Before proceeding, make backups of these'
+            f' files located in {model.project.custom_disk_directory}.</span>')
 
         displayer.set_entry_error('start_page__project_directory_entry', OK)
 
@@ -510,7 +509,7 @@ def validate_page():
         is_next_sensitive=True,
         is_next_visible=True)
 
-    #-------------------------------------------------------------------
+    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
     # TODO: Remove this section in a future release. (12/27/2020)
     #       Also, remove similar code from start_page and extract_page.
 
@@ -520,7 +519,7 @@ def validate_page():
         if '{{volume_id}}' in template:
             template = template.replace('{{volume_id}}', '{volume_id}')
             model.status.iso_template = constructor.encode(template)
-    #-------------------------------------------------------------------
+    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
     displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
     displayer.set_entry_error('start_page__project_directory_entry', OK)
@@ -558,6 +557,7 @@ def reset_model():
     model.status.is_success_extract = False
     model.status.iso_template = None
     model.status.casper_directory = None
+    model.status.squashfs_file_name = None
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 

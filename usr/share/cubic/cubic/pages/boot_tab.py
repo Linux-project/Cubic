@@ -64,7 +64,7 @@ class BootTab(FilesTab):
 
         logger.log_label('Initialize Boot Tab')
 
-        self.COPY_ACTION = 'copy-boot-configuration'
+        self.COPY_ACTION = 'copy-boot'
 
         # Widget names.
 

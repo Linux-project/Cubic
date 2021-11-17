@@ -192,7 +192,7 @@ def setup(action, old_page=None):
         original = None
         custom = None
 
-        # Set status before original, because the original iso file_name
+        # Set status before original, because the original ISO file name
         # validator requires is_success_copy and is_success_extract.
         status = initialize_status()
         options = initialize_options()
@@ -229,9 +229,9 @@ def setup(action, old_page=None):
             configured_original_iso_file_path = os.path.join(model.original.iso_directory, model.original.iso_file_name)
             mount_original_iso(configured_original_iso_file_path)
 
-            # Set the original and custom iso release notes urls on the
-            # model. Because the original iso release notes url can only
-            # be set after the original iso is mounted, both of these
+            # Set the original and custom ISO release notes URLs on the
+            # model. Because the original ISO release notes URL can only
+            # be set after the original ISO is mounted, both of these
             # values are not set on the Start page.
             model.original.iso_release_notes_url = iso_utilities.get_iso_release_notes_url(model.project.iso_mount_point)
             model.custom.iso_release_notes_url = iso_utilities.get_iso_release_notes_url(model.project.custom_disk_directory)
@@ -265,7 +265,7 @@ def setup(action, old_page=None):
 
             # There is no saved configuration.
 
-            # Set the original and custom iso release notes urls on the
+            # Set the original and custom ISO release notes URLs on the
             # model.
             model.original.iso_release_notes_url = None
             model.custom.iso_release_notes_url = None
@@ -338,7 +338,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -380,7 +380,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -481,12 +481,14 @@ def leave(action, new_page=None):
         model.status.is_success_extract = status.is_success_extract
         model.status.iso_template = status.iso_template
         model.status.casper_directory = status.casper_directory
+        model.status.squashfs_file_name = status.squashfs_file_name
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
         # Options
         model.options.update_os_release = custom.options_update_os_release.value
         model.options.boot_configurations = options.boot_configurations
+        model.options.compression = options.compression
 
         # Save the model values.
         configuration.save()
@@ -538,12 +540,14 @@ def leave(action, new_page=None):
         model.status.is_success_extract = status.is_success_extract
         model.status.iso_template = status.iso_template
         model.status.casper_directory = status.casper_directory
+        model.status.squashfs_file_name = status.squashfs_file_name
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
         # Options
         model.options.update_os_release = custom.options_update_os_release.value
         model.options.boot_configurations = options.boot_configurations
+        model.options.compression = options.compression
 
         # Save the model values.
         configuration.save()
@@ -577,7 +581,7 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -597,14 +601,14 @@ def mount_original_iso(original_iso_file_path):
         group_id = os.getgid()
         iso_utilities.mount(original_iso_file_path, model.project.iso_mount_point, user_id, group_id)
     elif not iso_utilities.is_mounted(model.project.iso_mount_point, original_iso_file_path):
-        # A different iso is mounted on the mount point.
+        # A different ISO is mounted on the mount point.
         # Unmount the other iso, and then mount this iso.
         user_id = os.getuid()
         group_id = os.getgid()
         iso_utilities.unmount(model.project.iso_mount_point)
         iso_utilities.mount(original_iso_file_path, model.project.iso_mount_point, user_id, group_id)
     else:
-        # This iso is already mounted.
+        # This ISO is already mounted.
         pass
 
 
@@ -619,7 +623,7 @@ def selected_original_iso_file_path(original_iso_file_path):
 
     if os.path.isfile(original_iso_file_path):
 
-        # A valid iso file was supplied.
+        # A valid ISO file was supplied.
 
         if os.path.isfile(model.project.configuration_file_path):
 
@@ -661,13 +665,14 @@ def selected_original_iso_file_path(original_iso_file_path):
                 # Set status before initializing original because file_name
                 # validator requires is_success_copy and is_success_extract.
                 status = initialize_status_from_model()
-                # Overwrite iso configuration and boot files.
+                # Overwrite ISO configuration and boot files.
                 # Always set is success copy to False whenever iso
                 # template is set to None.
                 status.is_success_copy = False
                 # status.is_success_extract = False or True
                 status.iso_template = None
                 status.casper_directory = None
+                status.squashfs_file_name = None
                 options = initialize_options()
 
                 original = initialize_original_from_iso(original_iso_file_path)
@@ -705,7 +710,7 @@ def selected_original_iso_file_path(original_iso_file_path):
 
     else:
 
-        # A valid iso file was not supplied.
+        # A valid ISO file was not supplied.
 
         iso_utilities.unmount(model.project.iso_mount_point)
 
@@ -792,6 +797,7 @@ def initialize_status():
     fields.is_success_extract = False
     fields.iso_template = None
     fields.casper_directory = None
+    fields.squashfs_file_name = None
     fields.iso_checksum = None
     fields.iso_checksum_file_name = None
 
@@ -806,11 +812,11 @@ def initialize_options():
 
     # The field options_update_os_release is stored in "custom"
     # IsoFields instead of "options" Fields, so changes can be tracked
-    # in custom_history to permit undo and redo. This  value is
+    # in custom_history to permit undo and redo. This value is
     # initialized to True in the initialize_custom() function.
     # fields.update_os_release = True
-
     fields.boot_configurations = [boot_configuration.strip().strip(os.path.sep) for boot_configuration in DEFAULT_BOOT_CONFIGURATIONS_STRING.split(',')]
+    fields.compression = None
 
     return fields
 
@@ -822,7 +828,7 @@ def initialize_options():
 
 def initialize_original_from_iso(original_iso_file_path):
     """
-    Initialize the following original fields from the original iso and
+    Initialize the following original fields from the original ISO and
     register the validators.
       - iso_file_name
       - iso_directory
@@ -830,7 +836,7 @@ def initialize_original_from_iso(original_iso_file_path):
       - iso_release_name
       - iso_disk_name
       - iso_release_notes_url
-    The original iso does not have an iso_version_number, so the
+    The original ISO does not have an iso_version_number, so the
     iso_version_number value and validator are not set. The
     iso_version_number value defaults to None, and the is_valid property
     is set to True to compensate for the unregistered validator.
@@ -850,7 +856,7 @@ def initialize_original_from_iso(original_iso_file_path):
     fields.iso_release_notes_url.value = iso_utilities.get_iso_release_notes_url(model.project.iso_mount_point)
 
     # Add validators.
-    # Do not add a validator for iso version number, because the
+    # Do not add a validator for ISO version number, because the
     # original section does not display this field. However, explicitly
     # set iso_version_number.is_valid to True, because IsoFields.is_valid
     # checks if all fields are valid.
@@ -873,7 +879,7 @@ def initialize_original_from_iso(original_iso_file_path):
 def initialize_custom_from_iso():
     """
     Initialize the following custom fields by constructing them from the
-    original iso values, and register the validators.
+    original ISO values, and register the validators.
       - iso_version_number
       - iso_file_name
       - iso_directory (always set to the project directory)
@@ -982,7 +988,7 @@ def initialize_original_from_model():
       - iso_release_name
       - iso_disk_name
       - iso_release_notes_url
-    The original iso does not have an iso_version_number, so the
+    The original ISO does not have an iso_version_number, so the
     iso_version_number value and validator are not set. The
     iso_version_number value defaults to None, and the is_valid property
     is set to True to compensate for the unregistered validator.
@@ -1001,7 +1007,7 @@ def initialize_original_from_model():
     fields.iso_release_notes_url.value = model.original.iso_release_notes_url
 
     # Add validators.
-    # Do not add a validator for iso version number, because the
+    # Do not add a validator for ISO version number, because the
     # original section does not display this field. However, explicitly
     # set iso_version_number.is_valid to True, because IsoFields.is_valid
     # checks if all fields are valid.
@@ -1069,6 +1075,7 @@ def initialize_status_from_model():
       - is_success_extract
       - iso_template
       - casper_directory
+      - squashfs_file_name
       - iso_checksum = None
       - iso_checksum_file_name = None
     """
@@ -1081,9 +1088,11 @@ def initialize_status_from_model():
     fields.is_success_extract = model.status.is_success_extract
     fields.iso_template = model.status.iso_template
     fields.casper_directory = model.status.casper_directory
-    # The saved iso checksum is never used.
+    fields.squashfs_file_name = model.status.squashfs_file_name
+    # The saved ISO file size is never used.
+    # The saved ISO checksum is never used.
     fields.iso_checksum = model.status.iso_checksum
-    # The iso checksum file_name is always constructed.
+    # The ISO checksum file_name is always constructed.
     fields.iso_checksum_file_name = model.status.iso_checksum_file_name
 
     return fields
@@ -1092,7 +1101,9 @@ def initialize_status_from_model():
 def initialize_options_from_model():
     """
     Initialize the following options fields from the model.
+      - (options.update_os_release)
       - boot_configurations
+      - compression
     """
 
     logger.log_label('Initialize the options fields from the model')
@@ -1101,19 +1112,19 @@ def initialize_options_from_model():
 
     # The field options_update_os_release is stored in "custom"
     # IsoFields instead of "options" Fields, so changes can be tracked
-    # in custom_history to permit undo and redo.
+    # in custom_history to permit undo and redo. This value is
     # initialized from the model in the initialize_custom_from_model()
     # function.
     # fields.update_os_release = model.options.update_os_release
-
     fields.boot_configurations = model.options.boot_configurations
+    fields.compression = model.options.compression
 
     return fields
 
 
 def store_generated_iso_values():
     """
-    Save the generated iso values from the model.
+    Save the generated ISO values from the model.
       - iso_version_number
       - iso_file_name
       - iso_directory
@@ -1125,7 +1136,7 @@ def store_generated_iso_values():
       - iso_checksum_file_name
     """
 
-    logger.log_label('Save the generated iso values from the model')
+    logger.log_label('Save the generated ISO values from the model')
 
     # Update fields.
     model.generated.iso_version_number = model.custom.iso_version_number
@@ -1135,8 +1146,8 @@ def store_generated_iso_values():
     model.generated.iso_release_name = model.custom.iso_release_name
     model.generated.iso_disk_name = model.custom.iso_disk_name
     model.generated.iso_release_notes_url = model.custom.iso_release_notes_url
-    model.generated.iso_checksum = model.status.iso_checksum
-    model.generated.iso_checksum_file_name = model.status.iso_checksum_file_name
+    # model.generated.iso_checksum = model.status.iso_checksum
+    # model.generated.iso_checksum_file_name = model.status.iso_checksum_file_name
 
 
 ########################################################################
@@ -1375,7 +1386,7 @@ def unblock_custom_handlers():
 
 def on_clicked__project_page__test_header_bar_button(widget):
 
-    logger.log_value('Clicked', 'Test')
+    logger.log_title('Clicked project page test button')
 
     handle_navigation('test')
 
@@ -1394,7 +1405,7 @@ def on_clicked__project_page__delete_header_bar_button(widget):
 
 def on_clicked__project_page__original_iso_file_name_open_button(widget):
 
-    logger.log_title('Clicked project page original iso image file path file chooser open button')
+    logger.log_label('Clicked project page original ISO file name open button')
 
     if original.iso_directory.value:
         if original.iso_file_name.value:
@@ -1408,7 +1419,7 @@ def on_clicked__project_page__original_iso_file_name_open_button(widget):
 
 def on_changed__project_page__original_iso_file_name_entry(widget):
 
-    logger.log_label('Original iso file name changed')
+    logger.log_label('Original ISO file name changed')
 
     text = widget.get_text()
     if text:
@@ -1418,7 +1429,7 @@ def on_changed__project_page__original_iso_file_name_entry(widget):
             widget.set_position(position)
         elif text[-4:] != '.iso':
             position = widget.get_property('cursor-position')
-            widget.set_text(text + '.iso')
+            widget.set_text(f'{text}.iso')
             widget.set_position(position)
     original.iso_file_name.value = widget.get_text()
 
@@ -1431,7 +1442,7 @@ def on_changed__project_page__original_iso_file_name_entry(widget):
 
 def on_changed__project_page__original_iso_directory_entry(widget):
 
-    logger.log_label('Original iso directory changed')
+    logger.log_label('Original ISO directory changed')
 
     original.iso_directory.value = widget.get_text()
 
@@ -1444,7 +1455,7 @@ def on_changed__project_page__original_iso_directory_entry(widget):
 
 def on_changed__project_page__original_iso_volume_id_entry(widget):
 
-    logger.log_label('Original iso volume id changed')
+    logger.log_label('Original ISO volume id changed')
 
     original.iso_volume_id.value = widget.get_text()
 
@@ -1457,7 +1468,7 @@ def on_changed__project_page__original_iso_volume_id_entry(widget):
 
 def on_changed__project_page__original_iso_release_name_entry(widget):
 
-    logger.log_label('Original iso release name changed')
+    logger.log_label('Original ISO release name changed')
 
     original.iso_release_name.value = widget.get_text()
 
@@ -1470,7 +1481,7 @@ def on_changed__project_page__original_iso_release_name_entry(widget):
 
 def on_changed__project_page__original_iso_disk_name_entry(widget):
 
-    logger.log_label('Original iso disk name changed')
+    logger.log_label('Original ISO disk name changed')
 
     original.iso_disk_name.value = widget.get_text()
 
@@ -1483,7 +1494,7 @@ def on_changed__project_page__original_iso_disk_name_entry(widget):
 
 def on_changed__project_page__original_iso_release_notes_url_entry(widget):
 
-    logger.log_label('Original iso release notes url changed')
+    logger.log_label('Original ISO release notes URL changed')
 
     original.iso_release_notes_url.value = widget.get_text()
 
@@ -1501,7 +1512,7 @@ def on_changed__project_page__original_iso_release_notes_url_entry(widget):
 
 def on_clicked__project_page__undo_header_bar_button(widget):
 
-    logger.log_title('Clicked project page undo button')
+    logger.log_label('Clicked project page undo header bar button')
 
     global custom
 
@@ -1520,7 +1531,7 @@ def on_clicked__project_page__undo_header_bar_button(widget):
 
 def on_clicked__project_page__redo_header_bar_button(widget):
 
-    logger.log_title('Clicked project page redo button')
+    logger.log_label('Clicked project page redo header bar button')
 
     global custom
 
@@ -1529,9 +1540,9 @@ def on_clicked__project_page__redo_header_bar_button(widget):
     validate_page()
 
 
-def on_clicked__project_page__refresh_button(widget):
+def on_clicked__project_page__custom_iso_version_number_refresh_button(widget):
 
-    logger.log_title('Clicked project page custom iso image version number refresh button')
+    logger.log_label('Clicked project page custom ISO version number refresh button')
 
     global custom
 
@@ -1545,7 +1556,7 @@ def on_clicked__project_page__refresh_button(widget):
 
 def on_clicked__project_page__custom_iso_directory_open_button(widget):
 
-    logger.log_title('Clicked project page custom iso image directory file chooser open button')
+    logger.log_label('Clicked project page custom ISO directory open button')
 
     if custom.iso_directory.value:
         custom_iso_directory = custom.iso_directory.value
@@ -1556,7 +1567,7 @@ def on_clicked__project_page__custom_iso_directory_open_button(widget):
 
 def on_changed__project_page__custom_iso_version_number_entry(widget):
 
-    logger.log_label('Custom iso version number changed')
+    logger.log_label('Custom ISO version number changed')
 
     custom.iso_version_number.value = widget.get_text()
 
@@ -1581,7 +1592,7 @@ def on_changed__project_page__custom_iso_version_number_entry(widget):
 
 def on_changed__project_page__custom_iso_file_name_entry(widget):
 
-    logger.log_label('Custom iso file name changed')
+    logger.log_label('Custom ISO file name changed')
 
     text = widget.get_text()
     if text:
@@ -1591,7 +1602,7 @@ def on_changed__project_page__custom_iso_file_name_entry(widget):
             widget.set_position(position)
         elif text[-4:] != '.iso':
             position = widget.get_property('cursor-position')
-            widget.set_text(text + '.iso')
+            widget.set_text(f'{text}.iso')
             widget.set_position(position)
     custom.iso_file_name.value = widget.get_text()
 
@@ -1604,7 +1615,7 @@ def on_changed__project_page__custom_iso_file_name_entry(widget):
 
 def on_changed__project_page__custom_iso_directory_entry(widget):
 
-    logger.log_label('Custom iso directory changed')
+    logger.log_label('Custom ISO directory changed')
 
     custom.iso_directory.value = widget.get_text()
 
@@ -1617,7 +1628,7 @@ def on_changed__project_page__custom_iso_directory_entry(widget):
 
 def on_changed__project_page__custom_iso_volume_id_entry(widget):
 
-    logger.log_label('Custom iso volume id changed')
+    logger.log_label('Custom ISO volume id changed')
 
     custom.iso_volume_id.value = widget.get_text()
 
@@ -1635,7 +1646,7 @@ def on_changed__project_page__custom_iso_volume_id_entry(widget):
     # custom.options_update_os_release.value will be updated
     # automatically when the on_toggled handler is invoked.
     if bool(custom.iso_volume_id.value):
-        # Toggle the check box to be selected if iso volume id is valid.
+        # Toggle the check box to be selected if ISO volume id is valid.
         if bool(custom.options_update_os_release.value): displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', False)
         displayer.activate_check_button('project_page__custom_options_update_os_release_check_button', True)
     else:
@@ -1648,7 +1659,7 @@ def on_changed__project_page__custom_iso_volume_id_entry(widget):
 
 def on_changed__project_page__custom_iso_release_name_entry(widget):
 
-    logger.log_label('Custom iso release name changed')
+    logger.log_label('Custom ISO release name changed')
 
     custom.iso_release_name.value = widget.get_text()
 
@@ -1668,7 +1679,7 @@ def on_changed__project_page__custom_iso_release_name_entry(widget):
 
 def on_changed__project_page__custom_iso_disk_name_entry(widget):
 
-    logger.log_label('Custom iso disk name changed')
+    logger.log_label('Custom ISO disk name changed')
 
     custom.iso_disk_name.value = widget.get_text()
 
@@ -1681,7 +1692,7 @@ def on_changed__project_page__custom_iso_disk_name_entry(widget):
 
 def on_changed__project_page__custom_iso_release_notes_url_entry(widget):
 
-    logger.log_label('Custom iso release notes url changed')
+    logger.log_label('Custom ISO release notes URL changed')
 
     custom.iso_release_notes_url.value = widget.get_text()
 
@@ -1749,7 +1760,11 @@ def validate_page():
     # Navigation buttons.
 
     # Navigation buttons are also set in the setup() function.
-    if status.is_success_copy and status.is_success_extract and status.iso_template and status.casper_directory:
+    if status.is_success_copy and    \
+       status.is_success_extract and \
+       status.iso_template and       \
+       status.casper_directory and   \
+       status.squashfs_file_name:
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -1991,7 +2006,7 @@ def validate_original_iso_volume_id(fields):
         is_valid = bool(fields.iso_volume_id.value)
         status = OK if is_valid else ERROR
         if is_valid:
-            # message = '%s of 32 characters left.' % (32 - len(fields.iso_volume_id.value))
+            # message = f'{32-len(fields.iso_volume_id.value)} of 32 characters left.'
             message = None
         else:
             message = '<span foreground="red">Error. The original volume ID is required.</span>'
@@ -2147,7 +2162,7 @@ def validate_custom_iso_volume_id(fields):
         is_valid = bool(fields.iso_volume_id.value)
         status = OK if is_valid else ERROR
         if is_valid:
-            message = '%s of 32 characters left.' % (32 - len(fields.iso_volume_id.value))
+            message = f'{32-len(fields.iso_volume_id.value)} of 32 characters left.'
         else:
             message = '<span foreground="red">Error. Volume ID is required.</span>'
     return is_valid, status, message
@@ -2253,7 +2268,7 @@ def is_url(url):
 def validate_test_header_bar_button():
 
     custom_iso_file_path = os.path.join(model.generated.iso_directory, model.generated.iso_file_name)
-    logger.log_value('The generated iso file path is', custom_iso_file_path)
+    logger.log_value('The generated ISO file path is', custom_iso_file_path)
     if os.path.exists(custom_iso_file_path):
         # Enable the Test button if the system has at least 1.5 GiB
         # available memory.
@@ -2269,7 +2284,7 @@ def validate_test_header_bar_button():
             logger.log_value('System has adequate available memory to enable testing?', 'No')
             logger.log_value('Enable testing?', 'No')
     else:
-        logger.log_value('Does the custom iso file exist?', 'No')
+        logger.log_value('Does the custom ISO file exist?', 'No')
         displayer.set_sensitive('project_page__test_header_bar_button', False)
         displayer.set_visible('project_page__test_header_bar_button', False)
         logger.log_value('Enable testing?', 'No')
@@ -2308,7 +2323,7 @@ def save_iso_release_notes_url():
     #     current end of file, irrespective of any intervening fseek(3)
     #     or similar.
 
-    logger.log_label('Update the custom iso release notes url')
+    logger.log_label('Update the custom ISO release notes url')
 
     directory = os.path.join(model.project.custom_disk_directory, '.disk')
     file_path = os.path.join(directory, 'release_notes_url')
@@ -2316,12 +2331,12 @@ def save_iso_release_notes_url():
         # Create the full directory path "custom-disk/.disk" because
         # these directories may not exist yet.
         file_utilities.make_directories(directory)
-        logger.log_value('Write the custom iso release notes url to', file_path)
-        logger.log_value('The custom iso release notes url is', model.custom.iso_release_notes_url)
+        logger.log_value('Write the custom ISO release notes URL to', file_path)
+        logger.log_value('The custom ISO release notes URL is', model.custom.iso_release_notes_url)
         with open(file_path, 'w') as file:
-            file.write('%s' % model.custom.iso_release_notes_url)
+            file.write(f'{model.custom.iso_release_notes_url}')
     except Exception as exception:
-        logger.log_value('Unable to write the custom iso release notes url to', file_path)
+        logger.log_value('Unable to write the custom ISO release notes URL to', file_path)
         logger.log_value('The exception is', exception)
         is_error = True
     else:

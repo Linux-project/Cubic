@@ -37,11 +37,14 @@
 # Imports
 ########################################################################
 
+import glob
+import locale
 import os
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import IMAGE_FILE_NAME, LOCK_FILE_NAME
+from cubic.constants import MIB, GIB
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0500_MS, SLEEP_1500_MS
 from cubic.navigator import handle_navigation
@@ -90,6 +93,7 @@ def setup(action, old_page=None):
 
         displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
         displayer.update_entry('finish_page__custom_iso_file_name_entry', model.custom.iso_file_name)
+        displayer.update_entry('finish_page__custom_iso_disk_size_entry', get_size_description(model.iso_file_size))
         displayer.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
         displayer.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
         displayer.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
@@ -122,6 +126,7 @@ def setup(action, old_page=None):
 
         displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
         displayer.update_entry('finish_page__custom_iso_file_name_entry', model.custom.iso_file_name)
+        displayer.update_entry('finish_page__custom_iso_disk_size_entry', get_size_description(model.iso_file_size))
         displayer.update_entry('finish_page__custom_iso_directory_entry', model.custom.iso_directory)
         displayer.update_entry('finish_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
         displayer.update_entry('finish_page__custom_iso_release_name_entry', model.custom.iso_release_name)
@@ -149,7 +154,7 @@ def setup(action, old_page=None):
         return
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -172,7 +177,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -240,7 +245,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -252,7 +257,7 @@ def leave(action, new_page=None):
 
 def on_clicked__finish_page__test_header_bar_button(widget):
 
-    logger.log_value('Clicked', 'Test')
+    logger.log_title('Clicked generate page test button')
 
     handle_navigation('test')
 
@@ -280,9 +285,21 @@ def on_clicked__finish_page__custom_iso_checksum_file_name_open_button(widget):
 ########################################################################
 
 
+def get_size_description(size_in_bytes):
+
+    if size_in_bytes > GIB:
+        size_in_gib = size_in_bytes / GIB
+        size_description = f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)'
+    else:
+        size_in_mib = size_in_bytes / MIB
+        size_description = f'{locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes)'
+
+    return size_description
+
+
 def store_generated_iso_values():
     """
-    Save the generated iso values from the model.
+    Save the generated ISO values from the model.
       - iso_version_number
       - iso_file_name
       - iso_directory
@@ -294,7 +311,7 @@ def store_generated_iso_values():
       - iso_checksum_file_name
     """
 
-    logger.log_label('Save the generated iso values from the model')
+    logger.log_label('Save the generated ISO values from the model')
 
     # Update fields.
     model.generated.iso_version_number = model.custom.iso_version_number
@@ -304,8 +321,8 @@ def store_generated_iso_values():
     model.generated.iso_release_name = model.custom.iso_release_name
     model.generated.iso_disk_name = model.custom.iso_disk_name
     model.generated.iso_release_notes_url = model.custom.iso_release_notes_url
-    model.generated.iso_checksum = model.status.iso_checksum
-    model.generated.iso_checksum_file_name = model.status.iso_checksum_file_name
+    # model.generated.iso_checksum = model.status.iso_checksum
+    # model.generated.iso_checksum_file_name = model.status.iso_checksum_file_name
 
 
 def unmount_original_iso():
@@ -408,18 +425,18 @@ def delete_project_files():
         pass
 
     #
-    # Delete the iso partition image files.
+    # Delete the ISO partition image files.
     #
-    image_file_pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
-    image_file_files = file_utilities.get_files_with_pattern(image_file_pattern)
-    logger.log_value('Delete the iso partition image files', image_file_files)
+    file_path_pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
+    image_file_paths = glob.glob(file_path_pattern)
+    logger.log_value('Delete the ISO partition image files', image_file_paths)
     # time.sleep(SLEEP_1000_MS)
 
-    if image_file_files:
-        file_utilities.delete_files_with_pattern(image_file_pattern)
+    if image_file_paths:
+        file_utilities.delete_files_with_pattern(file_path_pattern)
         # Check if all image files were deleted.
-        image_file_files = file_utilities.get_files_with_pattern(image_file_pattern)
-        if image_file_files:
+        image_file_paths = glob.glob(file_path_pattern)
+        if image_file_paths:
             is_error = True
     else:
         # Skip
@@ -446,7 +463,7 @@ def validate_page():
 def validate_test_header_bar_button():
 
     custom_iso_file_path = os.path.join(model.generated.iso_directory, model.generated.iso_file_name)
-    logger.log_value('The generated iso file path is', custom_iso_file_path)
+    logger.log_value('The generated ISO file path is', custom_iso_file_path)
     if os.path.exists(custom_iso_file_path):
         # Enable the Test button if the system has at least 1.5 GiB
         # available memory.
@@ -462,7 +479,7 @@ def validate_test_header_bar_button():
             logger.log_value('System has adequate available memory to enable testing?', 'No')
             logger.log_value('Enable testing?', 'No')
     else:
-        logger.log_value('Does the custom iso file exist?', 'No')
+        logger.log_value('Does the custom ISO file exist?', 'No')
         displayer.set_sensitive('finish_page__test_header_bar_button', False)
         displayer.set_sensitive('finish_page__test_header_bar_button', False)
         logger.log_value('Enable testing?', 'No')

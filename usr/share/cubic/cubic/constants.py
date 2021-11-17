@@ -87,6 +87,9 @@ TIME_STAMP_FORMAT_LONG_3 = '%A %B %d, %Y %H:%M'
 TIME_STAMP_FORMAT_YYYYMMDD = '%Y%m%d'
 VERSION_NUMBER_FORMAT = '%Y.%m.%d'
 
+# Unicode "Hair Space" character used to precede percent ("%") symbols.
+GAP = '\u200A'
+
 ########################################################################
 # Application Versions
 ########################################################################
@@ -130,6 +133,21 @@ CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
 IMAGE_FILE_NAME = 'partition-%s.img'
 LOCK_FILE_NAME = '.#custom-root.lck'
+
+# SQUASHFS_FILE_NAMES = [
+#     'ubuntu-server-minimal.squashfs',
+#     'ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs',
+#     'ubuntu-server-minimal.ubuntu-server.installer.squashfs',
+#     'ubuntu-server-minimal.ubuntu-server.squashfs'
+# ]
+SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs']
+
+EXTENSION_MANIFEST = 'manifest'
+EXTENSION_MANIFEST_MINIMAL_REMOVE = 'manifest-minimal-remove'
+EXTENSION_MANIFEST_REMOVE = 'manifest-remove'
+EXTENSION_SIZE = 'size'
+EXTENSION_SQUASHFS_GPG = 'squashfs.gpg'
+EXTENSION_SQUASHFS = 'squashfs'
 
 ########################################################################
 # Status

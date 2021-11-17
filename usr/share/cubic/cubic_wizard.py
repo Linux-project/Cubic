@@ -134,7 +134,7 @@ try:
         model.builder.add_from_file(file_path)
 
         # Load the module.
-        module = importlib.import_module('cubic.pages.%s' % module_name)
+        module = importlib.import_module(f'cubic.pages.{module_name}')
 
         # Connect the signals to handlers in the associated module.
         model.builder.connect_signals(module)
@@ -204,7 +204,7 @@ try:
         model.builder.add_from_file(file_path)
 
         # Load the module.
-        module = importlib.import_module('cubic.choosers.%s' % module_name)
+        module = importlib.import_module(f'cubic.choosers.{module_name}')
 
         # Connect the signals to handlers in the associated module.
         model.builder.connect_signals(module)

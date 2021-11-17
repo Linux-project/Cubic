@@ -57,12 +57,15 @@ Cubic versions and configuration changes:
 ########################################################################
 
 # https://docs.python.org/3/library/configparser.html#configparser.ConfigParser.getboolean
+# https://pypi.org/project/packaging/
 
 ########################################################################
 # Imports
 ########################################################################
 
 import configparser
+
+from packaging import version
 
 from cubic.constants import CUBIC_VERSION_2019, CUBIC_VERSION_2020, CUBIC_VERSION_2021
 from cubic.constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
@@ -95,6 +98,11 @@ def get_boolean(section, key, default=False):
     except ValueError as exception:
         # Blank will return False.
         return False
+
+
+def get_list_of_file_paths(file_paths_string):
+
+    return [file_path.strip().strip('/') for file_path in file_paths_string.split(',') if file_path.strip().strip('/')]
 
 
 def save_value(section, key, value):
@@ -221,13 +229,17 @@ def load():
         # TODO: Error
         pass
 
+    #
+    # Add new layouts here, based on the version.
+    #
+
     # Load values from the configuration.
-    # (Add new layouts here, based on the version).
-    if model.project.cubic_version < CUBIC_VERSION_2020:
+
+    # Convert the Cubic version to YYYY.MM.RR format for comparison.
+    cubic_version = constructor.get_major_minor_version(model.project.cubic_version)
+    if version.parse(cubic_version) < version.parse(CUBIC_VERSION_2020):
         _load_from_2019_layout()
-    elif 'classic' in model.project.cubic_version:
-        _load_from_2019_layout()
-    elif model.project.cubic_version < CUBIC_VERSION_2021:
+    elif version.parse(cubic_version) < version.parse(CUBIC_VERSION_2021):
         _load_from_2020_layout()
     else:
         _load_from_2021_layout()
@@ -270,6 +282,8 @@ def _load_from_2019_layout():
     # Not in the original 2019 layout.
     model.status.casper_directory = get_value('Status', 'casper_directory', default=None)
     # Not in the original 2019 layout.
+    model.status.squashfs_file_name = get_value('Status', 'squashfs_file_name', default=None)
+    # Not in the original 2019 layout.
     model.status.iso_checksum = get_value('Custom', 'custom_iso_image_checksum', default=None)
     # In the Custom section of the 2019 layout.
     model.status.iso_checksum_file_name = get_value('Custom', 'custom_iso_image_md5_filename', default=None)
@@ -278,9 +292,7 @@ def _load_from_2019_layout():
     # Not in the original 2019 layout.
     model.options.update_os_release = get_boolean('Options', 'update_os_release', default=True)
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
-    model.options.boot_configurations = [
-        boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',') if boot_configuration.strip().strip('/')
-    ]
+    model.options.boot_configurations = get_list_of_file_paths(boot_configurations_string)
     # Not in the original 2019 layout.
     model.options.compression = get_value('Options', 'compression', default=None)
 
@@ -320,6 +332,8 @@ def _load_from_2020_layout():
     # Not in the original 2020 layout.
     model.status.iso_template = get_value('Status', 'iso_template', default=None)
     model.status.casper_directory = get_value('Status', 'casper_directory', default=None)
+    # Not in the original 2020 layout.
+    model.status.squashfs_file_name = get_value('Status', 'squashfs_file_name', default=None)
     model.status.iso_checksum = get_value('Status', 'iso_checksum', default=None)
     model.status.iso_checksum_file_name = get_value('Status', 'iso_checksum_filename', default=None)
 
@@ -327,9 +341,7 @@ def _load_from_2020_layout():
     # Not in the original 2020 layout.
     model.options.update_os_release = get_boolean('Options', 'update_os_release', default=True)
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
-    model.options.boot_configurations = [
-        boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',') if boot_configuration.strip().strip('/')
-    ]
+    model.options.boot_configurations = get_list_of_file_paths(boot_configurations_string)
     model.options.compression = get_value('Options', 'compression', default=None)
 
 
@@ -367,6 +379,8 @@ def _load_from_2021_layout():
     model.status.is_success_extract = get_boolean('Status', 'is_success_extract', default=False)
     model.status.iso_template = get_value('Status', 'iso_template', default=None)
     model.status.casper_directory = get_value('Status', 'casper_directory', default=None)
+    # Not in the original 2021 layout.
+    model.status.squashfs_file_name = get_value('Status', 'squashfs_file_name', default=None)
     model.status.iso_checksum = get_value('Status', 'iso_checksum', default=None)
     model.status.iso_checksum_file_name = get_value('Status', 'iso_checksum_file_name', default=None)
 
@@ -374,9 +388,7 @@ def _load_from_2021_layout():
     # Not in the original 2021 layout.
     model.options.update_os_release = get_boolean('Options', 'update_os_release', default=True)
     boot_configurations_string = get_value('Options', 'boot_configurations', default=DEFAULT_BOOT_CONFIGURATIONS_STRING)
-    model.options.boot_configurations = [
-        boot_configuration.strip().strip('/') for boot_configuration in boot_configurations_string.split(',') if boot_configuration.strip().strip('/')
-    ]
+    model.options.boot_configurations = get_list_of_file_paths(boot_configurations_string)
     model.options.compression = get_value('Options', 'compression', default=None)
 
 
@@ -389,8 +401,11 @@ def save():
 
     logger.log_label('Save configuration')
 
+    # Convert the Cubic version to YYYY.MM.RR format for comparison.
+    cubic_version = constructor.get_major_minor_version(model.project.cubic_version)
+
     # Initialize the configuration file to the current layout.
-    if model.project.cubic_version < CUBIC_VERSION_2021:
+    if version.parse(cubic_version) < version.parse(CUBIC_VERSION_2021):
         _initialize_2021_layout()
 
     # Update the Cubic version.
@@ -434,6 +449,8 @@ def _save_using_2019_layout():
     config_parser.set('Status', 'iso_template', model.status.iso_template)
     # Not in the original 2019 layout.
     config_parser.set('Status', 'casper_directory', model.status.casper_directory)
+    # Not in the original 2019 layout.
+    config_parser.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
     # Not in the original 2019 layout.
     config_parser.set('Status', 'custom_iso_image_checksum', model.status.iso_checksum)
     # In the Custom section of the 2019 layout.
@@ -487,6 +504,8 @@ def _save_using_2020_layout():
     # Not in the original 2020 layout.
     config_parser.set('Status', 'iso_template', model.status.iso_template)
     config_parser.set('Status', 'casper_directory', model.status.casper_directory)
+    # Not in the original 2020 layout.
+    config_parser.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
     config_parser.set('Status', 'iso_checksum', model.status.iso_checksum)
     config_parser.set('Status', 'iso_checksum_filename', model.status.iso_checksum_file_name)
 
@@ -535,6 +554,8 @@ def _save_using_2021_layout():
     config_parser.set('Status', 'is_success_extract', str(bool(model.status.is_success_extract)))
     config_parser.set('Status', 'iso_template', model.status.iso_template)
     config_parser.set('Status', 'casper_directory', model.status.casper_directory)
+    # Not in the original 2021 layout.
+    config_parser.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
     config_parser.set('Status', 'iso_checksum', model.status.iso_checksum)
     config_parser.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
 

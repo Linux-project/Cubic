@@ -37,9 +37,11 @@
 # Imports
 ########################################################################
 
+import locale
 import os
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import MIB, GIB
 from cubic.navigator import handle_navigation
 from cubic.utilities import displayer
 from cubic.utilities import emulator
@@ -66,7 +68,7 @@ def setup(action, old_page=None):
         displayer.update_label('test_1_page__banner_label', '')
         displayer.set_label_error('test_1_page__banner_label', False)
 
-        displayer.empty_box('test_1_page__warnings_box')
+        displayer.empty_box('test_1_page__alerts_box')
 
         displayer.update_entry('test_1_page__custom_iso_version_number_entry', model.generated.iso_version_number)
         displayer.update_entry('test_1_page__custom_iso_file_name_entry', model.generated.iso_file_name)
@@ -74,8 +76,8 @@ def setup(action, old_page=None):
         displayer.update_entry('test_1_page__custom_iso_volume_id_entry', model.generated.iso_volume_id)
         displayer.update_entry('test_1_page__custom_iso_release_name_entry', model.generated.iso_release_name)
         displayer.update_entry('test_1_page__custom_iso_disk_name_entry', model.generated.iso_disk_name)
-        displayer.update_entry('test_1_page__custom_iso_checksum_entry', model.generated.iso_checksum)
-        displayer.update_entry('test_1_page__custom_iso_checksum_file_name_entry', model.generated.iso_checksum_file_name)
+        # displayer.update_entry('test_1_page__custom_iso_checksum_entry', model.generated.iso_checksum)
+        # displayer.update_entry('test_1_page__custom_iso_checksum_file_name_entry', model.generated.iso_checksum_file_name)
         '''
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -96,7 +98,7 @@ def setup(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -109,7 +111,7 @@ def enter(action, old_page=None):
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -147,7 +149,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -167,6 +169,9 @@ def on_clicked__test_1_page__custom_iso_file_name_open_button(widget):
 
 
 def on_clicked__test_1_page__custom_iso_checksum_file_name_open_button(widget):
+    """
+    This function is not used.
+    """
 
     file_path = os.path.join(model.custom.iso_directory, model.status.iso_checksum_file_name)
     if os.path.isfile(file_path):
@@ -209,22 +214,31 @@ def update_status(status):
 
         is_virtualization_supported = emulator.host_has_virtualization_support()
         if not is_virtualization_supported:
-            message = 'Warning. The host system does not support virtualization. Performance will be degraded.'
-            displayer.insert_box_label('test_1_page__warnings_box', message, is_error=True)
+            message = '• Warning. The host system does not support virtualization. Performance will be degraded.'
+            displayer.insert_box_label('test_1_page__alerts_box', message, is_error=True)
         else:
-            message = 'The host system supports virtualization for improved performance.'
-            displayer.insert_box_label('test_1_page__warnings_box', message)
+            message = '• The host system supports virtualization for improved performance.'
+            displayer.insert_box_label('test_1_page__alerts_box', message)
+
+        if model.emulator_memory > GIB:
+            size_in_gib = model.emulator_memory / GIB
+            message = f'• The memory available for testing is {locale.format_string("%.2f", size_in_gib, True)} GiB.'
+            displayer.insert_box_label('test_1_page__alerts_box', message)
+        else:
+            size_in_mib = model.emulator_memory / MIB
+            message = f'• The memory available for testing is {locale.format_string("%.2f", size_in_mib, True)} MiB.'
+            displayer.insert_box_label('test_1_page__alerts_box', message)
 
         # is_gtk_display_supported = emulator.host_has_gtk_display_support()
         # if not is_gtk_display_supported:
-        #     message = 'Warning. The host system does not support GTK display features.'
-        #     displayer.insert_box_label('test_1_page__warnings_box', message, is_error=True)
+        #     message = '• Warning. The host system does not support GTK display features.'
+        #     displayer.insert_box_label('test_1_page__alerts_box', message, is_error=True)
         # else:
-        #     message = 'The host system supports GTK display features.'
-        #     displayer.insert_box_label('test_1_page__warnings_box', message)
+        #     message = '• The host system supports GTK display features.'
+        #     displayer.insert_box_label('test_1_page__alerts_box', message)
 
-        message = 'Use Ctrl-Alt-G (or Ctrl-Alt) to toggle mouse and keyboard capture.'
-        displayer.insert_box_label('test_1_page__warnings_box', message)
+        message = '• Use Ctrl-Alt-G (or Ctrl-Alt) to toggle mouse and keyboard capture.'
+        displayer.insert_box_label('test_1_page__alerts_box', message)
 
         displayer.reset_buttons(
             back_button_label='❬Stop',
@@ -236,7 +250,7 @@ def update_status(status):
 
     elif status == emulator.ERROR:
 
-        displayer.empty_box('test_1_page__warnings_box')
+        displayer.empty_box('test_1_page__alerts_box')
 
         displayer.update_label('test_1_page__banner_label', 'Error. Unable to test the generated disk image.')
         displayer.set_label_error('test_1_page__banner_label', True)

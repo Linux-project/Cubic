@@ -63,6 +63,8 @@ from cubic.utilities.processor import execute_synchronous, execute_synchronous_u
 # Global Variables & Constants
 ########################################################################
 
+MACHINE_NAME = 'cubic'
+
 builder = None
 
 MAX_ATTEMPTS = 3
@@ -110,7 +112,7 @@ def _enter_virtual_environment():
 
     program = os.path.join(model.application.directory, 'commands', 'start-console')
     # The command must be a tuple, as required by spawn_async().
-    command = ('pkexec', program, 'cubic', model.project.custom_root_directory)
+    command = ('pkexec', program, MACHINE_NAME, model.project.custom_root_directory)
 
     display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', ' '.join(command))
     logger.log_value('Command', display_command)
@@ -317,7 +319,7 @@ def _entered_virtual_environment(active_state, sub_state, job_status, job_path):
     terminal.set_pty(pseudo_terminal)
 
     # Display message in the terminal.
-    send_message_to_terminal(BOLD_GREEN + 'You have entered the virtual environment.' + NORMAL)
+    send_message_to_terminal(f'{BOLD_GREEN}You have entered the virtual environment.{NORMAL}')
 
     # https://stackoverflow.com/questions/11686510/how-to-enable-transparency-in-vte-terminal
 
@@ -459,7 +461,7 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     logger.log_value('MAX_ATTEMPTS', MAX_ATTEMPTS)
     logger.log_value('First time', first_time)
     logger.log_value('Reenter', reenter)
-    logger.log_value('Attempts', (BOLD_YELLOW + '%s of %s times' + NORMAL) % (attempts, MAX_ATTEMPTS))
+    logger.log_value('Attempts', f'{BOLD_YELLOW}{attempts} of {MAX_ATTEMPTS} times{NORMAL}')
 
     # The status is a 16-bit number:
     # - The low byte (right byte) contains the signal number that killed
@@ -480,20 +482,20 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     if (first_time and attempts == MAX_ATTEMPTS) or (not first_time and attempts == 1):
         if status == 0:
             # The process exited normally.
-            GLib.idle_add(send_message_to_terminal, BOLD_YELLOW + 'You have exited the virtual environment.' + NORMAL)
+            GLib.idle_add(send_message_to_terminal, f'{BOLD_YELLOW}You have exited the virtual environment.{NORMAL}')
         elif status >= 1 and status <= 255:
             # The process exited due to a signal.
             # Do not use GLib.idle_add().
-            send_message_to_terminal(NEW_LINE + BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
+            send_message_to_terminal(f'{NEW_LINE}{BOLD_RED}You have exited the virtual environment.{NORMAL}')
         elif status == 256:
             # The process was terminated by machinectl terminate.
-            GLib.idle_add(send_message_to_terminal, BOLD_RED + 'You have exited the virtual environment.' + NORMAL)
+            GLib.idle_add(send_message_to_terminal, f'{BOLD_RED}You have exited the virtual environment.{NORMAL}')
         elif status >= 257 and status <= 65280:
             # The process exited normally with an error code.
-            GLib.idle_add(send_message_to_terminal, BOLD_YELLOW + 'You have exited the virtual environment.' + NORMAL)
+            GLib.idle_add(send_message_to_terminal, f'{BOLD_YELLOW}You have exited the virtual environment.{NORMAL}')
         else:
             # This situation will never happen.
-            GLib.idle_add(send_message_to_terminal, BOLD_BLUE + 'You have exited the virtual environment.' + NORMAL)
+            GLib.idle_add(send_message_to_terminal, f'{BOLD_BLUE}You have exited the virtual environment.{NORMAL}')
         # Pause to allow GLib.idle_add() to display the message.
         time.sleep(SLEEP_0250_MS)
 
@@ -546,7 +548,7 @@ def exit_virtual_environment_using_kill():
             process_id = pseudo_terminal.process_id
             program = os.path.join(model.application.directory, 'commands', 'stop-process')
             # TODO: Should we use execute_synchronous_unregistered() ?
-            command = 'pkexec "%s" "%s"' % (program, process_id)
+            command = f'pkexec "{program}" "{process_id}"'
             result, exit_status, signal_status = execute_synchronous(command)
         else:
             logger.log_value('There is no virtual environment to exit. The pseudo terminal is ', pseudo_terminal)
@@ -573,7 +575,7 @@ def exit_virtual_environment_using_machinectl():
 
     program = os.path.join(model.application.directory, 'commands', 'stop-console')
     # TODO: Should we use execute_synchronous_unregistered() ?
-    command = 'pkexec "%s" "%s"' % (program, 'cubic')
+    command = f'pkexec "{program}" "{MACHINE_NAME}"'
     result, exit_status, signal_status = execute_synchronous(command)
 
 
@@ -614,22 +616,17 @@ def get_bash_process_id(pseudo_terminal_process_id):
 
     bash_process_id = None
 
-    command = 'pstree -p %d' % pseudo_terminal_process_id
-    process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(
-        command)
+    command = f'pstree -p {pseudo_terminal_process_id}'
+    process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command)
 
     if not exit_status and not signal_status:
         bash_process_id_information = re.search(r'bash\\((\\d+)\\)', result)
         if bash_process_id_information:
             bash_process_id = bash_process_id_information.group(1)
         else:
-            logger.log_value(
-                '1. Unable to get the bash child process id for the pseudo terminal with process id %s using result'
-                % process_id, result)
+            logger.log_value(f'1. Unable to get the bash child process id for the pseudo terminal with process id {process_id} using result', result)
     else:
-        logger.log_value(
-            '2. Unable to get the bash child process id for the pseudo terminal with process id  %s using result'
-            % process_id, result)
+        logger.log_value(f'2. Unable to get the bash child process id for the pseudo terminal with process id  {process_id} using result', result)
 
     return bash_process_id
 
@@ -643,18 +640,15 @@ def get_current_directory():
     global pseudo_terminal
     bash_process_id = get_bash_process_id(pseudo_terminal.process_id)
 
-    program = os.path.join(model.application.directory, 'commands',
-        'current-directory')
-    command = 'pkexec "%s" "%s"' % (program, bash_process_id)
-    process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(
-        command)
+    program = os.path.join(model.application.directory, 'commands', 'current-directory')
+    command = f'pkexec "{program}" "{bash_process_id}"'
+    process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command)
 
     if not exit_status and not signal_status:
         current_directory = result
         logger.log_value('The current directory is', current_directory)
     else:
-        logger.log_value('Unable to get the current directory using result',
-                         current_directory)
+        logger.log_value('Unable to get the current directory using result', current_directory)
 
     return current_directory
 '''
@@ -669,7 +663,7 @@ def get_current_directory():
     global pseudo_terminal
     process_id = pseudo_terminal.process_id
     program = os.path.join(model.application.directory, 'commands', 'current-directory')
-    command = 'pkexec "%s" "%s"' % (program, process_id)
+    command = f'pkexec "{program}" "{process_id}"'
 
     process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command)
 

@@ -31,12 +31,13 @@
 # References
 ########################################################################
 
-# N/A
+# https://apt-team.pages.debian.net/python-apt/library/index.html
 
 ########################################################################
 # Imports
 ########################################################################
 
+import apt
 import collections
 import glob
 import os
@@ -46,6 +47,7 @@ import string
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import EXTENSION_MANIFEST, EXTENSION_MANIFEST_MINIMAL_REMOVE, EXTENSION_MANIFEST_REMOVE
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0125_MS, SLEEP_0250_MS, SLEEP_0500_MS, SLEEP_1000_MS
 from cubic.utilities import constructor
@@ -78,38 +80,53 @@ def setup(action, old_page=None):
 
     if action == 'next':
 
+        # --------------------------------------------------------------
+        # Identify disk boot kernels.
+        # --------------------------------------------------------------
+
         displayer.update_status('prepare_page__boot_kernels', BULLET)
         displayer.empty_box('prepare_page__boot_kernels_box')
+
+        # --------------------------------------------------------------
+        # Identify installed packages.
+        # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__installed_packages', BULLET)
         displayer.update_label('prepare_page__installed_packages_message', '...')
 
+        # --------------------------------------------------------------
+        # Create the package manifest for a typical install.
+        # --------------------------------------------------------------
+
         displayer.update_status('prepare_page__package_manifest_1', BULLET)
         displayer.update_label('prepare_page__package_manifest_1_message', '...')
+
+        # --------------------------------------------------------------
+        # Create the package manifest for a minimal install.
+        # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_2', BULLET)
         displayer.update_label('prepare_page__package_manifest_2_message', '...')
 
+        # --------------------------------------------------------------
+        # Save the package manifest.
+        # --------------------------------------------------------------
+
         displayer.update_status('prepare_page__save_package_manifest', BULLET)
         displayer.update_label('prepare_page__save_package_manifest_message', '...')
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style=None,
-            is_next_sensitive=False,
-            is_next_visible=True)
+        # --------------------------------------------------------------
+        # Determine if the Packages page should be skipped.
+        # --------------------------------------------------------------
+
+        # The validate function sets the next action.
+        validate_page()
 
         return
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for setup' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
 
         return 'unknown'
 
@@ -118,9 +135,9 @@ def enter(action, old_page=None):
 
     if action == 'next':
 
-        #
+        # --------------------------------------------------------------
         # Identify disk boot kernels.
-        #
+        # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__boot_kernels', PROCESSING)
         time.sleep(SLEEP_0500_MS)
@@ -131,32 +148,30 @@ def enter(action, old_page=None):
             logger.log_value('Number of valid disk boot kernels found', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('kernel', 'kernels', count)
-            add_message_to_boot_kernels_box('\nFound %s valid disk boot %s.' % (number_text, plural_text))
+            add_message_to_boot_kernels_box(f'{os.linesep}Found {number_text} valid disk boot {plural_text}.')
         else:
             displayer.update_status('prepare_page__boot_kernels', ERROR)
             logger.log_value('Error. Number of valid disk boot kernels found', 0)
-            add_message_to_boot_kernels_box('\nError. No valid disk boot kernels were found.')
+            add_message_to_boot_kernels_box('{os.linesep}Error. No valid disk boot kernels were found.')
             add_message_to_boot_kernels_box(
                 'To correct this issue, click the Back button and install missing Linux kernel packages on the Terminal page, or select the original disk image on the Project page.'
             )
             return  # Stay on this page.
         time.sleep(SLEEP_0500_MS)
 
-        #
+        # --------------------------------------------------------------
         # Identify installed packages.
-        #
+        # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__installed_packages', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        installed_packages_list = create_installed_packages_list()
-        package_details_list = None
-        if installed_packages_list:
-            package_details_list = create_package_details_list(installed_packages_list)
-            count = len(package_details_list)
+        model.package_details_list = create_package_details_list(model.project.custom_root_directory)
+        if model.package_details_list:
+            count = len(model.package_details_list)
             logger.log_value('Number of installed packages found', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('package', 'packages', count)
-            displayer.update_label('prepare_page__installed_packages_message', 'Found %s installed %s.' % (number_text, plural_text))
+            displayer.update_label('prepare_page__installed_packages_message', f'Found {number_text} installed {plural_text}.')
             displayer.update_status('prepare_page__installed_packages', OK)
         else:
             logger.log_value('Error. Number of installed packages found', 0)
@@ -165,24 +180,21 @@ def enter(action, old_page=None):
             return  # Stay on this page.
         time.sleep(SLEEP_0500_MS)
 
-        #
+        # --------------------------------------------------------------
         # Create the package manifest for a typical install.
-        #
+        # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
-        file_name = 'filesystem.manifest-remove'
-        if file_utilities.file_exists(directory, file_name):
-            removable_packages_list = get_removable_packages_list(file_name)
-            count = populate_package_details_list_for_typical_install(package_details_list, removable_packages_list)
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+        if os.path.exists(file_path):
+            removable_packages_list = get_removable_packages_list(file_path)
+            count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
             logger.log_value('Number of installed packages matching typical install list', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('package', 'packages', count)
-            displayer.update_label(
-                'prepare_page__package_manifest_1_message',
-                'Identified %s %s for removal during a typical install.' % (number_text,
-                                                                            plural_text))
+            displayer.update_label('prepare_page__package_manifest_1_message', f'Identified {number_text} {plural_text} for removal during a typical install.')
             displayer.update_status('prepare_page__package_manifest_1', OK)
         else:
             displayer.update_status('prepare_page__package_manifest_1', OPTIONAL)
@@ -191,42 +203,38 @@ def enter(action, old_page=None):
                 'This disk does not have a list of packages to be removed for a typical install.')
         time.sleep(SLEEP_0500_MS)
 
-        #
+        # --------------------------------------------------------------
         # Create the package manifest for a minimal install.
-        #
+        # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
-        file_name = 'filesystem.manifest-minimal-remove'
-        if file_utilities.file_exists(directory, file_name):
-            removable_packages_list = get_removable_packages_list(file_name)
-            count = populate_package_details_list_for_minimal_install(package_details_list, removable_packages_list)
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+        if os.path.exists(file_path):
+            removable_packages_list = get_removable_packages_list(file_path)
+            count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
             logger.log_value('Number of installed packages matching minimal install list', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('package', 'packages', count)
-            displayer.update_label(
-                'prepare_page__package_manifest_2_message',
-                'Identified %s %s for removal during a minimal install.' % (number_text,
-                                                                            plural_text))
+            displayer.update_label('prepare_page__package_manifest_2_message', f'Identified {number_text} {plural_text} for removal during a minimal install.')
             displayer.update_status('prepare_page__package_manifest_2', OK)
-            displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
+            # displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
         else:
             displayer.update_status('prepare_page__package_manifest_2', OPTIONAL)
             displayer.update_label(
                 'prepare_page__package_manifest_2_message',
                 'This disk does not have a list of packages to be removed for a minimal install.')
-            displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
+            # displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
         time.sleep(SLEEP_0500_MS)
 
-        #
+        # --------------------------------------------------------------
         # Save the package manifest.
-        #
+        # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__save_package_manifest', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        model.package_details_list = package_details_list
-        is_success = save_file_system_manifest_file(installed_packages_list)
+        is_success = save_file_system_manifest_file(model.package_details_list)
         if is_success:
             displayer.update_status('prepare_page__save_package_manifest', OK)
             displayer.update_label('prepare_page__save_package_manifest_message', 'Saved the package manifest file.')
@@ -236,11 +244,26 @@ def enter(action, old_page=None):
             return  # Stay on this page.
         time.sleep(SLEEP_1000_MS)
 
-        return 'next'
+        # --------------------------------------------------------------
+        # Determine if the Packages page should be skipped.
+        # --------------------------------------------------------------
+
+        # The validate function already set model.ubiquity_version.
+
+        if model.ubiquity_version:
+            # Show the Packages page.
+            logger.log_value('Is Ubiquity installed?', 'Yes')
+            logger.log_value('Show the Packages page?', 'Yes')
+            return 'next'
+        else:
+            # Do not show the Packages page.
+            logger.log_value('Is Ubiquity installed?', 'No')
+            logger.log_value('Show the Packages page?', 'No')
+            return 'next-options'
 
     else:
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for enter' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
 
         return 'unknown'
 
@@ -254,6 +277,12 @@ def leave(action, new_page=None):
         return
 
     elif action == 'next':
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        return
+
+    elif action == 'next-options':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -273,7 +302,7 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        logger.log_value('Error', BOLD_RED + 'Unknown action for leave' + NORMAL)
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -359,7 +388,7 @@ def create_kernel_details_list(*directories):
         update_initrd_details_list(directory, initrd_details_list)
 
     # Delete temporary files.
-    file_path_pattern = os.path.os.path.join(os.sep, 'var', 'tmp', 'unmkinitramfs_*')
+    file_path_pattern = os.path.os.path.join(os.path.sep, 'var', 'tmp', 'unmkinitramfs_*')
     file_utilities.delete_files_with_pattern(file_path_pattern)
 
     # For debugging.
@@ -529,7 +558,7 @@ def _update_kernel_details_list(kernel_details_list):
         version_name = kernel_details['version_name']
         if current_kernel_version_name == version_name:
             if note: note += ' '  # os.os.linesep
-            note += 'You are currently running kernel version %s.' % current_kernel_version_name
+            note += f'You are currently running kernel version {current_kernel_version_name}.'
         # if index == 0:
         #     if note: note += ' '  # os.os.linesep
         #     note += 'This is the newest kernel version available to bootstrap the customized disk.'
@@ -548,9 +577,7 @@ def _update_kernel_details_list(kernel_details_list):
         new_vmlinuz_file_name = kernel_details['new_vmlinuz_file_name']
         new_initrd_file_name = kernel_details['new_initrd_file_name']
         if note: note += ' '  # os.os.linesep
-        note += 'Reference these files as <span font_family="monospace">%s</span> and <span font_family="monospace">%s</span> in the disk boot configurations.' % (
-            new_vmlinuz_file_name,
-            new_initrd_file_name)
+        note += f'Reference these files as <span font_family="monospace">{new_vmlinuz_file_name}</span> and <span font_family="monospace">{new_initrd_file_name}</span> in the disk boot configurations.'
         kernel_details['note'] = note
 
     # Set the selected kernel based on the selected index.
@@ -588,7 +615,7 @@ def _update_kernel_details_list(kernel_details_list):
     total = len(kernel_details_list)
     for index, kernel_details in enumerate(kernel_details_list):
         logger.log_value('Version', kernel_details['version_name'])
-        logger.log_value('▹ Index', '%s of %s' % (index + 1, total))
+        logger.log_value('▹ Index', f'{index + 1} of {total}')
         logger.log_value('▹ Vmlinuz file name', kernel_details['vmlinuz_file_name'])
         logger.log_value('▹ New vmlinuz file name', kernel_details['new_vmlinuz_file_name'])
         logger.log_value('▹ Initrd file name', kernel_details['initrd_file_name'])
@@ -644,9 +671,9 @@ def update_vmlinuz_details_list(directory, details_list):
     logger.log_value('▹ Search directory', directory)
 
     relative_directory = os.path.relpath(directory, model.project.directory)
-    add_message_to_boot_kernels_box('Search for vmlinuz files in %s' % relative_directory)
+    add_message_to_boot_kernels_box(f'Search for vmlinuz files in {relative_directory}')
 
-    file_path_list = []
+    file_paths = []
 
     # Replace simlinks with the actual file_path.
     directory = os.path.realpath(directory)
@@ -681,18 +708,18 @@ def update_vmlinuz_details_list(directory, details_list):
             real_path = os.path.realpath(file_path)
 
         if os.path.exists(real_path):
-            file_path_list.append(real_path)
+            file_paths.append(real_path)
 
-    file_path_list = list(set(file_path_list))
+    file_paths = list(set(file_paths))
 
-    count = len(file_path_list)
+    count = len(file_paths)
     logger.log_value('▹ Number of vmlinuz files found', count)
     number_text = constructor.number_as_text(count)
     plural_text = constructor.get_plural('file', 'files', count)
-    add_message_to_boot_kernels_box('Found %s vmlinuz %s' % (number_text, plural_text))
+    add_message_to_boot_kernels_box(f'Found {number_text} vmlinuz {plural_text}')
     time.sleep(SLEEP_0250_MS)
 
-    for index, file_path in enumerate(file_path_list):
+    for index, file_path in enumerate(file_paths):
         file_name = os.path.basename(file_path)
         directory = os.path.dirname(file_path)
         version_name = get_vmlinuz_version_name(file_path)
@@ -728,13 +755,13 @@ def get_vmlinuz_version_name(file_path):
     # logger.log_value('Get vmlinuz version', file_path)
     # relative_file_path = os.path.relpath(file_path, model.project.directory)
     file_name = os.path.basename(file_path)
-    add_message_to_boot_kernels_box('Identify version for %s' % file_name)
+    add_message_to_boot_kernels_box(f'Identify version for {file_name}')
 
     version_name = (
         _get_vmlinuz_version_name_from_file_name(file_path) or _get_vmlinuz_version_name_from_file_type(file_path)
         or _get_vmlinuz_version_name_from_file_contents(file_path))
 
-    # add_message_to_boot_kernels_box('The version is %s' % version_name)
+    # add_message_to_boot_kernels_box(f'The version is {version_name}')
     return version_name
 
 
@@ -752,7 +779,7 @@ def _get_vmlinuz_version_name_from_file_name(file_path):
 def _get_vmlinuz_version_name_from_file_type(file_path):
 
     logger.log_value('Get vmlinuz version name from file type', file_path)
-    command = 'file "%s"' % file_path
+    command = f'file "{file_path}"'
     result, exit_status, signal_status = execute_synchronous(command)
     version_name = None
     if not exit_status and not signal_status:
@@ -799,9 +826,9 @@ def update_initrd_details_list(directory, details_list):
     logger.log_value('▹ Search directory', directory)
 
     relative_directory = os.path.relpath(directory, model.project.directory)
-    add_message_to_boot_kernels_box('Search for initrd files in %s' % relative_directory)
+    add_message_to_boot_kernels_box(f'Search for initrd files in {relative_directory}')
 
-    file_path_list = []
+    file_paths = []
 
     # Replace simlinks with the actual file_path.
     directory = os.path.realpath(directory)
@@ -836,18 +863,18 @@ def update_initrd_details_list(directory, details_list):
             real_path = os.path.realpath(file_path)
 
         if os.path.exists(real_path):
-            file_path_list.append(real_path)
+            file_paths.append(real_path)
 
-    file_path_list = list(set(file_path_list))
+    file_paths = list(set(file_paths))
 
-    count = len(file_path_list)
+    count = len(file_paths)
     logger.log_value('▹ Number of initrd files found', count)
     number_text = constructor.number_as_text(count)
     plural_text = constructor.get_plural('file', 'files', count)
-    add_message_to_boot_kernels_box('Found %s initrd %s' % (number_text, plural_text))
+    add_message_to_boot_kernels_box(f'Found {number_text} initrd {plural_text}')
     time.sleep(SLEEP_0250_MS)
 
-    for index, file_path in enumerate(file_path_list):
+    for index, file_path in enumerate(file_paths):
         file_name = os.path.basename(file_path)
         directory = os.path.dirname(file_path)
         version_name = get_initrd_version_name(file_path)
@@ -877,7 +904,7 @@ def calculate_initrd_file_name(file_path):
     compression_format = get_initrd_compression_format(file_path)
     compression_extension = COMPRESSION_EXTENSIONS.get(compression_format)
     if compression_extension:
-        file_name = 'initrd.' + compression_extension
+        file_name = f'initrd.{compression_extension}'
     else:
         file_name = 'initrd'
 
@@ -889,7 +916,7 @@ def get_initrd_compression_format(file_path):
     # logger.log_value('Get initrd compression format', file_path)
 
     file_name = os.path.basename(file_path)
-    add_message_to_boot_kernels_box('Identify correct compression format for %s' % file_name)
+    add_message_to_boot_kernels_box(f'Identify correct compression format for {file_name}')
 
     compression_format = (_get_initrd_compression_format_from_file_type(file_path) or _get_initrd_compression_format_from_file_contents(file_path))
 
@@ -906,7 +933,7 @@ def _get_initrd_compression_format_from_file_type(file_path):
 
     logger.log_value('Get initrd compression format from file type', file_path)
 
-    command = 'file "%s"' % file_path
+    command = f'file "{file_path}"'
     result, exit_status, signal_status = execute_synchronous(command)
     logger.log_value('The initrd file type information is', result)
 
@@ -931,7 +958,7 @@ def _get_initrd_compression_format_from_file_contents(file_path):
     compression_format = None
     try:
         # Only show results that match "compressed data"
-        command = 'binwalk --include="compressed data" "%s"' % file_path
+        command = f'binwalk --include="compressed data" "{file_path}"'
         process = execute_asynchronous(command)
 
         # Assume the first occurrence "compressed data" contains the
@@ -982,15 +1009,15 @@ def get_initrd_version_name(file_path):
     # logger.log_value('Get initrd version', file_path)
     # TODO: Investigate if relative file path should have been used below.
     # relative_file_path = os.path.relpath(file_path, model.project.directory)
-    # add_message_to_boot_kernels_box('▹ Processing .../%s' % relative_file_path)
+    # add_message_to_boot_kernels_box(f'▹ Processing .../{relative_file_path}')
     file_name = os.path.basename(file_path)
-    add_message_to_boot_kernels_box('Identify version for %s' % file_name)
+    add_message_to_boot_kernels_box(f'Identify version for {file_name}')
 
     version_name = (
         _get_initrd_version_name_from_file_name(file_path) or _get_initrd_version_name_from_file_contents(file_path)
         or _get_initrd_version_name_from_file_type(file_path))
 
-    # add_message_to_boot_kernels_box('The version is %s' % version_name)
+    # add_message_to_boot_kernels_box(f'The version is {version_name}')
     return version_name
 
 
@@ -1007,7 +1034,7 @@ def _get_initrd_version_name_from_file_name(file_path):
 def _get_initrd_version_name_from_file_type(file_path):
 
     logger.log_value('Get initrd version name from file type', file_path)
-    command = 'file "%s"' % file_path
+    command = f'file "{file_path}"'
     result, exit_status, signal_status = execute_synchronous(command)
     version_name = None
     if not exit_status and not signal_status:
@@ -1024,7 +1051,7 @@ def _get_initrd_version_name_from_file_contents(file_path):
     logger.log_value('Get initrd version name from file contents', file_path)
     version_name = None
     try:
-        command = 'lsinitramfs "%s"' % file_path
+        command = f'lsinitramfs "{file_path}"'
         process = execute_asynchronous(command)
         process.expect(INITRAMFS_VERSION_PATTERN)
         # Close the process to obtain the exit status, if needed.
@@ -1077,8 +1104,8 @@ def print_details_list(details_list, default_widths={}):
     widths = get_widths(details_list, default_widths)
     index_width = len(str(total))
     for index, details in enumerate(details_list):
-        print(('| {:%d}' % index_width).format(index + 1), end='')
-        print((' of {:%d}' % index_width).format(total), end='')
+        print(('| {:%i}' % index_width).format(index + 1), end='')
+        print((' of {:%i}' % index_width).format(total), end='')
         if not isinstance(details, dict):
             # Assume details is a list; convert into a dictionary.
             details = {index: details[index] for index in range(0, len(details))}
@@ -1095,82 +1122,65 @@ def print_details_list(details_list, default_widths={}):
 ########################################################################
 
 
-def create_installed_packages_list():
+def create_package_details_list(root_directory):
+    """
+    Create a list of installed package details. Each package detail is a
+    list containing the following elements. Only package name and
+     package version are populated. All other elements are set to False.
+        0: is typical selected?
+        1: is minimal selected?
+        2: is minimal selected initial?
+        3: is minimal active?
+        4: package name
+        5: package version
+
+    Arguments:
+    root_directory : str
+        The root directory of var/lib/dpkg (the dpkg database).
+
+    Returns:
+    package_details_list : list
+        A list of package details.
+    """
 
     logger.log_label('Create list of installed packages')
 
-    # command = 'chroot "%s" dpkg-query -W' % model.project.custom_root_directory
-    # command = 'chroot "%s" dpkg-query --showformat="${Package}\t${Version}\n" --show' % model.project.custom_root_directory
-    # command = 'chroot "%s" dpkg-query --show' % model.project.custom_root_directory
-    # command = 'pkexec chroot "%s" dpkg-query --show' % model.project.custom_root_directory
-    dpkg_database_directory = os.path.join(model.project.custom_root_directory, 'var', 'lib', 'dpkg')
-    command = 'dpkg-query --show --admindir="%s"' % dpkg_database_directory
-    result, exit_status, signal_status = execute_synchronous(command)
-    installed_packages_list = result.splitlines()
+    package_details_list = []
 
-    package_count = len(installed_packages_list)
-    logger.log_value('Total number of installed packages', package_count)
+    apt_cache = apt.Cache(rootdir=root_directory)
+    for package in apt_cache:
 
-    return installed_packages_list
+        if apt_cache[package.name].is_installed:
 
+            # Create a new package details for the current package.
+            # 0: is typical selected?
+            # 1: is minimal selected?
+            # 2: is minimal selected initial?
+            # 3: is minimal active?
+            # 4: package name
+            # 5: package version
+            package_details = [False, False, False, False, package.name, package.installed.version]
+            package_details_list.append(package_details)
 
-def save_file_system_manifest_file(installed_packages_list):
+    package_count = len(package_details_list)
+    # logger.log_value('Total number of installed packages', len(package_details_list))
 
-    logger.log_label('Create new file system manifest file')
-
-    directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
-    file_name = 'filesystem.manifest'
-    file_path = os.path.join(directory, file_name)
-    logger.log_value('Write file system manifest to', file_path)
-    with open(file_path, 'w') as file:
-        for line in installed_packages_list:
-            file.write('%s\n' % line)
-
-    return file_utilities.file_exists(directory, file_name)
+    return package_details_list
 
 
-def get_removable_packages_list(file_name):
+def get_removable_packages_list(file_path):
+    """
+    Read filesystem.manifest-remove or filesystem.manifest-minimal-remove
+    to get the list of packages to remove.
+    """
 
-    # Read filesystem.manifest-remove to get list of packages to remove.
-    removable_packages_list = []
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
     logger.log_value('Read list of packages to remove from', file_path)
+
+    removable_packages_list = []
     with open(file_path, 'r') as file:
         removable_packages_list = file.read().splitlines()
 
     return removable_packages_list
-
-
-def create_package_details_list(installed_packages_list):
-
-    logger.log_label('Create package details list')
-
-    # Create an empty package details list.
-    package_details_list = []
-
-    for line in installed_packages_list:
-
-        # Create a new package details for the current package.
-
-        # 0: is typical selected?
-        # 1: is minimal selected?
-        # 2: is minimal selected initial?
-        # 3: is minimal active?
-        # 4: package name
-        # 5: package version
-
-        package_name, package_version = line.split()
-
-        package_details = [False, False, False, False, package_name, package_version]
-        # package_details = [None, None, None, None, package_name, package_version]
-
-        # Add the new package details to the package details list.
-        package_details_list.append(package_details)
-
-    # logger.log_value('Total number of installed packages', len(installed_packages_list))
-    logger.log_value('Total number of installed packages', len(package_details_list))
-
-    return package_details_list
 
 
 def populate_package_details_list_for_typical_install(package_details_list, removable_packages_list):
@@ -1272,3 +1282,70 @@ def populate_package_details_list_for_minimal_install(package_details_list, remo
     logger.log_value('Number of packages to be retained for a minimal install', number_of_packages_to_retain)
 
     return number_of_packages_to_remove
+
+
+def save_file_system_manifest_file(package_details_list):
+
+    logger.log_label('Create new file system manifest file')
+
+    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}'
+    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    logger.log_value('Write file system manifest to', file_path)
+    with open(file_path, 'w') as file:
+        for package_details in package_details_list:
+            # 0: is typical selected?
+            # 1: is minimal selected?
+            # 2: is minimal selected initial?
+            # 3: is minimal active?
+            # 4: package name
+            # 5: package version
+            package_name = package_details[4]
+            package_version = package_details[5]
+            file.write(f'{package_name}\t{package_version}{os.linesep}')
+
+    return os.path.exists(file_path)
+
+
+########################################################################
+# Validation Functions
+########################################################################
+
+
+def validate_page():
+    """
+    Determine if the Packages page should be skipped.
+    """
+
+    model.ubiquity_version = constructor.get_package_version('ubiquity', model.project.custom_root_directory)
+
+    if model.ubiquity_version:
+        # Show the Packages page.
+        logger.log_value('Is Ubiquity installed?', 'Yes')
+        logger.log_value('Show the Packages page?', 'Yes')
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next',
+            next_button_style=None,
+            is_next_sensitive=False,
+            is_next_visible=True)
+
+    else:
+        # Do not show the Packages page.
+        logger.log_value('Is Ubiquity installed?', 'No')
+        logger.log_value('Show the Packages page?', 'No')
+        displayer.reset_buttons(
+            back_button_label='❬Back',
+            back_action='back',
+            back_button_style=None,
+            is_back_sensitive=True,
+            is_back_visible=True,
+            next_button_label='Next❭',
+            next_action='next-options',
+            next_button_style=None,
+            is_next_sensitive=False,
+            is_next_visible=True)
