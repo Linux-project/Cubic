@@ -33,6 +33,7 @@
 
 # https://freedesktop.org/wiki/Specifications/file-manager-interface
 # https://unix.stackexchange.com/questions/364997/open-a-directory-in-the-default-file-manager-and-select-a-file
+# https://docs.python.org/3.9/library/functions.html#open
 
 ########################################################################
 # Imports
@@ -154,9 +155,9 @@ def get_directory_size(start_path):
     logger.log_value('Directory', start_path)
 
     total_size = 0
-    for dirpath, dirnames, file_names in os.walk(start_path):
+    for directory_path, directory_names, file_names in os.walk(start_path):
         for file_name in file_names:
-            file_path = os.path.join(dirpath, file_name)
+            file_path = os.path.join(directory_path, file_name)
             total_size += os.path.getsize(file_path)
 
     logger.log_value('Directory size is', total_size)
@@ -180,9 +181,9 @@ def get_directory_for_file(file_name, start_path):
 
     directory = ''
     # The directory may be a symlink.
-    for dirpath, dirnames, file_names in os.walk(start_path, followlinks=True):
+    for directory_path, directory_names, file_names in os.walk(start_path, followlinks=True):
         if file_name in file_names:
-            directory = dirpath
+            directory = directory_path
             break
 
     return directory
@@ -190,25 +191,41 @@ def get_directory_for_file(file_name, start_path):
 
 def get_file_paths(start_path):
 
-    logger.log_value('Get all file paths in the directory', start_path)
+    logger.log_value('Get full file paths in the directory', start_path)
 
     file_paths = []
-    for dirpath, dirnames, file_names in os.walk(start_path):
+    for directory_path, directory_names, file_names in os.walk(start_path):
         for file_name in file_names:
-            file_path = os.path.join(dirpath, file_name)
+            file_path = os.path.join(directory_path, file_name)
             file_paths.append(file_path)
 
     return file_paths
 
 
-def get_text_file_file_paths(start_path):
+def get_relative_file_paths(start_path, exclude_paths):
+
+    logger.log_value('Get relative file paths in the directory', start_path)
+
+    file_paths = []
+    for directory_path, directory_names, file_names in os.walk(start_path):
+        if directory_path not in exclude_paths:
+            for file_name in file_names:
+                file_path = os.path.join(directory_path, file_name)
+                if file_path not in exclude_paths:
+                    relative_file_path = os.path.relpath(file_path, start_path)
+                    file_paths.append(relative_file_path)
+
+    return file_paths
+
+
+def get_file_paths_for_text_file(start_path):
 
     logger.log_value('Get all text file paths in the directory', start_path)
 
     file_paths = []
-    for dirpath, dirnames, file_names in os.walk(start_path):
+    for directory_path, directory_names, file_names in os.walk(start_path):
         for file_name in file_names:
-            file_path = os.path.join(dirpath, file_name)
+            file_path = os.path.join(directory_path, file_name)
             try:
                 with open(file_path, 'r') as file:
                     file.read()
@@ -283,47 +300,53 @@ def get_file_system_type(file_path):
 #     or similar.
 
 
-def file_exists(directory, file_name):
-
-    file_path = os.path.join(directory, file_name)
-
-    is_exists = os.path.exists(file_path)
-    if is_exists:
-        logger.log_value(f'{file_name} found in', directory)
-        return True
-    else:
-        logger.log_value(f'{file_name} not found in', directory)
-        return False
-
-
-def read_file(file_path):
+def read_file(file_path, errors=None):
     """
-    Read the contents of a file.
+    Read the contents of a file. This function does not raise an
+    exception if there was an error reading the file.
 
     Arguments:
     file_path : str
         The file to read.
+    errors: str
+        Specifies how to handle encoding and decoding errors.
+        (See https://docs.python.org/3.9/library/functions.html#open).
+        • 'strict' (or None)
+        • 'ignore'
+        • 'replace'
+        • 'surrogateescape'
+        • 'xmlcharrefreplace'
+        • 'backslashreplace'
+        • 'namereplace'
 
     Returns:
     lines : list
         A string containing the file contents.
     """
 
+    # errors - specifies how to handle encoding and decoding errors
+    # https://docs.python.org/3.9/library/functions.html#open
+
     logger.log_value('Read file', file_path)
 
-    file_contents = None
+    file_contents = ''
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', errors=errors) as file:
             file_contents = file.read()
     except FileNotFoundError as exception:
-        logger.log_value('File does not exist', file_path)
+        logger.log_value('Error. File does not exist', file_path)
+        # logger.log_value('Error. The exception is', exception)
+    except Exception as exception:
+        logger.log_value('Error. The exception is', exception)
 
     return file_contents
 
 
 def read_lines(file_path):
     """
-    Read lines from a file; exclude blank lines and trim each line.
+    Read lines from a file; exclude blank lines and trim each line. This
+    function does not raise an exception if there was an error reading
+    the file.
 
     Arguments:
     file_path : str
@@ -341,9 +364,10 @@ def read_lines(file_path):
         with open(file_path, 'r') as file:
             lines = [line.strip() for line in file.readlines() if line.strip()]
     except FileNotFoundError as exception:
-        logger.log_value('File does not exist', file_path)
+        logger.log_value('Error. File does not exist', file_path)
+        # logger.log_value('The exception is', exception)
     except Exception as exception:
-        logger.log_value('Unable to read lines from file', file_path)
+        logger.log_value('Error. Unable to read lines from file', file_path)
         logger.log_value('The exception is', exception)
     else:
         logger.log_value('Number of lines read', len(lines))
@@ -351,33 +375,102 @@ def read_lines(file_path):
     return lines
 
 
-def write_lines(file_path, lines):
+def write_line(line, file_path):
+    """
+    Write the line to the specified file path. If the file path does
+    not exist, it will be created.
+
+    Arguments:
+    line : str
+        The line to write.
+    file_path : string
+        The file path to write to.
+    """
+
+    logger.log_value('Write to file', file_path)
+
+    # Write the line to a new empty file.
+    try:
+        with open(file_path, 'w') as file:
+            # When writing in text mode, the default is to convert
+            # occurrences of \n back to platform-specific line endings.
+            # (See https://docs.python.org/3/tutorial/inputoutput.html)
+            if line: file.write(line)
+    except Exception as exception:
+        logger.log_value('Error. Unable to write to file', file_path)
+        logger.log_value('The exception is', exception)
+        raise exception
+
+
+def write_lines(lines, file_path):
     """
     Write the specified lines to the specified file path. If the file
     path does not exist, it will be created.
 
     Arguments:
+    lines : list or str
+        A list of strings or the string to write; may be an empty list
+        or None.
     file_path : string
         The file path to write to.
-    lines : list
-        A list of strings. lines may be an empty list.
     """
 
-    logger.log_value('Write lines to file', file_path)
+    logger.log_value('Write to file', file_path)
 
     # Write the lines to a new empty file.
     try:
-        with open(file_path, 'w') as file:
-            first = True
-            for line in lines:
-                if first:
-                    file.write(line)
-                    first = False
-                else:
-                    file.write(os.linesep + line)
+        if len(lines) <= 100:
+            _write_lines_1(lines, file_path)
+        else:
+            _write_lines_2(lines, file_path)
     except Exception as exception:
-        logger.log_value('Unable to write lines to file', file_path)
+        logger.log_value('Error. Unable to write lines to file', file_path)
         logger.log_value('The exception is', exception)
+        raise exception
+
+
+def _write_lines_1(lines, file_path):
+    """
+    Write 0-100 lines to the specified file path. If the file path does
+    not exist, it will be created.
+
+    Arguments:
+    lines : list
+        A list of strings; may be an empty list.
+    file_path : string
+        The file path to write to.
+    """
+
+    # Write the lines to a new empty file.
+    with open(file_path, 'w') as file:
+        # When writing in text mode, the default is to convert
+        # occurrences of \n back to platform-specific line endings.
+        # (See https://docs.python.org/3/tutorial/inputoutput.html)
+        file.write('\n'.join(lines))
+
+
+def _write_lines_2(file_path, lines):
+    """
+    Write > 100 lines to the specified file path. If the file path does
+    not exist, it will be created.
+
+    Arguments:
+    lines : list
+        A list of strings; may not be an empty list.
+    file_path : string
+        The file path to write to.
+    """
+
+    # Write the lines to a new empty file.
+    with open(file_path, 'w') as file:
+        for line in lines[:-1]:
+            # When writing in text mode, the default is to convert
+            # occurrences of \n back to platform-specific line endings.
+            # (See https://docs.python.org/3/tutorial/inputoutput.html)
+            file.write(line + '\n')
+        if line:
+            line = lines[-1]
+            file.write(line)
 
 
 def find_in_file(search_regex, file_path):
@@ -471,24 +564,59 @@ def replace_text_in_file(file_path, search_text, replacement_text):
     return error
 
 
-def calculate_md5_hash(file_path, buffer_size=2**20):
+def calculate_md5_hash_ALTERNATIVE(file_path, start_path=None):
     """
-    Calculate the md5 hash by reading a file into a buffer. The default buffer
-    size is 2^20 bytes = 1048576 bytes = 1 MiB (Mebibytes).
+    Calculate the md5 hash using the m55sum command. This function
+    returns the md5 hash and relative file name.
     """
 
-    md5_hash = hashlib.md5()
+    if start_path:
+        command = f'md5sum "./{file_path}"'
+    else:
+        command = f'md5sum "{file_path}"'
+    result, exit_status, signal_status = execute_synchronous(command, start_path)
+
+    logger.log_value('The result is', result)
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
+
+    if not exit_status and not signal_status:
+        logger.log_value('Calculate the md5 hash for file', file_path)
+        logger.log_value('The md5 hash is', result)
+        return result
+    else:
+        logger.log_value('Unable to calculate the md5 hash for file', file_path)
+        return None
+
+
+def calculate_md5_hash(file_path, start_path=os.path.sep, buffer_size=2**20):
+    """
+    Calculate the md5 hash by reading a file into a buffer. The default
+    buffer size is 2^20 bytes = 1048576 bytes = 1 MiB (Mebibytes).
+    """
+
+    # It is necessary to strip the leading '/' from the file_path,
+    # otherwise os.path.join() considers the file path to be an absolute
+    # path and discards the start path prefix: "If a component is an
+    # absolute path, all previous components are thrown away and
+    # os.path.joining continues from the absolute path component."
+    # (See https://docs.python.org/3/library/os.path.html).
+    file_path = file_path.strip(os.path.sep)
+    full_file_path = os.path.abspath(os.path.join(start_path, file_path))
+
+    md5_algorithm = hashlib.md5()
     try:
-        with open(file_path, 'rb') as file:
+        with open(full_file_path, 'rb') as file:
             data = file.read(buffer_size)
             while data:
-                md5_hash.update(data)
+                md5_algorithm.update(data)
                 data = file.read(buffer_size)
-        return md5_hash.hexdigest()
+        digest = md5_algorithm.hexdigest()
+        # return f'{digest}  ./{file_path}'
+        return digest, file_path
     except Exception as exception:
         logger.log_value('Unable to calculate the md5 hash for file', file_path)
         logger.log_value('The exception is', exception)
-        return None
+        raise exception
 
 
 def copy_file(source_path, target_path):
@@ -607,10 +735,12 @@ def read_mime_type(full_file_path):
     using the file extension, but is more accurate.
 
     Arguments:
-    full_file_path - Full file path of the file.
+    full_file_path : str
+        Full file path of the file.
 
     Returns:
-    The mime type of the file.
+    mine_type : str
+        The mime type of the file.
     """
 
     if os.path.isdir(full_file_path):
@@ -648,10 +778,12 @@ def get_icon_name(mime_type):
         unknown      application-x-executable
 
     Arguments:
-    mime_type - The mime type of the file.
+    mime_type : str
+        The mime type of the file.
 
     Returns:
-    The standard icon name for the specified mime type.
+    icon_name : str
+        The standard icon name for the specified mime type.
     """
 
     # TODO: *.pcx files are image files with a mime type of

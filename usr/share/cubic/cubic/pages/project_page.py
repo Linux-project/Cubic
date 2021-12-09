@@ -842,7 +842,7 @@ def initialize_original_from_iso(original_iso_file_path):
     is set to True to compensate for the unregistered validator.
     """
 
-    logger.log_label('Initialize the original fields from the iso')
+    logger.log_label('Initialize the original fields from the ISO')
 
     fields = IsoFields('original')
 
@@ -889,7 +889,7 @@ def initialize_custom_from_iso():
       - iso_release_notes_url
       - options_update_os_release (always initialize to True)
     """
-    logger.log_label('Initialize the custom fields from the iso')
+    logger.log_label('Initialize the custom fields from the ISO')
 
     fields = IsoFields('custom')
 
@@ -2297,49 +2297,16 @@ def validate_test_header_bar_button():
 
 def save_iso_release_notes_url():
 
-    # https://docs.python.org/3/library/functions.html#open
-    #
-    # r   Open text file for reading. The stream is positioned at the
-    #     beginning of the file.
-    #
-    # r+  Open for reading and writing. The stream is positioned at the
-    #     beginning of the file.
-    #
-    # w   Truncate file to zero length or create text file for writing.
-    #     The stream is positioned at the beginning of the file.
-    #
-    # w+  Open for reading and writing. The file is created if it does
-    #     not exist, otherwise it is truncated. The stream is positioned
-    #     at the beginning of the file.
-    #
-    # a   Open for writing. The file is created if it does not exist.
-    #     The stream is positioned at the end of the file.  Subsequent
-    #     writes to the file will always end up at the then current end
-    #     of file, irrespective of any intervening fseek(3) or similar.
-    #
-    # a+  Open for reading and writing. The file is created if it does
-    #     not exist. The stream is positioned at the end of the file.
-    #     Subsequent writes to the file will always end up at the then
-    #     current end of file, irrespective of any intervening fseek(3)
-    #     or similar.
-
     logger.log_label('Update the custom ISO release notes url')
 
-    directory = os.path.join(model.project.custom_disk_directory, '.disk')
-    file_path = os.path.join(directory, 'release_notes_url')
+    logger.log_value('The custom ISO release notes URL is', model.custom.iso_release_notes_url)
     try:
         # Create the full directory path "custom-disk/.disk" because
         # these directories may not exist yet.
+        directory = os.path.join(model.project.custom_disk_directory, '.disk')
         file_utilities.make_directories(directory)
-        logger.log_value('Write the custom ISO release notes URL to', file_path)
-        logger.log_value('The custom ISO release notes URL is', model.custom.iso_release_notes_url)
-        with open(file_path, 'w') as file:
-            file.write(f'{model.custom.iso_release_notes_url}')
+        file_path = os.path.join(directory, 'release_notes_url')
+        file_utilities.write_line(model.custom.iso_release_notes_url, file_path)
+        return False  # There was no error.
     except Exception as exception:
-        logger.log_value('Unable to write the custom ISO release notes URL to', file_path)
-        logger.log_value('The exception is', exception)
-        is_error = True
-    else:
-        is_error = False
-
-    return is_error
+        return True  # There was an error.

@@ -88,7 +88,7 @@ def mount(iso_file_path, iso_mount_point, user_id=None, group_id=None):
 
 def unmount(iso_mount_point):
 
-    logger.log_value('Unmount iso', iso_mount_point)
+    logger.log_value('Unmount ISO', iso_mount_point)
 
     program = os.path.join(model.application.directory, 'commands', 'unmount-iso')
     command = f'pkexec "{program}" "{iso_mount_point}"'
@@ -201,6 +201,7 @@ def get_iso_volume_id(iso_file_path):
     if not exit_status and not signal_status:
         iso_volume_id = re.sub(r'.*Volume id:\s+(.*[^\n]).*Volume\s+set\s+id.*', r'\1', result, 0, re.DOTALL)[:32]
     logger.log_value('ISO image volume id', iso_volume_id)
+
     return iso_volume_id
 
 
@@ -282,6 +283,7 @@ def get_iso_release_name_ORIGINAL(iso_mount_point):
         if iso_release_name_infromation:
             iso_release_name = iso_release_name_infromation.group(1)
     logger.log_value('ISO image release name', iso_release_name)
+
     return iso_release_name
 
 
@@ -302,6 +304,7 @@ def get_iso_disk_name_ORIGINAL(iso_mount_point):
         if iso_disk_name_information:
             iso_disk_name = iso_disk_name_information.group(1)
     logger.log_value('ISO image disk name', iso_disk_name)
+
     return iso_disk_name
 
 
@@ -320,6 +323,7 @@ def get_iso_release_notes_url_ORIGINAL(directory):
     if not exit_status and not signal_status:
         iso_release_notes_url = result
     logger.log_value('ISO image release notes URL', iso_release_notes_url)
+
     return iso_release_notes_url
 
 

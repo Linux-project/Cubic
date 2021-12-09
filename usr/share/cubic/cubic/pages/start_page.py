@@ -305,7 +305,7 @@ def save_previous_projects_list():
 
     # Save the list of project directories.
     file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'projects.conf')
-    file_utilities.write_lines(file_path, model.application.projects)
+    file_utilities.write_lines(model.application.projects, file_path)
 
 
 ########################################################################

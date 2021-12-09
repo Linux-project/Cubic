@@ -255,7 +255,8 @@ Summary
 # References
 ########################################################################
 
-# N/A
+# https://docs.python.org/3/library/threading.html#thread-objects
+# https://docs.python.org/3/c-api/init.html
 
 ########################################################################
 # Imports
@@ -445,6 +446,9 @@ def handle_navigation(action):
     navigation_thread = threading.Thread(target=navigate, args=(action, page, new_page, effect), daemon=True)
     navigation_thread.start()
 
+    navigation_thread_id = navigation_thread.ident
+    logger.log_value('The thread id is', navigation_thread_id)
+
 
 def interrupt_navigation_thread():
     """
@@ -471,12 +475,20 @@ def interrupt_navigation_thread():
     if navigation_thread and navigation_thread.is_alive():
 
         navigation_thread_id = navigation_thread.ident
-        logger.log_value('Interrupt previous thread with id', navigation_thread_id)
+        logger.log_value('Interrupt previous thread id', navigation_thread_id)
 
-        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(navigation_thread_id), ctypes.py_object(InterruptException))
+        # Asynchronously raise an exception in a thread. The id argument
+        # is the thread id of the target thread; exc is the exception
+        # object to be raised.
+        # See: https://docs.python.org/3/c-api/init.html
+
+        ctypes_thread_id = ctypes.c_long(navigation_thread_id)
+        ctypes_exception = ctypes.py_object(InterruptException)
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes_thread_id, ctypes_exception)
+
         navigation_thread.join()
 
-        logger.log_value('Interrupted previous thread with id', navigation_thread_id)
+        logger.log_value('Interrupted previous thread id', navigation_thread_id)
 
     else:
 
@@ -523,6 +535,7 @@ def navigate(action, page, new_page, effect):
 
     # Leave the current page.
 
+    result = None
     try:
         result = page.leave(action, new_page) if page else None
     except InterruptException as exception:
@@ -542,6 +555,7 @@ def navigate(action, page, new_page, effect):
 
     # Setup the new page.
 
+    result = None
     try:
         result = new_page.setup(action, page) if new_page else None
     except InterruptException as exception:
@@ -562,6 +576,7 @@ def navigate(action, page, new_page, effect):
 
     # Enter the new page.
 
+    result = None
     try:
         result = new_page.enter(action, page) if new_page else None
     except InterruptException as exception:
@@ -811,6 +826,9 @@ def get_new_page(action, page):
         if action == 'cancel':
             new_page_name = 'terminal_page'
             effect = SLIDE_NONE
+        elif action == 'error':
+            new_page_name = 'terminal_copy_page'
+            effect = SLIDE_NONE
         elif action == 'copy-terminal':
             new_page_name = 'terminal_page'
             effect = SLIDE_NONE
@@ -843,6 +861,9 @@ def get_new_page(action, page):
         elif action == 'next':
             new_page_name = 'options_page'
             effect = SLIDE_LEFT
+        elif action == 'error':
+            new_page_name = 'packages_page'
+            effect = SLIDE_NONE
         elif action == 'quit':
             new_page_name = None
             effect = SLIDE_NONE
@@ -875,6 +896,9 @@ def get_new_page(action, page):
         if action == 'cancel':
             new_page_name = 'options_page'
             effect = SLIDE_NONE
+        elif action == 'error':
+            new_page_name = 'preseed_copy_page'
+            effect = SLIDE_NONE
         elif action == 'copy-preseed':
             new_page_name = 'options_page'
             effect = SLIDE_NONE
@@ -887,6 +911,9 @@ def get_new_page(action, page):
     elif page_name == 'boot_copy_page':
         if action == 'cancel':
             new_page_name = 'options_page'
+            effect = SLIDE_NONE
+        elif action == 'error':
+            new_page_name = 'boot_copy_page'
             effect = SLIDE_NONE
         elif action == 'copy-boot':
             new_page_name = 'options_page'

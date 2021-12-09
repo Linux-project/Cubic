@@ -56,13 +56,14 @@ from cubic.constants import EXTENSION_MANIFEST, EXTENSION_SIZE, EXTENSION_SQUASH
 from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import SLEEP_1000_MS
 from cubic.constants import SQUASHFS_FILE_NAMES
+from cubic.navigator import InterruptException
 from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import file_utilities, iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
-from cubic.utilities.progressor import show_progress
+from cubic.utilities.progressor import track_progress
 
 ########################################################################
 # Global Variables & Constants
@@ -241,6 +242,7 @@ def enter(action, old_page=None):
 
             displayer.update_status('extract_page__unsquashfs', displayer.PROCESSING)
 
+            # Extract the squashfs.
             is_error = extract_squashfs()
             if is_error: return  # Stay on this page.
 
@@ -366,13 +368,11 @@ def identify_casper_and_squashfs():
             break
 
     if not model.status.casper_directory:
-        is_error = True
         displayer.update_label('extract_page__analyze_original_iso_message', '<span foreground="red">Unable to locate the compressed Linux file system.</span>')
         displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
-    else:
-        is_error = False
+        return True  # (Error)
 
-    return is_error
+    return False  # (No error)
 
 
 #-----------------------------------------------------------------------
@@ -473,23 +473,33 @@ def copy_original_iso_files():
         if percent % 10 == 0:
             logger.log_value('Completed', f'{percent:n}%')
 
-    exception, message = show_progress(command, progress_callback)
-
-    if exception:
-        is_error = True
+    try:
+        track_progress(command, progress_callback)
+    except InterruptException as exception:
         model.status.is_success_copy = False
-        if 'No space left on device' in message:
+        if 'No space left on device' in str(exception):
             displayer.update_label('extract_page__copy_original_iso_files_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
         else:
             displayer.update_label(
                 'extract_page__copy_original_iso_files_message',
                 '<span foreground="red">Error. Unable to copy files from the original disk image.</span>')
         displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
-    else:
-        is_error = False
-        model.status.is_success_copy = True
+        logger.log_value('Propagate exception', exception)
+        raise exception
+    except Exception as exception:
+        model.status.is_success_copy = False
+        if 'No space left on device' in str(exception):
+            displayer.update_label('extract_page__copy_original_iso_files_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
+        else:
+            displayer.update_label(
+                'extract_page__copy_original_iso_files_message',
+                '<span foreground="red">Error. Unable to copy files from the original disk image.</span>')
+        displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
+        logger.log_value('Do not propagate exception', exception)
+        return True  # (Error)
 
-    return is_error
+    model.status.is_success_copy = True
+    return False  # (No error)
 
 
 #-----------------------------------------------------------------------
@@ -522,20 +532,30 @@ def extract_squashfs():
         if percent % 10 == 0:
             logger.log_value('Completed', f'{percent:n}%')
 
-    exception, message = show_progress(command, progress_callback)
-
-    if exception:
-        is_error = True
+    try:
+        track_progress(command, progress_callback)
+    except InterruptException as exception:
         model.status.is_success_extract = False
-        if 'No space left on device' in message:
+        if 'No space left on device' in str(exception):
             displayer.update_label('extract_page__unsquashfs_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
         else:
             displayer.update_label(
                 'extract_page__unsquashfs_message',
                 '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>')
         displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
-    else:
-        is_error = False
-        model.status.is_success_extract = True
+        logger.log_value('Propagate exception', exception)
+        raise exception
+    except Exception as exception:
+        model.status.is_success_extract = False
+        if 'No space left on device' in str(exception):
+            displayer.update_label('extract_page__unsquashfs_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
+        else:
+            displayer.update_label(
+                'extract_page__unsquashfs_message',
+                '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>')
+        displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
+        logger.log_value('Do not propagate exception', exception)
+        return True  # (Error)
 
-    return is_error
+    model.status.is_success_extract = True
+    return False  # (No error)

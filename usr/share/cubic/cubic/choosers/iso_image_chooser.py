@@ -55,22 +55,18 @@ callback = None
 ########################################################################
 
 
-def open(calback, initial_file_path=None):
-
-    selected_file_path = get_selected_file_path()
-    if selected_file_path and os.path.isfile(selected_file_path):
-        displayer.set_sensitive('iso_image_chooser__select_button_1', True)
-        displayer.set_sensitive('iso_image_chooser__select_button_2', True)
-    else:
-        displayer.set_sensitive('iso_image_chooser__select_button_1', False)
-        displayer.set_sensitive('iso_image_chooser__select_button_2', False)
+def open(calback, file_path=None):
 
     displayer.set_sensitive('window', False)
 
-    if initial_file_path:
-        displayer.show_file_chooser(name, os.path.join(initial_file_path, '*'))
+    if file_path:
+        displayer.show_file_chooser(name, file_path, 'iso_image_chooser__select_button_1', 'iso_image_chooser__select_button_2')
     else:
-        displayer.show_file_chooser(name, os.path.join(model.application.user_home, '*'))
+        # Since "*" does not exist in the user's home folder, the home
+        # folder will be opened, and no file will be selected.
+        # See https://lazka.github.io/pgi-docs/Gtk-3.0/classes/FileChooser.html#Gtk.FileChooser.set_filename
+        file_path = os.path.join(model.application.user_home, '*')
+        displayer.show_file_chooser(name, file_path, 'iso_image_chooser__select_button_1', 'iso_image_chooser__select_button_2')
 
     set_callback(calback)
 
@@ -101,7 +97,7 @@ def on_clicked__iso_image_chooser__cancel_button(widget):
     close()
 
 
-def on_iso_image_chooser__selection_changed(widget):
+def on_selection_changed__iso_image_chooser(widget):
 
     file_path = get_selected_file_path()
     if file_path and os.path.isfile(file_path):
@@ -110,6 +106,19 @@ def on_iso_image_chooser__selection_changed(widget):
     else:
         displayer.set_sensitive('iso_image_chooser__select_button_1', False)
         displayer.set_sensitive('iso_image_chooser__select_button_2', False)
+
+
+def on_file_activated__iso_image_chooser(widget):
+
+    logger.log_label('Activated ISO image chooser file')
+    file_path = get_selected_file_path()
+    logger.log_value('The selected file path is', file_path)
+    if file_path and os.path.isfile(file_path):
+        close()
+        callback(file_path)
+    else:
+        logger.log_value('Error.', 'No *.iso file selected')
+        file_path = None
 
 
 def on_clicked__iso_image_chooser__select_button(widget):

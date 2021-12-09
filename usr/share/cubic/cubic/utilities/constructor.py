@@ -109,12 +109,18 @@ def get_plural(singular_text, plural_text, number):
 
 def get_os_distribution(root_directory='/'):
     """
-    Read the value of ID from '/etc/os-release'
+    Get the value of ID from '/etc/os-release'
+
     Arguments:
-    root_directory - The root directory of the OS.
-                     May be '/' to get the distribution of the host OS.
-                     May be model.project.custom_root_directory to get
-                     the distribution of the custom OS.
+    root_directory : str
+        Optional root directory of the OS. The default value is "/",
+        which will get the distribution of the host OS. Use
+        model.project.custom_root_directory to get the distribution of
+        the custom OS.
+
+    Returns:
+    distribution : bool
+        True OS distribution.
     """
 
     distribution = None
@@ -131,17 +137,26 @@ def get_os_distribution(root_directory='/'):
     return distribution
 
 
-def os_is_distribution(distribution, root_directory='/'):
+def os_is_distribution(distribution, root_directory=os.path.sep):
     """
-    Read the value of ID from '/etc/os-release'
+    Read the value of ID from "/etc/os-release".
+
     Arguments:
-    root_directory - The root directory of the OS.
-                     May be '/' to get the distribution of the host OS.
-                     May be model.project.custom_root_directory to get
-                     the distribution of the custom OS.
-    distribution   - The distribution to check, for example, 'pop' for
-                     Pop!_OS or 'elementary' for Elementary.
+    distribution
+        The distribution to check, for example, "pop" for Pop!_OS or
+        "elementary" for Elementary.
+    root_directory : str
+        Optional root directory of the OS. The default value is "/",
+        which will get the distribution of the host OS. Use
+        model.project.custom_root_directory to get the distribution of
+        the custom OS.
+
+    Returns:
+    is_distribution : bool
+        True if the OS distribution matches the specified distribution.
+        False otherwise.
     """
+
     is_distribution = False
     distribution = distribution.lower()
     file_path = os.path.join(root_directory, 'etc/os-release')
@@ -172,6 +187,13 @@ def os_is_distribution(distribution, root_directory='/'):
 
 
 def get_kernel_version():
+    """
+    Get the version of the currently running kernel.
+
+    Returns:
+    result : str
+        The version of the currently running kernel.
+    """
 
     command = 'uname -r'
     result, exit_status, signal_status = execute_synchronous(command)
@@ -181,25 +203,34 @@ def get_kernel_version():
 
 def get_major_minor_version(package_version):
     """
-    Get displayable Cubic version.
-    Ex. '2021.10-61-release~202110150101~ubuntu21.10.1' --> '2021.10.61'
+    Get displayable Cubic version. For example, the package version
+    "2021.10-61-release~202110150101~ubuntu21.10.1" returns "2021.10.61".
+
+    Returns:
+    : str
+        The major and minor version of the package in "YYYY.MM.XX"
+        format.
     """
 
     return '.'.join(package_version.split('-')[0:2])
 
 
-def get_installed_packages_list(root_directory):
+def get_installed_packages_list(root_directory=os.path.sep):
     """
     This function is not used.
+    See prepare_page.create_package_details_list().
 
     Get a list of installed packages.
 
     Arguments:
     root_directory : str
-        The root directory of var/lib/dpkg (the dpkg database).
+        Optional root directory of "var/lib/dpkg" (the dpkg database).
+        The default value is "/", which will get the packages list for
+        the host system. Use model.project.custom_root_directory to get
+        the packages list for the custom OS.
 
     Returns:
-    installed_packages_list : list
+    installed_packages_list : list of tuples
         A list of tuples (package name, package version).
     """
 
@@ -212,27 +243,45 @@ def get_installed_packages_list(root_directory):
             package_details = (package.name, package.installed.version)
             installed_packages_list.append(package_details)
     package_count = len(installed_packages_list)
-    logger.log_value('Total number of installed packages', len(installed_packages_list))
+    logger.log_value('Total number of installed packages', package_count)
 
     return installed_packages_list
 
 
 def get_package_version(package_name, root_directory=os.path.sep):
     """
-    Get the version of the specified package.
+    Get the installed version of the specified package.
 
     Arguments:
     package_name : str
         The name of the package.
     root_directory : str
-        Optional root directory of var/lib/dpkg (the dpkg database). The
-        default root directory is "/".
+        Optional root directory of "var/lib/dpkg" (the dpkg database).
+        The default value is "/", which will get the version of the
+        specified package installed on the host system. Use
+        model.project.custom_root_directory to get the version of the
+        specified package installed on the on the custom OS.
 
     Returns:
-    version : str
+    : str
         The version of the specified package, or None if the package
         does not exist.
     """
+
+    # Exception hierarchy:
+    #   Object
+    #   └── BaseException
+    #       └── Exception
+    #           ├── builtins.OSError
+    #           │   ├── apt.cache.FetchCancelledException
+    #           │   ├── apt.cache.FetchFailedException
+    #           │   └── apt.cache.LockFailedException
+    #           ├── builtins.SystemError
+    #           │   └── apt_pkg.Error
+    #           ├── builtins.ValueError
+    #           │   └── apt_pkg.CacheMismatchError
+    #           ├── cubic.navigator.InterruptException
+    #           └── SystemError
 
     try:
         apt_cache = apt.Cache(rootdir=root_directory)
@@ -246,7 +295,136 @@ def get_package_version(package_name, root_directory=os.path.sep):
         return None
 
 
+'''
+See https://bugs.launchpad.net/cubic/+bug/1952803
+See https://answers.launchpad.net/cubic/+question/699691
+
+from cubic.navigator import InterruptException
+def get_package_version_01(package_name, root_directory=os.path.sep):
+    """
+    Get the installed version of the specified package.
+
+    Arguments:
+    package_name : str
+        The name of the package.
+    root_directory : str
+        Optional root directory of "var/lib/dpkg" (the dpkg database).
+        The default value is "/", which will get the version of the
+        specified package installed on the host system. Use
+        model.project.custom_root_directory to get the version of the
+        specified package installed on the on the custom OS.
+
+    Returns:
+    : str
+        The version of the specified package, or None if the package
+        does not exist.
+    """
+
+    # Exception hierarchy:
+    #   Object
+    #   └── BaseException
+    #       └── Exception
+    #           ├── builtins.OSError
+    #           │   ├── apt.cache.FetchCancelledException
+    #           │   ├── apt.cache.FetchFailedException
+    #           │   └── apt.cache.LockFailedException
+    #           ├── builtins.SystemError
+    #           │   └── apt_pkg.Error
+    #           ├── builtins.ValueError
+    #           │   └── apt_pkg.CacheMismatchError
+    #           ├── cubic.navigator.InterruptException
+    #           └── SystemError
+
+    try:
+        apt_cache = apt.Cache(rootdir=root_directory)
+        package = apt_cache[package_name]
+        return package.installed.version
+    except InterruptException as exception:
+        raise exception
+    except Exception as exception:
+        logger.log_value('Error. Unable to get the package version', package_name)
+        logger.log_value('The exception is', exception)
+        return None
+'''
+'''
+import apt_pkg
+def get_package_version_02(package_name, root_directory=os.path.sep):
+    """
+    Get the installed version of the specified package.
+
+    Arguments:
+    package_name : str
+        The name of the package.
+    root_directory : str
+        Optional root directory of "var/lib/dpkg" (the dpkg database).
+        The default value is "/", which will get the version of the
+        specified package installed on the host system. Use
+        model.project.custom_root_directory to get the version of the
+        specified package installed on the on the custom OS.
+
+    Returns:
+    : str
+        The version of the specified package, or None if the package
+        does not exist.
+    """
+
+    # Exception hierarchy:
+    #   Object
+    #   └── BaseException
+    #       └── Exception
+    #           ├── builtins.OSError
+    #           │   ├── apt.cache.FetchCancelledException
+    #           │   ├── apt.cache.FetchFailedException
+    #           │   └── apt.cache.LockFailedException
+    #           ├── builtins.SystemError
+    #           │   └── apt_pkg.Error
+    #           ├── builtins.ValueError
+    #           │   └── apt_pkg.CacheMismatchError
+    #           ├── cubic.navigator.InterruptException
+    #           └── SystemError
+
+    try:
+        apt_cache = apt.Cache(rootdir=root_directory)
+        package = apt_cache[package_name]
+        return package.installed.version
+    except AttributeError as exception:
+        # AttributeError: 'NoneType' object has no attribute 'version'
+        return None
+    except KeyError as exception:
+        # KeyError: "The cache has no package named '___'".
+        return None
+    except apt.cache.FetchCancelledException
+        # Exception that is thrown when the user cancels a fetch operation.
+        return None
+    except apt.cache.FetchFailedException
+        # Exception that is thrown when fetching fails.
+        return None
+    except apt.cache.LockFailedException
+        # Exception that is thrown when locking fails.
+        return None
+    except apt_pkg.Error as exception:
+        # Exception class for most python-apt exceptions. This class
+        # replaces the use of SystemError in previous versions of
+        # python-apt. It inherits from SystemError, so make sure to
+        # catch this class first.
+        return None
+    except apt_pkg.CacheMismatchError as exception:
+        # Raised when passing an object from a different cache to apt_pkg.DepCache methods
+        return None
+    except SystemError as exception:
+        # Inherits from Exception.
+        return None
+'''
+
+
 def construct_custom_iso_version_number():
+    """
+    Construct the custom ISO version number using the current date.
+
+    Returns:
+    version : str
+        A custom ISO version number.
+    """
 
     # logger.log_label('Construct custom disk image version number')
 
@@ -258,6 +436,13 @@ def construct_custom_iso_version_number():
 
 
 def get_current_time_stamp():
+    """
+    Get the current time stamp.
+
+    Returns:
+    time_stamp : str
+        The current time stamp.
+    """
 
     # logger.log_label('Get current time stamp in localized format')
 
@@ -268,12 +453,19 @@ def get_current_time_stamp():
 
 def reformat_time_stamp(time_stamp, new_format, *old_formats):
     """
-    Converts time stamp string to a new time stamp string with a new format.
+    Convert a time stamp to a new format.
 
     Arguments:
-    time_stamp  - The original time stamp string to be converted.
-    new_format  - The format of the new time stamp string.
-    old_formats - A tuple of possible old time stamp formats to try.
+    time_stamp : str
+        The original time stamp string to be converted.
+    new_format: str
+        The format of the new time stamp string.
+    old_formats: str
+        A tuple of possible old time stamp formats to try.
+
+    Returns:
+    time_stamp : str
+        The reformatted time stamp.
     """
 
     # logger.log_label('Get current time stamp in localized format')
@@ -306,6 +498,13 @@ def reformat_time_stamp(time_stamp, new_format, *old_formats):
 
 
 def get_file_time_stamp(file_path):
+    """
+    Get the last modification time stamp of the specified file.
+
+    Returns:
+    time_stamp : str
+        The last modification time stamp of the specified file.
+    """
 
     # logger.log_label('Get file create date time')
 
@@ -317,6 +516,14 @@ def get_file_time_stamp(file_path):
 
 
 def construct_configuration_file_path(project_directory):
+    """
+    Construct the full file path for the "config.conf" file. This file
+    is located in the Cubic project directory.
+
+    Returns:
+    configuration_file_path : str
+        The full file path for the config.conf file.
+    """
 
     # logger.log_label('Construct configuration file path')
     # logger.log_value('The project directory is', project_directory)
@@ -328,6 +535,14 @@ def construct_configuration_file_path(project_directory):
 
 
 def construct_original_iso_mount_point(project_directory):
+    """
+    Construct the full file path for the mount point for the original
+    ISO. This file is located in the Cubic project directory.
+
+    Returns:
+    original_iso_mount_point : str
+        The full file path for the original ISO mount point.
+    """
 
     # logger.log_label('Construct original disk image mount point')
     # logger.log_value('The project directory is', project_directory)
@@ -339,6 +554,14 @@ def construct_original_iso_mount_point(project_directory):
 
 
 def construct_custom_root_directory(project_directory):
+    """
+    Construct the full file path for the custom root directory. This
+    directory is located in the Cubic project directory.
+
+    Returns:
+    custom_root_directory : str
+        The full file path for the custom root directory.
+    """
 
     # logger.log_label('Construct custom root directory')
     # logger.log_value('The project directory is', project_directory)
@@ -350,6 +573,14 @@ def construct_custom_root_directory(project_directory):
 
 
 def construct_custom_disk_directory(project_directory):
+    """
+    Construct the full file path for the custom disk directory. This
+    directory is located in the Cubic project directory.
+
+    Returns:
+    custom_disk_directory : str
+        The full file path for the custom disk directory.
+    """
 
     # logger.log_label('Construct custom disk directory')
     # logger.log_value('The project directory is', project_directory)
@@ -361,6 +592,20 @@ def construct_custom_disk_directory(project_directory):
 
 
 def construct_custom_iso_file_name(original_iso_file_name, custom_iso_version_number):
+    """
+    Construct the custom ISO file name using the original ISO file name
+    and custom ISO version_number.
+
+    Arguments:
+    original_iso_file_name : str
+        The original ISO file name.
+    custom_iso_version_number : str
+        The custom ISO version number.
+
+    Returns:
+    custom_iso_file_name : str
+        The custom ISO file name with a ".iso" extension.
+    """
 
     logger.log_label('Construct custom disk image file name')
     logger.log_value('The original disk image file name is', original_iso_file_name)
@@ -449,6 +694,20 @@ def construct_custom_iso_file_name(original_iso_file_name, custom_iso_version_nu
 
 
 def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_number):
+    """
+    Construct the custom ISO volume id using the original ISO volume id
+    and custom ISO version number.
+
+    Arguments:
+    original_iso_volume_id : str
+        The original ISO file name.
+    custom_iso_version_number : str
+        The custom ISO version number.
+
+    Returns:
+    custom_iso_volume_id : str
+        The custom ISO volume id.
+    """
 
     logger.log_label('Construct custom disk image volume id')
     logger.log_value('The original disk image volume id is', original_iso_volume_id)
@@ -544,6 +803,18 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
 
 
 def construct_custom_iso_release_name(original_iso_release_name):
+    """
+    Construct the custom ISO release name using the original ISO release
+    name.
+
+    Arguments:
+    original_iso_release_name : str
+        The original ISO release name.
+
+    Returns:
+    custom_iso_release_name : str
+        The custom ISO release name.
+    """
 
     # logger.log_label('Construct custom disk image release name')
     # logger.log_value('The original disk image release name is', original_iso_release_name)
@@ -561,6 +832,20 @@ def construct_custom_iso_release_name(original_iso_release_name):
 
 
 def construct_custom_iso_disk_name(custom_iso_volume_id, custom_iso_release_name):
+    """
+    Construct the custom ISO release name using the original ISO release
+    name.
+
+    Arguments:
+    custom_iso_volume_id : str
+        The custom ISO volume id.
+    custom_iso_release_name : str
+        The custom ISO release name.
+
+    Returns:
+    custom_iso_disk_name : str
+        The custom ISO disk name.
+    """
 
     # logger.log_label('Construct custom disk image disk name')
     # logger.log_value('The custom disk image volume id is', custom_iso_volume_id)
@@ -581,6 +866,19 @@ def construct_custom_iso_disk_name(custom_iso_volume_id, custom_iso_release_name
 
 
 def construct_custom_iso_checksum_file_name(custom_iso_file_name):
+    """
+    Construct the custom ISO checksum file name using the custom ISO
+    file name.
+
+    Arguments:
+
+    custom_iso_file_name : str
+        The custom ISO file name.
+
+    Returns:
+    custom_iso_checksum_file_name : str
+        The custom ISO checksum file name  with a ".md5" extension.
+    """
 
     # logger.log_label('Construct custom disk image checksum file name')
     # logger.log_value('The custom disk image file name is', custom_iso_file_name)
@@ -600,6 +898,18 @@ def construct_custom_iso_checksum_file_name(custom_iso_file_name):
 
 
 def encode(t):
+    """
+    Convert the specified text into a hex string.
+
+    Arguments:
+
+    t : str
+        The text to encode.
+
+    Returns:
+    h : str
+        The hex string.
+    """
 
     b = t.encode('utf-8')
     z = zlib.compress(b)
@@ -609,6 +919,17 @@ def encode(t):
 
 
 def decode(h):
+    """
+    Decode the specified hex string into the original text.
+
+    Arguments:
+    h : str
+        The hex string.
+
+    Returns:
+    t : str
+        The decoded text.
+    """
 
     z = bytes.fromhex(h)
     b = zlib.decompress(z)

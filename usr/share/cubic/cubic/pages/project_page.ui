@@ -229,7 +229,7 @@
               <object class="GtkLabel" id="project_page__original_iso_file_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -305,7 +305,7 @@
               <object class="GtkLabel" id="project_page__original_iso_directory_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -379,7 +379,7 @@
               <object class="GtkLabel" id="project_page__original_iso_volume_id_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -452,7 +452,7 @@
               <object class="GtkLabel" id="project_page__original_iso_release_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -526,7 +526,7 @@
               <object class="GtkLabel" id="project_page__original_iso_disk_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -600,7 +600,7 @@
               <object class="GtkLabel" id="project_page__original_iso_release_notes_url_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -701,7 +701,7 @@
               <object class="GtkLabel" id="project_page__custom_iso_version_number_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -772,7 +772,7 @@
               <object class="GtkLabel" id="project_page__custom_iso_file_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -859,7 +859,7 @@
               <object class="GtkLabel" id="project_page__custom_iso_directory_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -931,7 +931,7 @@
               <object class="GtkLabel" id="project_page__custom_iso_volume_id_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -1001,7 +1001,7 @@
               <object class="GtkLabel" id="project_page__custom_iso_release_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -1071,7 +1071,7 @@
               <object class="GtkLabel" id="project_page__custom_iso_disk_name_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>
@@ -1141,7 +1141,7 @@
               <object class="GtkLabel" id="project_page__custom_iso_release_notes_url_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
                 <property name="xalign">0</property>

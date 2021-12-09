@@ -43,8 +43,8 @@
     <property name="gravity">center</property>
     <property name="action">select-folder</property>
     <property name="filter">file_filter_directory</property>
-    <signal name="selection-changed" handler="on_directory_chooser__selection_changed" swapped="no"/>
     <signal name="delete-event" handler="on_delete_event__directory_chooser" swapped="no"/>
+    <signal name="selection-changed" handler="on_selection_changed__directory_chooser" swapped="no"/>
     <child type="titlebar">
       <object class="GtkHeaderBar" id="directory_chooser__header_bar">
         <property name="visible">True</property>

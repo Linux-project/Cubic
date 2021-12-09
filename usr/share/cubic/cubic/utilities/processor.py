@@ -61,10 +61,10 @@ process = None
 # Because spwanu() is a string interface, process.read().decode() is not
 # necessary.
 
-# If the child exited normally then exit_status will store the exit
+# If the child exited normally, then exit_status will store the exit
 # return code and signal_status will be None.
-# If the child was terminated abnormally with a signal then signal_status
-# will store the signal value and exit_status will be None.
+# If the child was terminated abnormally with a signal, then
+# signal_status will store the signal value and exit_status will be None.
 #
 # Process              exit_status     signal_status
 # -----------------    -----------    ------------

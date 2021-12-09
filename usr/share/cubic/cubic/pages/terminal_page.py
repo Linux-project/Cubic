@@ -60,6 +60,7 @@ from cubic.navigator import handle_navigation
 from cubic.utilities.displayer import MONOSPACE_FONT
 from cubic.utilities import console
 from cubic.utilities import displayer
+from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -683,14 +684,14 @@ def update_release_description(target_file_path, key, value):
 
     value = value.replace('"', '')
 
-    logger.log_value('Update release description in', target_file_path)
+    logger.log_value('Update the release description in', target_file_path)
     logger.log_value('▹ Key', key)
     logger.log_value('▹ Value', value)
 
-    lines = []
-    with open(target_file_path, 'r') as file:
-        lines = file.readlines()
+    # Read the lines from the original file.
+    lines = file_utilities.read_lines(target_file_path)
 
+    # Update the lines.
     new_lines = []
     for line in lines:
         if line.startswith(key):
@@ -700,10 +701,13 @@ def update_release_description(target_file_path, key, value):
     target_file_name = os.path.basename(target_file_path)
     temp_file_path = os.path.join(os.path.sep, 'tmp', target_file_name)
 
-    with open(temp_file_path, 'w') as file:
-        for line in new_lines:
-            file.write(line + os.linesep)
+    # Write a temporary file.
+    try:
+        file_utilities.write_lines(new_lines, temp_file_path)
+    except Exception as exception:
+        return  # There was an error.
 
+    # Overwrite the original file with the temporary file.
     program = os.path.join(model.application.directory, 'commands', 'move-path')
     user = 'root'
     command = f'pkexec "{program}" "{temp_file_path}" "{target_file_path}" "{user}"'
@@ -713,3 +717,6 @@ def update_release_description(target_file_path, key, value):
     else:
         logger.log_value('Error. Unable to update', target_file_path)
         logger.log_value('The result is', result)
+        return  # There was an error.
+
+    return  # There was n error.

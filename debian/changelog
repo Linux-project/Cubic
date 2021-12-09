@@ -1,4 +1,19 @@
-cubic (2021.11) bionic focal groovy hirsute impish jammy; urgency=low
+cubic (2021.12) bionic focal groovy hirsute impish jammy; urgency=low
+
+  * Issues fixed in version 2021.11-64:
+
+  - Improved the progressor module and removed the ProgressTracker thread class.
+  - Fixed Bug LP:#1953635, Copying numerous small files is slow.
+  - Consolidated file read and write operations to the file_utilities module.
+  - Fixed Bug LP:#1951662, On the Copy pages, pause to allow the user to view
+    the results before automatically transitioning away from the page.
+  - Fixed Bug LP:#1951693, On the Copy pages, clicking the Cancel button may be
+    unresponsive.
+  - Fixed Bug LP:#1951695, Show error status on the Copy pages.
+  - Fixed Bug LP:#1951715, On the Generate page, clicking the Back button during
+    update check sums may be unresponsive.
+  - Fixed Bug LP:#1952816, Double click or press Enter to select a file in the
+    file choosers.
 
   * Issues fixed in version 2021.11-63:
 
@@ -232,4 +247,4 @@ cubic (2021.11) bionic focal groovy hirsute impish jammy; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 29 Nov 2021 21:40:26 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 09 Dec 2021 18:21:25 -0500

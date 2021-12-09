@@ -114,7 +114,7 @@
               <object class="GtkLabel" id="extract_page__analyze_original_iso_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
@@ -207,7 +207,7 @@
               <object class="GtkLabel" id="extract_page__copy_original_iso_files_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>
@@ -302,7 +302,7 @@
               <object class="GtkLabel" id="extract_page__unsquashfs_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">0</property>

@@ -44,6 +44,7 @@ from packaging import version
 from cubic.constants import EXTENSION_MANIFEST_MINIMAL_REMOVE, EXTENSION_MANIFEST_REMOVE
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.utilities import displayer
+from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -125,6 +126,12 @@ def setup(action, old_page=None):
 
         return
 
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
+
+        return
+
     else:
 
         logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
@@ -139,6 +146,12 @@ def enter(action, old_page=None):
         return
 
     elif action == 'next':
+
+        return
+
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
 
         return
 
@@ -169,23 +182,50 @@ def leave(action, new_page=None):
         # Always save the *.manifest-remove file, even if there
         # are no packages to remove. If the file does not exist an empty
         # file will be created.
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
-        removable_packages_list = create_typical_removable_packages_list()
-        is_success = save_file_system_manifest_remove_file(removable_packages_list, file_path)
-
-        # TODO: If failure, action should be 'error' and navigate to an error page.
+        try:
+            file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
+            file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+            removable_packages_list = create_typical_removable_packages_list()
+            logger.log_label('Update the typical removable packages list')
+            file_utilities.write_lines(removable_packages_list, file_path)
+        except Exception as exception:
+            # TODO: Show an error.
+            return 'error'  # Stay on this page.
 
         # Update *.manifest-minimal-remove file.
         # Always save the *.manifest-minimal-remove file, even if there
         # are no packages to remove. If the file does not exist an empty
         # file will be created.
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
-        removable_packages_list = create_minimal_removable_packages_list()
-        is_success = save_file_system_manifest_remove_file(removable_packages_list, file_path)
+        try:
+            file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
+            file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+            removable_packages_list = create_minimal_removable_packages_list()
+            logger.log_label('Update the minimal removable packages list')
+            file_utilities.write_lines(removable_packages_list, file_path)
+        except Exception as exception:
+            # TODO: Show an error.
+            return 'error'  # Stay on this page.
 
-        # TODO: If failure, action should be 'error' and navigate to an error page.
+        return
+
+    elif action == 'error':
+
+        displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
+
+        # If the following is used, use button_style='text-button' in
+        # the leave/cancel section.
+        #
+        # displayer.reset_buttons(
+        #     back_button_label='❬Back',
+        #     back_action='cancel',
+        #     back_button_style='suggested-action',
+        #     is_back_sensitive=True,
+        #     is_back_visible=True,
+        #     next_button_label='Delete',
+        #     next_action='delete',
+        #     next_button_style='destructive-action',
+        #     is_next_sensitive=False,
+        #     is_next_visible=True)
 
         return
 
@@ -647,20 +687,3 @@ def create_minimal_removable_packages_list():
     logger.log_value('New number of packages to be retained for a minimal install', number_of_packages_to_retain)
 
     return removable_packages_list
-
-
-def save_file_system_manifest_remove_file(removable_packages_list, file_path):
-
-    logger.log_label('Create new file system manifest remove file')
-
-    logger.log_value('Write file system manifest remove file to', file_path)
-    with open(file_path, 'w') as file:
-        first_line = True
-        for packages_name in removable_packages_list:
-            if first_line:
-                file.write(f'{packages_name}')
-                first_line = False
-            else:
-                file.write(f'{os.linesep}{packages_name}')
-
-    return os.path.exists(file_path)

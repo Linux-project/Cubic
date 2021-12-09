@@ -38,16 +38,19 @@
 ########################################################################
 
 import os
+import time
 import urllib
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import FINAL_PERCENT
+from cubic.constants import SLEEP_1000_MS
+from cubic.navigator import InterruptException
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
-from cubic.utilities.progressor import show_progress
+from cubic.utilities.progressor import track_progress
 
 ########################################################################
 # Global Variables & Constants
@@ -72,15 +75,22 @@ def setup(action, old_page=None):
         count = len(model.selected_uris)
         count_text = constructor.number_as_text(count)
         files_text = constructor.get_plural('file', 'files', count)
-        label = f'Copy {count_text} {files_text} to {model.current_directory}...'
+        message = f'Copy {count_text} {files_text} to {model.current_directory}...'
 
         # Create a file details list of files to be copied.
         file_details_list = create_file_details_list(model.selected_uris)
 
-        displayer.update_label('boot_copy_page__progress_label', label)
+        displayer.update_label('boot_copy_page__progress_message', message)
         displayer.update_progress_bar_text('boot_copy_page__copy_files_progress_bar', None)
         displayer.update_progress_bar_percent('boot_copy_page__copy_files_progress_bar', 0)
+        displayer.update_status('boot_copy_page__progress', displayer.BLANK)
         displayer.update_list_store('boot_copy_page__file_details__list_store', file_details_list)
+
+        return
+
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
 
         return
 
@@ -109,6 +119,12 @@ def enter(action, old_page=None):
 
         return
 
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
+
+        return
+
     else:
 
         logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
@@ -128,9 +144,13 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=True, is_next_sensitive=False)
 
-        copy_files(model.current_directory, model.selected_uris)
+        is_error = copy_files(model.current_directory, model.selected_uris)
+        if is_error: return 'error'  # Stay on this page.
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # Pause to allow the user to see the result.
+        time.sleep(SLEEP_1000_MS)
 
         return
 
@@ -139,6 +159,12 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+
+        return
+
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
 
         return
 
@@ -177,8 +203,6 @@ def create_file_details_list(uris):
 # Copy Files Functions
 ########################################################################
 
-# TODO: Move these functions to file_utilities.py
-
 
 def copy_files(current_directory, uris):
 
@@ -187,11 +211,12 @@ def copy_files(current_directory, uris):
     global total_files
     total_files = len(uris)
 
-    # It is necessary to strip the leading '/' from the current directory,
-    # otherwise os.path.join() considers the current directory to be an absolute
-    # path and discards the custom disk directory prefix: "If a component
-    # is an absolute path, all previous components are thrown away and
-    # os.path.joining continues from the absolute path component."
+    # It is necessary to strip the leading '/' from the current
+    # directory, otherwise os.path.join() considers the current
+    # directory to be an absolute path and discards the custom root
+    # directory prefix: "If a component is an absolute path, all
+    # previous components are thrown away and os.path.joining continues
+    # from the absolute path component."
     # (See https://docs.python.org/3/library/os.path.html).
     target_directory = os.path.abspath(os.path.join(model.project.custom_disk_directory, current_directory.strip(os.path.sep)))
 
@@ -199,21 +224,45 @@ def copy_files(current_directory, uris):
     logger.log_value('The custom disk directory is', model.project.custom_disk_directory)
     logger.log_value('The target directory is', target_directory)
 
+    displayer.update_status('boot_copy_page__progress', displayer.PROCESSING)
+
     global file_number
-    for file_number, uri in enumerate(uris):
-
-        file_path = urllib.parse.unquote(urllib.parse.urlparse(uri).path)
-
-        if total_files == 1:
-            label = f'Copying one file to {current_directory}...'
+    try:
+        for file_number, uri in enumerate(uris):
+            file_path = urllib.parse.unquote(urllib.parse.urlparse(uri).path)
+            if total_files == 1:
+                message = f'Copying one file to {current_directory}...'
+            else:
+                message = f'Copying file {(file_number+1):n} of {total_files:n} to {current_directory}...'
+            displayer.update_label('boot_copy_page__progress_message', message)
+            displayer.scroll_to_tree_view_row('boot_copy_page__tree_view', file_number)
+            displayer.select_tree_view_row('boot_copy_page__tree_view', file_number)
+            copy_file(file_path, file_number, target_directory, total_files)
+    except InterruptException as exception:
+        displayer.update_status('boot_copy_page__progress', displayer.ERROR)
+        if 'No space left on device' in str(exception):
+            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
         else:
-            label = f'Copying file {(file_number+1):n} of {total_files:n} to {current_directory}...'
+            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}.</span>'
+        displayer.update_label('boot_copy_page__progress_message', message)
+        logger.log_value('Propagate exception', exception)
+        raise exception
+    except Exception as exception:
+        displayer.update_status('boot_copy_page__progress', displayer.ERROR)
+        if 'No space left on device' in str(exception):
+            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
+        else:
+            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}.</span>'
+        displayer.update_label('boot_copy_page__progress_message', message)
+        logger.log_value('Do not propagate exception', exception)
+        return True  # (Error)
 
-        displayer.update_label('boot_copy_page__progress_label', label)
-        displayer.scroll_to_tree_view_row('boot_copy_page__tree_view', file_number)
-        displayer.select_tree_view_row('boot_copy_page__tree_view', file_number)
-
-        copy_file(file_path, file_number, target_directory, total_files)
+    displayer.update_status('boot_copy_page__progress', displayer.OK)
+    number_text = constructor.number_as_text(total_files)
+    plural_text = constructor.get_plural('file', 'files', total_files)
+    message = f'Copied {number_text} {plural_text} to {current_directory}.'
+    displayer.update_label('boot_copy_page__progress_message', message)
+    return False  # (No error)
 
 
 def copy_file(file_path, file_number, directory, total_files):
@@ -236,9 +285,4 @@ def copy_file(file_path, file_number, directory, total_files):
         if total_percent % 10 == 0:
             logger.log_value('Completed', f'{total_percent:n}%')
 
-    exception, message = show_progress(command, progress_callback)
-
-
-########################################################################
-# Validation Functions
-########################################################################
+    track_progress(command, progress_callback, quantity=total_files)

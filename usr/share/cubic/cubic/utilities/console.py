@@ -53,7 +53,7 @@ import re
 import sys
 import time
 
-from cubic.constants import BOLD_RED, BOLD_GREEN, BOLD_BLUE, BOLD_YELLOW, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
+from cubic.constants import BOLD_RED, BOLD_GREEN, BOLD_YELLOW, BOLD_BLUE, BOLD_MAGENTA, BOLD_CYAN, NORMAL, NEW_LINE
 from cubic.constants import SLEEP_0250_MS
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -64,8 +64,6 @@ from cubic.utilities.processor import execute_synchronous, execute_synchronous_u
 ########################################################################
 
 MACHINE_NAME = 'cubic'
-
-builder = None
 
 MAX_ATTEMPTS = 3
 first_time = True
@@ -91,6 +89,16 @@ status_callback = None
 
 
 def enter_virtual_environment(new_status_callback):
+    """
+    Reset the attempt counter, set the status call back function, and
+    enter the virtual environment.
+
+    Arguments:
+    new_status_callback : function
+        A callback function supplied by the client in order to be
+        notified whenever the virtual environment starts or exits. This
+        function must take a boolean status as the only argument.
+    """
 
     global first_time
     global reenter
@@ -106,6 +114,9 @@ def enter_virtual_environment(new_status_callback):
 
 
 def _enter_virtual_environment():
+    """
+    Start the virtual environment in the pseudo terminal.
+    """
 
     logger.log_label('Enter virtual environment')
     logger.log_value('The virtual environment directory is', model.project.custom_root_directory)
@@ -129,7 +140,7 @@ def _enter_virtual_environment():
     # pseudo terminal process must be explicitly killed by executing
     # exit_virtual_environment().
 
-    # Allocate a new pseudo-terminal.
+    # Allocate a new pseudo terminal.
     # The global pseudo_terminal is used by entered_virtual_environment()
     # to set the pseudo terminal for the terminal.
     global pseudo_terminal
@@ -151,7 +162,7 @@ def _enter_virtual_environment():
     #              callback:Vte.TerminalSpawnAsyncCallback=None,
     #              user_data=None)'
 
-    # Start the virtual environment in the pseudo-terminal.
+    # Start the virtual environment in the pseudo terminal.
     pseudo_terminal.spawn_async(
         working_directory=None,
         argv=command,
@@ -178,6 +189,10 @@ def child_setup(*data):
     requires child_setup_data to be a tuple, and it can have a value,
     such as child_setup_data=('test',), or be empty, such as
     child_setup_data=(,).
+
+    Arguments:
+    *data : object
+        User data passed to this function.
     """
     logger.log_value('CHILD SETUP', 'START')
     # time.sleep(SLEEP_1000_MS)
@@ -187,9 +202,21 @@ def child_setup(*data):
 
 def watch_virtual_environment(pseudo_terminal, task, data):
     """
+    Watch the virtual environment. Subscribe to virtual environment
+    entered signals and virtual environment exited events.
+
     A terminal_spawn_async_callback function that is invoked when
     spawn_async() completes.
     https://lazka.github.io/pgi-docs/Gio-2.0/callbacks.html#Gio.AsyncReadyCallback
+
+    Arguments:
+    pseudo_terminal : Vte.Pty
+        The pseudo terminal.
+    task : Gio.Task
+        Used to manage data during an asynchronous operation. Used to
+        get the process id of the pseudo terminal.
+    data : object
+        User data passed to the callback.
     """
 
     logger.log_label('Watch virtual environment')
@@ -224,6 +251,11 @@ def watch_virtual_environment(pseudo_terminal, task, data):
 
 # https://developer.gnome.org/gio/2.60/GDBusConnection.html#g-dbus-connection-signal-subscribe
 def subscribe_virtual_environment_entered():
+    """
+    Subscribe to virtual environment entered signals, and specify the
+    callback function to be invoked when the virtual environment starts.
+    The callback function is entered_virtual_environment().
+    """
 
     # logger.log_label('Subscribe virtual environment entered')
 
@@ -247,6 +279,9 @@ def subscribe_virtual_environment_entered():
 
 # https://developer.gnome.org/gio/2.60/GDBusConnection.html#g-dbus-connection-signal-unsubscribe
 def unsubscribe_virtual_environment_entered():
+    """
+    Unsubscribe from virtual environment entered signals.
+    """
 
     # logger.log_label('Unsubscribe virtual environment entered')
 
@@ -260,9 +295,30 @@ def unsubscribe_virtual_environment_entered():
         logger.log_value('Cannot unsubscribe from virtual environment entered signals', 'The subscription does not exist')
 
 
-# https://developer.gnome.org/gio/2.60/GDBusConnection.html#GDBusSignalCallback
+# https://docs.gtk.org/gio/callback.DBusSignalCallback.html
+# https://lazka.github.io/pgi-docs/#Gio-2.0/callbacks.html#Gio.DBusSignalCallback
 # sender, object, iface, signal, params.unpack()
 def entered_virtual_environment(sender, object_path, interface, signal, parameters):
+    """
+    The callback function to be invoked when the pseudo terminal starts.
+
+    Arguments:
+    # connection : Gio.DBusConnection
+    #     A Gio.DBusConnection.
+    sender : str
+        The unique bus name of the sender of the signal.
+    object_path : str
+        The object path that the signal was emitted on.
+    interface : str
+        The name of the interface.
+    signal : str
+        The name of the signal.
+    parameters : GLib.Variant tuple
+        Signal parameters that are used to determine if the virtual
+        environment started successfully.
+    # *user_data : object
+    #     User data passed when subscribing to the signal.
+    """
 
     parameter_a, parameter_b, parameter_c = parameters
 
@@ -287,9 +343,24 @@ def entered_virtual_environment(sender, object_path, interface, signal, paramete
     #     logger.log_label('Unable to enter virtual environment')
 
 
-# https://developer.gnome.org/gio/2.60/GDBusConnection.html#GDBusSignalCallback
+# https://docs.gtk.org/gio/callback.DBusSignalCallback.html
+# https://lazka.github.io/pgi-docs/#Gio-2.0/callbacks.html#Gio.DBusSignalCallback
 # sender, object, iface, signal, params.unpack()
 def _entered_virtual_environment(active_state, sub_state, job_status, job_path):
+    """
+    Notify the user that the virtual environment started and reset the
+    attempt counter.
+
+    Arguments:
+    active_state : str
+        The ActiveState from the parameters passed to the callback.
+    sub_state : str
+        The SubState from the parameters passed to the callback.
+    job_status : int
+        The status of the Job from the parameters passed to the callback.
+    job_path : str
+        The path of the Job from the parameters passed to the callback.
+    """
 
     # logger.log_value('Successfully entered virtual environment?', 'Yes')
     logger.log_value('Active State', active_state)
@@ -340,6 +411,17 @@ def _entered_virtual_environment(active_state, sub_state, job_status, job_path):
 
 
 def subscribe_virtual_environment_exited(process_id, pseudo_terminal):
+    """
+    Subscribe virtual environment exited events, and specify the
+    callback function to be invoked when the virtual environment exits.
+    The callback function is exited_virtual_environment().
+
+    Arguments:
+    process_id : int
+        The process id of the pseudo terminal.
+    pseudo_terminal : Vte.Pty
+        The pseudo terminal.
+    """
 
     # logger.log_label('Subscribe virtual environment exited')
 
@@ -361,46 +443,57 @@ def subscribe_virtual_environment_exited(process_id, pseudo_terminal):
 
 def exited_virtual_environment(process_id, status, pseudo_terminal):
     """
-    This functions arguments match the arguments match the arguments for:
+    The callback function to be invoked when the pseudo terminal exits.
+
+    This function's arguments match the arguments for:
     https://lazka.github.io/pgi-docs/#GLib-2.0/callbacks.html#GLib.ChildWatchFunc
 
-    GLib.spawn_close_pid() should be used on all platforms, even though it
-    doesn't do anything under UNIX.
+    GLib.spawn_close_pid() should be used on all platforms, even though
+    it doesn't do anything under UNIX.
     https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_close_pid
     GLib.spawn_close_pid(process_id)
 
-    Different ways to exit the terminal, and the corresponding status values:
-
-    Execute the follwing from outside Cubic's terminal.
-    $ pkexec /usr/share/cubic/commands/stop-process <pid of start-console>
-    status = 9
-
-    Execute the follwing from outside Cubic's terminal.
-    $ sudo kill -9 <pid of start-console>
-    status = 9
-
-    Execute the follwing from outside Cubic's terminal.
-    $ sudo pkill --full start-console
-    status = 15
-    $ sudo pkill --signal 9 --full start-console
-    status = 9
-
-    Execute the follwing from outside Cubic's terminal.
-    $ sudo machinectl terminate cubic
-    status = 256
-
-    Type "exit" in Cubic's terminal.
-    status = 0
-
-    Click Quit, Back, Next, or the window's exit control.
-    status = 9
-    Uses the exit_virtual_environment_using_kill() function.
-
-    References:
-    https://stackoverflow.com/questions/1535672/how-to-interpret-status-code-in-python-commands-getstatusoutput/1535675#1535675
-    https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_check_exit_status
-    https://docs.python.org/3/library/os.html
+    Arguments:
+    process_id : int
+        The process id of the pseudo terminal.
+    status : int
+        The exit status of the pseudo terminal.
+    pseudo_terminal : Vte.Pty
+        The pseudo terminal.
     """
+
+    # References:
+    # https://stackoverflow.com/questions/1535672/how-to-interpret-status-code-in-python-commands-getstatusoutput/1535675#1535675
+    # https://lazka.github.io/pgi-docs/GLib-2.0/functions.html#GLib.spawn_check_exit_status
+    # https://docs.python.org/3/library/os.html
+
+    # Different ways to exit the terminal, and the corresponding status
+    # values:
+    #
+    # • Execute the follwing from outside Cubic's terminal.
+    #   $ pkexec /usr/share/cubic/commands/stop-process <pid of start-console>
+    #   status = 9
+    #
+    # • Execute the follwing from outside Cubic's terminal.
+    #   $ sudo kill -9 <pid of start-console>
+    #   status = 9
+    #
+    # • Execute the follwing from outside Cubic's terminal.
+    #   $ sudo pkill --full start-console
+    #   status = 15
+    #   $ sudo pkill --signal 9 --full start-console
+    #   status = 9
+    #
+    # • Execute the follwing from outside Cubic's terminal.
+    #   $ sudo machinectl terminate cubic
+    #   status = 256
+    #
+    # • Type "exit" in Cubic's terminal.
+    #   status = 0
+    #
+    # • Click Quit, Back, Next, or the window's exit control.
+    #   status = 9
+    #   Uses the exit_virtual_environment_using_kill() function.
 
     logger.log_label('Exited virtual environment')
 
@@ -420,7 +513,7 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     # terminal.set_pty(None)
     #
     # In Ubuntu 19.10,  Vte crashes with Segmentation fault when the
-    # when the terminal's Pty is set to a new uninitialized Pty():
+    # terminal's Pty is set to a new uninitialized Pty():
     #   "VTE-CRITICAL **: 19:00:44.648: int vte_pty_get_fd(VtePty*):
     #    assertion 'priv->pty_fd != -1' failed"
     #
@@ -515,13 +608,17 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
 
 def exit_virtual_environment():
     """
+    Exit the virtual environment.
+
     The process executed by spawn_async() in the
     _enter_virtual_environment() function is not registered with the
     processor module. As a result, this process is not terminated
-    by the interrupt_navigation_thread() function of the navigator module.
-    This allows the terminal to continue running while the application
-    navigates away from the Terminal page. The pseudo terminal process
-    must be explicitly killed by executing exit_virtual_environment().
+    by the interrupt_navigation_thread() function of the navigator
+    module. This permits the terminal to continue running while the
+    application navigates away from the Terminal page, and is useful for
+    navigating to the Terminal Copy page. Therefore, the pseudo terminal
+    process must be explicitly killed by executing
+    exit_virtual_environment().
     """
 
     logger.log_label('Exit virtual environment')
@@ -536,6 +633,9 @@ def exit_virtual_environment():
 
 
 def exit_virtual_environment_using_kill():
+    """
+    Exit the virtual environment process using kill.
+    """
 
     # logger.log_label('Exit the virtual environment process using kill')
 
@@ -558,6 +658,9 @@ def exit_virtual_environment_using_kill():
 
 '''
 def exit_virtual_environment_using_kill_ORIGINAL():
+    """
+    Exit the virtual environment process using kill.
+    """
 
     logger.log_label('Exit the virtual environment process using kill')
 
@@ -570,6 +673,9 @@ def exit_virtual_environment_using_kill_ORIGINAL():
 
 
 def exit_virtual_environment_using_machinectl():
+    """
+    Exit virtual environment using machinectl'.
+    """
 
     logger.log_label('Exit virtual environment using machinectl')
 
@@ -586,11 +692,14 @@ def exit_virtual_environment_using_machinectl():
 
 def is_virtual_environment_running():
     """
-    Checks if the virtual environment is running. This function is not
+    Check if the virtual environment is running. This function is not
     very reliable because the virtual environment may take some time to
     start or stop.
-    Returns: True if the virtual environment is running, False if the
-    virtual environment is not running,
+
+    Returns:
+    : bool
+        True if the virtual environment is running. False if the virtual
+        environment is not running.
     """
 
     logger.log_label('Check virtual environment')
@@ -655,8 +764,14 @@ def get_current_directory():
 
 
 def get_current_directory():
+    """
+    Get the current directory in the terminal.
 
-    current_directory = None
+    Returns:
+    : str
+        The current directory in the terminal or None if the current
+        directory could not be determined.
+    """
 
     logger.log_label('Get the current directory')
 
@@ -668,15 +783,22 @@ def get_current_directory():
     process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command)
 
     if not exit_status and not signal_status:
-        current_directory = result
-        # logger.log_value('The current directory is', current_directory)
+        # logger.log_value('The current directory is', result)
+        return result
     else:
-        logger.log_value('Unable to get the current directory using result', current_directory)
-
-    return current_directory
+        logger.log_value('Unable to get the current directory', result)
+        return None
 
 
 def send_message_to_terminal(text=None):
+    """
+    Send a message to the terminal and print a new line.
+
+    Arguments:
+    text : str
+        Optional text to send to the terminal. The default value is
+        None. If text is None, a new line is printed to the terminal.
+    """
 
     terminal = model.builder.get_object('terminal_page__terminal')
 
@@ -702,6 +824,12 @@ def send_command_to_terminal(text):
     """
     This function is not used.
     This function is the same as send_text_to_terminal().
+
+    Send a command to the terminal.
+
+    Arguments:
+    text : str
+        The command to send to the terminal.
     """
 
     terminal = model.builder.get_object('terminal_page__terminal')
@@ -714,8 +842,15 @@ def send_command_to_terminal(text):
 
 def send_text_to_terminal(text):
     """
-    Used by terminal_page to drag and drop text into the terminal.
+    This function is used by terminal_page to drag and drop text into
+    the terminal.
     This function is the same as send_command_to_terminal().
+
+    Send text to the terminal.
+
+    Arguments:
+    text : str
+        The text to send to the terminal.
     """
 
     terminal = model.builder.get_object('terminal_page__terminal')

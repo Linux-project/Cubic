@@ -82,6 +82,9 @@ class KernelTab():
         area.set_orientation(Gtk.Orientation.VERTICAL)
 
     def create_linux_kernels_list(self):
+        """
+        Add kernels to the list store from the model.
+        """
 
         # Python < 3.7 does not guarantee that the order of dictionary
         # elements is preserved when using the value() method. Therefore,
@@ -95,6 +98,24 @@ class KernelTab():
         #
         # displayer.update_list_store('kernel_tab__list_store', [list(kernel_details.values()) for kernel_details in model.kernel_details_list])
 
+        # model.kernel_details_list:
+        # Each item (i.e. kernel details) in this list is a dictionary,
+        # so use keys to reference values.
+        #
+        # 0: version_integers
+        # 1: version_name
+        # 2: vmlinuz_file_name
+        # 3: new_vmlinuz_file_name
+        # 4: initrd_file_name
+        # 5: new_initrd_file_name
+        # 6: directory
+        # 7: note
+        # 8: is_selected
+
+        # kernel_details_list:
+        # Each item (i.e. kernel details) in this list is a list, so
+        # use indices to reference values.
+        #
         # 0: version_name
         # 1: vmlinuz_file_name
         # 2: new_vmlinuz_file_name
@@ -106,6 +127,7 @@ class KernelTab():
 
         kernel_details_list = []
         for index, kernel_details in enumerate(model.kernel_details_list):
+            # Save the index of the selected kernel.
             if kernel_details['is_selected']:
                 self.selected_kernel_index = index
             # Convert kernel details dictionary into a list.
@@ -128,37 +150,14 @@ class KernelTab():
 
     def on_toggled__kernel_tab__kernels_radio_button(self, widget, row):
         """
-        Record the selected kernel in model.kernel_details_list.
+        Toggle the unselected and selected kernel check boxes. The
+        list_store ('kernel_tab__list_store') is used by the Generate
+        page to identify the selected kernel, so
+        model.kernel_details_list does not need to be updated when the
+        selected kernel changes.
         """
 
         logger.log_label('Selected kernel')
-
-        # TODO: Improve this. We should only use one list.
-
-        # kernel_tab__list_store...
-        # This is a list, so use indices to reference values.
-        #
-        # 0: version_name
-        # 1: vmlinuz_file_name
-        # 2: new_vmlinuz_file_name
-        # 3: initrd_file_name
-        # 4: new_initrd_file_name
-        # 5: directory
-        # 6: note
-        # 7: is_selected
-
-        # model.kernel_details_list...
-        # This is a dictionary, so use keys to reference values.
-        #
-        # 0: version_integers
-        # 1: version_name
-        # 2: vmlinuz_file_name
-        # 3: new_vmlinuz_file_name
-        # 4: initrd_file_name
-        # 5: new_initrd_file_name
-        # 6: directory
-        # 7: note
-        # 8: is_selected
 
         list_store = model.builder.get_object('kernel_tab__list_store')
 
@@ -166,7 +165,9 @@ class KernelTab():
         list_store[self.selected_kernel_index][7] = False
         logger.log_value('The index of the previous selected kernel is', self.selected_kernel_index)
 
-        # Select the new kernel and update the selected kernel index.
+        # Save the index of the new selected kernel.
         self.selected_kernel_index = int(row)
+
+        # Select the new kernel and update the selected kernel index.
         logger.log_value('The index of the selected kernel is', self.selected_kernel_index)
         list_store[self.selected_kernel_index][7] = True

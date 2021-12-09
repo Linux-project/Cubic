@@ -58,7 +58,7 @@ from gi.repository import Gtk
 from gi.repository import GtkSource
 from gi.repository import Pango
 
-from cubic.constants import OK, ERROR, BULLET, PROCESSING
+from cubic.constants import OK, ERROR, BULLET, PROCESSING, BLANK
 from cubic.utilities import logger
 from cubic.utilities import model
 
@@ -102,8 +102,12 @@ CROSS_FADE = Gtk.StackTransitionType.CROSSFADE
 
 def idle_add(callback):
     """
-    This is used on the Project page.
-    The Console module calls GLib.idle_add() directly.
+    The Project page uses this function to block and unblock handlers.
+    Note that the console module calls GLib.idle_add() directly.
+
+    Arguments:
+    callback : str
+        A callback function that does not take any arguments.
     """
 
     GLib.idle_add(callback)
@@ -115,15 +119,26 @@ def idle_add(callback):
 
 
 def main_quit():
+    """
+    Quit the GUI application.
+    """
 
     GLib.idle_add(Gtk.main_quit)
 
 
-def transition(old_page, new_page, effect):
+def transition(old_page, new_page, effect=SLIDE_NONE):
     """
     Transition the to a new page in the Gtk.Stack using the specified
     Gtk.StackTransitionType effect. All pages must have the 'visible'
     property set to True in the *.ui file.
+
+    Arguments:
+        old_page : str
+            The page to transition from.
+        new_page : str
+            The page to transition to.
+        effect : str
+            An optional effect to use for the transition.
     """
 
     logger.log_label('Transition pages')
@@ -148,7 +163,6 @@ def transition(old_page, new_page, effect):
 ########################################################################
 
 
-# Button styles: text-button, suggested-action, destructive-action
 def reset_buttons(
         back_button_label=None,
         back_action=None,
@@ -160,7 +174,50 @@ def reset_buttons(
         next_button_style=None,
         is_next_sensitive=None,
         is_next_visible=None):
+    """
+    Reset the label, action, style, sensitivity, and visibility of the
+    Back button and the Next button. Valid button styles are
+     "text-button", "suggested-action", and "destructive-action".
 
+    Arguments:
+    back_button_label : str
+        Optional new Back button label, or None to leave it unchanged.
+        The default is None.
+    back_button_action : str
+        Optional new Back button action, or None to leave it unchanged.
+        The default is None.
+    back_button_style : str
+        Optional new Back button style, or None to leave it unchanged.
+        The default is None.
+    is_back_sensitive : bool
+        Optional new Back button sensitivity. True to set the Back
+        button sensitive, False to set it insensitive, or None to leave
+        it unchanged. The default is None.
+    is_back_visible : bool
+        Optional new Back button visibility. True to set the Back
+        button visible, False to set it invisible, or None to leave it
+        unchanged. The default is None.
+    next_button_label : str
+        Optional new Next button label, or None to leave it unchanged.
+        The default is None.
+    next_button_action : str
+        Optional new Next button action, or None to leave it unchanged.
+        The default is None.
+    next_button_style : str
+        Optional new Next button style, or None to leave it unchanged.
+        The default is None.
+    is_next_sensitive : bool
+        Optional new Next button sensitivity. True to set the Next
+        button sensitive, False to set it insensitive, or None to leave
+        it unchanged. The default is None.
+    is_next_visible : bool
+        Optional new Next button visibility. True to set the Next
+        button visible, False to set it invisible, or None to leave it
+        unchanged. The default is None.
+    """
+
+    # Unicode characters for various arrows:
+    #
     # 25C1 = ◁
     # 25B7 = ▷
     #
@@ -185,11 +242,22 @@ def reset_buttons(
 
 def set_button(name, label, action, style, is_sensitive, is_visible):
     """
-    Update the label if it is not None.
-    Update the action if it is not None.
-    Update the style if it is not None.
-    Update is_sensitive if it is not None.
-    Update is_visible if it is not None.
+    Update the label, action, style, sensitivity, and visibility of the
+    button.
+
+    Arguments:
+    label : str
+        The new button label, or None to leave it unchanged.
+    action : str
+        The new button action, or None to leave it unchanged.
+    style : str
+        The new button style, or None to leave it unchanged.
+    sensitive : bool
+        True to set the button sensitive, False to set it insensitive,
+        or None to leave it unchanged.
+    visible : bool
+        True to set the button visible, False to set it invisible, or
+        None to leave it unchanged.
     """
 
     button = model.builder.get_object(name)
@@ -206,6 +274,20 @@ def set_button(name, label, action, style, is_sensitive, is_visible):
 
 
 def update_button_style(name, style):
+    """
+    Update the button style to the specified style, and remove the
+    current style from the button. The default style, "text-button", is
+    never removed. Valid button styles are "text-button",
+    "suggested-action", and "destructive-action". If style is None, the
+    current style will be removed from the button, and a new style will
+    not be set.
+
+    Arguments:
+    name : str
+        The name of the button to update.
+    style : str
+        The new button style, or None to remove the current style.
+    """
 
     button = model.builder.get_object(name)
     context = button.get_style_context()
@@ -236,16 +318,53 @@ def update_button_style(name, style):
 
 
 def attach(grid, widget, x, y, width, height):
+    """
+    Add the widget to the grid.
+
+    Arguments:
+    widget : Gtk.Widget
+        The widget to add.
+    x : int
+        The x coordinate of the new widget.
+    y : int
+        The y coordinate of the new widget.
+    width : int
+        The width of the new widget.
+    height : int
+        The height of the new widget.
+    """
 
     GLib.idle_add(Gtk.Grid.attach, grid, widget, x, y, width, height)
 
 
 def add_named(stack, page, name):
+    """
+    Add the page to the stack with the specified name.
+
+    Arguments:
+    stack : Gtk.Stack
+        The stack to add the page to.
+    page : Gtk.Grid
+        The page to add to the stack.
+    name : str
+        The name of the page.
+    """
 
     GLib.idle_add(Gtk.Stack.add_named, stack, page, name)
 
 
 def set_visible_child(stack, page):
+    """
+    Make the page on the stack visible. If page is different from the
+    currently visible page, animate the transition using the current
+    transition type.
+
+    Arguments:
+    stack : Gtk.Stack
+        The stack that the page belongs to.
+    page : Gtk.Grid
+        The page to make visible.
+    """
 
     GLib.idle_add(Gtk.Stack.set_visible_child, stack, page)
 
@@ -256,42 +375,102 @@ def set_visible_child(stack, page):
 
 
 def show(widget_name):
+    """
+    Show the widget.
+
+    Arguments:
+    widget_name : str
+        The name of the widget.
+    """
 
     widget = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Widget.show, widget)
 
 
 def hide(widget_name):
+    """
+    Hide the widget.
+
+    Arguments:
+    widget_name : str
+        The name of the widget.
+    """
 
     widget = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Widget.hide, widget)
 
 
 def show_all(widget_name):
+    """
+    Recursively show the widget and any child widgets (if the widget is
+    a container).
+
+    Arguments:
+    widget_name : str
+        The name of the widget.
+    """
 
     widget = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Widget.show_all, widget)
 
 
 def set_visible(widget_name, is_visible):
+    """
+    Make the widget visible or invisible.
+
+    Arguments:
+    widget_name : str
+        The name of the widget.
+    is_visible : bool
+        True to set the widget visible. False to set it invisible.
+    """
 
     widget = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Widget.set_visible, widget, is_visible)
 
 
 def set_solid(widget_name, is_solid):
+    """
+    Set the opacity of the widget to 1.0 or 0.00. If is_solid is True
+    the opacity will be set to 1.00. If is_solid is False the opacity
+    will be set to 0.00.
+
+    Arguments:
+    widget_name : str
+        The name of the widget.
+    is_solid : bool
+        True to set the widget opaque. False to set it transparent.
+    """
 
     widget = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Widget.set_opacity, widget, is_solid)
 
 
-def set_opacity(widget_name, percent):
+def set_opacity(widget_name, opacity):
+    """
+    Set the opacity of the widget.
+
+    Arguments:
+    widget_name : str
+        The name of the widget.
+    opacity : float
+        The opacity to set. The value must be 0.00 to 1.00.
+    """
 
     widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.Widget.set_opacity, widget, percent / 100.0)
+    GLib.idle_add(Gtk.Widget.set_opacity, widget, opacity)
 
 
 def set_sensitive(widget_name, is_sensitive):
+    """
+    Set the sensitivity of the widget.
+
+    Arguments:
+    widget_name : str
+        The name of the widget.
+    is_sensitive : bool
+        True to set the widget sensitive. False to set it insensitive.
+    """
 
     widget = model.builder.get_object(widget_name)
     GLib.idle_add(Gtk.Widget.set_sensitive, widget, is_sensitive)
@@ -303,16 +482,35 @@ def set_sensitive(widget_name, is_sensitive):
 
 
 def update_label(label_name, text):
+    """
+    Update the label text.
+
+    Arguments:
+    label_name : str
+        The name of the label.
+    text : str
+        The text to display.
+    """
 
     # logger.log_value(f'Update label {label_name}', text)
     label = model.builder.get_object(label_name)
     GLib.idle_add(Gtk.Label.set_markup, label, text)
 
 
-def set_label_error(widget_name, is_error):
+def set_label_error(label_name, is_error):
+    """
+    Set or remove the "error" style context for the label.
 
-    # logger.log_value(f'Set error for label {widget_name}', is_error)
-    label = model.builder.get_object(widget_name)
+    Arguments:
+    label_name : str
+        The name of the label.
+    is_error : bool
+        True to set an "error" style context. False to remove the
+        "error" style context.
+    """
+
+    # logger.log_value(f'Set error for label {label_name}', is_error)
+    label = model.builder.get_object(label_name)
     context = label.get_style_context()
     if is_error:
         GLib.idle_add(Gtk.StyleContext.add_class, context, 'error')
@@ -325,17 +523,36 @@ def set_label_error(widget_name, is_error):
 ########################################################################
 
 
-def update_entry(widget_name, text):
+def update_entry(entry_name, text):
+    """
+    Update the entry text.
 
-    # logger.log_value(f'Update text for entry {widget_name}', text)
-    entry = model.builder.get_object(widget_name)
+    Arguments:
+    entry_name : str
+        The name of the entry.
+    text : str
+        The text to display.
+    """
+
+    # logger.log_value(f'Update text for entry {entry_name}', text)
+    entry = model.builder.get_object(entry_name)
     GLib.idle_add(Gtk.Entry.set_text, entry, text)
 
 
-def set_entry_error(widget_name, is_error):
+def set_entry_error(entry_name, is_error):
+    """
+    Set or remove the "error" style context for the entry.
 
-    # logger.log_value(f'Set error for entry {widget_name}', is_error)
-    entry = model.builder.get_object(widget_name)
+    Arguments:
+    entry_name : str
+        The name of the entry.
+    is_error : bool
+        True to set an "error" style context. False to remove the
+        "error" style context.
+    """
+
+    # logger.log_value(f'Set error for entry {entry_name}', is_error)
+    entry = model.builder.get_object(entry_name)
     context = entry.get_style_context()
     if is_error:
         GLib.idle_add(Gtk.StyleContext.add_class, context, 'error')
@@ -343,10 +560,19 @@ def set_entry_error(widget_name, is_error):
         GLib.idle_add(Gtk.StyleContext.remove_class, context, 'error')
 
 
-def set_entry_editable(widget_name, is_editable):
+def set_entry_editable(entry_name, is_editable):
+    """
+    Make the entry editable or non-editable.
 
-    # logger.log_value(f'Set is editable for entry {widget_name}', is_editable)
-    entry = model.builder.get_object(widget_name)
+    Arguments:
+    entry_name : str
+        The name of the entry.
+    is_editable : bool
+        True to set the entry editable. False to set it not editable.
+    """
+
+    # logger.log_value(f'Set is editable for entry {entry_name}', is_editable)
+    entry = model.builder.get_object(entry_name)
     # entry.set_editable(is_editable)
     GLib.idle_add(Gtk.Entry.set_editable, entry, is_editable)
 
@@ -356,33 +582,49 @@ def set_entry_editable(widget_name, is_editable):
 ########################################################################
 
 
-def append_combo_box_text(widget_name, text):
+def append_combo_box_text(combo_box_name, text):
     """
-    Add text to the beginning of the specified combo box text.
+    Add text to the end of the specified combo box text.
+
+    Arguments:
+    combo_box_name : str
+        The name of the combo box.
+    text : str
+        The text to add.
     """
 
-    # logger.log_value(f'Append combo box text {widget_name}', text)
-    combo_box_text = model.builder.get_object(widget_name)
+    # logger.log_value(f'Append combo box text {combo_box_name}', text)
+    combo_box_text = model.builder.get_object(combo_box_name)
     GLib.idle_add(Gtk.ComboBoxText.append_text, combo_box_text, text)
 
 
-def prepend_combo_box_text(widget_name, text):
+def prepend_combo_box_text(combo_box_name, text):
     """
-    Add text to the end of the specified combo box text.
+    Add text to the beginning of the specified combo box text.
+
+    Arguments:
+    combo_box_name : str
+        The name of the combo box.
+    text : str
+        The text to add.
     """
 
-    # logger.log_value(f'Prepend combo box text {widget_name}', text)
-    combo_box_text = model.builder.get_object(widget_name)
+    # logger.log_value(f'Prepend combo box text {combo_box_name}', text)
+    combo_box_text = model.builder.get_object(combo_box_name)
     GLib.idle_add(Gtk.ComboBoxText.prepend_text, combo_box_text, text)
 
 
-def remove_all_combo_box_text(widget_name):
+def remove_all_combo_box_text(combo_box_name):
     """
-    Remove all text from the the specified combo box text.
+    Remove all text from the the specified combo box.
+
+    Arguments:
+    combo_box_name : str
+        The name of the combo box.
     """
 
-    # logger.log_value('Remove all text from combo box text', widget_name)
-    combo_box_text = model.builder.get_object(widget_name)
+    # logger.log_value('Remove all text from combo box text', combo_box_name)
+    combo_box_text = model.builder.get_object(combo_box_name)
     GLib.idle_add(Gtk.ComboBoxText.remove_all, combo_box_text)
 
 
@@ -391,22 +633,52 @@ def remove_all_combo_box_text(widget_name):
 ########################################################################
 
 
-def show_file_chooser(widget_name, file_path):
+def show_file_chooser(file_chooser_name, file_path, *button_names):
+    """
+    Show the file chooser, select the file path, and set buttons
+    sensitive if file path is selected.
 
-    file_chooser = model.builder.get_object(widget_name)
-    GLib.idle_add(_show_file_chooser, file_chooser, file_path)
+    Arguments:
+    file_chooser : str
+        The name of the file chooser.
+    file_path : str
+        A file path.
+    button_names : tuple
+        An optional list of button names.
+    """
+
+    file_chooser = model.builder.get_object(file_chooser_name)
+    GLib.idle_add(_show_file_chooser, file_chooser, file_path, button_names)
 
 
-def _show_file_chooser(file_chooser, file_path):
+def _show_file_chooser(file_chooser, file_path, button_names):
     """
     This function must be invoked using GLib.idle_add().
+
+    Show the file chooser, select the file path, and set buttons
+    sensitive if file path is selected.
+
+    Arguments:
+    file_chooser : str
+        The name of the file chooser.
+    file_path : str
+        A file path.
+    button_names : tuple
+        A tuple of button names. May be empty.
     """
 
-    # If the file does not exist, set_filename() will open the parent
-    # directory and not select any file, but select_file_name() will
-    # will open the parent directory and select the next file in the
-    # list.
+    # set_filename() opens the file's parent folder and selects the
+    # file in the list. If the file does not exist, no file is selected.
+    # select_filename() selects a file name. If the file name isn't in
+    # the current folder, then the current folder will be changed to the
+    # folder containing filename.
+    # See https://lazka.github.io/pgi-docs/Gtk-3.0/classes/FileChooser.html#Gtk.FileChooser.set_filename
+
     file_chooser.set_filename(file_path)
+    is_selected = bool(file_chooser.get_filename())
+    for button_name in button_names:
+        button = model.builder.get_object(button_name)
+        button.set_sensitive(is_selected)
     file_chooser.show_all()
 
 
@@ -417,10 +689,20 @@ def _show_file_chooser(file_chooser, file_path):
 
 def update_status(prefix, status):
     """
-    The proper naming convention must be used.
-    Object ids must end in '_status' or '_spinner'.
-    Object ids ending in '_status' are always images in the *.ui file.
-    Object ids ending in '_spinner' are always spinners in the *.ui file.
+    Update the status by displaying a status icon (OK, ERROR, OPTIONAL,
+    BULLET) or by displaying an active spinner. The proper naming
+    convention must be used for widgets names:
+    • Widgets names must end in "_status" or "_spinner".
+    • Widgets names ending in "_status" are always images.
+    • Widgets names ending in "_spinner" are always spinners.
+
+    Arguments:
+    prefix : str
+        The prefix portion of widget names that end in "_status" or
+        "_spinner".
+    status : int
+        A status value from the constants module: OK, ERROR, OPTIONAL,
+        BULLET, PROCESSING, or BLANK.
     """
 
     # logger.log_value(f'Set status for entry {prefix}_status', status)
@@ -451,7 +733,21 @@ def update_status(prefix, status):
 
 def update_status_image(name, status):
     """
-    This is used on the Terminal page.
+    This function is used on the Terminal page.
+
+    Update the status by displaying a status icon (OK, ERROR, OPTIONAL,
+    BULLET). The proper naming convention must be used for widgets names:
+    • Widgets names must end in "_status" or "_spinner".
+    • Widgets names ending in "_status" are always images.
+    • Widgets names ending in "_spinner" are always spinners.
+
+    Arguments:
+    prefix : str
+        The prefix portion of widget names that end in "_status" or
+        "_spinner".
+    status : int
+        A status value from the constants module: OK, ERROR, OPTIONAL,
+        BULLET, or BLANK.
     """
 
     image = model.builder.get_object(name)
@@ -464,12 +760,35 @@ def update_status_image(name, status):
 
 
 def update_progress_bar_percent(progress_bar_name, percent):
+    """
+    Update the progress bar percent.
+
+    Arguments:
+    progress_bar_name : str
+        The name of the progress bar.
+    percent : float
+        The percent complete. The value must be 0.00% to 100.00%.
+    """
 
     progress_bar = model.builder.get_object(progress_bar_name)
     GLib.idle_add(Gtk.ProgressBar.set_fraction, progress_bar, float(percent) / 100.00)
 
 
 def update_progress_bar_text(progress_bar_name, text):
+    """
+    Update the progress bar text. In order to show text in the progress
+    bar, the progress bar's "show-text" property must be True in the
+    corresponding *.ui file, and the value of text must be either a
+    space character " " or the non-empty text string to be displayed. If
+    text is an empty string "" or None, a percent ("0 %") will be
+    displayed instead.
+
+    Arguments:
+    progress_bar_name : str
+        The name of the progress bar.
+    text : str
+        The text to display or " " (space character), not None.
+    """
 
     progress_bar = model.builder.get_object(progress_bar_name)
     GLib.idle_add(Gtk.ProgressBar.set_text, progress_bar, text)
@@ -482,7 +801,15 @@ def update_progress_bar_text(progress_bar_name, text):
 
 def activate_toggle_button(toggle_button_name, is_active):
     """
-    This is used on the Options page.
+    This function is used on the Options page.
+
+    Activate or deactivate the toggle button.
+
+    Arguments:
+    toggle_button_name : str
+        The name of the toggle button.
+    is_active : bool
+        True to set the toggle button active. False to set it inactive.
     """
 
     toggle_button = model.builder.get_object(toggle_button_name)
@@ -491,23 +818,48 @@ def activate_toggle_button(toggle_button_name, is_active):
 
 def activate_check_button(check_button_name, is_active):
     """
-    This is used on the Delete page and Finish page.
+    This function is used on the Delete page and Finish page.
+
+    Activate or deactivate the check button.
+
+    Arguments:
+    check_button_name : str
+        The name of the check button.
+    is_active : bool
+        True to set the check button active. False to set it inactive.
     """
 
     check_button = model.builder.get_object(check_button_name)
     GLib.idle_add(Gtk.CheckButton.set_active, check_button, is_active)
 
 
-def update_check_button_label(name, label):
+def update_check_button_label(check_button_name, label):
     """
-    This is used on the Delete page.
+    This function is used on the Delete page.
+
+    Update the check button label.
+
+    Arguments:
+    check_button_name : str
+        The name of the check button.
+    label : str
+        The label text to display.
     """
 
-    check_button = model.builder.get_object(name)
+    check_button = model.builder.get_object(check_button_name)
     GLib.idle_add(Gtk.CheckButton.set_label, check_button, label)
 
 
 def activate_radio_button(radio_button_name, is_active):
+    """
+    Activate or deactivate the radio button.
+
+    Arguments:
+    radio_button_name : str
+        The name of the radio button.
+    is_active : bool
+        True to set the radio button active. False to set it inactive.
+    """
 
     radio_button = model.builder.get_object(radio_button_name)
     GLib.idle_add(Gtk.RadioButton.set_active, radio_button, is_active)
@@ -520,7 +872,15 @@ def activate_radio_button(radio_button_name, is_active):
 
 def update_menu_item(menu_item_name, text):
     """
-    This is used on the Terminal page.
+    This function is used on the Terminal page.
+
+    Update the menu item text.
+
+    Arguments:
+    menu_item_name : str
+        The name of the menu item.
+    text : str
+        The text to display.
     """
 
     menu_item = model.builder.get_object(menu_item_name)
@@ -533,6 +893,13 @@ def update_menu_item(menu_item_name, text):
 
 
 def empty_box(box_name):
+    """
+    Remove all items from the box.
+
+    Arguments:
+    box_name : str
+        The name of the box.
+    """
 
     box = model.builder.get_object(box_name)
     for child in box.get_children():
@@ -548,6 +915,22 @@ def empty_box(box_name):
 
 
 def insert_box_label(box_name, text, opacity=1.00, is_error=False):
+    """
+    Insert a label into the box.
+
+    Arguments:
+    box_name : str
+        The name of the box.
+    test : str
+        The text for the label.
+    opacity : float
+        Optional opacity for the label. The value must be 0.00 to 1.00.
+        The default is 1.00.
+    is_error : bool
+        Optional "error" style context for the label. True to set an
+        "error" style context. False to not set an "error" style context.
+        The default is False.
+    """
 
     # Since label is not displayed, there is no need to call GLib.idle_add().
     label = Gtk.Label(text)
@@ -568,6 +951,13 @@ def insert_box_label(box_name, text, opacity=1.00, is_error=False):
 
 
 def scroll_view_port_to_bottom(view_port_name):
+    """
+    Scroll the to the bottom of the view port.
+
+    Arguments:
+    view_port_name : str
+        The name of the view port.
+    """
 
     view_port = model.builder.get_object(view_port_name)
     adjustment = view_port.get_vadjustment()
@@ -580,13 +970,32 @@ def scroll_view_port_to_bottom(view_port_name):
 ########################################################################
 
 
-def set_column_visible(widget_name, is_visible):
+def set_column_visible(tree_view_column_name, is_visible):
+    """
+    Make the tree view column visible or invisible.
 
-    widget = model.builder.get_object(widget_name)
-    GLib.idle_add(Gtk.TreeViewColumn.set_visible, widget, is_visible)
+    Arguments:
+    tree_view_column_name : str
+        The name of the tree view column.
+    is_visible : bool
+        True to set the tree view column visible. False to set it
+        invisible.
+    """
+
+    tree_view_column = model.builder.get_object(tree_view_column_name)
+    GLib.idle_add(Gtk.TreeViewColumn.set_visible, tree_view_column, is_visible)
 
 
 def scroll_to_tree_view_row(tree_view_name, row_number):
+    """
+    Scroll the to the specified row of the tree view.
+
+    Arguments:
+    tree_view_name : str
+        The name of the tree view.
+    row_number : int
+        The row number.
+    """
 
     tree_view = model.builder.get_object(tree_view_name)
     tree_path = Gtk.TreePath.new_from_string(str(row_number))
@@ -594,6 +1003,15 @@ def scroll_to_tree_view_row(tree_view_name, row_number):
 
 
 def select_tree_view_row(tree_view_name, row_number):
+    """
+    Select the the specified row of the tree view.
+
+    Arguments:
+    tree_view_name : str
+        The name of the tree view.
+    row_number : int
+        The row number.
+    """
 
     tree_view = model.builder.get_object(tree_view_name)
     tree_path = Gtk.TreePath.new_from_string(str(row_number))
@@ -606,6 +1024,15 @@ def select_tree_view_row(tree_view_name, row_number):
 
 
 def update_list_store(list_store_name, data_list):
+    """
+    Add the list of data to to the list store.
+
+    Arguments:
+    list_store_name : str
+        The name of the list store.
+    data_list : list
+        The list of data. Each data in the list is also a list.
+    """
 
     list_store = model.builder.get_object(list_store_name)
     GLib.idle_add(_update_list_store_rows, list_store, data_list)
@@ -614,6 +1041,14 @@ def update_list_store(list_store_name, data_list):
 def _update_list_store_rows(list_store, data_list):
     """
     This function must be invoked using GLib.idle_add().
+
+    Add the list of data to to the list store.
+
+    Arguments:
+    list_store : Gtk.ListStore
+        The list store.
+    data_list : list
+        The list of data. Each data in the list is also a list.
     """
 
     list_store.clear()
@@ -622,15 +1057,40 @@ def _update_list_store_rows(list_store, data_list):
         list_store.append(data)
 
 
-def update_list_store_progress_bar_percent(list_store_name, path, percent):
+def update_list_store_progress_bar_percent(list_store_name, row_number, percent):
+    """
+    Update progress bar percent for the specified row in the list store.
+    The progress bar must be in the first column of the list store.
+
+    Arguments:
+    list_store_name : str
+        The name of the list store.
+    row_number : int
+        The row number to update.
+    percent : float
+        The percent complete. The value must be 0.00% to 100.00%.
+    """
 
     list_store = model.builder.get_object(list_store_name)
-    GLib.idle_add(_update_list_store_progress_bar_percent, list_store, path, percent)
+    GLib.idle_add(_update_list_store_progress_bar_percent, list_store, row_number, percent)
 
 
-def _update_list_store_progress_bar_percent(list_store, path, percent):
+def _update_list_store_progress_bar_percent(list_store, row_number, percent):
     """
     This function must be invoked using GLib.idle_add().
+
+    Update progress bar percent for the specified row in the list store.
+    The progress bar must be in the first column of the list store.
+
+    Arguments:
+    list_store : Gtk.ListStore
+        The list store.
+    row_number : int
+        The row number to update.
+    percent : float
+        The percent complete. The value must be 0.00% to 100.00%.
     """
 
-    list_store[path][0] = percent
+    # The progress bar is at position 0 (i.e. the first column) in the
+    # row list.
+    list_store[row_number][0] = percent

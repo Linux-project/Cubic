@@ -152,7 +152,7 @@ def enter(action, old_page=None):
         else:
             displayer.update_status('prepare_page__boot_kernels', ERROR)
             logger.log_value('Error. Number of valid disk boot kernels found', 0)
-            add_message_to_boot_kernels_box('{os.linesep}Error. No valid disk boot kernels were found.')
+            add_message_to_boot_kernels_box(f'{os.linesep}Error. No valid disk boot kernels were found.')
             add_message_to_boot_kernels_box(
                 'To correct this issue, click the Back button and install missing Linux kernel packages on the Terminal page, or select the original disk image on the Project page.'
             )
@@ -189,7 +189,7 @@ def enter(action, old_page=None):
         file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
         file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
         if os.path.exists(file_path):
-            removable_packages_list = get_removable_packages_list(file_path)
+            removable_packages_list = file_utilities.read_lines(file_path)
             count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
             logger.log_value('Number of installed packages matching typical install list', count)
             number_text = constructor.number_as_text(count)
@@ -212,7 +212,7 @@ def enter(action, old_page=None):
         file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
         file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
         if os.path.exists(file_path):
-            removable_packages_list = get_removable_packages_list(file_path)
+            removable_packages_list = file_utilities.read_lines(file_path)
             count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
             logger.log_value('Number of installed packages matching minimal install list', count)
             number_text = constructor.number_as_text(count)
@@ -425,7 +425,7 @@ def create_kernel_details_list(*directories):
 
 def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initrd_details_list, directories_with_one_vmlinuz_and_initrd):
     """
-    Add kernels to kernel_details_list.
+    Add kernel details to kernel_details_list.
     """
 
     note = ''
@@ -447,6 +447,7 @@ def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initr
             new_initrd_file_name = initrd_details['new_file_name']
             initrd_directory = initrd_details['directory']
 
+            # The kernel_details dictionary keys:
             # 0: version_integers
             # 1: version_name
             # 2: vmlinuz_file_name
@@ -557,26 +558,26 @@ def _update_kernel_details_list(kernel_details_list):
         note = ''
         version_name = kernel_details['version_name']
         if current_kernel_version_name == version_name:
-            if note: note += ' '  # os.os.linesep
+            if note: note += ' '  # os.linesep
             note += f'You are currently running kernel version {current_kernel_version_name}.'
         # if index == 0:
-        #     if note: note += ' '  # os.os.linesep
+        #     if note: note += ' '  # os.linesep
         #     note += 'This is the newest kernel version available to bootstrap the customized disk.'
         directory = kernel_details['directory']
         if directory == original_iso_image_directory:
-            if note: note += ' '  # os.os.linesep
+            if note: note += ' '  # os.linesep
             note += 'This kernel is used to bootstrap the original disk.'
             if len(kernel_details_list) > 1:
-                if note: note += ' '  # os.os.linesep
+                if note: note += ' '  # os.linesep
                 note += 'Select this kernel if you encounter issues such as BusyBox when using other kernel versions.'
             # if is_server_image()
-            #     # if note: note += ' ' # os.os.linesep
+            #     # if note: note += ' ' # os.linesep
             #     # note += 'Since you are customizing a server image, select this option if you encounter issues using other kernel versions.'
             #     # Set the selected index for the the original disk kernel.
             #     selected_index = index
         new_vmlinuz_file_name = kernel_details['new_vmlinuz_file_name']
         new_initrd_file_name = kernel_details['new_initrd_file_name']
-        if note: note += ' '  # os.os.linesep
+        if note: note += ' '  # os.linesep
         note += f'Reference these files as <span font_family="monospace">{new_vmlinuz_file_name}</span> and <span font_family="monospace">{new_initrd_file_name}</span> in the disk boot configurations.'
         kernel_details['note'] = note
 
@@ -629,7 +630,7 @@ def get_current_kernel_version_name():
 
     version_name = None
     try:
-        version_information = (r'(\d+\.\d+\.\d+(?:-\d+))', platform.release())
+        version_information = (r'(\d+\.\d+\.\d+(?:-\d+)*)', platform.release())
         version_name = version_information.group(1)
     except AttributeError as exception:
         pass
@@ -696,11 +697,11 @@ def update_vmlinuz_details_list(directory, details_list):
             # executed. This is considered a negligible risk.
 
             # It is necessary to strip the leading '/' from the real
-            # path, otherwise os.path.join() considers the real path to be an
-            # absolute path and discards the custom root directory
-            # prefix: "If a component is an absolute path, all previous
-            # components are thrown away and os.path.joining continues from the
-            # absolute path component."
+            # path, otherwise os.path.join() considers the real path
+            # to be an absolute path and discards the custom root
+            # directory prefix: "If a component is an absolute path, all
+            # previous components are thrown away and os.path.joining
+            # continues from the absolute path component."
             # (See https://docs.python.org/3/library/os.path.html).
             file_path = os.path.abspath(os.path.join(model.project.custom_root_directory, real_path.strip(os.path.sep)))
 
@@ -783,7 +784,7 @@ def _get_vmlinuz_version_name_from_file_type(file_path):
     result, exit_status, signal_status = execute_synchronous(command)
     version_name = None
     if not exit_status and not signal_status:
-        version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+))', str(result))
+        version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+)*)', str(result))
         if version_information:
             version_name = version_information.group(1)
     logger.log_value('▹ The version name is', version_name)
@@ -795,20 +796,37 @@ def _get_vmlinuz_version_name_from_file_contents(file_path):
 
     logger.log_value('Get vmlinuz version name from file contents', file_path)
     version_name = None
-    with open(file_path, errors='ignore') as file:
-        contents = file.read()
+    file_contents = file_utilities.read_file(file_path, errors='ignore')
     candidate = ''
-    for character in contents:
+    for character in file_contents:
+        # Keep adding characters to candidate, until a non-printable
+        # character is encountered.
         if character in string.printable:
             candidate += character
         elif len(candidate) > 4:
+            # Attempt to get the version name if there is a sequence of
+            # five or more printable characters. The smallest possible
+            # version number is five characters (ex. 0.0.0).
             try:
-                version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+))', str(candidate))
+                version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+)*)', str(candidate))
+                version_name = version_information.group(1)
+                # The version name has been found.
+                break
+            except (AttributeError, IndexError):
+                # The version name was not found; reset candidate.
+                candidate = ''
+            # TODO: Is the following code more consistent with other
+            # functions in this module?
+            """
+            version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+)*)', str(candidate))
+            if version_information:
                 version_name = version_information.group(1)
                 break
-            except:
+            else:
                 candidate = ''
+            """
         else:
+            # Reset candidate if the character is non-printable.
             candidate = ''
     logger.log_value('▹ The version name is', version_name)
 
@@ -851,11 +869,11 @@ def update_initrd_details_list(directory, details_list):
             # executed. This is considered a negligable risk.
 
             # It is necessary to strip the leading '/' from the real
-            # path, otherwise os.path.join() considers the real path to be an
-            # absolute path and discards the custom root directory
-            # prefix: "If a component is an absolute path, all previous
-            # components are thrown away and os.path.joining continues from the
-            # absolute path component."
+            # path, otherwise os.path.join() considers the real path
+            # to be an absolute path and discards the custom root
+            # directory prefix: "If a component is an absolute path, all
+            # previous components are thrown away and os.path.joining
+            # continues from the absolute path component."
             # (See https://docs.python.org/3/library/os.path.html).
             file_path = os.path.abspath(os.path.join(model.project.custom_root_directory, real_path.strip(os.path.sep)))
 
@@ -985,7 +1003,7 @@ def _get_initrd_compression_format_from_file_contents(file_path):
 
 def get_vmlinuz_version_from_kernel_details_list(kernel_details_list, directory):
 
-    # The kernel_details is:
+    # The kernel_details dictionary keys:
     # 0: version_integers
     # 1: version_name
     # 2: vmlinuz_file_name
@@ -1038,7 +1056,7 @@ def _get_initrd_version_name_from_file_type(file_path):
     result, exit_status, signal_status = execute_synchronous(command)
     version_name = None
     if not exit_status and not signal_status:
-        version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+))', str(result))
+        version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+)*)', str(result))
         if version_information:
             version_name = version_information.group(1)
     logger.log_value('▹ The version name is', version_name)
@@ -1126,7 +1144,7 @@ def create_package_details_list(root_directory):
     """
     Create a list of installed package details. Each package detail is a
     list containing the following elements. Only package name and
-     package version are populated. All other elements are set to False.
+    package version are populated. All other elements are set to False.
         0: is typical selected?
         1: is minimal selected?
         2: is minimal selected initial?
@@ -1134,9 +1152,11 @@ def create_package_details_list(root_directory):
         4: package name
         5: package version
 
+    Also see constructor.get_installed_packages_list().
+
     Arguments:
     root_directory : str
-        The root directory of var/lib/dpkg (the dpkg database).
+        The root directory of "var/lib/dpkg" (the dpkg database).
 
     Returns:
     package_details_list : list
@@ -1162,25 +1182,10 @@ def create_package_details_list(root_directory):
             package_details = [False, False, False, False, package.name, package.installed.version]
             package_details_list.append(package_details)
 
-    package_count = len(package_details_list)
+    # package_count = len(package_details_list)
     # logger.log_value('Total number of installed packages', len(package_details_list))
 
     return package_details_list
-
-
-def get_removable_packages_list(file_path):
-    """
-    Read filesystem.manifest-remove or filesystem.manifest-minimal-remove
-    to get the list of packages to remove.
-    """
-
-    logger.log_value('Read list of packages to remove from', file_path)
-
-    removable_packages_list = []
-    with open(file_path, 'r') as file:
-        removable_packages_list = file.read().splitlines()
-
-    return removable_packages_list
 
 
 def populate_package_details_list_for_typical_install(package_details_list, removable_packages_list):
@@ -1286,13 +1291,39 @@ def populate_package_details_list_for_minimal_install(package_details_list, remo
 
 def save_file_system_manifest_file(package_details_list):
 
+    # https://docs.python.org/3/library/functions.html#open
+    #
+    # r   Open text file for reading. The stream is positioned at the
+    #     beginning of the file.
+    #
+    # r+  Open for reading and writing. The stream is positioned at the
+    #     beginning of the file.
+    #
+    # w   Truncate file to zero length or create text file for writing.
+    #     The stream is positioned at the beginning of the file.
+    #
+    # w+  Open for reading and writing. The file is created if it does
+    #     not exist, otherwise it is truncated. The stream is positioned
+    #     at the beginning of the file.
+    #
+    # a   Open for writing. The file is created if it does not exist.
+    #     The stream is positioned at the end of the file.  Subsequent
+    #     writes to the file will always end up at the then current end
+    #     of file, irrespective of any intervening fseek(3) or similar.
+    #
+    # a+  Open for reading and writing. The file is created if it does
+    #     not exist. The stream is positioned at the end of the file.
+    #     Subsequent writes to the file will always end up at the then
+    #     current end of file, irrespective of any intervening fseek(3)
+    #     or similar.
+
     logger.log_label('Create new file system manifest file')
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}'
     file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
     logger.log_value('Write file system manifest to', file_path)
     with open(file_path, 'w') as file:
-        for package_details in package_details_list:
+        for package_details in package_details_list[:-1]:
             # 0: is typical selected?
             # 1: is minimal selected?
             # 2: is minimal selected initial?
@@ -1301,7 +1332,10 @@ def save_file_system_manifest_file(package_details_list):
             # 5: package version
             package_name = package_details[4]
             package_version = package_details[5]
-            file.write(f'{package_name}\t{package_version}{os.linesep}')
+            file.write(f'{package_name}\t{package_version}\n')
+        if package_details:
+            package_details = package_details_list[-1]
+            file.write(f'{package_name}\t{package_version}')
 
     return os.path.exists(file_path)
 

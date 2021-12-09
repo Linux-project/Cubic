@@ -228,7 +228,7 @@
               <object class="GtkLabel" id="prepare_page__installed_packages_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
@@ -312,7 +312,7 @@
               <object class="GtkLabel" id="prepare_page__package_manifest_1_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
@@ -396,7 +396,7 @@
               <object class="GtkLabel" id="prepare_page__package_manifest_2_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
@@ -479,7 +479,7 @@
               <object class="GtkLabel" id="prepare_page__save_package_manifest_message">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="opacity">0.50196078431372548</property>
+                <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>

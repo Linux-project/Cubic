@@ -55,22 +55,18 @@ callback = None
 ########################################################################
 
 
-def open(calback, initial_file_path=None):
-
-    selected_uris = get_selected_uris()
-    if selected_uris:
-        displayer.set_sensitive('copy_file_chooser__select_button_1', True)
-        displayer.set_sensitive('copy_file_chooser__select_button_2', True)
-    else:
-        displayer.set_sensitive('copy_file_chooser__select_button_1', False)
-        displayer.set_sensitive('copy_file_chooser__select_button_2', False)
+def open(calback, file_path=None):
 
     displayer.set_sensitive('window', False)
 
-    if initial_file_path:
-        displayer.show_file_chooser(name, os.path.join(initial_file_path, '*'))
+    if file_path:
+        displayer.show_file_chooser(name, file_path, 'copy_file_chooser__select_button_1', 'copy_file_chooser__select_button_2')
     else:
-        displayer.show_file_chooser(name, os.path.join(model.application.user_home, '*'))
+        # Since "*" does not exist in the user's home folder, the home
+        # folder will be opened, and no file will be selected.
+        # See https://lazka.github.io/pgi-docs/Gtk-3.0/classes/FileChooser.html#Gtk.FileChooser.set_filename
+        file_path = os.path.join(model.application.user_home, '*')
+        displayer.show_file_chooser(name, file_path, 'copy_file_chooser__select_button_1', 'copy_file_chooser__select_button_2')
 
     set_callback(calback)
 
@@ -108,7 +104,7 @@ def on_clicked__copy_file_chooser__cancel_button(widget):
     close()
 
 
-def on_copy_file_chooser__selection_changed(widget):
+def on_selection_changed__copy_file_chooser(widget):
 
     uris = get_selected_uris()
     if uris:
@@ -119,10 +115,23 @@ def on_copy_file_chooser__selection_changed(widget):
         displayer.set_sensitive('copy_file_chooser__select_button_2', False)
 
 
+def on_file_activated__copy_file_chooser(widget):
+
+    logger.log_label('Activated copy file chooser file')
+    uris = get_selected_uris()
+    if uris:
+        close()
+        callback(uris)
+    else:
+        logger.log_value('Error.', 'No files or directories selected')
+        uris = None
+
+
 def on_clicked__copy_file_chooser__select_button(widget):
 
     logger.log_label('Clicked copy file chooser select button')
     uris = get_selected_uris()
+    logger.log_value('The number of files selected', len(uris))
     if uris:
         close()
         callback(uris)

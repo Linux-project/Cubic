@@ -55,22 +55,18 @@ callback = None
 ########################################################################
 
 
-def open(calback, initial_file_path=None):
-
-    selected_file_path = get_selected_file_path()
-    if selected_file_path:
-        displayer.set_sensitive('directory_chooser__select_button_1', True)
-        displayer.set_sensitive('directory_chooser__select_button_2', True)
-    else:
-        displayer.set_sensitive('directory_chooser__select_button_1', False)
-        displayer.set_sensitive('directory_chooser__select_button_2', False)
+def open(calback, file_path=None):
 
     displayer.set_sensitive('window', False)
 
-    if initial_file_path:
-        displayer.show_file_chooser(name, os.path.join(initial_file_path, '*'))
+    if file_path:
+        displayer.show_file_chooser(name, file_path, 'directory_chooser__select_button_1', 'directory_chooser__select_button_2')
     else:
-        displayer.show_file_chooser(name, os.path.join(model.application.user_home, '*'))
+        # Since "*" does not exist in the user's home folder, the home
+        # folder will be opened, and no file will be selected.
+        # See https://lazka.github.io/pgi-docs/Gtk-3.0/classes/FileChooser.html#Gtk.FileChooser.set_filename
+        file_path = os.path.join(model.application.user_home, '*')
+        displayer.show_file_chooser(name, file_path, 'directory_chooser__select_button_1', 'directory_chooser__select_button_2')
 
     set_callback(calback)
 
@@ -101,10 +97,10 @@ def on_clicked__directory_chooser__cancel_button(widget):
     close()
 
 
-def on_directory_chooser__selection_changed(widget):
+def on_selection_changed__directory_chooser(widget):
 
     file_path = get_selected_file_path()
-    if file_path:
+    if file_path and os.path.isdir(file_path):
         displayer.set_sensitive('directory_chooser__select_button_1', True)
         displayer.set_sensitive('directory_chooser__select_button_2', True)
     else:

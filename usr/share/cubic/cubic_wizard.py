@@ -102,8 +102,10 @@ try:
     # Get the user's home directory.
     model.application.user_home = os.path.expanduser('~')
 
-    # Get the running kernel version.
+    # Get the Cubic version.
     model.application.cubic_version = constructor.get_package_version('cubic')
+
+    # Get the running kernel version.
     model.application.kernel_version = constructor.get_kernel_version()
 
     # Load the user interface.
