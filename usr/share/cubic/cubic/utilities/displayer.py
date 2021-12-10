@@ -133,12 +133,12 @@ def transition(old_page, new_page, effect=SLIDE_NONE):
     property set to True in the *.ui file.
 
     Arguments:
-        old_page : str
-            The page to transition from.
-        new_page : str
-            The page to transition to.
-        effect : str
-            An optional effect to use for the transition.
+    old_page : str
+        The page to transition from.
+    new_page : str
+        The page to transition to.
+    effect : str
+        An optional effect to use for the transition.
     """
 
     logger.log_label('Transition pages')

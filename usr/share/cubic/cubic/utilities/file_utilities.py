@@ -46,6 +46,7 @@ import mimetypes
 import os
 import re
 import shutil
+import traceback
 
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -338,6 +339,7 @@ def read_file(file_path, errors=None):
         # logger.log_value('Error. The exception is', exception)
     except Exception as exception:
         logger.log_value('Error. The exception is', exception)
+        logger.log_value('The trace back is', traceback.format_exc())
 
     return file_contents
 
@@ -369,6 +371,7 @@ def read_lines(file_path):
     except Exception as exception:
         logger.log_value('Error. Unable to read lines from file', file_path)
         logger.log_value('The exception is', exception)
+        logger.log_value('The trace back is', traceback.format_exc())
     else:
         logger.log_value('Number of lines read', len(lines))
 
@@ -399,6 +402,7 @@ def write_line(line, file_path):
     except Exception as exception:
         logger.log_value('Error. Unable to write to file', file_path)
         logger.log_value('The exception is', exception)
+        logger.log_value('The trace back is', traceback.format_exc())
         raise exception
 
 
@@ -426,6 +430,7 @@ def write_lines(lines, file_path):
     except Exception as exception:
         logger.log_value('Error. Unable to write lines to file', file_path)
         logger.log_value('The exception is', exception)
+        logger.log_value('The trace back is', traceback.format_exc())
         raise exception
 
 
@@ -441,6 +446,8 @@ def _write_lines_1(lines, file_path):
         The file path to write to.
     """
 
+    # logger.log_value('Write 0-100 lines to file', file_path)
+
     # Write the lines to a new empty file.
     with open(file_path, 'w') as file:
         # When writing in text mode, the default is to convert
@@ -449,7 +456,7 @@ def _write_lines_1(lines, file_path):
         file.write('\n'.join(lines))
 
 
-def _write_lines_2(file_path, lines):
+def _write_lines_2(lines, file_path):
     """
     Write > 100 lines to the specified file path. If the file path does
     not exist, it will be created.
@@ -460,6 +467,8 @@ def _write_lines_2(file_path, lines):
     file_path : string
         The file path to write to.
     """
+
+    # logger.log_value('Write > 100 lines to file', file_path)
 
     # Write the lines to a new empty file.
     with open(file_path, 'w') as file:
@@ -616,6 +625,7 @@ def calculate_md5_hash(file_path, start_path=os.path.sep, buffer_size=2**20):
     except Exception as exception:
         logger.log_value('Unable to calculate the md5 hash for file', file_path)
         logger.log_value('The exception is', exception)
+        logger.log_value('The trace back is', traceback.format_exc())
         raise exception
 
 

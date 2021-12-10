@@ -1,6 +1,11 @@
 cubic (2021.12) bionic focal groovy hirsute impish jammy; urgency=low
 
-  * Issues fixed in version 2021.11-64:
+  * Issues fixed in version 2021.12-65:
+
+  - Fixed Bug LP:#1954444, Unable to write to file error on typical removable
+    packages page.
+
+  * Issues fixed in version 2021.12-64:
 
   - Improved the progressor module and removed the ProgressTracker thread class.
   - Fixed Bug LP:#1953635, Copying numerous small files is slow.
@@ -247,4 +252,4 @@ cubic (2021.12) bionic focal groovy hirsute impish jammy; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 09 Dec 2021 18:21:25 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 10 Dec 2021 16:22:12 -0500
