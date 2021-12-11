@@ -38,6 +38,7 @@
 ########################################################################
 
 # https://docs.python.org/3/library/asyncio-eventloop.html
+# https://docs.python.org/3/library/stat.html#stat.S_ISUID
 # http://seb.dbzteam.org/pyinotify/
 # https://github.com/seb-m/pyinotify/blob/master/python2/examples/tutorial_asyncnotifier.py
 # https://github.com/seb-m/pyinotify/wiki
@@ -69,6 +70,7 @@ import icu
 import locale
 import os
 import pyinotify
+import stat
 import threading
 
 gi.require_version('GLib', '2.0')
@@ -1054,6 +1056,14 @@ class FilesTree:
         logger.log_value('Path name', event.pathname)
         logger.log_value('Base name', event.name)
         logger.log_value('Watch Descriptors', self.watch_descriptors_list)
+        '''
+        # Make the file executable by all if it has the ".sh" extension.
+        if event.name.endswith('.sh'):
+            logger.log_value('Make file executable', event.name)
+            old_mode = os.stat(event.pathname).st_mode
+            new_mode = old_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+            os.chmod(event.pathname, new_mode)
+        '''
 
         file_path = self.get_relative_file_path(event.pathname)
         file_info = self.file_map.get(file_path, EMPTY_FILE_INFO)
@@ -1107,7 +1117,8 @@ class FilesTree:
 
     def process_file_create(self, event):
         """
-        Update the tree when a file or directory is created.
+        Update the tree when a file or directory is created, or when a
+        file or directory is moved into the tree from outside.
 
         Arguments:
         event : pyinotify.Event
@@ -1117,6 +1128,21 @@ class FilesTree:
         logger.log_value('Path name', event.pathname)
         logger.log_value('Base name', event.name)
         logger.log_value('Watch Descriptors', self.watch_descriptors_list)
+
+        # Add executable permissions to created files that have the *.sh
+        # extension. This applies to new files and files moved into the
+        # tree from outside. Files moved into the tree from outside
+        # without the *.sh extension retain their existing permissions.
+        if event.name.endswith('.sh'):
+            # Make the file executable.
+            logger.log_value('Make the file executable', event.name)
+            mode = os.stat(event.pathname).st_mode
+            logger.log_value('The old mode is', oct(mode)[-3:])
+            mode = mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+            logger.log_value('Change the mode to', oct(mode)[-3:])
+            os.chmod(event.pathname, mode)
+            mode = os.stat(event.pathname).st_mode
+            logger.log_value('The new mode is', oct(mode)[-3:])
 
         # Get the tree store (Gtk.TreeStore).
         tree_store = self.tree_model.get_model()
@@ -1239,6 +1265,30 @@ class FilesTree:
         logger.log_value('Source path name', event.src_pathname)
         logger.log_value('Base name', event.name)
         logger.log_value('Watch Descriptors', self.watch_descriptors_list)
+
+        # Add executable permissions to files that are renamed with the
+        # *.sh extension. Remove executable permissions from files that
+        # are renamed without the *.sh extension.
+        if not event.src_pathname.endswith('.sh') and event.name.endswith('.sh'):
+            # Make the file executable.
+            logger.log_value('Make file executable', event.name)
+            mode = os.stat(event.pathname).st_mode
+            logger.log_value('The old mode is', oct(mode)[-3:])
+            mode = mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+            logger.log_value('Change the mode to', oct(mode)[-3:])
+            os.chmod(event.pathname, mode)
+            mode = os.stat(event.pathname).st_mode
+            logger.log_value('The new mode is', oct(mode)[-3:])
+        if event.src_pathname.endswith('.sh') and not event.name.endswith('.sh'):
+            # Make the file non-executable.
+            logger.log_value('Make the file non-executable', event.name)
+            mode = os.stat(event.pathname).st_mode
+            logger.log_value('The old mode is', oct(mode)[-3:])
+            mode = mode & ~stat.S_IXUSR & ~stat.S_IXGRP & ~stat.S_IXOTH
+            logger.log_value('Change the mode to', oct(mode)[-3:])
+            os.chmod(event.pathname, mode)
+            mode = os.stat(event.pathname).st_mode
+            logger.log_value('The new mode is', oct(mode)[-3:])
 
         # Get the tree store (Gtk.TreeStore).
         tree_store = self.tree_model.get_model()
