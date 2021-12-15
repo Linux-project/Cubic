@@ -31,11 +31,11 @@
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Cubic</property>
-    <property name="copyright" translatable="yes">© 2015, 2020 PJ Singh (Cubic PPA)</property>
+    <property name="copyright" translatable="yes">© 2015, 2020 PJ Singh</property>
     <property name="comments" translatable="yes">Custom Ubuntu ISO Creator</property>
-    <property name="website">https://launchpad.net/cubic</property>
-    <property name="website_label" translatable="yes">Cubic on Launchpad</property>
-    <property name="authors">PJ Singh (Cubic PPA)</property>
+    <property name="website">https://github.com/PJ-Singh-001/Cubic</property>
+    <property name="website_label" translatable="yes">Cubic Website</property>
+    <property name="authors">PJ Singh</property>
     <property name="logo_icon_name">cubic</property>
     <property name="license_type">gpl-3-0</property>
     <signal name="delete-event" handler="on_close_about_dialog" swapped="no"/>
@@ -81,12 +81,12 @@
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child>
-          <object class="GtkModelButton" id="website_menu_button">
+          <object class="GtkModelButton" id="wiki_menu_button">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="text" translatable="yes">Cubic Website</property>
-            <signal name="clicked" handler="on_clicked_website_menu_button" swapped="no"/>
+            <property name="text" translatable="yes">Cubic Wiki</property>
+            <signal name="clicked" handler="on_clicked_wiki_menu_button" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -109,12 +109,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="help_menu_button">
+          <object class="GtkModelButton" id="website_menu_button">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="text" translatable="yes">Questions &amp; Answers</property>
-            <signal name="clicked" handler="on_clicked_help_menu_button" swapped="no"/>
+            <property name="text" translatable="yes">Cubic Website</property>
+            <signal name="clicked" handler="on_clicked_website_menu_button" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -149,7 +149,7 @@
         </child>
         <child>
           <object class="GtkButton" id="donate_menu_button">
-            <property name="label" translatable="yes">Fund Cubic</property>
+            <property name="label" translatable="yes">Donate to Cubic</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
@@ -258,6 +258,24 @@
           <packing>
             <property name="pack_type">end</property>
             <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="alert_label">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">★ New ➜</property>
+            <property name="use_markup">True</property>
+            <property name="justify">right</property>
+            <property name="tooltip_text" translatable="yes">Click on each menu item to hide this alert</property>
+            <attributes>
+              <attribute name="font-desc" value="Ubuntu Medium"/>
+              <attribute name="foreground" value="#f4f448480000"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>

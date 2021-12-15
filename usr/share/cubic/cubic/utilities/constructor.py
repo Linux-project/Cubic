@@ -42,6 +42,8 @@
 
 import apt
 import os
+import pickle
+import platform
 import re
 import time
 import zlib
@@ -61,6 +63,81 @@ from cubic.utilities.processor import execute_synchronous
 ########################################################################
 # Functions
 ########################################################################
+
+
+def add_prefix(prefix, text):
+    """
+    Add the prefix to the text.
+
+    Arguments:
+    prefix : str
+        The prefix to add.
+    text:
+        The text.
+
+    Returns:
+    : str
+        The new text with the prefix added.
+    : None
+        If the text did not change.
+    """
+
+    if not text.startswith(prefix):
+        return f'{prefix} {text}'
+    else:
+        return None
+
+
+def remove_prefix(prefix, text):
+    """
+    Remove the prefix from the text.
+
+    Arguments:
+    prefix : str
+        The prefix to remove.
+    text:
+        The text.
+
+    Returns:
+    : str
+        The new text with the prefix removed.
+    : None
+        If the text did not change.
+    """
+
+    if text.startswith(prefix):
+        return text[2:]
+    else:
+        return None
+
+
+def change_prefix(prefix, text, is_prepend):
+    """
+    Prepend or remove the prefix from the text.
+
+    Arguments:
+    prefix : str
+        The prefix to append, or the existing prefix to remove.
+    text:
+        The text to append or remove the prefix from.
+    is_prepend : bool
+        True to prepend the prefix.
+        False to remove the prefix.
+
+    Returns:
+    : str
+        The new text with the prefix prepended or removed.
+    None
+        If the text did not change.
+    """
+
+    if not text.startswith(prefix) and is_prepend:
+        # Append prefix.
+        return f'{prefix} {text}'
+    elif text.startswith(prefix) and not is_prepend:
+        # Remove_prefix.
+        return text[2:]
+    return None
 
 
 def number_as_text(number, title_case=False):
@@ -187,6 +264,18 @@ def os_is_distribution(distribution, root_directory=os.path.sep):
 
 
 def get_kernel_version():
+    """
+    Get the version of the currently running kernel.
+
+    Returns:
+    result : str
+        The version of the currently running kernel.
+    """
+
+    return platform.release()
+
+
+def get_kernel_version_ALTERNATIVE():
     """
     Get the version of the currently running kernel.
 
@@ -899,12 +988,12 @@ def construct_custom_iso_checksum_file_name(custom_iso_file_name):
 
 def encode(t):
     """
-    Convert the specified text into a hex string.
+    Convert text into a hex string.
 
     Arguments:
 
     t : str
-        The text to encode.
+        The text.
 
     Returns:
     h : str
@@ -920,7 +1009,7 @@ def encode(t):
 
 def decode(h):
     """
-    Decode the specified hex string into the original text.
+    Convert a hex string into text.
 
     Arguments:
     h : str
@@ -928,7 +1017,7 @@ def decode(h):
 
     Returns:
     t : str
-        The decoded text.
+        The text.
     """
 
     z = bytes.fromhex(h)
@@ -936,3 +1025,43 @@ def decode(h):
     t = b.decode('utf-8')
 
     return t
+
+
+def encode_object(o):
+    """
+    Convert an object into a hex string.
+
+    Arguments:
+
+    o : object
+        The object.
+
+    Returns:
+    h : str
+        The hex string.
+    """
+    b = pickle.dumps(o)
+    z = zlib.compress(b)
+    h = z.hex().upper()
+
+    return h
+
+
+def decode_object(h):
+    """
+    Convert a hex string into an object.
+
+    Arguments:
+    h : str
+        The hex string.
+
+    Returns:
+    o : object
+        The object.
+    """
+
+    z = bytes.fromhex(h)
+    b = zlib.decompress(z)
+    o = pickle.loads(b)
+
+    return o

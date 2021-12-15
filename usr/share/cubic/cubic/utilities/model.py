@@ -52,6 +52,7 @@ application.user_home = None
 application.cubic_version = None
 application.kernel_version = None
 application.projects = None
+application.visited_sites = None
 
 ########################################################################
 # Project
@@ -179,27 +180,3 @@ iso_file_size = None
 #-----------------------------------------------------------------------
 
 emulator_memory = None
-
-########################################################################
-# Page Help
-########################################################################
-
-help_urls = {
-    'start_page': 'https://answers.launchpad.net/cubic/+faq/3310',
-    'migrate_page': 'https://answers.launchpad.net/cubic/+faq/3232',
-    'project_page': 'https://answers.launchpad.net/cubic/+faq/3230',
-    'test_1_page': 'https://answers.launchpad.net/cubic/+faq/3229',
-    'delete_page': 'https://answers.launchpad.net/cubic/+faq/3228',
-    'extract_page': 'https://answers.launchpad.net/cubic/+faq/3227',
-    'terminal_page': 'https://answers.launchpad.net/cubic/+faq/3226',
-    'terminal_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
-    'prepare_page': 'https://answers.launchpad.net/cubic/+faq/3224',
-    'packages_page': 'https://answers.launchpad.net/cubic/+faq/3223',
-    'options_page': 'https://answers.launchpad.net/cubic/+faq/3222',
-    'preseed_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
-    'boot_copy_page': 'https://answers.launchpad.net/cubic/+faq/3225',
-    'compression_page': 'https://answers.launchpad.net/cubic/+faq/3221',
-    'generate_page': 'https://answers.launchpad.net/cubic/+faq/3220',
-    'finish_page': 'https://answers.launchpad.net/cubic/+faq/3219',
-    'test_2_page': 'https://answers.launchpad.net/cubic/+faq/3229'
-}

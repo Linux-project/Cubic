@@ -799,6 +799,24 @@ def update_progress_bar_text(progress_bar_name, text):
 ########################################################################
 
 
+def set_button_label(button_name, label):
+    """
+    Set the button label.
+
+    Arguments:
+    button_name : str
+        The name of a Gtk.Button or Gtk.ModelButton.
+    label : str
+        The label text to display.
+    """
+
+    button = model.builder.get_object(button_name)
+    if isinstance(button, Gtk.ModelButton):
+        GLib.idle_add(Gtk.ModelButton.set_property, button, 'text', label)
+    else:
+        GLib.idle_add(Gtk.Button.set_label, button, label)
+
+
 def activate_toggle_button(toggle_button_name, is_active):
     """
     This function is used on the Options page.

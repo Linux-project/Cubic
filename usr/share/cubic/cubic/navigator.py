@@ -270,8 +270,11 @@ import sys
 import threading
 # import traceback
 
+from cubic.constants import STAR, CUBIC_WEBSITE, CUBIC_WIKI, CUBIC_PAGE_HELP, CUBIC_DONATE, CUBIC_SITES, CUBIC_URLS
 from cubic.utilities.displayer import SLIDE_NONE, SLIDE_LEFT, SLIDE_RIGHT, SLIDE_DOWN, SLIDE_UP, CROSS_FADE
+from cubic.utilities import constructor
 from cubic.utilities import displayer
+from cubic.utilities import file_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
 from cubic.utilities.processor import terminate_process
@@ -281,6 +284,7 @@ from cubic.utilities.processor import terminate_process
 ########################################################################
 
 navigation_thread = None
+urls = constructor.decode_object(CUBIC_URLS)
 
 ########################################################################
 # Exception Classes
@@ -339,6 +343,9 @@ def on_window_destroy(*args):
     action = 'quit'
     handle_navigation(action)
 
+    # Update the visited sites list.
+    save_visited_sites()
+
 
 def on_clicked_navigation_button(button):
 
@@ -348,40 +355,52 @@ def on_clicked_navigation_button(button):
     handle_navigation(button.action)
 
 
-def on_clicked_website_menu_button(button):
+def on_clicked_wiki_menu_button(button):
 
-    logger.log_title('Clicked website_menu_button')
+    logger.log_title('Clicked wiki menu button')
 
-    url = 'https://launchpad.net/cubic'
-    command = f'xdg-open "{url}" &'
+    command = f'xdg-open "{urls[CUBIC_WIKI]}" 2> /dev/null &'
     os.system(command)
 
-
-def on_clicked_help_menu_button(button):
-
-    logger.log_title('Clicked help menu button')
-
-    url = 'https://answers.launchpad.net/cubic'
-    command = f'xdg-open "{url}" &'
-    os.system(command)
+    if CUBIC_WIKI not in model.application.visited_sites:
+        label = button.props.text
+        new_text = constructor.remove_prefix(STAR, label)
+        if new_text:
+            displayer.set_button_label('wiki_menu_button', new_text)
+            model.application.visited_sites.add(CUBIC_WIKI)
+            displayer.set_visible('alert_label', len(model.application.visited_sites) < len(CUBIC_SITES))
 
 
 def on_clicked_page_help_menu_button(button):
 
     logger.log_title('Clicked page help menu button')
 
-    url = model.help_urls[model.page.name]
-    command = f'xdg-open "{url}" &'
+    command = f'xdg-open "{urls[model.page.name]}" 2> /dev/null &'
     os.system(command)
 
+    if CUBIC_PAGE_HELP not in model.application.visited_sites:
+        label = button.props.text
+        new_text = constructor.remove_prefix(STAR, label)
+        if new_text:
+            displayer.set_button_label('page_help_menu_button', new_text)
+            model.application.visited_sites.add(CUBIC_PAGE_HELP)
+            displayer.set_visible('alert_label', len(model.application.visited_sites) < len(CUBIC_SITES))
 
-def on_clicked_donate_menu_button(button):
 
-    logger.log_title('Clicked donate menu button')
+def on_clicked_website_menu_button(button):
 
-    url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5WJL2ZE3AWGQQ&currency_code=USD&source=url'
-    command = f'xdg-open "{url}" &'
+    logger.log_title('Clicked website menu button')
+
+    command = f'xdg-open "{urls[CUBIC_WEBSITE]}" 2> /dev/null &'
     os.system(command)
+
+    if CUBIC_WEBSITE not in model.application.visited_sites:
+        label = button.props.text
+        new_text = constructor.remove_prefix(STAR, label)
+        if new_text:
+            displayer.set_button_label('website_menu_button', new_text)
+            model.application.visited_sites.add(CUBIC_WEBSITE)
+            displayer.set_visible('alert_label', len(model.application.visited_sites) < len(CUBIC_SITES))
 
 
 def on_clicked_about_menu_button(button):
@@ -402,6 +421,22 @@ def on_close_about_dialog(widget, event):
     displayer.set_sensitive('window', True)
 
     return True
+
+
+def on_clicked_donate_menu_button(button):
+
+    logger.log_title('Clicked donate menu button')
+
+    command = f'xdg-open "{urls[CUBIC_DONATE]}" 2> /dev/null &'
+    os.system(command)
+
+    if CUBIC_DONATE not in model.application.visited_sites:
+        label = button.get_label()
+        new_text = constructor.remove_prefix(STAR, label)
+        if new_text:
+            displayer.set_button_label('donate_menu_button', new_text)
+            model.application.visited_sites.add(CUBIC_DONATE)
+            displayer.set_visible('alert_label', len(model.application.visited_sites) < len(CUBIC_SITES))
 
 
 ########################################################################
@@ -981,3 +1016,22 @@ def get_new_page(action, page):
     logger.log_value('New page', page_label)
 
     return new_page, effect
+
+
+########################################################################
+# Support Functions
+########################################################################
+
+
+def save_visited_sites():
+
+    try:
+        # Ensure the Cubic configuration directory exists.
+        file_path = os.path.join(model.application.user_home, '.config', 'cubic')
+        file_utilities.make_directories(file_path)
+
+        # Save the list of project directories.
+        file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'visited_sites.conf')
+        file_utilities.write_lines(model.application.visited_sites, file_path)
+    except Exception as exception:
+        logger.log_value('Error. The exception is', exception)
