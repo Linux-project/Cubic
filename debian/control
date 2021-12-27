@@ -14,9 +14,9 @@ Build-Depends:
                     coreutils (>=8.28),
 #                   Required for mkisofs; usually preinstalled
                     genisoimage (>=9:1.1.11),
-#                   Required for GtkSource
+#                   Required for GtkSource; gir1.2-gtksource-3.0 is usually preinstalled
                     gir1.2-gtksource-4 (>=4.2.0) | gir1.2-gtksource-3.0 (>=3.24.7),
-#                   Required for libvte-2.91
+#                   Required for libvte-2.91; usually preinstalled
                     gir1.2-vte-2.91 (>=0.52.1),
 #                   Required for lsinitramfs; usually preinstalled
                     initramfs-tools (>=0.130),
@@ -26,7 +26,7 @@ Build-Depends:
                     libgtksourceview-4-0 (>=4.2.0) | libgtksourceview-3.0-1 (>=3.24.7),
 #                   Required for mount, umount; usually preinstalled
                     mount (>=2.31.1),
-#                   Required for PolicyKit
+#                   Required for PolicyKit; usually preinstalled
                     policykit-1 (>=0.105),
 #                   Required for apt.cache; usually preinstalled
                     python3-apt (>=1.6.5),
@@ -44,6 +44,7 @@ Build-Depends:
                     python3-psutil (>=5.4.2-1),
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
+#                   Required for Gtk 3; usually preinstalled
                     gir1.2-gtk-3.0 (>=3.22.30),
 #                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
@@ -61,7 +62,7 @@ Build-Depends:
                     xorriso (>=1.4.8)
 X-Python3-Version:  >= 3.6
 Vcs-Bzr:            lp:cubic
-Homepage:           https://launchpad.net/cubic
+Homepage:           https://github.com/PJ-Singh-001/Cubic
 
 Package:            cubic
 Architecture:       all
@@ -74,9 +75,9 @@ Depends:
                     coreutils (>=8.28),
 #                   Required for mkisofs; usually preinstalled
                     genisoimage (>=9:1.1.11),
-#                   Required for GtkSource
+#                   Required for GtkSource; gir1.2-gtksource-3.0 is usually preinstalled
                     gir1.2-gtksource-4 (>=4.2.0) | gir1.2-gtksource-3.0 (>=3.24.7),
-#                   Required for libvte-2.91
+#                   Required for libvte-2.91; usually preinstalled
                     gir1.2-vte-2.91 (>=0.52.1),
 #                   Required for lsinitramfs; usually preinstalled
                     initramfs-tools (>=0.130),
@@ -86,7 +87,7 @@ Depends:
                     libgtksourceview-4-0 (>=4.2.0) | libgtksourceview-3.0-1 (>=3.24.7),
 #                   Required for mount, umount; usually preinstalled
                     mount (>=2.31.1),
-#                   Required for PolicyKit
+#                   Required for PolicyKit; usually preinstalled
                     policykit-1 (>=0.105),
 #                   Required for apt.cache; usually preinstalled
                     python3-apt (>=1.6.5),
@@ -104,6 +105,7 @@ Depends:
                     python3-psutil (>=5.4.2-1),
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
+#                   Required for Gtk 3; usually preinstalled
                     gir1.2-gtk-3.0 (>=3.22.30),
 #                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
@@ -128,4 +130,4 @@ Description: Wizard to create a customized Ubuntu Live ISO image.
   environment to customize the Linux file system. You can create new
   customization projects or modify existing projects. Important parameters are
   dynamically populated with intelligent defaults to simplify the customization
-  process. See https://launchpad.net/cubic for more information.
+  process. See https://github.com/PJ-Singh-001/Cubic for more information.

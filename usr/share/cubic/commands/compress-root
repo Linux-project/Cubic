@@ -35,14 +35,14 @@
 
 program=${0}
 number_arguments=${#}
-source_path=${1}
-target_path=${2}
+source_file_path=${1}
+target_file_path=${2}
 compression=${3}
 
 # echo "program..................... ${program}"
 # echo "number of arguments......... ${number_arguments}"
-# echo "source path................. ${source_path}"
-# echo "target path................. ${target_path}"
+# echo "source file path............ ${source_file_path}"
+# echo "target file path............ ${target_file_path}"
 # echo "compression................. ${compression}"
 
 ########################################################################
@@ -50,7 +50,7 @@ compression=${3}
 ########################################################################
 
 # unshare --fork --pid --kill-child -- \
-mksquashfs "${source_path}" "${target_path}" \
+mksquashfs "${source_file_path}" "${target_file_path}" \
  -noappend                 \
  -comp ${compression}      \
  -wildcards                \

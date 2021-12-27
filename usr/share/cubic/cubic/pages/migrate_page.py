@@ -236,41 +236,41 @@ def migrate_custom_root():
     is_error = False
 
     # Create the custom root directory used by the old project structure.
-    source_path = os.path.join(model.project.directory, OLD_CUSTOM_ROOT_DIRECTORY)
+    source_file_path = os.path.join(model.project.directory, OLD_CUSTOM_ROOT_DIRECTORY)
 
     # The custom root directory for the new project structure was set on
     # the start page.
-    target_path = model.project.custom_root_directory
+    target_file_path = model.project.custom_root_directory
 
     logger.log_label('Migrate the customized Linux file system')
-    logger.log_value('From', source_path)
-    logger.log_value('To', target_path)
+    logger.log_value('From', source_file_path)
+    logger.log_value('To', target_file_path)
 
     displayer.update_status('migrate_page__custom_root', PROCESSING)
     time.sleep(SLEEP_1000_MS)
 
-    if os.path.exists(source_path):
+    if os.path.exists(source_file_path):
 
         program = os.path.join(model.application.directory, 'commands', 'move-path')
-        command = f'pkexec "{program}" "{source_path}" "{target_path}"'
+        command = ['pkexec', program, source_file_path, target_file_path]
         result, exit_status, signal_status = execute_synchronous(command)
 
         if not exit_status:
-            logger.log_value('Migrated', source_path)
+            logger.log_value('Migrated', source_file_path)
             displayer.update_status('migrate_page__custom_root', OK)
             displayer.update_label('migrate_page__custom_root_message', '')
         else:
-            logger.log_value('Error. Unable to migrate', source_path)
+            logger.log_value('Error. Unable to migrate', source_file_path)
             logger.log_value('The result is', result)
             displayer.update_status('migrate_page__custom_root', ERROR)
-            displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_path}.')
+            displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_file_path}.')
             is_error = True
 
     else:
 
-        logger.log_value('Error. Unable to migrate because the source directory does not exist', source_path)
+        logger.log_value('Error. Unable to migrate because the source directory does not exist', source_file_path)
         displayer.update_status('migrate_page__custom_root', ERROR)
-        displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_path}.')
+        displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_file_path}.')
         is_error = True
 
     # Pause to allow the user to see the result.
@@ -287,46 +287,46 @@ def migrate_custom_disk():
     is_error = False
 
     # Create the custom disk directory used by the old project structure.
-    source_path = os.path.join(model.project.directory, OLD_CUSTOM_DISK_DIRECTORY)
+    source_file_path = os.path.join(model.project.directory, OLD_CUSTOM_DISK_DIRECTORY)
 
     # The custom disk directory for the new project structure was set on
     # the start page.
-    target_path = model.project.custom_disk_directory
+    target_file_path = model.project.custom_disk_directory
 
     # Get the current user to whom the ownership of the custom disk
     # directory will be recursively changed.
     user = getpass.getuser()
 
     logger.log_label('Migrate the customized disk')
-    logger.log_value('From', source_path)
-    logger.log_value('To', target_path)
+    logger.log_value('From', source_file_path)
+    logger.log_value('To', target_file_path)
     logger.log_value('User', user)
 
     displayer.update_status('migrate_page__custom_disk', PROCESSING)
     time.sleep(SLEEP_1000_MS)
 
-    if os.path.exists(source_path):
+    if os.path.exists(source_file_path):
 
         program = os.path.join(model.application.directory, 'commands', 'move-path')
-        command = f'pkexec "{program}" "{source_path}" "{target_path}" "{user}"'
+        command = ['pkexec', program, source_file_path, target_file_path, user]
         result, exit_status, signal_status = execute_synchronous(command)
 
         if not exit_status:
-            logger.log_value('Migrated', source_path)
+            logger.log_value('Migrated', source_file_path)
             displayer.update_status('migrate_page__custom_disk', OK)
             displayer.update_label('migrate_page__custom_disk_message', '')
         else:
-            logger.log_value('Error. Unable to migrate', source_path)
+            logger.log_value('Error. Unable to migrate', source_file_path)
             logger.log_value('The result is', result)
             displayer.update_status('migrate_page__custom_disk', ERROR)
-            displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_path}.')
+            displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_file_path}.')
             is_error = True
 
     else:
 
-        logger.log_value('Error. Unable to migrate because the source directory does not exist', source_path)
+        logger.log_value('Error. Unable to migrate because the source directory does not exist', source_file_path)
         displayer.update_status('migrate_page__custom_disk', ERROR)
-        displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_path}.')
+        displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_file_path}.')
         is_error = True
 
     # Pause to allow the user to see the result.

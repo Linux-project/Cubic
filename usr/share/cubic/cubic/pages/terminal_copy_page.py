@@ -288,7 +288,7 @@ def copy_file(file_path, file_number, directory, total_files):
     logger.log_value('The target directory is', directory)
 
     program = os.path.join(model.application.directory, 'commands', 'copy-path')
-    command = f'pkexec "{program}" "{file_path}" "{directory}" "root"'
+    command = ['pkexec', program, file_path, directory, 'root']
 
     # The progress callback function.
     def progress_callback(percent):

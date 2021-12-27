@@ -75,9 +75,9 @@ def mount(iso_file_path, iso_mount_point, user_id=None, group_id=None):
 
     program = os.path.join(model.application.directory, 'commands', 'mount-iso')
     if user_id and group_id:
-        command = f'pkexec "{program}" "{iso_file_path}" "{iso_mount_point}" "{user_id}" "{group_id}"'
+        command = ['pkexec', program, iso_file_path, iso_mount_point, user_id, group_id]
     else:
-        command = f'pkexec "{program}" "{iso_file_path}" "{iso_mount_point}"'
+        command = ['pkexec', program, iso_file_path, iso_mount_point]
     result, exit_status, signal_status = execute_synchronous(command)
 
     logger.log_value('The result is', result)
@@ -91,7 +91,7 @@ def unmount(iso_mount_point):
     logger.log_value('Unmount ISO', iso_mount_point)
 
     program = os.path.join(model.application.directory, 'commands', 'unmount-iso')
-    command = f'pkexec "{program}" "{iso_mount_point}"'
+    command = ['pkexec', program, iso_mount_point]
     result, exit_status, signal_status = execute_synchronous(command)
 
     logger.log_value('The result is', result)

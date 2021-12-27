@@ -425,8 +425,10 @@ def create_kernel_details_list(*directories):
 
 def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initrd_details_list, directories_with_one_vmlinuz_and_initrd):
     """
-    Add kernel details to kernel_details_list.
+    Add kernel details to the kernel details list.
     """
+
+    logger.log_label('Collate kernel versions')
 
     note = ''
     is_selected = False
@@ -461,6 +463,8 @@ def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initr
             if vmlinuz_directory == initrd_directory:
                 if vmlinuz_version_name and initrd_version_name:
                     if vmlinuz_version_integers == initrd_version_integers:
+                        logger.log_value('Directory', vmlinuz_directory)
+                        logger.log_value('Matching vmlinuz and initrd versions', vmlinuz_version_name)
                         kernel_details = {
                             'version_integers': vmlinuz_version_integers,
                             'version_name': vmlinuz_version_name,
@@ -475,6 +479,11 @@ def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initr
                         kernel_details_list.append(kernel_details)
                 elif vmlinuz_directory in directories_with_one_vmlinuz_and_initrd:
                     if vmlinuz_version_name and not initrd_version_name:
+                        logger.log_value('Directory', vmlinuz_directory)
+                        logger.log_value('The vmlinuz version is', vmlinuz_version_name)
+                        logger.log_value(
+                            'The initrd version is',
+                            f'{initrd_version_name}; assume the version is {vmlinuz_version_name} because this directory has one set of kernel files')
                         kernel_details = {
                             'version_integers': vmlinuz_version_integers,
                             'version_name': vmlinuz_version_name,
@@ -488,6 +497,10 @@ def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initr
                         }
                         kernel_details_list.append(kernel_details)
                     elif not vmlinuz_version_name and initrd_version_name:
+                        logger.log_value('Directory', vmlinuz_directory)
+                        logger.log_value(
+                            'The vmlinuz version is',
+                            f'{vmlinuz_version_name}; assume the version is {initrd_version_name} because this directory has one set of kernel files')
                         kernel_details = {
                             'version_integers': initrd_version_integers,
                             'version_name': initrd_version_name,
@@ -501,6 +514,9 @@ def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initr
                         }
                         kernel_details_list.append(kernel_details)
                     else:
+                        logger.log_value('Directory', vmlinuz_directory)
+                        logger.log_value('The vmlinuz version is', f'{vmlinuz_version_name}; assume the version is 0.0.0-0')
+                        logger.log_value('The initrd version is', f'{initrd_version_name}; assume the version is  0.0.0-0')
                         kernel_details = {
                             'version_integers': (0,
                                                  0,
@@ -517,12 +533,19 @@ def _create_kernel_details_list(kernel_details_list, vmlinuz_details_list, initr
                             'is_selected': is_selected
                         }
                         kernel_details_list.append(kernel_details)
+                else:
+                    logger.log_value('Directory', vmlinuz_directory)
+                    logger.log_value('The vmlinuz version is', vmlinuz_version_name)
+                    logger.log_value('The initrd version is', initrd_version_name)
+                    logger.log_value('Warning', 'The versions do not match. Skipping')
 
 
 def _update_kernel_details_list(kernel_details_list):
     """
     Sort, select kernel, add notes, and remove the 1st column.
     """
+
+    logger.log_label('List the kernel details')
 
     # Reverse sort the kernel details list by kernel version number (1st
     # column).
@@ -612,7 +635,7 @@ def _update_kernel_details_list(kernel_details_list):
     # For debugging.
     # print_details_list(kernel_details_list, {'note': 10})
 
-    # Log the resuting list of kernel versions.
+    # Log the resulting list of kernel versions.
     total = len(kernel_details_list)
     for index, kernel_details in enumerate(kernel_details_list):
         logger.log_value('Version', kernel_details['version_name'])
@@ -767,6 +790,18 @@ def get_vmlinuz_version_name(file_path):
 
 
 def _get_vmlinuz_version_name_from_file_name(file_path):
+    """
+    Get the vmlinuz version name from the name of the file.
+
+    Arguments:
+    file_path : str
+        The full path of the vmlinuz file. This must be a real path
+        (symbolic links must be dereferenced, or followed).
+
+    Returns:
+    version_name : str
+        The version name.
+    """
 
     logger.log_value('Get vmlinuz version name from file name', file_path)
     file_name = os.path.basename(file_path)
@@ -778,10 +813,23 @@ def _get_vmlinuz_version_name_from_file_name(file_path):
 
 
 def _get_vmlinuz_version_name_from_file_type(file_path):
+    """
+    Get the vmlinuz version name from using the file command.
+
+    Arguments:
+    file_path : str
+        The full path of the vmlinuz file. This must be a real path
+        (symbolic links must be dereferenced, or followed).
+
+    Returns:
+    version_name : str
+        The version name.
+    """
 
     logger.log_value('Get vmlinuz version name from file type', file_path)
-    command = f'file "{file_path}"'
-    result, exit_status, signal_status = execute_synchronous(command)
+    directory, file_name = os.path.split(file_path)
+    command = f'file "{file_name}"'
+    result, exit_status, signal_status = execute_synchronous(command, directory)
     version_name = None
     if not exit_status and not signal_status:
         version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+)*)', str(result))
@@ -793,6 +841,18 @@ def _get_vmlinuz_version_name_from_file_type(file_path):
 
 
 def _get_vmlinuz_version_name_from_file_contents(file_path):
+    """
+    Get the vmlinuz version name by reading the fine contents.
+
+    Arguments:
+    file_path : str
+        The full path of the vmlinuz file. This must be a real path
+        (symbolic links must be dereferenced, or followed).
+
+    Returns:
+    version_name : str
+        The version name.
+    """
 
     logger.log_value('Get vmlinuz version name from file contents', file_path)
     version_name = None
@@ -861,12 +921,12 @@ def update_initrd_details_list(directory, details_list):
             # virtual environment, because it will seem to point to the
             # root of the host system.
 
-            # The following remedies this situation by appending the
+            # The following remedies this situation by prepending the
             # virtual environment's root directory to the real path.
             # However, if another file with the same path actually
             # exists on the host system, real path will point to that
             # file instead, and this 'if not' block will not be
-            # executed. This is considered a negligable risk.
+            # executed. This is considered a negligible risk.
 
             # It is necessary to strip the leading '/' from the real
             # path, otherwise os.path.join() considers the real path
@@ -877,7 +937,7 @@ def update_initrd_details_list(directory, details_list):
             # (See https://docs.python.org/3/library/os.path.html).
             file_path = os.path.abspath(os.path.join(model.project.custom_root_directory, real_path.strip(os.path.sep)))
 
-            # Replace simlinks with the actual file_path.
+            # Replace symbolic links with the actual file path.
             real_path = os.path.realpath(file_path)
 
         if os.path.exists(real_path):
@@ -1001,6 +1061,38 @@ def _get_initrd_compression_format_from_file_contents(file_path):
     return compression_format
 
 
+'''
+# The binwalk.scan() function does not terminate immediately, so the
+# former _get_initrd_compression_format_from_file_contents() function is
+# preferred over this alternative function. To use this function:
+# 1. import binwalk
+# 2. Add the following to the debian control file:
+#    # Required for binwalk; included with binwalk
+#      python3-binwalk (>=2.1.1),
+def _get_initrd_compression_format_from_file_contents_ALTERNATIVE(file_path):
+    """
+    Get the compression format in lower case.
+    Valid compression formats are 'gzip', 'bzip2', 'lz4', 'lzma', 'lzop', and 'xz'.
+    """
+
+    logger.log_value('Get initrd compression format from file contents', file_path)
+    compression_format = None
+
+    for module in binwalk.scan(file_path, signature=True, quiet=True, include='compressed data'):
+        for result in module.results:
+            logger.log_value('The initrd file contents information is', result.description)
+            match = INITRAMFS_COMPRESSION_PATTERN.match(result.description)
+            if match:
+                compression_format = match.group(1).lower()
+                logger.log_value('Initrd compression format found?', 'Yes')
+                break
+            else:
+                logger.log_value('Initrd compression format found?', 'No')
+
+    return compression_format
+'''
+
+
 def get_vmlinuz_version_from_kernel_details_list(kernel_details_list, directory):
 
     # The kernel_details dictionary keys:
@@ -1040,20 +1132,46 @@ def get_initrd_version_name(file_path):
 
 
 def _get_initrd_version_name_from_file_name(file_path):
+    """
+    Get the initrd version name from the name of the file.
+
+    Arguments:
+    file_path : str
+        The full path of the initrd file. This must be a real path
+        (symbolic links must be dereferenced, or followed).
+
+    Returns:
+    version_name : str
+        The version name.
+    """
 
     logger.log_value('Get initrd version name from file name', file_path)
     file_name = os.path.basename(file_path)
     version_name = re.search(r'\d[\d\.-]*\d', file_name)
     version_name = version_name.group(0) if version_name else None
+    logger.log_value('▹ The version name is', version_name)
 
     return version_name
 
 
 def _get_initrd_version_name_from_file_type(file_path):
+    """
+    Get the initrd version name from using the file command.
+
+    Arguments:
+    file_path : str
+        The full path of the initrd file. This must be a real path
+        (symbolic links must be dereferenced, or followed).
+
+    Returns:
+    version_name : str
+        The version name.
+    """
 
     logger.log_value('Get initrd version name from file type', file_path)
-    command = f'file "{file_path}"'
-    result, exit_status, signal_status = execute_synchronous(command)
+    directory, file_name = os.path.split(file_path)
+    command = f'file "{file_name}"'
+    result, exit_status, signal_status = execute_synchronous(command, directory)
     version_name = None
     if not exit_status and not signal_status:
         version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+)*)', str(result))
@@ -1065,6 +1183,18 @@ def _get_initrd_version_name_from_file_type(file_path):
 
 
 def _get_initrd_version_name_from_file_contents(file_path):
+    """
+    Get the initrd version name from using the lsinitramfs command.
+
+    Arguments:
+    file_path : str
+        The full path of the initrd file. This must be a real path
+        (symbolic links must be dereferenced, or followed).
+
+    Returns:
+    version_name : str
+        The version name.
+    """
 
     logger.log_value('Get initrd version name from file contents', file_path)
     version_name = None

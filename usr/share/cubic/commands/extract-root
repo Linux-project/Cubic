@@ -35,19 +35,19 @@
 
 program=${0}
 number_arguments=${#}
-target_path=${1}
-source_path=${2}
+target_file_path=${1}
+source_file_path=${2}
 
 # echo "program..................... ${program}"
 # echo "number of arguments......... ${number_arguments}"
-# echo "target path................. ${target_path}"
-# echo "source path................. ${source_path}"
+# echo "target file path............ ${target_file_path}"
+# echo "source file path............ ${source_file_path}"
 
 ########################################################################
 # Command
 ########################################################################
 
-rm -rf "${target_path}"
-unsquashfs -dest "${target_path}" "${source_path}"
-# unsquashfs -force -dest "${target_path}" "${source_path}"
+rm -rf "${target_file_path}"
+unsquashfs -dest "${target_file_path}" "${source_file_path}"
+# unsquashfs -force -dest "${target_file_path}" "${source_file_path}"
 

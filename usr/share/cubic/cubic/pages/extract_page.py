@@ -423,14 +423,14 @@ def copy_original_iso_files():
 
     # Add a "/" at the end of the path so rsync copies the contents
     # of the source directory to the target directory.
-    source_path = os.path.join(model.project.iso_mount_point, '')
-    logger.log_value('The source path is', source_path)
+    source_file_path = os.path.join(model.project.iso_mount_point, '')
+    logger.log_value('The source file path is', source_file_path)
 
     # Add a "/" at the end of the path so rsync copies files into
     # the target directory. This is not required, but is consistent
     # with the source directory path above.
-    target_path = os.path.join(model.project.custom_disk_directory, '')
-    logger.log_value('The target path is', target_path)
+    target_file_path = os.path.join(model.project.custom_disk_directory, '')
+    logger.log_value('The target file path is', target_file_path)
 
     # Copy files from the original iso.
 
@@ -453,7 +453,7 @@ def copy_original_iso_files():
 
     command = (
         'rsync'
-        f' --info=progress2 "{source_path}" "{target_path}"'
+        f' --info=progress2 "{source_file_path}" "{target_file_path}"'
         ' --delete'
         # ' --archive'
         ' --recursive'
@@ -516,15 +516,15 @@ def extract_squashfs():
     terminal = model.builder.get_object('terminal_page__terminal')
     terminal.reset(True, True)
 
-    target_path = model.project.custom_root_directory
-    logger.log_value('The target path is', target_path)
+    target_file_path = model.project.custom_root_directory
+    logger.log_value('The target file path is', target_file_path)
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
-    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
-    logger.log_value('The source path is', source_path)
+    source_file_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
+    logger.log_value('The source file path is', source_file_path)
 
     program = os.path.join(model.application.directory, 'commands', 'extract-root')
-    command = f'pkexec "{program}" "{target_path}" "{source_path}"'
+    command = ['pkexec', program, target_file_path, source_file_path]
 
     # The progress callback function.
     def progress_callback(percent):

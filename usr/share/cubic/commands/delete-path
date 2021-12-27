@@ -35,14 +35,14 @@
 
 program=${0}
 number_arguments=${#}
-target_path=${1}
+target_file_path=${1}
 
 # echo "program..................... ${program}"
 # echo "number of arguments......... ${number_arguments}"
-# echo "target path................. ${target_path}"
+# echo "target file path............ ${target_file_path}"
 
 ########################################################################
 # Command
 ########################################################################
 
-rm -rf "${target_path}"
+rm -rf "${target_file_path}"

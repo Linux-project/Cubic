@@ -66,6 +66,10 @@ from cubic.utilities.processor import execute_synchronous
 def make_directory(directory):
     """
     Create a single directory when the parent directory path exists.
+
+    Arguments:
+    directory : str
+        The full path of the directory to create.
     """
 
     logger.log_value('Create directory', directory)
@@ -78,7 +82,11 @@ def make_directory(directory):
 
 def make_directories(file_path):
     """
-    Create all directories in the specified file path.
+    Create all directories in the file path.
+
+    Arguments:
+    file_path : str
+        The full file path containing directories to create.
     """
 
     logger.log_value('Create all directories in the path', file_path)
@@ -92,8 +100,20 @@ def make_directories(file_path):
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_directory(directory):
     """
-    If permissions prevent deleting the directory, use
-    delete_path_as_root() instead.
+    Delete the directory. If permissions prevent deleting the directory,
+    use delete_path_as_root() instead.
+
+    Arguments:
+    directory : str
+        The full path of the directory to delete.
+
+    Returns:
+    result : str
+        The result of the process.
+    exit_status : int
+        The exit status of the process.
+    signal_status : int
+        The signal status of the process.
     """
 
     logger.log_value('Delete directory', directory)
@@ -126,6 +146,15 @@ def delete_directory(directory):
 
 
 def delete_files_with_pattern(file_path_pattern, exclude_file_paths=None):
+    """
+    Delete files matching the file path pattern.
+
+    Arguments:
+    file_path_pattern : str
+        The file path pattern to match.
+    exclude_file_paths : str
+        File paths that should not be deleted if they match the pattern.
+    """
 
     if exclude_file_paths:
         logger.log_value('Delete existing files with pattern', file_path_pattern)
@@ -138,11 +167,26 @@ def delete_files_with_pattern(file_path_pattern, exclude_file_paths=None):
 
 # https://docs.python.org/3.8/library/shutil.html#shutil.rmtree
 def delete_path_as_root(file_path):
+    """
+    Delete the directory or file as root.
+
+    Arguments:
+    directory : str
+        The full path of the directory or file to delete.
+
+    Returns:
+    result : str
+        The result of the process.
+    exit_status : int
+        The exit status of the process.
+    signal_status : int
+        The signal status of the process.
+    """
 
     logger.log_value('Delete file', file_path)
 
     program = os.path.join(model.application.directory, 'commands', 'delete-path')
-    command = f'pkexec "{program}" "{file_path}"'
+    command = ['pkexec', program, file_path]
     result, exit_status, signal_status = execute_synchronous(command)
     logger.log_value('The result is', result)
     logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
@@ -150,13 +194,25 @@ def delete_path_as_root(file_path):
     return result, exit_status, signal_status
 
 
-def get_directory_size(start_path):
+def get_directory_size(start_directory):
+    """
+    This function is not used.
+    Get the total size of all files in the directory.
+
+    Arguments:
+    start_directory : str
+        The full path of the directory.
+
+    Returns:
+    total_size : int
+        The total size of the directory in bytes.
+    """
 
     logger.log_label('Calculate directory size')
-    logger.log_value('Directory', start_path)
+    logger.log_value('Directory', start_directory)
 
     total_size = 0
-    for directory_path, directory_names, file_names in os.walk(start_path):
+    for directory_path, directory_names, file_names in os.walk(start_directory):
         for file_name in file_names:
             file_path = os.path.join(directory_path, file_name)
             total_size += os.path.getsize(file_path)
@@ -167,6 +223,18 @@ def get_directory_size(start_path):
 
 
 def directory_is_writable(directory):
+    """
+    Check if the directory is writable.
+
+    Arguments:
+    directory : str
+        The full path of the directory.
+
+    Returns:
+    is_writable : bool
+        True if the directory is writable.
+        False if the directory is not writable.
+    """
 
     logger.log_value('Check if directory is writable', directory)
 
@@ -176,13 +244,26 @@ def directory_is_writable(directory):
     return is_writable
 
 
-def get_directory_for_file(file_name, start_path):
+def get_directory_for_file(file_name, start_directory):
+    """
+    Find the directory for the file.
 
-    logger.log_value(f'Find the directory for {file_name} in', start_path)
+    Arguments:
+    file_name : str
+        The file to search for.
+    start_directory : str
+        The full path of the directory to search in.
+
+    Returns:
+    directory : str
+        The directory that contains the file.
+    """
+
+    logger.log_value(f'Find the directory for {file_name} in', start_directory)
 
     directory = ''
     # The directory may be a symlink.
-    for directory_path, directory_names, file_names in os.walk(start_path, followlinks=True):
+    for directory_path, directory_names, file_names in os.walk(start_directory, followlinks=True):
         if file_name in file_names:
             directory = directory_path
             break
@@ -190,12 +271,23 @@ def get_directory_for_file(file_name, start_path):
     return directory
 
 
-def get_file_paths(start_path):
+def get_file_paths(start_directory):
+    """
+    Get the full paths of all files in the directory.
 
-    logger.log_value('Get full file paths in the directory', start_path)
+    Arguments:
+    start_directory : str
+        The full path of the directory.
+
+    Returns:
+    file_paths : list (str)
+        A list of full file paths.
+    """
+
+    logger.log_value('Get full file paths in the directory', start_directory)
 
     file_paths = []
-    for directory_path, directory_names, file_names in os.walk(start_path):
+    for directory_path, directory_names, file_names in os.walk(start_directory):
         for file_name in file_names:
             file_path = os.path.join(directory_path, file_name)
             file_paths.append(file_path)
@@ -203,28 +295,53 @@ def get_file_paths(start_path):
     return file_paths
 
 
-def get_relative_file_paths(start_path, exclude_paths):
+def get_relative_file_paths(start_directory, exclude_file_paths):
+    """
+    Get the relative file paths in the directory.
 
-    logger.log_value('Get relative file paths in the directory', start_path)
+    Arguments:
+    start_directory : str
+        The full path of the directory.
+    exclude_file_paths : str
+        File paths that should be excluded from the result.
+
+    Returns:
+    file_paths : list (str)
+        A list of relative file paths.
+    """
+
+    logger.log_value('Get relative file paths in the directory', start_directory)
 
     file_paths = []
-    for directory_path, directory_names, file_names in os.walk(start_path):
-        if directory_path not in exclude_paths:
+    for directory_path, directory_names, file_names in os.walk(start_directory):
+        if directory_path not in exclude_file_paths:
             for file_name in file_names:
                 file_path = os.path.join(directory_path, file_name)
-                if file_path not in exclude_paths:
-                    relative_file_path = os.path.relpath(file_path, start_path)
+                if file_path not in exclude_file_paths:
+                    relative_file_path = os.path.relpath(file_path, start_directory)
                     file_paths.append(relative_file_path)
 
     return file_paths
 
 
-def get_file_paths_for_text_file(start_path):
+def get_file_paths_for_text_file(start_directory):
+    """
+    This function is not used.
+    Get the file paths for all text files in the directory.
 
-    logger.log_value('Get all text file paths in the directory', start_path)
+    Arguments:
+    start_directory : str
+        The full path of the directory.
+
+    Returns:
+    file_paths : list (str)
+        A list of file paths of text files.
+    """
+
+    logger.log_value('Get all text file paths in the directory', start_directory)
 
     file_paths = []
-    for directory_path, directory_names, file_names in os.walk(start_path):
+    for directory_path, directory_names, file_names in os.walk(start_directory):
         for file_name in file_names:
             file_path = os.path.join(directory_path, file_name)
             try:
@@ -239,24 +356,35 @@ def get_file_paths_for_text_file(start_path):
 
 
 def get_file_system_type(file_path):
+    """
+    Get the file system type for the directory or file.
 
-    # Local file system types:
-    # • btrfs is reported as btrfs
-    # • exfat is reported as exfat (or fuseblk?)
-    # • ext2  is reported as ext2
-    # • ext3  is reported as ext3
-    # • ext4  is reported as ext4
-    # • fat12 is reported as vfat (?)
-    # • fat16 is reported as vfat
-    # • fat32 is reported as vfat
-    # • ntfs  is reported as fuseblk
-    # • swap  is reported as devtmpfs
-    # • xfs   is reported as xfs
-    # • zfs   is reported as zfs
+    Local file system types:
+    • btrfs is reported as btrfs
+    • exfat is reported as exfat (or fuseblk?)
+    • ext2  is reported as ext2
+    • ext3  is reported as ext3
+    • ext4  is reported as ext4
+    • fat12 is reported as vfat (?)
+    • fat16 is reported as vfat
+    • fat32 is reported as vfat
+    • ntfs  is reported as fuseblk
+    • swap  is reported as devtmpfs
+    • xfs   is reported as xfs
+    • zfs   is reported as zfs
 
-    # Remote file system types:
-    # • fuse.gvfsd-fuse
-    # • fuse.sshfs
+    Remote file system types:
+    • fuse.gvfsd-fuse
+    • fuse.sshfs
+
+    Arguments:
+    file_path : str
+        The full path of the directory or file.
+
+    Returns:
+    file_system_type : str
+        The file system type.
+    """
 
     logger.log_value('Get file system type', file_path)
 
@@ -308,7 +436,7 @@ def read_file(file_path, errors=None):
 
     Arguments:
     file_path : str
-        The file to read.
+        The full path of the file to read.
     errors: str
         Specifies how to handle encoding and decoding errors.
         (See https://docs.python.org/3.9/library/functions.html#open).
@@ -352,7 +480,7 @@ def read_lines(file_path):
 
     Arguments:
     file_path : str
-        The file to read.
+        The full path of the file to read.
 
     Returns:
     lines : list
@@ -380,14 +508,14 @@ def read_lines(file_path):
 
 def write_line(line, file_path):
     """
-    Write the line to the specified file path. If the file path does
-    not exist, it will be created.
+    Write the line to the file. If the file does not exist, it will be
+    created.
 
     Arguments:
     line : str
         The line to write.
     file_path : string
-        The file path to write to.
+        The full path of the file to write to.
     """
 
     logger.log_value('Write to file', file_path)
@@ -408,15 +536,15 @@ def write_line(line, file_path):
 
 def write_lines(lines, file_path):
     """
-    Write the specified lines to the specified file path. If the file
-    path does not exist, it will be created.
+    Write the lines to the file. If the file does not exist, it will be
+    created.
 
     Arguments:
     lines : list or str
         A list of strings or the string to write; may be an empty list
         or None.
     file_path : string
-        The file path to write to.
+        The full path of the file to write to.
     """
 
     logger.log_value('Write to file', file_path)
@@ -436,14 +564,14 @@ def write_lines(lines, file_path):
 
 def _write_lines_1(lines, file_path):
     """
-    Write 0-100 lines to the specified file path. If the file path does
-    not exist, it will be created.
+    Write 0-100 lines to the file. If the file does not exist, it will
+    be created.
 
     Arguments:
     lines : list
         A list of strings; may be an empty list.
     file_path : string
-        The file path to write to.
+        The full path of the file to write to.
     """
 
     # logger.log_value('Write 0-100 lines to file', file_path)
@@ -458,14 +586,14 @@ def _write_lines_1(lines, file_path):
 
 def _write_lines_2(lines, file_path):
     """
-    Write > 100 lines to the specified file path. If the file path does
-    not exist, it will be created.
+    Write > 100 lines to the file. If the file does not exist, it will
+    be created.
 
     Arguments:
     lines : list
         A list of strings; may not be an empty list.
     file_path : string
-        The file path to write to.
+        The full path of the file to write to.
     """
 
     # logger.log_value('Write > 100 lines to file', file_path)
@@ -491,7 +619,7 @@ def find_in_file(search_regex, file_path):
         The regular expression to search for.
         file_path
     file_path : str
-        The file to search.
+        The full path of the file to search.
 
     Returns:
     results : list
@@ -510,12 +638,11 @@ def find_in_file(search_regex, file_path):
 
 def file_contains_any_word(file_path, *words):
     """
-    Searches the file for any of the specified words. Stops searching
-    when any word is found.
+    Search the file for the words. Stop searching when any word is found.
 
     Arguments:
     file_path : str
-        The file to search.
+        The full path of the file to search.
     words : *args str
         The words to search for.
 
@@ -535,33 +662,23 @@ def file_contains_any_word(file_path, *words):
 
 
 def replace_text_in_file(file_path, search_text, replacement_text):
+    """
+    This function is not used.
+    Replace the text in the file.
+
+    Arguments:
+    file_path : str
+        The full path of the file to search and replace text in.
+    search_text : str
+        The text to search for.
+    replacement_text : str
+        The text to replace with.
+    """
 
     logger.log_label('Replace text in file')
     logger.log_value('Filepath', file_path)
     logger.log_value('Search text', search_text)
     logger.log_value('Replacement text', replacement_text)
-
-    error = True
-
-    if not file_path:
-        logger.log_value('Cannot replace text', 'File not specified')
-        return error
-
-    if not os.path.exists(file_path):
-        logger.log_value('Cannot replace text', f'File {file_path} does not exist')
-        return error
-
-    if not search_text:
-        logger.log_value('Cannot replace text', 'Search text not specified')
-        return error
-
-    if not replacement_text:
-        logger.log_value('Cannot replace text', 'Replacement text not specified')
-        return error
-
-    # TODO: Add a try statement and return error accordingly.
-    #       Currently, this is done in repackage_iso_page.update_disk_name(), but it should be done here.
-    error = False
 
     with open(file_path, 'r+') as file:
         file_contents = file.read()
@@ -570,20 +687,32 @@ def replace_text_in_file(file_path, search_text, replacement_text):
         file.truncate()
         file.write(file_contents)
 
-    return error
 
-
-def calculate_md5_hash_ALTERNATIVE(file_path, start_path=None):
+def calculate_md5_hash_ALTERNATIVE(file_path, start_directory=None):
     """
     Calculate the md5 hash using the m55sum command. This function
     returns the md5 hash and relative file name.
+
+    Arguments:
+        file_path : str
+            The file to calculate the md5 hash for. If start directory
+            is not specified or is "/", then file path must be a full
+            file path. Otherwise, file path must be relative to the
+            start directory.
+        start_directory : str
+            Optional start directory. The default is "/".
+        buffer_size : int
+            Optional buffer size in bytes. The default is 1048576 bytes.
+    Returns:
+        : str
+        The md5 hash.
     """
 
-    if start_path:
+    if start_directory:
         command = f'md5sum "./{file_path}"'
     else:
         command = f'md5sum "{file_path}"'
-    result, exit_status, signal_status = execute_synchronous(command, start_path)
+    result, exit_status, signal_status = execute_synchronous(command, start_directory)
 
     logger.log_value('The result is', result)
     logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
@@ -597,10 +726,26 @@ def calculate_md5_hash_ALTERNATIVE(file_path, start_path=None):
         return None
 
 
-def calculate_md5_hash(file_path, start_path=os.path.sep, buffer_size=2**20):
+def calculate_md5_hash(file_path, start_directory=os.path.sep, buffer_size=2**20):
     """
     Calculate the md5 hash by reading a file into a buffer. The default
     buffer size is 2^20 bytes = 1048576 bytes = 1 MiB (Mebibytes).
+
+    Arguments:
+        file_path : str
+            The file to calculate the md5 hash for. If start directory
+            is not specified or is "/", then file path must be a full
+            file path. Otherwise, file path must be relative to the
+            start directory.
+        start_directory : str
+            Optional start directory. The default is "/".
+        buffer_size : int
+            Optional buffer size in bytes. The default is 1048576 bytes.
+    Returns:
+        : str
+        The md5 hash.
+        : str
+        The file path without a "/" prefix.
     """
 
     # It is necessary to strip the leading '/' from the file_path,
@@ -610,7 +755,7 @@ def calculate_md5_hash(file_path, start_path=os.path.sep, buffer_size=2**20):
     # os.path.joining continues from the absolute path component."
     # (See https://docs.python.org/3/library/os.path.html).
     file_path = file_path.strip(os.path.sep)
-    full_file_path = os.path.abspath(os.path.join(start_path, file_path))
+    full_file_path = os.path.abspath(os.path.join(start_directory, file_path))
 
     md5_algorithm = hashlib.md5()
     try:
@@ -629,20 +774,41 @@ def calculate_md5_hash(file_path, start_path=os.path.sep, buffer_size=2**20):
         raise exception
 
 
-def copy_file(source_path, target_path):
+def copy_file(source_file_path, target_file_path):
+    """
+    Copy the file to the target file path.
+
+    Arguments:
+    source_file_path : str
+        The full path of the file to copy.
+    target_file_path : str
+        The full path to copy the file to.
+    """
 
     logger.log_label('Copy file')
-    logger.log_value('Source file path', source_path)
-    logger.log_value('Target file path', target_path)
+    logger.log_value('Source file path', source_file_path)
+    logger.log_value('Target file path', target_file_path)
 
-    shutil.copy(source_path, target_path)
+    shutil.copy(source_file_path, target_file_path)
 
 
 # TODO: Check if this function is terminated when the thread is killed?
 def delete_file(file_path):
     """
-    If permissions prevent deleting the file path, use
+    Delete the file. If permissions prevent deleting the file, use
     delete_path_as_root() instead.
+
+    Arguments:
+    file_path : str
+        The file to delete.
+
+    Returns:
+    result : str
+        The result of the process.
+    exit_status : int
+        The exit status of the process.
+    signal_status : int
+        The signal status of the process.
     """
 
     logger.log_value('Delete file', file_path)
@@ -673,7 +839,11 @@ def delete_file(file_path):
 
 def select_file_in_browser(file_path):
     """
-    Opens the file browser and selects the file.
+    Open the default file browser and selects the file.
+
+    Arguments:
+    file_path : str
+        The file to select.
     """
 
     command = (
@@ -691,9 +861,14 @@ def select_file_in_browser(file_path):
     os.system(command)
 
 
-def open_directory_in_browser(file_path):
+def open_directory_in_browser(directory):
     """
-    Opens the file browser and displays the contents of the directory.
+    Open the default file browser and display the contents of the
+    directory.
+
+    Arguments:
+    directory : str
+        The directory to open.
     """
 
     command = (
@@ -704,10 +879,10 @@ def open_directory_in_browser(file_path):
         ' --type=method_call'
         ' /org/freedesktop/FileManager1'
         ' org.freedesktop.FileManager1.ShowFolders'
-        f' array:string:"file://{file_path}"'
+        f' array:string:"file://{directory}"'
         ' string:""')
     # logger.log_value(('Open in file browser', command)
-    logger.log_value('Open in file browser', file_path)
+    logger.log_value('Open in file browser', directory)
     os.system(command)
 
 
@@ -717,10 +892,12 @@ def guess_mime_type(full_file_path):
     than reading the file, but may be inaccurate.
 
     Arguments:
-    full_file_path - Full file path of the file.
+    full_file_path : str
+        Full file path of the file.
 
     Returns:
-    The mime type of the file.
+    mine_type : str
+        The mime type of the file.
     """
 
     if os.path.isdir(full_file_path):
@@ -773,8 +950,8 @@ def read_mime_type(full_file_path):
 
 def get_icon_name(mime_type):
     """
-    Get the standard icon name for the specified mime type using the
-    following mapping.
+    Get the standard icon name for the mime type using the following
+    mapping.
 
         Mime Type    Icon Name
         ---------    ------------------------
@@ -793,7 +970,7 @@ def get_icon_name(mime_type):
 
     Returns:
     icon_name : str
-        The standard icon name for the specified mime type.
+        The standard icon name for the mime type.
     """
 
     # TODO: *.pcx files are image files with a mime type of

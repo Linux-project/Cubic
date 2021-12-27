@@ -476,6 +476,32 @@ def set_sensitive(widget_name, is_sensitive):
     GLib.idle_add(Gtk.Widget.set_sensitive, widget, is_sensitive)
 
 
+def show_popover(popover_name):
+    """
+    show the popover using a transition.
+
+    Arguments:
+    popover_name : str
+        The name of the popover.
+    """
+
+    popover = model.builder.get_object(popover_name)
+    GLib.idle_add(Gtk.Popover.popup, popover)
+
+
+def hide_popover(popover_name):
+    """
+    Hide the popover using a transition.
+
+    Arguments:
+    popover_name : str
+        The name of the popover.
+    """
+
+    popover = model.builder.get_object(popover_name)
+    GLib.idle_add(Gtk.Popover.popdown, popover)
+
+
 ########################################################################
 # Label Functions
 ########################################################################

@@ -55,6 +55,7 @@ import time
 from cubic.choosers import copy_file_chooser
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CONTROL_SHIFT_KEYS_1, CONTROL_SHIFT_KEYS_2
+from cubic.constants import LOCK_FILE_NAME
 from cubic.constants import SLEEP_0250_MS
 from cubic.navigator import handle_navigation
 from cubic.utilities.displayer import MONOSPACE_FONT
@@ -348,6 +349,10 @@ def leave(action, new_page=None):
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
+        # Delete the virtual environment lock file.
+        lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
+
         time.sleep(SLEEP_0250_MS)
 
         return
@@ -375,6 +380,10 @@ def leave(action, new_page=None):
         if model.options.update_os_release:
             update_release_descriptions()
 
+        # Delete the virtual environment lock file.
+        lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
+
         time.sleep(SLEEP_0250_MS)
 
     elif action == 'quit':
@@ -387,6 +396,10 @@ def leave(action, new_page=None):
         # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
+
+        # Delete the virtual environment lock file.
+        lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -402,6 +415,10 @@ def leave(action, new_page=None):
         # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
+
+        # Delete the virtual environment lock file.
+        lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -667,56 +684,24 @@ def update_release_descriptions():
 
     file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
     if os.path.isfile(file_path) and not os.path.islink(file_path):
-        update_release_description(file_path, 'DISTRIB_DESCRIPTION', description)
+        search_text = 'DISTRIB_DESCRIPTION.*'
+        replacement_text = f'DISTRIB_DESCRIPTION="{description}"'
+        program = os.path.join(model.application.directory, 'commands', 'replace-text')
+        command = ['pkexec', program, search_text, replacement_text, file_path]
+        result, exit_status, signal_status = execute_synchronous(command)
 
     file_path = os.path.join(model.project.custom_root_directory, 'etc', 'os-release')
     if os.path.isfile(file_path) and not os.path.islink(file_path):
-        update_release_description(file_path, 'PRETTY_NAME', description)
+        search_text = 'PRETTY_NAME.*'
+        replacement_text = f'PRETTY_NAME="{description}"'
+        program = os.path.join(model.application.directory, 'commands', 'replace-text')
+        command = ['pkexec', program, search_text, replacement_text, file_path]
+        result, exit_status, signal_status = execute_synchronous(command)
 
     file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
     if os.path.isfile(file_path) and not os.path.islink(file_path):
-        update_release_description(file_path, 'PRETTY_NAME', description)
-
-
-def update_release_description(target_file_path, key, value):
-
-    # logger.log_label('Update the release description')
-
-    value = value.replace('"', '')
-
-    logger.log_value('Update the release description in', target_file_path)
-    logger.log_value('▹ Key', key)
-    logger.log_value('▹ Value', value)
-
-    # Read the lines from the original file.
-    lines = file_utilities.read_lines(target_file_path)
-
-    # Update the lines.
-    new_lines = []
-    for line in lines:
-        if line.startswith(key):
-            line = f'{key}="{value}"'
-        new_lines.append(line.strip())
-
-    target_file_name = os.path.basename(target_file_path)
-    temp_file_path = os.path.join(os.path.sep, 'tmp', target_file_name)
-
-    # Write a temporary file.
-    try:
-        file_utilities.write_lines(new_lines, temp_file_path)
-    except Exception as exception:
-        return  # There was an error.
-
-    # Overwrite the original file with the temporary file.
-    program = os.path.join(model.application.directory, 'commands', 'move-path')
-    user = 'root'
-    command = f'pkexec "{program}" "{temp_file_path}" "{target_file_path}" "{user}"'
-    result, exit_status, signal_status = execute_synchronous(command)
-    if not exit_status:
-        logger.log_value('Updated', target_file_path)
-    else:
-        logger.log_value('Error. Unable to update', target_file_path)
-        logger.log_value('The result is', result)
-        return  # There was an error.
-
-    return  # There was n error.
+        search_text = 'PRETTY_NAME.*'
+        replacement_text = f'PRETTY_NAME="{description}"'
+        program = os.path.join(model.application.directory, 'commands', 'replace-text')
+        command = ['pkexec', program, search_text, replacement_text, file_path]
+        result, exit_status, signal_status = execute_synchronous(command)

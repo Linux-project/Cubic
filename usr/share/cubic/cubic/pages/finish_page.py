@@ -43,7 +43,7 @@ import os
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import IMAGE_FILE_NAME, LOCK_FILE_NAME
+from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import MIB, GIB
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0500_MS, SLEEP_1500_MS
@@ -382,23 +382,6 @@ def delete_project_files():
     # time.sleep(SLEEP_1000_MS)
     if os.path.exists(model.project.custom_root_directory):
         result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_root_directory)
-        if not signal_status:
-            # OK
-            pass
-        else:
-            is_error = True
-    else:
-        # Skip
-        pass
-
-    #
-    # Delete the virtual environment lock file.
-    #
-    lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
-    logger.log_value('Delete the virtual environment lock file', lock_file_path)
-    # time.sleep(SLEEP_1000_MS)
-    if os.path.exists(lock_file_path):
-        result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
         if not signal_status:
             # OK
             pass

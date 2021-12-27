@@ -434,7 +434,7 @@ def _copy_kernel_file(source_file_path, target_file_path, user, file_number, tot
     logger.log_value('The target file path is', target_file_path)
 
     program = os.path.join(model.application.directory, 'commands', 'copy-path')
-    command = f'pkexec "{program}" "{source_file_path}" "{target_file_path}" "{user}"'
+    command = ['pkexec', program, source_file_path, target_file_path, user]
 
     # The progress callback function.
     def progress_callback(percent):
@@ -457,11 +457,11 @@ def create_squashfs():
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
 
-    source_path = model.project.custom_root_directory
-    logger.log_value('The source path is', source_path)
+    source_file_path = model.project.custom_root_directory
+    logger.log_value('The source file path is', source_file_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
-    logger.log_value('The target path is', target_path)
+    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    logger.log_value('The target file path is', target_file_path)
 
     displayer.update_label('generate_page__create_squashfs_message', f'Using {model.options.compression} compression.')
 
@@ -470,7 +470,7 @@ def create_squashfs():
 
     # Pkexec is required.
     program = os.path.join(model.application.directory, 'commands', 'compress-root')
-    command = f'pkexec "{program}" "{source_path}" "{target_path}" {model.options.compression}'
+    command = ['pkexec', program, source_file_path, target_file_path, model.options.compression]
 
     # Show % in progress by setting text to None.
     # displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', None)
@@ -516,11 +516,11 @@ def create_squashfs_TESTING_1():
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
 
-    source_path = model.project.custom_root_directory
-    logger.log_value('The source path is', source_path)
+    source_file_path = model.project.custom_root_directory
+    logger.log_value('The source file path is', source_file_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
-    logger.log_value('The target path is', target_path)
+    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    logger.log_value('The target file path is', target_file_path)
 
     displayer.update_label('generate_page__create_squashfs_message', 'Testing.')
     displayer.update_status('generate_page__create_squashfs', displayer.OK)
@@ -537,17 +537,17 @@ def create_squashfs_TESTING_2():
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
 
-    source_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
-    logger.log_value('The source path is', source_path)
+    source_file_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
+    logger.log_value('The source file path is', source_file_path)
 
-    target_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
-    logger.log_value('The target path is', target_path)
+    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    logger.log_value('The target file path is', target_file_path)
 
     # Copy the original filesystem.squashfs or
     # ubuntu-server-minimal.ubuntu-server.squashfs.
-    file_utilities.copy_file(source_path, target_path)
+    file_utilities.copy_file(source_file_path, target_file_path)
 
-    if not os.path.exists(target_path):
+    if not os.path.exists(target_file_path):
         displayer.update_label('generate_page__create_squashfs_message', f'Testing. Error. {file_name} already exists.')
         displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
         return True  # (Error)
@@ -588,7 +588,7 @@ def update_file_system_size():
     try:
         # Pkexec is required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
-        command = f'pkexec "{program}" "{model.project.custom_root_directory}"'
+        command = ['pkexec', program, model.project.custom_root_directory]
         result, exit_status, signal_status = execute_synchronous(command)
         size_information = re.search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
@@ -891,7 +891,7 @@ def check_custom_disk_directory_size():
     try:
         # Pkexec is not required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
-        command = f'pkexec "{program}" "{model.project.custom_disk_directory}"'
+        command = ['pkexec', program, model.project.custom_disk_directory]
         result, exit_status, signal_status = execute_synchronous(command)
         size_information = re.search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
@@ -1003,7 +1003,7 @@ def create_iso_image():
     try:
         # Pkexec is not required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
-        command = f'pkexec "{program}" "{iso_file_path}"'
+        command = ['pkexec', program, iso_file_path]
         result, exit_status, signal_status = execute_synchronous(command)
         size_information = re.search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))

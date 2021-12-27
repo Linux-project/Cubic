@@ -335,7 +335,7 @@ class InvalidActionException(Exception):
 ########################################################################
 
 
-def on_window_destroy(*args):
+def on_destroy_window(*args):
 
     logger.log_value('Clicked', 'Exit')
 
@@ -407,7 +407,6 @@ def on_clicked_about_menu_button(button):
 
     logger.log_title('Clicked about menu button')
 
-    displayer.set_sensitive('window', False)
     displayer.show('about_dialog')
 
     # return True
@@ -418,7 +417,6 @@ def on_close_about_dialog(widget, event):
     logger.log_label('Clicked close about dialog')
 
     displayer.hide('about_dialog')
-    displayer.set_sensitive('window', True)
 
     return True
 
@@ -437,6 +435,8 @@ def on_clicked_donate_menu_button(button):
             displayer.set_button_label('donate_menu_button', new_text)
             model.application.visited_sites.add(CUBIC_DONATE)
             displayer.set_visible('alert_label', len(model.application.visited_sites) < len(CUBIC_SITES))
+
+    displayer.hide_popover('popover_menu')
 
 
 ########################################################################

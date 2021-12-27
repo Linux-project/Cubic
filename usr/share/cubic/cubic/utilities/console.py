@@ -49,7 +49,6 @@ from gi.repository.Vte import PtyFlags, Pty
 
 import os
 import pydbus
-import re
 import sys
 import time
 
@@ -122,10 +121,9 @@ def _enter_virtual_environment():
     logger.log_value('The virtual environment directory is', model.project.custom_root_directory)
 
     program = os.path.join(model.application.directory, 'commands', 'start-console')
-    # The command must be a tuple, as required by spawn_async().
-    command = ('pkexec', program, MACHINE_NAME, model.project.custom_root_directory)
-
-    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', ' '.join(command))
+    # The command must be a list, as required by spawn_async().
+    command = ['pkexec', program, MACHINE_NAME, model.project.custom_root_directory]
+    display_command = ' '.join([os.path.basename(command[1].strip('"'))] + command[2:])
     logger.log_value('Command', display_command)
 
     # logger.log_value('Set new pseudo terminal', 'None')
@@ -470,21 +468,21 @@ def exited_virtual_environment(process_id, status, pseudo_terminal):
     # Different ways to exit the terminal, and the corresponding status
     # values:
     #
-    # • Execute the follwing from outside Cubic's terminal.
+    # • Execute the following from outside Cubic's terminal.
     #   $ pkexec /usr/share/cubic/commands/stop-process <pid of start-console>
     #   status = 9
     #
-    # • Execute the follwing from outside Cubic's terminal.
+    # • Execute the following from outside Cubic's terminal.
     #   $ sudo kill -9 <pid of start-console>
     #   status = 9
     #
-    # • Execute the follwing from outside Cubic's terminal.
+    # • Execute the following from outside Cubic's terminal.
     #   $ sudo pkill --full start-console
     #   status = 15
     #   $ sudo pkill --signal 9 --full start-console
     #   status = 9
     #
-    # • Execute the follwing from outside Cubic's terminal.
+    # • Execute the following from outside Cubic's terminal.
     #   $ sudo machinectl terminate cubic
     #   status = 256
     #
@@ -648,7 +646,7 @@ def exit_virtual_environment_using_kill():
             process_id = pseudo_terminal.process_id
             program = os.path.join(model.application.directory, 'commands', 'stop-process')
             # TODO: Should we use execute_synchronous_unregistered() ?
-            command = f'pkexec "{program}" "{process_id}"'
+            command = ['pkexec', program, process_id]
             result, exit_status, signal_status = execute_synchronous(command)
         else:
             logger.log_value('There is no virtual environment to exit. The pseudo terminal is ', pseudo_terminal)
@@ -681,7 +679,7 @@ def exit_virtual_environment_using_machinectl():
 
     program = os.path.join(model.application.directory, 'commands', 'stop-console')
     # TODO: Should we use execute_synchronous_unregistered() ?
-    command = f'pkexec "{program}" "{MACHINE_NAME}"'
+    command = ['pkexec', program, MACHINE_NAME]
     result, exit_status, signal_status = execute_synchronous(command)
 
 
@@ -750,7 +748,7 @@ def get_current_directory():
     bash_process_id = get_bash_process_id(pseudo_terminal.process_id)
 
     program = os.path.join(model.application.directory, 'commands', 'current-directory')
-    command = f'pkexec "{program}" "{bash_process_id}"'
+    command = ['pkexec', program, bash_process_id]
     process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command)
 
     if not exit_status and not signal_status:
@@ -778,8 +776,7 @@ def get_current_directory():
     global pseudo_terminal
     process_id = pseudo_terminal.process_id
     program = os.path.join(model.application.directory, 'commands', 'current-directory')
-    command = f'pkexec "{program}" "{process_id}"'
-
+    command = ['pkexec', program, process_id]
     process_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command)
 
     if not exit_status and not signal_status:

@@ -42,7 +42,7 @@ import os
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import IMAGE_FILE_NAME, LOCK_FILE_NAME
+from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0500_MS, SLEEP_1000_MS
 from cubic.utilities import constructor
@@ -407,35 +407,20 @@ def delete_project_files():
     time.sleep(SLEEP_1000_MS)
 
     #
-    # Delete the custom root directory and virtual environment lock file.
+    # Delete the custom root directory.
     #
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
     displayer.update_status('delete_page__custom_root_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
-
-    lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
-    if os.path.exists(model.project.custom_root_directory) or os.path.exists(lock_file_path):
-
-        is_error_1 = False
-        if os.path.exists(model.project.custom_root_directory):
-            result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_root_directory)
-            if signal_status:
-                is_error_1 = True
-
-        is_error_2 = False
-        if os.path.exists(lock_file_path):
-            result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
-            if signal_status:
-                is_error_2 = True
-
-        if is_error_1 or is_error_2:
+    if os.path.exists(model.project.custom_root_directory):
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_root_directory)
+        if not signal_status:
+            displayer.update_status('delete_page__custom_root_directory', OK)
+            displayer.update_label('delete_page__custom_root_directory_message', '')
+        else:
             displayer.update_status('delete_page__custom_root_directory', ERROR)
             displayer.update_label('delete_page__custom_root_directory_message', 'Unable to delete the customized Linux files.')
             is_error = True
-        else:
-            displayer.update_status('delete_page__custom_root_directory', OK)
-            displayer.update_label('delete_page__custom_root_directory_message', '')
-
     else:
         displayer.update_status('delete_page__custom_root_directory', OK)
         displayer.update_label('delete_page__custom_root_directory_message', 'Nothing to delete. These files not exist.')

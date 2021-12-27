@@ -39,7 +39,6 @@
 
 import os
 import pexpect
-import re
 import signal
 import traceback
 
@@ -50,6 +49,7 @@ from cubic.utilities import model
 # Global Variables & Constants
 ########################################################################
 
+# The process of type pexpect.pty_spawn.spawn.
 process = None
 
 ########################################################################
@@ -83,14 +83,29 @@ process = None
 #       should check for exit status > 0 to determine error.
 def execute_synchronous(command, working_directory=None):
     """
-    Execute the specified command synchronously and register the
-    corresponding process so it can be terminated using the
-    terminate_process() function.
+    Execute the command synchronously and register the corresponding
+    process so it can be terminated using the terminate_process()
+    function.
+
+    Arguments:
+    command : str, list(str)
+        The command as a string or a list. Only use the list format when
+        you wish to spawn a command and pass it an argument list.
+    working_directory
+        Optional working directory. The default value is None.
+
+    Returns:
+    process_pid : int
+        The process id.
+    result : str
+        The result of the process.
+    exit_status : int
+        The exit status of the process.
+    signal_status : int
+        The signal status of the process.
     """
 
-    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
-    # logger.log_label('Execute synchronously')
-    # logger.log_value('Command', command)
+    display_command, command, arguments = parse_command(command)
     logger.log_value('Execute synchronously', display_command)
 
     result = None
@@ -108,7 +123,7 @@ def execute_synchronous(command, working_directory=None):
         # pexpect.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        process = pexpect.spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
+        process = pexpect.spawn(command, args=arguments, timeout=300, cwd=working_directory, encoding='UTF-8')
         logger.log_value('The process id is', process.pid)
         result = process.read()
         result = result.strip() if result else None
@@ -131,13 +146,29 @@ def execute_synchronous(command, working_directory=None):
 
 def execute_synchronous_unregistered(command, working_directory=None):
     """
-    Execute the specified command snchronously. The process is not
-    registered with this module, so it can not be terminated using the
+    Execute the command snchronously. The process is not registered with
+    this module, so it can not be terminated using the
     terminate_process() function.
+
+    Arguments:
+    command : str, list(str)
+        The command as a string or a list. Only use the list format when
+        you wish to spawn a command and pass it an argument list.
+    working_directory
+        Optional working directory. The default value is None.
+
+    Returns:
+    process_pid : int
+        The process id.
+    result : str
+        The result of the process.
+    exit_status : int
+        The exit status of the process.
+    signal_status : int
+        The signal status of the process.
     """
-    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
-    # logger.log_label('Execute synchronously unregistered')
-    # logger.log_value('Command', command))
+
+    display_command, command, arguments = parse_command(command)
     logger.log_value('Execute synchronously unregistered', display_command)
 
     process_pid = None
@@ -150,7 +181,7 @@ def execute_synchronous_unregistered(command, working_directory=None):
         # pexpect.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        process = pexpect.spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
+        process = pexpect.spawn(command, args=arguments, timeout=300, cwd=working_directory, encoding='UTF-8')
         process_pid = process.pid
         logger.log_value('The unregistered process id is', process.pid)
         result = process.read()
@@ -172,20 +203,29 @@ def execute_synchronous_unregistered(command, working_directory=None):
 
 def execute_asynchronous(command, working_directory=None):
     """
-    Execute the specified command asynchronously and register the
-    corresponding process so it can be terminated. The calling
-    application must read the output stream until the end of file (EOF)
-    is reached, using expect(), expect_exact(), expect_list(), read(),
-    readline(), or read_nonblocking(). The application must explicitly
-    close the connection with the process to obtain the exit status:
+    Execute the command asynchronously and register the corresponding
+    process so it can be terminated. The calling application must read
+    the output stream until the end of file (EOF) is reached,
+    using expect(), expect_exact(), expect_list(), read(), readline(),
+    or read_nonblocking(). The application must explicitly close the
+    connection with the process to obtain the exit status as follows:
         process.close()
         exit_status = process.exitstatus
         signal_status = process.signalstatus
+
+    Arguments:
+    command : str, list(str)
+        The command as a string or a list. Only use the list format when
+        you wish to spawn a command and pass it an argument list.
+    working_directory
+        Optional working directory. The default value is None.
+
+    Returns:
+    process : pexpect.pty_spawn.spawn
+        The process.
     """
 
-    display_command = re.sub(r'pkexec\s*\S*commands\S{0,1}([\w-]*)"*(.*)', r'\1\2', command)
-    # logger.log_label('Execute asynchronously')
-    # logger.log_value('Command', command)
+    display_command, command, arguments = parse_command(command)
     logger.log_value('Execute asynchronously', display_command)
 
     global process
@@ -200,7 +240,7 @@ def execute_asynchronous(command, working_directory=None):
         # pexpect.ExceptionPexpect: The command was not found
         # or was not executable.
         # command = split_command_line(command)
-        process = pexpect.spawn(command, timeout=300, cwd=working_directory, encoding='UTF-8')
+        process = pexpect.spawn(command, args=arguments, timeout=300, cwd=working_directory, encoding='UTF-8')
         logger.log_value('The process id is', process.pid)
     except pexpect.ExceptionPexpect as exception:
         logger.log_value('Exception while executing', command)
@@ -215,16 +255,53 @@ def execute_asynchronous(command, working_directory=None):
 ########################################################################
 
 
-def is_alive(process):
+def parse_command(command):
     """
-    Check if the process is exists and is running.
+    Convert the command into a displayable format, a base command, and a
+    list of arguments. If the command is a string, then the displayable
+    format will be the same as the command, and the arguments list will
+    be empty.
 
     Arguments:
-    process
+    command : str, list(str)
+        The command as a string or a list. Only use the list format when
+        you wish to spawn a command and pass it an argument list.
+
+    Returns:
+    display_command : str
+        A displayable version of the command.
+    command : str
+        The command.
+    arguments : list(str)
+        The arguments list (may be empty if there are no arguments).
+    """
+
+    if isinstance(command, list):
+        # Convert all arguments to strings.
+        command = [str(argument) for argument in command]
+        if command[0] == 'pkexec':
+            display_command = ' '.join([os.path.basename(command[1].strip('"'))] + command[2:])
+        else:
+            display_command = ' '.join(command)
+        arguments = command[1:]
+        command = command[0]
+    else:
+        display_command = command
+        arguments = []
+
+    return display_command, command, arguments
+
+
+def is_alive(process):
+    """
+    Check if the process exists and is running.
+
+    Arguments:
+    process : pexpect.pty_spawn.spawn
         The process to check.
 
     Returns:
-    bool
+    : bool
         True if the process is alive, False otherwise.
     """
 
@@ -253,6 +330,9 @@ def terminate_process():
 
 
 def _terminate_user_process():
+    """
+    Terminate the user process registered with this module.
+    """
 
     # Store a reference to the global process, in case the execute_synchronous()
     # function completes and sets the current process to None before it is
@@ -277,6 +357,9 @@ def _terminate_user_process():
 
 
 def _terminate_root_process():
+    """
+    Terminate the user or root process registered with this module.
+    """
 
     # Store a reference to the global process, in case the execute_synchronous()
     # function completes and sets the current process to None before it is
@@ -287,7 +370,7 @@ def _terminate_root_process():
         logger.log_value('Terminate process', current_process.pid)
         try:
             program = os.path.join(model.application.directory, 'commands', 'stop-process')
-            command = f'pkexec "{program}" "{current_process.pid}"'
+            command = ['pkexec', program, current_process.pid]
             # Get the exit status and signal status of the terminator process.
             terminator_pid, result, exit_status, signal_status = execute_synchronous_unregistered(command, model.application.directory)
             # Set the global process to None.

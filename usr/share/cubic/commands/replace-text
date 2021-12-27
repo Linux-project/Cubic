@@ -38,16 +38,16 @@ program=${0}
 number_arguments=${#}
 search_text=${1}
 replace_text=${2}
-target_path=${3}
+target_file_path=${3}
 
 # echo "program..................... ${program}"
 # echo "number of arguments......... ${number_arguments}"
-# echo "search_text................. ${search_text}"
-# echo "replace_text................ ${replace_text}"
-# echo "target_path................. ${target_path}"
+# echo "search text................. ${search_text}"
+# echo "replace text................ ${replace_text}"
+# echo "target file path............ ${target_file_path}"
 
 ########################################################################
 # Command
 ########################################################################
 
-sed -i "s|${search_text}|${replace_text}|g" "${target_path}"
+sed -i "s|${search_text}|${replace_text}|g" "${target_file_path}"

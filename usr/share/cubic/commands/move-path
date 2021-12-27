@@ -45,14 +45,14 @@ TARGET_CUSTOM_ROOT_DIRECTORY="custom-root"
 
 program=${0}
 number_arguments=${#}
-source_path=${1}
-target_path=${2}
+source_file_path=${1}
+target_file_path=${2}
 user=${3}
 
 # echo "program..................... ${program}"
 # echo "number of arguments......... ${number_arguments}"
-# echo "source path................. ${source_path}"
-# echo "target path................. ${target_path}"
+# echo "source file path............ ${source_file_path}"
+# echo "target file path............ ${target_file_path}"
 # echo "user........................ ${user}"
 
 ########################################################################
@@ -60,35 +60,35 @@ user=${3}
 ########################################################################
 
 # As a precaution, limit the paths that this command may be execute on.
-# if [[ ( ${source_path} =~ ${SOURCE_CUSTOM_DISK_DIRECTORY}$ && \
-#         ${target_path} =~ ${TARGET_CUSTOM_DISK_DIRECTORY}$ ) || \
-#       ( ${source_path} =~ ${SOURCE_CUSTOM_ROOT_DIRECTORY}$ && \
-#         ${target_path} =~ ${TARGET_CUSTOM_ROOT_DIRECTORY}$ ) ]]; then
+# if [[ ( ${source_file_path} =~ ${SOURCE_CUSTOM_DISK_DIRECTORY}$ && \
+#         ${target_file_path} =~ ${TARGET_CUSTOM_DISK_DIRECTORY}$ ) || \
+#       ( ${source_file_path} =~ ${SOURCE_CUSTOM_ROOT_DIRECTORY}$ && \
+#         ${target_file_path} =~ ${TARGET_CUSTOM_ROOT_DIRECTORY}$ ) ]]; then
 
 # As a precaution, limit the paths that this command may be execute on.
-if [[ ${target_path} =~ ${TARGET_CUSTOM_DISK_DIRECTORY} || \
-      ${target_path} =~ ${TARGET_CUSTOM_ROOT_DIRECTORY} ]]; then
+if [[ ${target_file_path} =~ ${TARGET_CUSTOM_DISK_DIRECTORY} || \
+      ${target_file_path} =~ ${TARGET_CUSTOM_ROOT_DIRECTORY} ]]; then
 
     # Remove the existing directory if it exists.
-    # echo "rm --recursive --force ${target_path}"
-    rm --recursive --force "${target_path}"
+    # echo "rm --recursive --force ${target_file_path}"
+    rm --recursive --force "${target_file_path}"
 
     # Move the source directory to the target directory.
-    # echo "mv ${source_path} ${target_path}"
-    mv "${source_path}" "${target_path}"
+    # echo "mv ${source_file_path} ${target_file_path}"
+    mv "${source_file_path}" "${target_file_path}"
 
     # If a user was supplied, change ownership and permissions.
     if [[ ${user} ]]; then
 
         # Change the ownership of all files and directories in the
         # target directory.
-        # echo "chown --recursive ${user}:${user} ${target_path}"
-        chown --recursive ${user}:${user} "${target_path}"
+        # echo "chown --recursive ${user}:${user} ${target_file_path}"
+        chown --recursive ${user}:${user} "${target_file_path}"
 
         # Ensure the owner has write permissions for all files and
         # directories in the target directory.
-        # echo "chmod --recursive u+w ${target_path}"
-        chmod --recursive u+w "${target_path}"
+        # echo "chmod --recursive u+w ${target_file_path}"
+        chmod --recursive u+w "${target_file_path}"
 
     fi
 
@@ -97,9 +97,9 @@ else
     # Use echo $? to check the error status.
     # http://www.tldp.org/LDP/abs/html/exitcodes.html
     if [[ ${user} ]]; then
-        echo "Error. Unable to move ${source_path} to ${target_path} for ${user}."
+        echo "Error. Unable to move ${source_file_path} to ${target_file_path} for ${user}."
     else
-        echo "Error. Unable to move ${source_path} to ${target_path}."
+        echo "Error. Unable to move ${source_file_path} to ${target_file_path}."
     fi
 
     exit 1

@@ -1,8 +1,21 @@
 cubic (2021.12) bionic focal groovy hirsute impish jammy; urgency=low
 
+  * Issues fixed in version 2021.12-68:
+
+  - Fixed Bug GH:#5, Unable to proceed after bash(chroot) step when project
+    directory contains nn.nn.n-n format.
+
+  - Fixed Bug GH:#2, Popup Menu and About Dialog warning instance 'XXXXXXXXX'
+    has no handler with id 'XXXXX'.
+
+  - Improved processor module to accept a list of arguments for spawned commands
+    that require arguments.
+
+  - Added code comments to various modules.
+
   * Issues fixed in version 2021.12-67:
 
-    Fixed Issue # 1, Migrate the Cubic website from Launchpad to GitHub. (See
+  - Fixed Bug GH:#1, Migrate the Cubic website from Launchpad to GitHub. (See
     GitHub https://github.com/PJ-Singh-001/Cubic/issues/1).
 
   * Issues fixed in version 2021.12-66:
@@ -262,4 +275,4 @@ cubic (2021.12) bionic focal groovy hirsute impish jammy; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Wed, 15 Dec 2021 13:56:30 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Dec 2021 13:42:26 -0500

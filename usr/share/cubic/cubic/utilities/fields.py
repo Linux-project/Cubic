@@ -450,7 +450,7 @@ class IsoFieldsHistory:
         print(iso_fields)
         print('Custom ISO fields is valid...')
         print(iso_fields.is_valid)
-        print('-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -')
+        print('- ' * 40)
         print(f'The custom ISO fields list has  "{len(self.history)}" items.')
         print(f'The custom ISO fields has undo? "{self.has_undo()}"')
 
