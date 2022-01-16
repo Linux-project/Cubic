@@ -94,6 +94,8 @@ GAP = '\u200A'
 # Application Versions
 ########################################################################
 
+CUBIC_COPYRIGHT = '© 2015, 2020 PJ Singh'
+
 # Cubic release versions:
 #
 # "Classic" 2019 Version:

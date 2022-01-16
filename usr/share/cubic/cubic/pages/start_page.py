@@ -147,8 +147,8 @@ def enter(action, old_page=None):
 
     if action == 'open':
 
-        # TODO: FOR TESTING ONLY
-        # test('/mnt/ram/Ubuntu')
+        if model.project_directory:
+            selected_project_directory(model.project_directory)
 
         return
 
@@ -268,13 +268,6 @@ def on_changed__start_page__project_directory_entry(widget):
 ########################################################################
 # Support Functions
 ########################################################################
-
-
-def test(project_directory):
-
-    logger.log_label('Simulated clicked start page project directory open button')
-
-    selected_project_directory(project_directory)
 
 
 def selected_project_directory(directory):

@@ -34,41 +34,27 @@
 # N/A
 
 ########################################################################
-# Initialize
-########################################################################
-
-import os
-if os.getuid() == 0:
-    print(
-        'Error. Cubic (Custom Ubuntu ISO Creator) is a graphical user'
-        ' interface application and may not be run using sudo or as'
-        ' root. See "man cubic" for more information.')
-    print()
-    exit()
-
-from cubic.utilities import logger
-logger.log_title('Cubic - Custom Ubuntu ISO Creator')
-
-########################################################################
 # Imports
 ########################################################################
 
+import argparse
 import gi
-
-gi.require_version('Gtk', '3.0')
-
-from gi.repository import Gtk
-
 import glob
 import importlib
 import mimetypes
 import os
 import traceback
 
+gi.require_version('Gtk', '3.0')
+
+from gi.repository import Gtk
+
+from cubic.constants import CUBIC_COPYRIGHT
+from cubic.constants import STAR, CUBIC_WEBSITE, CUBIC_WIKI, CUBIC_PAGE_HELP, CUBIC_DONATE, CUBIC_SITES, CUBIC_URLS
 from cubic import navigator
-from cubic.constants import STAR, CUBIC_WEBSITE, CUBIC_WIKI, CUBIC_PAGE_HELP, CUBIC_DONATE, CUBIC_SITES
 from cubic.utilities import constructor
 from cubic.utilities import file_utilities
+from cubic.utilities import logger
 from cubic.utilities import model
 
 ########################################################################
@@ -76,6 +62,37 @@ from cubic.utilities import model
 ########################################################################
 
 # N/A
+
+########################################################################
+# Arguments
+########################################################################
+
+parser = argparse.ArgumentParser(
+    prog='cubic',
+    description='Cubic (Custom Ubuntu ISO Creator) is a GUI wizard to create a customized Live ISO image for Ubuntu based distributions.')
+parser.add_argument('directory', nargs='?', help='directory for a new or existing project')
+parser.add_argument('iso', nargs='?', help='original ISO file for a new project (ignored for existing projects)')
+parser.add_argument("-v", "--verbose", action="store_true", help="output formatted log to the console")
+parser.add_argument("-V", "--version", action="store_true", help="print version information and exit")
+
+if os.getuid() == 0:
+    print('Error: Cubic may not be run using sudo or as root because it is graphical user interface application.')
+    print()
+    parser.print_help()
+    print()
+    exit()
+
+arguments = parser.parse_args()
+
+if arguments.version:
+    version = constructor.get_package_version('cubic')
+    display_version = constructor.get_major_minor_version(version)
+    urls = constructor.decode_object(CUBIC_URLS)
+    website = urls[CUBIC_WEBSITE]
+    print(f'Cubic version {display_version}')
+    print(f'Copyright {CUBIC_COPYRIGHT}')
+    print(f'Website {website}')
+    exit()
 
 ########################################################################
 # Main Application
@@ -86,11 +103,21 @@ from cubic.utilities import model
 
 try:
 
-    logger.log_title('Start Cubic')
-
     #-------------------------------------------------------------------
     # Initialize
     #-------------------------------------------------------------------
+
+    logger.verbose = arguments.verbose
+
+    logger.log_title('Cubic - Custom Ubuntu ISO Creator')
+
+    if arguments.directory:
+        model.project_directory = os.path.realpath(arguments.directory)
+        logger.log_value('Project directory argument', arguments.directory)
+
+    if arguments.iso:
+        model.original_iso_file_path = os.path.realpath(arguments.iso)
+        logger.log_value('Original ISO file path argument', arguments.iso)
 
     # Real path is necessary here.
     model.application.directory = os.path.dirname(os.path.realpath(__file__))
@@ -121,7 +148,6 @@ try:
     #-------------------------------------------------------------------
 
     logger.log_label('Setup pages')
-    print()
 
     # Get the stack.
     pages = model.builder.get_object('pages')
@@ -246,8 +272,6 @@ try:
     pattern = os.path.join(model.application.directory, 'cubic', 'choosers', '*_chooser.ui')
     file_paths = sorted(glob.glob(pattern))
     for file_path in file_paths:
-
-        print()
 
         # Get the module name.
         module_name = os.path.basename(file_path)[:-3]

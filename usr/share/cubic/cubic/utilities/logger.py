@@ -44,6 +44,7 @@ import textwrap
 # Global Variables & Constants
 ########################################################################
 
+verbose = False
 total_width = 80
 
 RED = '\033[30;41m'
@@ -63,19 +64,22 @@ NORMAL = '\033[0m'
 
 def log_title(text):
 
-    _log_title(text)
+    global verbose
+    if verbose: _log_title(text)
 
 
 def log_label(text):
 
-    _log_label(text)
+    global verbose
+    if verbose: _log_label(text)
 
 
 def log_value(column_a_text, column_b_text=None):
 
-    # _log_value_top(column_a_text, column_b_text, column_a_initial_indent='    ')
-    # _log_value_bottom(column_a_text, column_b_text, column_a_initial_indent='    ')
-    _log_value_hanging(column_a_text, column_b_text, column_a_initial_indent='  • ', column_a_subsequent_indent='    ')
+    global verbose
+    # if verbose: _log_value_top(column_a_text, column_b_text, column_a_initial_indent='    ')
+    # if verbose: _log_value_bottom(column_a_text, column_b_text, column_a_initial_indent='    ')
+    if verbose: _log_value_hanging(column_a_text, column_b_text, column_a_initial_indent='  • ', column_a_subsequent_indent='    ')
 
 
 ########################################################################
@@ -107,6 +111,7 @@ def _log_label(text):
     for index in range(column_a_size):
         column_a_line = f'{column_a_lines[index]:<{width_column_a}}'
         print(f'{GREEN}{column_a_line}{NORMAL}')
+    print()
 
 
 def _log_value_top(column_a_text, column_b_text=None, column_a_initial_indent='  ', column_a_subsequent_indent='  '):

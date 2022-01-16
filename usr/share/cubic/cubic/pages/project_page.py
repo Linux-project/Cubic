@@ -292,6 +292,9 @@ def setup(action, old_page=None):
 
             displayer.set_visible('project_page__header_bar_box', True)
 
+            if model.original_iso_file_path:
+                selected_original_iso_file_path(model.original_iso_file_path)
+
         return
 
     elif action == 'migrate':

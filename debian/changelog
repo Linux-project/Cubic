@@ -1,4 +1,18 @@
-cubic (2021.12) bionic focal groovy hirsute impish jammy; urgency=low
+cubic (2022.01) bionic focal groovy hirsute impish jammy; urgency=low
+
+  * Issues fixed in version 2022.01-69:
+
+  - Fixed Enhancement GH:#13, Open new Cubic instance with project folder
+    pre-selected.
+  - Added support for command line arguments, and added the following optional
+    command line arguments:
+      directory      directory for a new or existing project
+      iso            original ISO file for a new project
+      -h, --help     show this help message and exit
+      -v, --verbose  output formatted log to the console
+      -V, --version  print version information and exit
+  - Updated the man page to include command line argument instructions.
+  - Made logging optional; logging is now off by default.
 
   * Issues fixed in version 2021.12-68:
 
@@ -275,4 +289,4 @@ cubic (2021.12) bionic focal groovy hirsute impish jammy; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 27 Dec 2021 13:42:26 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 15 Jan 2022 21:14:31 -0500
