@@ -262,8 +262,11 @@ def get_directory_for_file(file_name, start_directory):
     logger.log_value(f'Find the directory for {file_name} in', start_directory)
 
     directory = ''
-    # The directory may be a symlink.
-    for directory_path, directory_names, file_names in os.walk(start_directory, followlinks=True):
+    # Do not follow links because this may lead to a recursive loop.
+    # Do not use os.path.realpath(start_directory) because the found
+    # directory should be a sub-directory of the start directory path.
+    # for directory_path, directory_names, file_names in os.walk(start_directory, followlinks=True):
+    for directory_path, directory_names, file_names in os.walk(start_directory):
         if file_name in file_names:
             directory = directory_path
             break

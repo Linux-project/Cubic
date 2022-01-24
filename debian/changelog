@@ -1,5 +1,10 @@
 cubic (2022.01) bionic focal groovy hirsute impish jammy; urgency=low
 
+  * Issues fixed in version 2022.01-70:
+
+  - Fixed Bug GH:#19, Unable to locate the squashfs file during customization of
+    Ubuntu Server.
+
   * Issues fixed in version 2022.01-69:
 
   - Fixed Enhancement GH:#13, Open new Cubic instance with project folder
@@ -289,4 +294,4 @@ cubic (2022.01) bionic focal groovy hirsute impish jammy; urgency=low
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 15 Jan 2022 21:14:31 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 23 Jan 2022 22:13:27 -0500

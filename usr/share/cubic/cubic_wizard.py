@@ -76,7 +76,7 @@ parser.add_argument("-v", "--verbose", action="store_true", help="output formatt
 parser.add_argument("-V", "--version", action="store_true", help="print version information and exit")
 
 if os.getuid() == 0:
-    print('Error: Cubic may not be run using sudo or as root because it is graphical user interface application.')
+    print('Error: Cubic may not be run using sudo or as root because it is a graphical user interface application.')
     print()
     parser.print_help()
     print()
