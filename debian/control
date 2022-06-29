@@ -29,7 +29,7 @@ Build-Depends:
 #                   Required for PolicyKit; usually preinstalled
                     policykit-1 (>=0.105),
 #                   Required for apt.cache; usually preinstalled
-                    python3-apt (>=1.6.5),
+#                   python3-apt (>=1.6.5),
 #                   Required for GTK3 Python Library; usually preinstalled
                     python3-gi (>=3.26.1),
 #                   Required for sorting alphabetically
@@ -49,9 +49,9 @@ Build-Depends:
 #                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
 #                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
-                    qemu-system-gui (>=1:4.2) | qemu-system-x86 (<1:4.2),
+                    qemu-system-gui (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for qemu-system-x86_64
-                    qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<1:4.2),
+                    qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for rsync; usually preinstalled
                     rsync (>=3.1.2),
 #                   Required for mksquashfs, unsquashfs
@@ -90,7 +90,7 @@ Depends:
 #                   Required for PolicyKit; usually preinstalled
                     policykit-1 (>=0.105),
 #                   Required for apt.cache; usually preinstalled
-                    python3-apt (>=1.6.5),
+#                   python3-apt (>=1.6.5),
 #                   Required for GTK3 Python Library; usually preinstalled
                     python3-gi (>=3.26.1),
 #                   Required for sorting alphabetically
@@ -110,9 +110,9 @@ Depends:
 #                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
 #                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
-                    qemu-system-gui (>=1:4.2) | qemu-system-x86 (<1:4.2),
+                    qemu-system-gui (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for qemu-system-x86_64
-                    qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<1:4.2),
+                    qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for rsync; usually preinstalled
                     rsync (>=3.1.2),
 #                   Required for mksquashfs, unsquashfs

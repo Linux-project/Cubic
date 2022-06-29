@@ -40,7 +40,7 @@
 # Imports
 ########################################################################
 
-import apt
+# import apt
 import os
 import pickle
 import platform
@@ -48,6 +48,7 @@ import re
 import time
 import zlib
 
+from cubic.constants import OK
 from cubic.constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
 from cubic.constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
 from cubic.constants import TIME_STAMP_FORMAT, VERSION_NUMBER_FORMAT
@@ -307,6 +308,52 @@ def get_major_minor_version(package_version):
 def get_installed_packages_list(root_directory=os.path.sep):
     """
     This function is not used.
+
+    Create a list of installed package details. Each package detail is a
+    list containing the following elements. Only package name and
+    package version are populated.
+        1: package name
+        2: package version
+
+    Also see prepare_page.create_package_details_list().
+
+    Arguments:
+    root_directory : str
+        The root directory of "var/lib/dpkg" (the dpkg database).
+
+    Returns:
+    package_details_list : list
+        A list of package details.
+    """
+
+    logger.log_label('Create list of installed packages')
+
+    package_details_list = []
+
+    command = 'dpkg-query --root="%s" --show' % (root_directory)
+    result, exit_status, signal_status = execute_synchronous(command)
+
+    if result:
+        packages = result.splitlines()
+        for package in packages:
+            package_name, package_version = package.split()
+
+            # Create a new package details for the current package.
+            # 1: package name
+            # 2: package version
+            package_details = [package_name, package_version]
+            package_details_list.append(package_details)
+
+    package_count = len(package_details_list)
+    logger.log_value('Total number of installed packages', len(package_details_list))
+
+    return package_details_list
+
+
+'''
+def get_installed_packages_list_01(root_directory=os.path.sep):
+    """
+    This function is not used.
     See prepare_page.create_package_details_list().
 
     Get a list of installed packages.
@@ -335,6 +382,7 @@ def get_installed_packages_list(root_directory=os.path.sep):
     logger.log_value('Total number of installed packages', package_count)
 
     return installed_packages_list
+'''
 
 
 def get_package_version(package_name, root_directory=os.path.sep):
@@ -357,31 +405,10 @@ def get_package_version(package_name, root_directory=os.path.sep):
         does not exist.
     """
 
-    # Exception hierarchy:
-    #   Object
-    #   └── BaseException
-    #       └── Exception
-    #           ├── builtins.OSError
-    #           │   ├── apt.cache.FetchCancelledException
-    #           │   ├── apt.cache.FetchFailedException
-    #           │   └── apt.cache.LockFailedException
-    #           ├── builtins.SystemError
-    #           │   └── apt_pkg.Error
-    #           ├── builtins.ValueError
-    #           │   └── apt_pkg.CacheMismatchError
-    #           ├── cubic.navigator.InterruptException
-    #           └── SystemError
+    command = 'dpkg-query --root="%s" --show --showformat="${Version}\n" "%s"' % (root_directory, package_name)
+    result, exit_status, signal_status = execute_synchronous(command)
 
-    try:
-        apt_cache = apt.Cache(rootdir=root_directory)
-        package = apt_cache[package_name]
-        return package.installed.version
-    except AttributeError as exception:
-        # AttributeError: 'NoneType' object has no attribute 'version'
-        return None
-    except KeyError as exception:
-        # KeyError: "The cache has no package named '___'".
-        return None
+    return result if exit_status == OK else None
 
 
 '''
@@ -502,6 +529,53 @@ def get_package_version_02(package_name, root_directory=os.path.sep):
         return None
     except SystemError as exception:
         # Inherits from Exception.
+        return None
+'''
+'''
+def get_package_version_03(package_name, root_directory=os.path.sep):
+    """
+    Get the installed version of the specified package.
+
+    Arguments:
+    package_name : str
+        The name of the package.
+    root_directory : str
+        Optional root directory of "var/lib/dpkg" (the dpkg database).
+        The default value is "/", which will get the version of the
+        specified package installed on the host system. Use
+        model.project.custom_root_directory to get the version of the
+        specified package installed on the on the custom OS.
+
+    Returns:
+    : str
+        The version of the specified package, or None if the package
+        does not exist.
+    """
+
+    # Exception hierarchy:
+    #   Object
+    #   └── BaseException
+    #       └── Exception
+    #           ├── builtins.OSError
+    #           │   ├── apt.cache.FetchCancelledException
+    #           │   ├── apt.cache.FetchFailedException
+    #           │   └── apt.cache.LockFailedException
+    #           ├── builtins.SystemError
+    #           │   └── apt_pkg.Error
+    #           ├── builtins.ValueError
+    #           │   └── apt_pkg.CacheMismatchError
+    #           ├── cubic.navigator.InterruptException
+    #           └── SystemError
+
+    try:
+        apt_cache = apt.Cache(rootdir=root_directory)
+        package = apt_cache[package_name]
+        return package.installed.version
+    except AttributeError as exception:
+        # AttributeError: 'NoneType' object has no attribute 'version'
+        return None
+    except KeyError as exception:
+        # KeyError: "The cache has no package named '___'".
         return None
 '''
 
