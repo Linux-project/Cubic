@@ -330,7 +330,12 @@ def get_installed_packages_list(root_directory=os.path.sep):
 
     package_details_list = []
 
-    command = 'dpkg-query --root="%s" --show' % (root_directory)
+    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
+    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
+    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
+    # and lower).
+    admin_directory = os.path.join(root_directory, 'var/lib/dpkg')
+    command = 'dpkg-query --admindir="%s" --show' % (admin_directory)
     result, exit_status, signal_status = execute_synchronous(command)
 
     if result:
@@ -382,6 +387,55 @@ def get_installed_packages_list_01(root_directory=os.path.sep):
     logger.log_value('Total number of installed packages', package_count)
 
     return installed_packages_list
+
+
+def get_installed_packages_list(root_directory=os.path.sep):
+    """
+    This function is not used.
+
+    Create a list of installed package details. Each package detail is a
+    list containing the following elements. Only package name and
+    package version are populated.
+        1: package name
+        2: package version
+
+    Also see prepare_page.create_package_details_list().
+
+    Arguments:
+    root_directory : str
+        The root directory of "var/lib/dpkg" (the dpkg database).
+
+    Returns:
+    package_details_list : list
+        A list of package details.
+    """
+
+    logger.log_label('Create list of installed packages')
+
+    package_details_list = []
+
+    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
+    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
+    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
+    # and lower).
+    command = 'dpkg-query --root="%s" --show' % (root_directory)
+    result, exit_status, signal_status = execute_synchronous(command)
+
+    if result:
+        packages = result.splitlines()
+        for package in packages:
+            package_name, package_version = package.split()
+
+            # Create a new package details for the current package.
+            # 1: package name
+            # 2: package version
+            package_details = [package_name, package_version]
+            package_details_list.append(package_details)
+
+    package_count = len(package_details_list)
+    logger.log_value('Total number of installed packages', len(package_details_list))
+
+    return package_details_list
 '''
 
 
@@ -405,7 +459,12 @@ def get_package_version(package_name, root_directory=os.path.sep):
         does not exist.
     """
 
-    command = 'dpkg-query --root="%s" --show --showformat="${Version}\n" "%s"' % (root_directory, package_name)
+    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
+    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
+    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
+    # and lower).
+    admin_directory = os.path.join(root_directory, 'var/lib/dpkg')
+    command = 'dpkg-query --admindir="%s" --show --showformat="${Version}\n" "%s"' % (admin_directory, package_name)
     result, exit_status, signal_status = execute_synchronous(command)
 
     return result if exit_status == OK else None
@@ -461,8 +520,8 @@ def get_package_version_01(package_name, root_directory=os.path.sep):
         logger.log_value('Error. Unable to get the package version', package_name)
         logger.log_value('The exception is', exception)
         return None
-'''
-'''
+
+
 import apt_pkg
 def get_package_version_02(package_name, root_directory=os.path.sep):
     """
@@ -530,8 +589,8 @@ def get_package_version_02(package_name, root_directory=os.path.sep):
     except SystemError as exception:
         # Inherits from Exception.
         return None
-'''
-'''
+
+
 def get_package_version_03(package_name, root_directory=os.path.sep):
     """
     Get the installed version of the specified package.
@@ -577,6 +636,36 @@ def get_package_version_03(package_name, root_directory=os.path.sep):
     except KeyError as exception:
         # KeyError: "The cache has no package named '___'".
         return None
+
+
+def get_package_version_04(package_name, root_directory=os.path.sep):
+    """
+    Get the installed version of the specified package.
+
+    Arguments:
+    package_name : str
+        The name of the package.
+    root_directory : str
+        Optional root directory of "var/lib/dpkg" (the dpkg database).
+        The default value is "/", which will get the version of the
+        specified package installed on the host system. Use
+        model.project.custom_root_directory to get the version of the
+        specified package installed on the on the custom OS.
+
+    Returns:
+    : str
+        The version of the specified package, or None if the package
+        does not exist.
+    """
+
+    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
+    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
+    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
+    # and lower).
+    command = 'dpkg-query --root="%s" --show --showformat="${Version}\n" "%s"' % (root_directory, package_name)
+    result, exit_status, signal_status = execute_synchronous(command)
+
+    return result if exit_status == OK else None
 '''
 
 
