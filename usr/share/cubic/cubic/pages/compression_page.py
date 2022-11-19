@@ -41,7 +41,6 @@
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.pages import options_page
-from cubic.utilities import configuration
 from cubic.utilities import displayer
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
@@ -141,7 +140,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -151,7 +150,7 @@ def leave(action, new_page=None):
 
         # logger.log_value('Selected compression', model.options.compression)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -164,17 +163,17 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        configuration.save()
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+        model.project.configuration.save()
 
         return 'unknown'
 

@@ -180,6 +180,8 @@ def leave(action, new_page=None):
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # The terminal continues running whenever the application
@@ -188,8 +190,6 @@ def leave(action, new_page=None):
         console.exit_virtual_environment()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 

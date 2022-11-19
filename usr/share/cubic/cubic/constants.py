@@ -96,7 +96,7 @@ GAP = '\u200A'
 
 CUBIC_COPYRIGHT = '© 2015, 2020 PJ Singh'
 
-# Cubic release versions:
+# Cubic versions:
 #
 # "Classic" 2019 Version:
 #   From: Release 2015.11-1  on 11/05/2015
@@ -108,12 +108,18 @@ CUBIC_COPYRIGHT = '© 2015, 2020 PJ Singh'
 #
 # "Release" 2021 Version:
 #   From: Release 2020.12-36 on 12/19/2020
+#   To:   Release 2022.06-72 on 06/30/2022
+#
+# "Release" 2022 Version:
+#   From: Release 2022.11-73 on 11/??/2022
 #   To:   Release 20??.??-?? on ??/??/20??
 
-# These values are initial release version numbers.
-CUBIC_VERSION_2019 = '2015.11-1'  # Releases 2015.11-1 thru 2020.02-62
-CUBIC_VERSION_2020 = '2020.04-1'  # Releases 2020.04-1 thru 2020.10-35
-CUBIC_VERSION_2021 = '2020.12-36'  # Releases 2020.12-36 thru present
+# Cubic release version numbers in YYYY.MM.RR format.
+CUBIC_VERSION_0000 = '0000.00.00'  # Unknown version
+CUBIC_VERSION_2019 = '2015.11.1'  # Releases 2015.11-1 thru 2020.02-62
+CUBIC_VERSION_2020 = '2020.04.1'  # Releases 2020.04-1 thru 2020.10-35
+CUBIC_VERSION_2021 = '2020.12.36'  # Releases 2020.12-36 thru 2022.06-72
+CUBIC_VERSION_2022 = '2022.11.73'  # Releases 2020.11-73 thru present
 
 ###############################################################
 # File Sizes
@@ -130,19 +136,68 @@ MAXIMUM_DISK_SIZE_GIB = MAXIMUM_DISK_SIZE_BYTES / GIB
 # File Names
 ########################################################################
 
-ISO_MOUNT_POINT = 'source-disk'  # 'original-iso-mount'
-CUSTOM_DISK_DIRECTORY = 'custom-disk'  # 'custom-live-iso'
-CUSTOM_ROOT_DIRECTORY = 'custom-root'  # 'squashfs-root'
+ISO_MOUNT_POINT = 'source-disk'
+CUSTOM_DISK_DIRECTORY = 'custom-disk'
+CUSTOM_ROOT_DIRECTORY = 'custom-root'
 IMAGE_FILE_NAME = 'partition-%s.img'
 LOCK_FILE_NAME = '.#custom-root.lck'
 
-# SQUASHFS_FILE_NAMES = [
-#     'ubuntu-server-minimal.squashfs',
-#     'ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs',
-#     'ubuntu-server-minimal.ubuntu-server.installer.squashfs',
-#     'ubuntu-server-minimal.ubuntu-server.squashfs'
-# ]
-SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs']
+# This list is used to select the correct squashfs directory and file
+# name in extract_page.identify_squashfs_file_path() if multiple
+# squashfs files are found on the ISO.
+#
+# Ubuntu
+# • casper/filesystem.squashfs
+#
+# Ubuntu Live Server 22.04
+# • casper/ubuntu-server-minimal.squashfs
+# • casper/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs
+# • casper/ubuntu-server-minimal.ubuntu-server.installer.squashfs
+# • casper/ubuntu-server-minimal.ubuntu-server.squashfs
+#
+# Debian
+# • live/filesystem.squashfs
+#
+# Linux Mint
+# • casper/filesystem.squashfs
+#
+# Grml Live Linux ISO
+# • live/grml64-full/grml64-full.squashfs
+
+SQUASHFS_FILE_NAMES = ['filesystem.squashfs',            \
+                       'ubuntu-server-minimal.squashfs', \
+                       'grml64-full.squashfs']
+
+# This list is used to select the correct casper directory in
+# extract_page.identify_casper_directory() if multiple casper files are
+# found on the ISO. Only the root directories are listed here, since
+# the sub-directories do not seem to be relevant.
+#
+# Ubuntu
+# • casper/vmlinuz
+# • casper/initrd
+#
+# Ubuntu Live Server 22.04
+# • casper/vmlinuz
+# • casper/initrd
+#
+# Debian
+# • d-i/gtk/vmlinuz
+# • d-i/vmlinuz
+# • live/vmlinuz-5.10.0-18-amd64
+# • d-i/gtk/initrd.gz
+# • d-i/initrd.gz
+# • live/initrd.img-5.10.0-18-amd64
+#
+# Linux Mint
+# • casper/vmlinuz
+# • casper/initrd.lz
+#
+# Grml live ISO
+# • boot/grml64full/vmlinuz
+# • boot/grml64full/initrd.img
+
+CASPER_DIRECTORIES = ['casper', 'live', 'boot']
 
 EXTENSION_MANIFEST = 'manifest'
 EXTENSION_MANIFEST_MINIMAL_REMOVE = 'manifest-minimal-remove'
@@ -161,12 +216,6 @@ OPTIONAL = 2
 BULLET = 3
 PROCESSING = 4
 BLANK = 5
-
-# Ubuntu uses "isolinux/txt.cfg"; other distros use different files.
-# - Fix for bug #1885464: Linux Mint uses "isolinux/isolinux.cfg."
-# - Fix for bug #???????: Elementry uses "isolinux/live.cfg."
-DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/txt.cfg'
-### DEFAULT_BOOT_CONFIGURATIONS_STRING = 'boot/grub/grub.cfg,boot/grub/loopback.cfg,isolinux/live.cfg,isolinux/isolinux.cfg,isolinux/txt.cfg'
 
 NUMBERS_LOWER_CASE = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 NUMBERS_TITLE_CASE = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine']

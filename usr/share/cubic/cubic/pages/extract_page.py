@@ -28,9 +28,13 @@
 ########################################################################
 """
 Prior to entering this page:
-- model.status.iso_template must be set to None whenever
+• model.status.iso_template must be set to None whenever
   model.status.is_success_copy is set to False.
-- model.status.casper_directory must be set to None whenever
+• model.status.squashfs_directory must be set to None whenever
+  model.status.is_success_extract is set to False.
+• model.status.squashfs_file_name must be set to None whenever
+  model.status.is_success_extract is set to False.
+• model.status.casper_directory must be set to None whenever
   model.status.is_success_extract is set to False.
 """
 
@@ -52,12 +56,11 @@ import os
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import CASPER_DIRECTORIES, SQUASHFS_FILE_NAMES
 from cubic.constants import EXTENSION_MANIFEST, EXTENSION_SIZE, EXTENSION_SQUASHFS, EXTENSION_SQUASHFS_GPG
 from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import SLEEP_1000_MS
-from cubic.constants import SQUASHFS_FILE_NAMES
 from cubic.navigator import InterruptException
-from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import file_utilities, iso_utilities
@@ -82,20 +85,21 @@ def setup(action, old_page=None):
 
     if action == 'next':
 
-        # The template must always be None if is success copy is None.
+        # The template must always be None if is_success_copy is None.
         # This should be set correctly on the Project page, but set it
         # here as a precaution (in case the user edited the
         # configuration file.
         if not model.status.is_success_copy:
             model.status.iso_template = None
 
-        # The casper directory must always be None if is success extract
+        # The casper directory must always be None if is_success_extract
         # is None. This should be set correctly on the Project page, but
         # set it here as a precaution (in case the user edited the
         # configuration file.
         if not model.status.is_success_extract:
-            model.status.casper_directory = None
+            model.status.squashfs_directory = None
             model.status.squashfs_file_name = None
+            model.status.casper_directory = None
 
         # --------------------------------------------------------------
         # Identify important files on the original disk image.
@@ -103,8 +107,10 @@ def setup(action, old_page=None):
 
         displayer.set_visible('extract_page__analyze_original_iso_section',
                               not model.status.iso_template or \
-                              not model.status.casper_directory or \
-                              not model.status.squashfs_file_name)
+                              not model.status.squashfs_directory or \
+                              not model.status.squashfs_file_name or \
+                              not model.status.casper_directory)
+
         displayer.update_label('extract_page__analyze_original_iso_message', '...')
         displayer.update_status('extract_page__analyze_original_iso', displayer.BULLET)
 
@@ -152,19 +158,22 @@ def setup(action, old_page=None):
 def enter(action, old_page=None):
     """
     Specific success or error messages should be displayed in the called
-    functions, but the display status the model status values should be
-    set here because they depend on the outcome of multiple functions.
+    functions, but the display status should be set here because they
+    depend on the outcome of multiple functions.
 
     The following values are checked and set to None accordingly, in the
     setup() function, prior to entering this page.
 
-    - model.status.iso_template is set to None whenever
+    • model.status.iso_template must be set to None whenever
       model.status.is_success_copy is set to False.
 
-    - model.status.casper_directory is set to None whenever
+    • model.status.squashfs_directory must be set to None whenever
       model.status.is_success_extract is set to False.
 
-    - model.status.squashfs_file_name is set to None whenever
+    • model.status.squashfs_file_name must be set to None whenever
+      model.status.is_success_extract is set to False.
+
+    • model.status.casper_directory must be set to None whenever
       model.status.is_success_extract is set to False.
     """
 
@@ -174,9 +183,10 @@ def enter(action, old_page=None):
         # Identify important files on the original disk image.
         # --------------------------------------------------------------
 
-        if not model.status.iso_template or     \
-           not model.status.casper_directory or \
-           not model.status.squashfs_file_name:
+        if not model.status.iso_template or \
+           not model.status.squashfs_directory or \
+           not model.status.squashfs_file_name or \
+           not model.status.casper_directory:
 
             displayer.update_status('extract_page__analyze_original_iso', displayer.PROCESSING)
             time.sleep(SLEEP_1000_MS)
@@ -192,12 +202,17 @@ def enter(action, old_page=None):
                 is_error = identify_iso_template()
                 if is_error: return  # Stay on this page.
 
-            # Identify the casper relative directory and the squashfs
-            # file name.
-            if not model.status.casper_directory or \
+            # Identify the squashfs relative file path.
+            if not model.status.squashfs_directory or \
                not model.status.squashfs_file_name:
 
-                is_error = identify_casper_and_squashfs()
+                is_error = identify_squashfs_file_path()
+                if is_error: return  # Stay on this page.
+
+            # Identify the casper relative directory.
+            if not model.status.casper_directory:
+
+                is_error = identify_casper_directory()
                 if is_error: return  # Stay on this page.
 
             # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -266,7 +281,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -274,7 +289,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -284,17 +299,17 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        configuration.save()
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+        model.project.configuration.save()
 
         return 'unknown'
 
@@ -309,9 +324,9 @@ def leave(action, new_page=None):
 # Support Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
-# Analyze the Original Disk Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Analyze Original Disk Functions
+# ----------------------------------------------------------------------
 
 
 def identify_iso_template():
@@ -337,47 +352,171 @@ def identify_iso_template():
     return is_error
 
 
-def identify_casper_and_squashfs():
+def identify_squashfs_file_path():
     """
-    Set the relative casper directory and the squashfs file name.
+    Set the squashfs directory and file name (without extension) in the
+    model. If there are multiple squashfs files, only the first one
+    matching the default squashfs file names will be selected.
     """
 
     logger.log_label('Find the compressed Linux file system')
 
-    # model.status.casper_directory = None
-    # model.status.squashfs_file_name = None
+    # Set model.status.squashfs_directory
+    # Set model.status.squashfs_file_name
 
-    # Look for the casper relative directory in the
-    # • mounted ISO directory
-    # • custom disk directory
-    search_directories = [model.project.iso_mount_point, model.project.custom_disk_directory]
-    for search_directory in search_directories:
-        for squashfs_file_name in SQUASHFS_FILE_NAMES:
-            casper_directory = file_utilities.get_directory_for_file(squashfs_file_name, search_directory)
-            if casper_directory:
-                casper_directory = os.path.relpath(casper_directory, search_directory)
-                logger.log_value('Found the compressed Linux file system', os.path.join(casper_directory, squashfs_file_name))
-                model.status.casper_directory = casper_directory
-                model.status.squashfs_file_name, _ = os.path.splitext(squashfs_file_name)
-                # Stop searching for other squashfs file names.
+    # Remove the extension from the squashfs file name because this name
+    # is reused for various other files with different extensions:
+    # - filesystem.manifest
+    # - filesystem.manifest-minimal-remove
+    # - filesystem.manifest-remove
+    # - filesystem.size
+    # - filesystem.squashfs
+
+    file_paths = _get_squashfs_file_paths()
+
+    if not file_paths:
+        model.status.squashfs_directory = None
+        model.status.squashfs_file_name = None
+    if len(file_paths) == 1:
+        directory, file_name = os.path.split(file_paths[0])
+        model.status.squashfs_directory = directory
+        model.status.squashfs_file_name, _ = os.path.splitext(file_name)
+    else:
+        # Handle multiple squashfs file paths.
+        for file_path in file_paths:
+            directory, file_name = os.path.split(file_path)
+            # Compare the file name to the list of squash file names.
+            if file_name in SQUASHFS_FILE_NAMES:
+                model.status.squashfs_directory = directory
+                model.status.squashfs_file_name, _ = os.path.splitext(file_name)
                 break
-            else:
-                logger.log_value('Unable to locate the compressed Linux file system ', squashfs_file_name)
-        if model.status.casper_directory:
-            # Stop searching in other directories.
-            break
+
+    # logger.log_value('The selected squashfs directory is', model.status.squashfs_directory)
+    # logger.log_value('The selected squashfs file name is', model.status.squashfs_file_name)
+
+    if not model.status.squashfs_directory or \
+       not model.status.squashfs_file_name:
+        logger.log_value('Error', 'Unable to locate the squashfs file path')
+        displayer.update_label('extract_page__analyze_original_iso_message', '<span foreground="red">Unable to locate the compressed Linux file system.</span>')
+        displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
+        return True  # (Error)
+    return False  # (No error)
+
+
+def identify_casper_directory():
+    """
+    Set the casper directory in the model. The casper directory contains
+    the vmlinuz annd initrd kernel files. If there are multiple casper
+    directories, only the first one matching the default casper
+    directories will be selected.
+    """
+
+    logger.log_label('Find the casper kernel files')
+
+    # Set model.status.casper_directory
+
+    # Assume vmlinuz and initrd are in the same directories.
+    # file_paths = _get_initrd_file_paths()
+    file_paths = _get_vmlinuz_file_paths()
+
+    if not file_paths:
+        model.status.casper_directory = None
+    elif len(file_paths) == 1:
+        model.status.casper_directory = os.path.dirname(file_paths[0])
+    else:
+        # Handle multiple casper directories.
+        for file_path in file_paths:
+            # Compare the root directory to the list of casper directories.
+            if file_path.split(os.path.sep)[0] in CASPER_DIRECTORIES:
+                # Get the full relative path (exclude the file name).
+                model.status.casper_directory = os.path.dirname(file_path)
+                break
 
     if not model.status.casper_directory:
-        displayer.update_label('extract_page__analyze_original_iso_message', '<span foreground="red">Unable to locate the compressed Linux file system.</span>')
+        logger.log_value('Error', 'Unable to locate the casper directory')
+        displayer.update_label('extract_page__analyze_original_iso_message', '<span foreground="red">Unable to locate the casper kernel files.</span>')
         displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
         return True  # (Error)
 
     return False  # (No error)
 
 
-#-----------------------------------------------------------------------
+def _get_squashfs_file_paths():
+    """
+    Get the squashfs file paths relative to the rood directory of the
+    original ISO or custom ISO. The custom ISO is only searched if the
+    original ISO is not available/mounted.
+
+    Returns:
+    file_paths : list of str
+        The relative squashfs file paths.
+    """
+
+    # Search the mounted ISO directory, first.
+    file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.iso_mount_point)
+
+    # Search the custom disk directory, second.
+    if not file_paths:
+        file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.custom_disk_directory)
+
+    logger.log_value('The squashfs file paths are', file_paths)
+
+    return file_paths
+
+
+def _get_vmlinuz_file_paths():
+    """
+    Get the vmlinuz file paths relative to the rood directory of the
+    original ISO or custom ISO. The custom ISO is only searched if the
+    original ISO is not available/mounted.
+
+    Returns:
+    file_paths : list of str
+        The relative vmlinuz file paths.
+    """
+
+    # logger.log_label('Find the vmlinuz file paths')
+
+    # Search the mounted ISO directory, first.
+    file_paths = file_utilities.find_files_with_pattern(r'vmlinuz.*', model.project.iso_mount_point)
+
+    # Search the custom disk directory, second.
+    if not file_paths:
+        file_paths = file_utilities.find_files_with_pattern(r'vmlinuz.*', model.project.custom_disk_directory)
+
+    logger.log_value('The vmlinuz file paths are', file_paths)
+
+    return file_paths
+
+
+def _get_initrd_file_paths():
+    """
+    Get the initrd file paths relative to the rood directory of the
+    original ISO or custom ISO. The custom ISO is only searched if the
+    original ISO is not available/mounted.
+
+    Returns:
+    file_paths : list of str
+        The relative initrd file paths.
+    """
+
+    # logger.log_label('Find the initrd file paths')
+
+    # Search the mounted ISO directory, first.
+    file_paths = file_utilities.find_files_with_pattern(r'initrd.*', model.project.iso_mount_point)
+
+    # Search the custom disk directory, second.
+    if not file_paths:
+        file_paths = file_utilities.find_files_with_pattern(r'initrd.*', model.project.custom_disk_directory)
+
+    logger.log_value('The initrd file paths are', file_paths)
+
+    return file_paths
+
+
+# ----------------------------------------------------------------------
 # Copy Original Disk Files Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def copy_original_iso_files():
@@ -387,33 +526,33 @@ def copy_original_iso_files():
     do not copy: /md5sum.txt
     do not copy: /MD5SUMS (for Linux Mint)
 
-    ~ ~ ~  copy: /casper/filesystem.manifest-remove
-    ~ ~ ~  copy: /casper/filesystem.manifest-minimal-remove
+    ~ ~ ~  copy: /squashfs_directory/filesystem.manifest-remove
+    ~ ~ ~  copy: /squashfs_directory/filesystem.manifest-minimal-remove
 
-    do not copy: /casper/filesystem.manifest
-    do not copy: /casper/filesystem.size
-    do not copy: /casper/filesystem.squashfs
-    do not copy: /casper/filesystem.squashfs.gpg
+    do not copy: /squashfs_directory/filesystem.manifest
+    do not copy: /squashfs_directory/filesystem.size
+    do not copy: /squashfs_directory/filesystem.squashfs
+    do not copy: /squashfs_directory/filesystem.squashfs.gpg
 
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.manifest
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.size
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.squashfs
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.squashfs.gpg
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.manifest
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.size
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.squashfs
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.squashfs.gpg
 
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.manifest
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.size
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs.gpg
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.manifest
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.size
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs.gpg
 
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.manifest
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.size
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.squashfs
-    ~ ~ ~  copy: /casper/ubuntu-server-minimal.ubuntu-server.installer.squashfs.gpg
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.manifest
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.size
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.squashfs
+    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.squashfs.gpg
 
-    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.manifest
-    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.size
-    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.squashfs
-    do not copy: /casper/ubuntu-server-minimal.ubuntu-server.squashfs.gpg
+    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.manifest
+    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.size
+    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.squashfs
+    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.squashfs.gpg
 
     ~ ~ ~  copy: /casper/initrd
     ~ ~ ~  copy: /casper/vmlinuz
@@ -462,10 +601,10 @@ def copy_original_iso_files():
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
         ' --exclude=".disk/release_notes_url"'
-        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}"'
-        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_SIZE}"'
-        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}"'
-        f' --exclude="/{model.status.casper_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS_GPG}"')
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}"'
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SIZE}"'
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}"'
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS_GPG}"')
 
     # The progress callback function.
     def progress_callback(percent):
@@ -502,9 +641,9 @@ def copy_original_iso_files():
     return False  # (No error)
 
 
-#-----------------------------------------------------------------------
-# Extract the Linux File System Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Extract Linux File System Functions
+# ----------------------------------------------------------------------
 
 
 def extract_squashfs():
@@ -520,7 +659,7 @@ def extract_squashfs():
     logger.log_value('The target file path is', target_file_path)
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
-    source_file_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
+    source_file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, file_name)
     logger.log_value('The source file path is', source_file_path)
 
     program = os.path.join(model.application.directory, 'commands', 'extract-root')

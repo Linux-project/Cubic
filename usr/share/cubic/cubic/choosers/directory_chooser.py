@@ -59,14 +59,21 @@ def open(calback, file_path=None):
 
     displayer.set_sensitive('window', False)
 
+    # Since "*" does not exist in a directory, the directory will be
+    # opened, and no file will be selected.
+    # See https://lazka.github.io/pgi-docs/Gtk-3.0/classes/FileChooser.html#Gtk.FileChooser.set_filename
+
     if file_path:
-        displayer.show_file_chooser(name, file_path, 'directory_chooser__select_button_1', 'directory_chooser__select_button_2')
+        if not os.path.isfile(file_path):
+            directory = os.path.dirname(file_path)
+            if os.path.isdir(directory):
+                file_path = os.path.join(directory, '*')
+            else:
+                file_path = os.path.join(model.application.user_home, '*')
     else:
-        # Since "*" does not exist in the user's home folder, the home
-        # folder will be opened, and no file will be selected.
-        # See https://lazka.github.io/pgi-docs/Gtk-3.0/classes/FileChooser.html#Gtk.FileChooser.set_filename
         file_path = os.path.join(model.application.user_home, '*')
-        displayer.show_file_chooser(name, file_path, 'directory_chooser__select_button_1', 'directory_chooser__select_button_2')
+
+    displayer.show_file_chooser(name, file_path, 'directory_chooser__select_button_1', 'directory_chooser__select_button_2')
 
     set_callback(calback)
 

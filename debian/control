@@ -30,6 +30,8 @@ Build-Depends:
                     policykit-1 (>=0.105),
 #                   Required for apt.cache; usually preinstalled
 #                   python3-apt (>=1.6.5),
+#                   Required for bash auto completion
+                    python3-argcomplete,
 #                   Required for GTK3 Python Library; usually preinstalled
                     python3-gi (>=3.26.1),
 #                   Required for sorting alphabetically
@@ -91,6 +93,8 @@ Depends:
                     policykit-1 (>=0.105),
 #                   Required for apt.cache; usually preinstalled
 #                   python3-apt (>=1.6.5),
+#                   Required for bash auto completion
+                    python3-argcomplete,
 #                   Required for GTK3 Python Library; usually preinstalled
                     python3-gi (>=3.26.1),
 #                   Required for sorting alphabetically

@@ -48,9 +48,10 @@ import re
 import time
 import zlib
 
-from cubic.constants import OK
+from cubic.constants import CUBIC_VERSION_0000
 from cubic.constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
 from cubic.constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
+from cubic.constants import OK
 from cubic.constants import TIME_STAMP_FORMAT, VERSION_NUMBER_FORMAT
 from cubic.utilities import logger
 from cubic.utilities.processor import execute_synchronous
@@ -291,18 +292,21 @@ def get_kernel_version_ALTERNATIVE():
     return result
 
 
-def get_major_minor_version(package_version):
+def get_display_version(package_version):
     """
-    Get displayable Cubic version. For example, the package version
-    "2021.10-61-release~202110150101~ubuntu21.10.1" returns "2021.10.61".
+    Get a displayable Cubic version in "YYYY.MM.RR" format. For example,
+    the package version "2021.10-61-release~202110150101~ubuntu21.10.1"
+    maps to "2021.10.61".
 
     Returns:
     : str
-        The major and minor version of the package in "YYYY.MM.XX"
-        format.
+        The Cubic package version in "YYYY.MM.RR" format.
     """
 
-    return '.'.join(package_version.split('-')[0:2])
+    if package_version:
+        return '.'.join(package_version.split('-')[0:2])
+    else:
+        return CUBIC_VERSION_0000
 
 
 def get_installed_packages_list(root_directory=os.path.sep):
@@ -767,23 +771,42 @@ def get_file_time_stamp(file_path):
     return time_stamp
 
 
-def construct_configuration_file_path(project_directory):
+def construct_application_configuration_file_path(user_home):
     """
     Construct the full file path for the "config.conf" file. This file
     is located in the Cubic project directory.
 
     Returns:
-    configuration_file_path : str
+    file_path : str
         The full file path for the config.conf file.
     """
 
-    # logger.log_label('Construct configuration file path')
+    # logger.log_label('Construct application configuration file path')
+    # logger.log_value('The user home directory is', user_home)
+
+    file_path = os.path.join(user_home, '.config', 'cubic', 'cubic.conf')
+    # logger.log_value('The constructed application configuration file path is', file_path)
+
+    return file_path
+
+
+def construct_project_configuration_file_path(project_directory):
+    """
+    Construct the full file path for the "config.conf" file. This file
+    is located in the Cubic project directory.
+
+    Returns:
+    file_path : str
+        The full file path for the config.conf file.
+    """
+
+    # logger.log_label('Construct project configuration file path')
     # logger.log_value('The project directory is', project_directory)
 
-    configuration_file_path = os.path.join(project_directory, 'cubic.conf')
-    # logger.log_value('The constructed configuration file path is', configuration_file_path)
+    file_path = os.path.join(project_directory, 'cubic.conf')
+    # logger.log_value('The constructed project configuration file path is', file_path)
 
-    return configuration_file_path
+    return file_path
 
 
 def construct_original_iso_mount_point(project_directory):

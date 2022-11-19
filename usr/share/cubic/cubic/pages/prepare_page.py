@@ -187,7 +187,7 @@ def enter(action, old_page=None):
         displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
         time.sleep(SLEEP_0500_MS)
         file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
         if os.path.exists(file_path):
             removable_packages_list = file_utilities.read_lines(file_path)
             count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
@@ -210,7 +210,7 @@ def enter(action, old_page=None):
         displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
         time.sleep(SLEEP_0500_MS)
         file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
         if os.path.exists(file_path):
             removable_packages_list = file_utilities.read_lines(file_path)
             count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
@@ -298,11 +298,11 @@ def leave(action, new_page=None):
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -1563,7 +1563,7 @@ def save_file_system_manifest_file(package_details_list):
     logger.log_label('Create new file system manifest file')
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}'
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
     logger.log_value('Write file system manifest to', file_path)
     with open(file_path, 'w') as file:
         for package_details in package_details_list[:-1]:

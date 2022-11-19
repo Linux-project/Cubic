@@ -147,9 +147,9 @@ def leave(action, new_page=None):
 
     else:
 
-        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
         logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return 'unknown'
 

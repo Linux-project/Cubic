@@ -197,11 +197,11 @@ def leave(action, new_page=None):
         #
         # 1. model.project.cubic_version
         #    - Set to model.application.cubic_version in the
-        #      reset_model() function.
+        #      initialize_model() function.
         # 2. model.project.create_date
-        #    - Set to current date in the reset_model() function.
+        #    - Set to current date in the initialize_model() function.
         # 3. model.project.directory
-        # 4. model.project.configuration_file_path
+        # 4. model.project.configuration
         # 5. model.project.iso_mount_point
         # 6. model.project.custom_root_directory
         # 7. model.project.custom_disk_directory
@@ -212,10 +212,11 @@ def leave(action, new_page=None):
 
         if is_error: return 'error'  # Stay on this page.
 
-        # Reset the model.
-        reset_model()
+        # Initialize the model.
+        initialize_model()
         # Pause to allow the user to see the results.
         time.sleep(SLEEP_1000_MS)
+
         return
 
     elif action == 'quit':
@@ -253,11 +254,11 @@ def leave(action, new_page=None):
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -290,9 +291,10 @@ def delete_project_files_TEST():
 
     is_error = False
 
-    #
+    # ------------------------------------------------------------------
     # Unmount and delete the original disk mount point.
-    #
+    # ------------------------------------------------------------------
+
     logger.log_value('Unmount the original disk and delete the mount point', model.project.iso_mount_point)
     displayer.update_status('delete_page__project_iso_mount_point', PROCESSING)
     time.sleep(SLEEP_1000_MS)
@@ -301,19 +303,21 @@ def delete_project_files_TEST():
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
-    #
-    # Delete the configuration file
-    #
-    logger.log_value('Delete the configuration file', model.project.configuration_file_path)
+    # ------------------------------------------------------------------
+    # Delete the configuration file.
+    # ------------------------------------------------------------------
+
+    logger.log_value('Delete the configuration file', model.project.configuration.file_path)
     displayer.update_status('delete_page__project_configuration_file', PROCESSING)
     time.sleep(SLEEP_1000_MS)
     displayer.update_status('delete_page__project_configuration_file', OK)
     displayer.update_label('delete_page__project_configuration_file_message', 'Testing testing testing.')
     time.sleep(SLEEP_1000_MS)
 
-    #
+    # ------------------------------------------------------------------
     # Delete the custom root directory.
-    #
+    # ------------------------------------------------------------------
+
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
     displayer.update_status('delete_page__custom_root_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
@@ -322,9 +326,10 @@ def delete_project_files_TEST():
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
-    #
+    # ------------------------------------------------------------------
     # Delete the custom disk directory.
-    #
+    # ------------------------------------------------------------------
+
     logger.log_value('Delete the custom disk directory', model.project.custom_disk_directory)
     displayer.update_status('delete_page__custom_disk_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
@@ -333,9 +338,10 @@ def delete_project_files_TEST():
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
-    #
-    # Delete the custom disk checksum files and the custom disk image files.
-    #
+    # ------------------------------------------------------------------
+    # Delete the custom disk checksum files and custom disk image files.
+    # ------------------------------------------------------------------
+
     displayer.update_status('delete_page__custom_iso_and_checksum', PROCESSING)
     time.sleep(SLEEP_1000_MS)
     displayer.update_status('delete_page__custom_iso_and_checksum', OK)
@@ -352,12 +358,14 @@ def delete_project_files():
 
     is_error = False
 
-    #
+    # ------------------------------------------------------------------
     # Unmount and delete the original disk mount point.
-    #
+    # ------------------------------------------------------------------
+
     logger.log_value('Unmount the original disk and delete the mount point', model.project.iso_mount_point)
     displayer.update_status('delete_page__project_iso_mount_point', PROCESSING)
     time.sleep(SLEEP_1000_MS)
+
     if os.path.exists(model.project.iso_mount_point):
         # Unmount the original disk image.
         result, exit_status, signal_status = iso_utilities.unmount(model.project.iso_mount_point)
@@ -382,17 +390,20 @@ def delete_project_files():
     else:
         displayer.update_status('delete_page__project_iso_mount_point', OK)
         displayer.update_label('delete_page__project_iso_mount_point_message', 'Nothing to unmount.')
+
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
-    #
-    # Delete the configuration file
-    #
-    logger.log_value('Delete the configuration file', model.project.configuration_file_path)
+    # ------------------------------------------------------------------
+    # Delete the configuration file.
+    # ------------------------------------------------------------------
+
+    logger.log_value('Delete the configuration file', model.project.configuration.file_path)
     displayer.update_status('delete_page__project_configuration_file', PROCESSING)
     time.sleep(SLEEP_1000_MS)
-    if os.path.exists(model.project.configuration_file_path):
-        result, exit_status, signal_status = file_utilities.delete_file(model.project.configuration_file_path)
+
+    if os.path.exists(model.project.configuration.file_path):
+        result, exit_status, signal_status = file_utilities.delete_file(model.project.configuration.file_path)
         if not signal_status:
             displayer.update_status('delete_page__project_configuration_file', OK)
             displayer.update_label('delete_page__project_configuration_file_message', '')
@@ -403,15 +414,18 @@ def delete_project_files():
     else:
         displayer.update_status('delete_page__project_configuration_file', OK)
         displayer.update_label('delete_page__project_configuration_file_message', 'Nothing to delete. This file does not exist.')
+
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
-    #
+    # ------------------------------------------------------------------
     # Delete the custom root directory.
-    #
+    # ------------------------------------------------------------------
+
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
     displayer.update_status('delete_page__custom_root_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
+
     if os.path.exists(model.project.custom_root_directory):
         result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_root_directory)
         if not signal_status:
@@ -424,12 +438,14 @@ def delete_project_files():
     else:
         displayer.update_status('delete_page__custom_root_directory', OK)
         displayer.update_label('delete_page__custom_root_directory_message', 'Nothing to delete. These files not exist.')
+
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
-    #
+    # ------------------------------------------------------------------
     # Delete the custom disk directory and ISO partition image files.
-    #
+    # ------------------------------------------------------------------
+
     logger.log_value('Delete the custom disk directory', model.project.custom_disk_directory)
     # displayer.update_label('delete_page__custom_disk_directory_message', model.project.custom_disk_directory)
     displayer.update_status('delete_page__custom_disk_directory', PROCESSING)
@@ -471,9 +487,10 @@ def delete_project_files():
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
-    #
-    # Delete the custom disk checksum files and the custom disk image files.
-    #
+    # ------------------------------------------------------------------
+    # Delete the custom disk checksum files and custom disk image files.
+    # ------------------------------------------------------------------
+
     check_button = model.builder.get_object('delete_page__custom_iso_and_checksum_check_button')
     is_active = check_button.get_active()
 
@@ -527,13 +544,15 @@ def delete_project_files():
     return is_error
 
 
-def reset_model():
+def initialize_model():
+
+    logger.log_label('Initialize')
 
     model.project.cubic_version = model.application.cubic_version
     model.project.create_date = constructor.get_current_time_stamp()
     model.project.modify_date = None
     # model.project.directory = None
-    # model.project.configuration_file_path = None
+    # model.project.configuration = None
     # model.project.iso_mount_point = None
     # model.project.custom_root_directory = None
     # model.project.custom_disk_directory = None
@@ -556,8 +575,9 @@ def reset_model():
     model.status.is_success_copy = False
     model.status.is_success_extract = False
     model.status.iso_template = None
-    model.status.casper_directory = None
+    model.status.squashfs_directory = None
     model.status.squashfs_file_name = None
+    model.status.casper_directory = None
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 

@@ -184,7 +184,7 @@ def leave(action, new_page=None):
         # file will be created.
         try:
             file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
-            file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+            file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
             removable_packages_list = create_typical_removable_packages_list()
             logger.log_label('Update the typical removable packages list')
             file_utilities.write_lines(removable_packages_list, file_path)
@@ -198,7 +198,7 @@ def leave(action, new_page=None):
         # file will be created.
         try:
             file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-            file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+            file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
             removable_packages_list = create_minimal_removable_packages_list()
             logger.log_label('Update the minimal removable packages list')
             file_utilities.write_lines(removable_packages_list, file_path)
@@ -239,11 +239,11 @@ def leave(action, new_page=None):
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 

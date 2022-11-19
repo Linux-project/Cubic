@@ -38,6 +38,7 @@
 ########################################################################
 
 import os
+import re
 
 from cubic.utilities.files_tab import FilesTab
 from cubic.utilities import logger
@@ -143,3 +144,132 @@ class BootTab(FilesTab):
 
         file_path = os.path.join(model.application.directory, 'cubic', 'pages', 'boot_tab.ui')
         super().__init__(file_path)
+
+    def update_boot_configurations(self, relative_file_paths):
+        """
+        Update the boot configuration files. Replace references to
+        vmlinuz and initrd with the correct file names based on the
+        currently selected kernel. Replace "boot=<casper>" with the
+        correct casper directory.
+
+        The contents of the boot configuration files are updated in:
+        • options_page.on_unmap__options_page__kernel_tab()
+        • setup_boot_tab()
+
+        (The files_tree must exist, and the files_tab.update_file()
+        method performs this check).
+
+        This method must be invoked using GLib.idle_add().
+
+        relative_file_paths : list of str
+            A list of file paths relative to the root of the files tree.
+        update_source_view : function
+            A function used by files_tree to update the source view.
+        """
+
+        logger.log_label('Update boot configurations')
+
+        for relative_file in relative_file_paths:
+            self.update_file(relative_file, self.update_source_view)
+
+    def update_source_view(self, source_view):
+        """
+        Search and replace text in the source view associated with a
+        file displayed on the boot tab. The source view is updated first
+        and the changes are then saved to the file. This function is a
+        required argument for the files_tab.update_file() function.
+
+        Arguments:
+        self : BootTab
+            A derived class of FilesTab.
+        source_view : GtkSource.View
+            The source view to updated.
+        """
+
+        logger.log_value('Search and replace in source view', source_view.file_path)
+
+        # Get new values.
+        squashfs_directory = model.status.squashfs_directory.split(os.path.sep)[0]
+        casper_directory = model.status.casper_directory
+        new_vmlinuz_file_name = model.kernel_details_list[model.selected_kernel_index]['new_vmlinuz_file_name']
+        new_initrd_file_name = model.kernel_details_list[model.selected_kernel_index]['new_initrd_file_name']
+
+        source_buffer = source_view.get_buffer()
+        number_of_lines = source_buffer.get_line_count()
+
+        replacement_count = 0
+        for line_number in range(number_of_lines):
+
+            # Get the current line.
+            line = self.get_line_text(source_buffer, line_number)
+
+            # append
+            match = re.search(r'^\s*(?i:APPEND)\s+', line)
+            if match:
+                # boot
+                if not re.search(r'(?i:BOOT)=', line):
+                    text = f'boot={squashfs_directory} '
+                    self.insert_text(source_buffer, text, line_number, match.end(0))
+                    # Get the current line because it has changed.
+                    line = self.get_line_text(source_buffer, line_number)
+                    replacement_count += 1
+                # initrd
+                match = re.search(rf'{casper_directory}/(?i:INITRD)\S*\s*', line)
+                if match:
+                    text = f'{casper_directory}/{new_initrd_file_name} '
+                    self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
+                    self.insert_text(source_buffer, text, line_number, match.start(0))
+                    # Get the current line because it has changed.
+                    line = self.get_line_text(source_buffer, line_number)
+                    replacement_count += 1
+
+            # linux
+            match = re.search(r'^\s*(?i:LINUX)\s+', line)
+            if match:
+                # Check if the next line starts with "append".
+                next_line = self.get_line_text(source_buffer, line_number + 1)
+                if not re.search(r'^\s*(?i:APPEND)\s+', next_line):
+                    # boot
+                    if not re.search(r'(?i:BOOT)=', line):
+                        text = f'boot={squashfs_directory} '
+                        self.insert_text(source_buffer, text, line_number, match.end(0))
+                        # Get the current line because it has changed.
+                        line = self.get_line_text(source_buffer, line_number)
+                        replacement_count += 1
+                    # vmlinuz
+                    match = re.search(rf'{casper_directory}/(?i:VMLINUZ)\S*\s*', line)
+                    if match:
+                        text = f'{casper_directory}/{new_vmlinuz_file_name} '
+                        self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
+                        self.insert_text(source_buffer, text, line_number, match.start(0))
+                        # Get the current line because it has changed.
+                        line = self.get_line_text(source_buffer, line_number)
+                        replacement_count += 1
+
+            # kernel
+            match = re.search(r'^\s*(?i:KERNEL)\s+', line)
+            if match:
+                # vmlinuz
+                match = re.search(rf'{casper_directory}/(?i:VMLINUZ)\S*\s*', line)
+                if match:
+                    text = f'{casper_directory}/{new_vmlinuz_file_name} '
+                    self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
+                    self.insert_text(source_buffer, text, line_number, match.start(0))
+                    # Get the current line because it has changed.
+                    line = self.get_line_text(source_buffer, line_number)
+                    replacement_count += 1
+
+            # initrd
+            match = re.search(r'^\s*(?i:INITRD)\s+', line)
+            if match:
+                # initrd
+                match = re.search(rf'{casper_directory}/(?i:INITRD)\S*\s*', line)
+                if match:
+                    text = f'{casper_directory}/{new_initrd_file_name} '
+                    self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
+                    self.insert_text(source_buffer, text, line_number, match.start(0))
+                    # Get the current line because it has changed.
+                    line = self.get_line_text(source_buffer, line_number)
+                    replacement_count += 1
+
+        return replacement_count

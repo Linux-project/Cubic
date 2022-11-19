@@ -386,6 +386,8 @@ def leave(action, new_page=None):
 
         time.sleep(SLEEP_0250_MS)
 
+        return
+
     elif action == 'quit':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
@@ -407,6 +409,8 @@ def leave(action, new_page=None):
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         displayer.set_visible('terminal_page__copy_header_bar_button', False)
@@ -421,8 +425,6 @@ def leave(action, new_page=None):
         result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 

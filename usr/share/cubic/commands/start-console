@@ -48,12 +48,12 @@ bind_path="/etc/resolv.conf"
 program=${0}
 number_arguments=${#}
 machine_name=${1}
-directory_path=${2}
+directory=${2}
 
 # echo "program..................... ${program}"
 # echo "number of arguments......... ${number_arguments}"
 # echo "machine_name................ ${machine_name}"
-# echo "directory path.............. ${directory_path}"
+# echo "directory................... ${directory}"
 
 ########################################################################
 # Command
@@ -65,7 +65,7 @@ directory_path=${2}
 # --quiet                         \
 # --notify-ready=yes              \
 # --machine "${machine_name}"     \
-# --directory "${directory_path}" \
+# --directory "${directory}"
 
 # Networking: Option 1
 # --------------------
@@ -84,7 +84,7 @@ directory_path=${2}
 # --notify-ready=yes                               \
 # --bind-ro="/run/systemd/resolve:/run/resolvconf" \
 # --machine "${machine_name}"                      \
-# --directory "${directory_path}"
+# --directory "${directory}"
 
 # Networking: Option 2
 # --------------------
@@ -103,7 +103,7 @@ directory_path=${2}
 # --notify-ready=yes                \
 # --bind-ro="/etc/resolv.conf"      \
 # --machine "${machine_name}"       \
-# --directory "${directory_path}"
+# --directory "${directory}"
 
 # if [[ -L ${bind_path} ]]; then
 #     # Bind the host's /etc/resolv.conf file only if it is a symlink.
@@ -122,7 +122,7 @@ if [[ -e ${bind_path} ]]; then
     --register=yes                  \
     --bind-ro="${bind_path}"        \
     --machine="${machine_name}"     \
-    --directory="${directory_path}"
+    --directory="${directory}"
 else
     # Automatically handle resolv.conf as outlined in:
     # https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html#--resolv-conf=
@@ -131,7 +131,7 @@ else
     --notify-ready=yes              \
     --register=yes                  \
     --machine="${machine_name}"     \
-    --directory="${directory_path}"
+    --directory="${directory}"
 fi
 exit_code=$?
 exit $exit_code

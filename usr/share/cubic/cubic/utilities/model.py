@@ -49,10 +49,20 @@ page = None
 application = Fields('application')
 application.directory = None
 application.user_home = None
-application.cubic_version = None
 application.kernel_version = None
-application.projects = None
+application.configuration = None
+application.cubic_version = None
 application.visited_sites = None
+application.projects = None
+application.iso_file_path = None
+
+########################################################################
+# Arguments
+########################################################################
+
+arguments = Fields('arguments')
+arguments.directory = None
+arguments.file_path = None
 
 ########################################################################
 # Project
@@ -63,7 +73,7 @@ project.cubic_version = None
 project.create_date = None
 project.modify_date = None
 project.directory = None
-project.configuration_file_path = None
+project.configuration = None
 project.iso_mount_point = None
 project.custom_root_directory = None
 project.custom_disk_directory = None
@@ -101,8 +111,9 @@ status = Fields('status')
 status.is_success_copy = None
 status.is_success_extract = None
 status.iso_template = None
-status.casper_directory = None
+status.squashfs_directory = None
 status.squashfs_file_name = None
+status.casper_directory = None
 status.iso_checksum = None
 status.iso_checksum_file_name = None
 
@@ -134,21 +145,9 @@ options.compression = None
 # Page/Module Specific
 ########################################################################
 
-#-----------------------------------------------------------------------
-# Command Line Arguments, Start page
-#-----------------------------------------------------------------------
-
-project_directory = None
-
-#-----------------------------------------------------------------------
-# Command Line Arguments, Project page
-#-----------------------------------------------------------------------
-
-original_iso_file_path = None
-
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Terminal page, Preseed tab, ISO Boot tab
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # Stores the current directory selected on the Terminal page, the
 # Preseed tab, or the ISO Boot tab. This is the directory to copy files
@@ -160,35 +159,33 @@ current_directory = None
 # files to be copied.
 selected_uris = None
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Prepare page, Linux Kernels tab
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 selected_kernel_index = None
+kernel_details_list = None  # List of kernel detail dictionaries
 
-# This is a list of kernel detail dictionaries.
-kernel_details_list = None
-
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Prepare page, Packages page
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 package_details_list = None
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Prepare page, Packages page, Options page
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 ubiquity_version = None
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Generate page, Finish page
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 iso_file_size = None
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Emulator, Test 1 page, Test 2 page
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 emulator_memory = None

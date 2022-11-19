@@ -71,7 +71,7 @@ FILE_NAME_EXISTS_MESSAGE = 'A file with this name already exists.'
 INVALID_FILE_NAME_MESSAGE = 'Enter a valid file name containing alpha-numeric characters, dashes, underscores, or periods.'
 
 ########################################################################
-# Cubic Tab Class
+# Files Tab Class
 ########################################################################
 
 
@@ -115,6 +115,15 @@ class FilesTab:
     def create_tree(self, root_file_paths, required_file_paths=None):
         """
         This method must be invoked using GLib.idle_add().
+
+        Arguments:
+        root_file_paths : list of str
+            List of relative paths of the root directories. For example:
+            ["boot/grub", "isolinux"]
+        required_file_paths : list of str
+            List of relative file paths of files that must be shown in
+            the tree. For example: ["boot/grub/grub.cfg",
+            "isolinux/txt.cfg"]
         """
 
         # logger.log_label('Create tree')
@@ -154,9 +163,9 @@ class FilesTab:
     # Header Bar Button Handlers
     ####################################################################
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Filter
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_toggled_show_all_files_header_bar_button(self, button):
 
@@ -175,9 +184,9 @@ class FilesTab:
 
         self.files_tree.filter(is_show_all_files)
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Directory
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def untoggle_directory_header_bar_buttons(self, selected_button=None):
 
@@ -268,9 +277,9 @@ class FilesTab:
         else:
             self.show_pane_for_file(file_name, file_path, file_data, mime_type)
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # File
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def untoggle_file_header_bar_buttons(self, selected_button=None):
 
@@ -316,9 +325,9 @@ class FilesTab:
     # Pane Handlers
     ####################################################################
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Create File
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_changed_create_file_file_name_entry(self, entry):
 
@@ -390,9 +399,9 @@ class FilesTab:
         # show_pane_for_file() callback function.
         self.files_tree.target_file_path = file_path
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Create Directory
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_changed_create_directory_file_name_entry(self, entry):
 
@@ -463,9 +472,9 @@ class FilesTab:
         # show_pane_for_file() callback function.
         self.files_tree.target_file_path = file_path
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Rename Directory
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_changed_rename_directory_target_file_name_entry(self, entry):
 
@@ -485,8 +494,8 @@ class FilesTab:
             # Get the path for the new file.
             label = model.builder.get_object(self.RENAME_DIRECTORY_FILE_PATH_LABEL)
             file_path = label.get_text()
-            parent_directory_path, _ = os.path.split(file_path)
-            file_path = os.path.join(parent_directory_path, file_name)
+            parent_directory = os.path.dirname(file_path)
+            file_path = os.path.join(parent_directory, file_name)
 
             # Check if the file already exists.
             full_file_path = self.get_full_file_path(file_path)
@@ -517,10 +526,10 @@ class FilesTab:
         source_file_path = label.get_text()
 
         # Get the path for the new file.
-        parent_directory_path, _ = os.path.split(source_file_path)
+        parent_directory = os.path.dirname(source_file_path)
         entry = model.builder.get_object(self.RENAME_DIRECTORY_TARGET_FILE_NAME_ENTRY)
         target_file_name = entry.get_text()
-        target_file_path = os.path.join(parent_directory_path, target_file_name)
+        target_file_path = os.path.join(parent_directory, target_file_name)
 
         # Update the required file paths. Assume the rename ill succeed.
         ### self.files_tree.update_required_file_paths(source_file_path, target_file_path)
@@ -538,9 +547,9 @@ class FilesTab:
         # show_pane_for_file() callback function.
         self.files_tree.target_file_path = target_file_path
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Delete Directory
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_clicked_delete_directory_button(self, button):
 
@@ -565,9 +574,9 @@ class FilesTab:
         # reset by the change_tree_view_selection() function.
         self.files_tree.target_file_path = file_path
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Rename File
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_changed_rename_file_target_file_name_entry(self, entry):
 
@@ -587,8 +596,8 @@ class FilesTab:
             # Get the path for the new file.
             label = model.builder.get_object(self.RENAME_FILE_FILE_PATH_LABEL)
             file_path = label.get_text()
-            parent_directory_path, _ = os.path.split(file_path)
-            file_path = os.path.join(parent_directory_path, file_name)
+            parent_directory = os.path.dirname(file_path)
+            file_path = os.path.join(parent_directory, file_name)
 
             # Check if the file already exists.
             full_file_path = self.get_full_file_path(file_path)
@@ -619,10 +628,10 @@ class FilesTab:
         source_file_path = label.get_text()
 
         # Get the path for the new file.
-        parent_directory_path, _ = os.path.split(source_file_path)
+        parent_directory = os.path.dirname(source_file_path)
         entry = model.builder.get_object(self.RENAME_FILE_TARGET_FILE_NAME_ENTRY)
         target_file_name = entry.get_text()
-        target_file_path = os.path.join(parent_directory_path, target_file_name)
+        target_file_path = os.path.join(parent_directory, target_file_name)
 
         # Update the required file paths.
         # self.files_tree.update_required_file_paths(source_file_path, target_file_path)
@@ -640,9 +649,9 @@ class FilesTab:
         # show_pane_for_file() callback function.
         self.files_tree.target_file_path = target_file_path
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Delete File
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_clicked_delete_file_button(self, button):
 
@@ -671,9 +680,9 @@ class FilesTab:
     # Show Pane Functions
     ####################################################################
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Contents
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def show_pane_for_file(self, file_name, file_path, file_data, mime_type):
         """
@@ -755,9 +764,9 @@ class FilesTab:
         # Add the new child to the scrolled window.
         scrolled_window.add(child)
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Directory
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def show_pane_for_create_file(self, file_name, file_path, file_data, mime_type):
 
@@ -902,9 +911,9 @@ class FilesTab:
         view_port = model.builder.get_object(self.DELETE_DIRECTORY_VIEW_PORT)
         scrolled_window.add(view_port)
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # File
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def show_pane_for_rename_file(self, file_name, file_path, file_data, mime_type):
 
@@ -989,30 +998,100 @@ class FilesTab:
         handle_navigation(self.COPY_ACTION)
 
     ####################################################################
-    #
+    # Search and Replace Functions
     ####################################################################
 
-    def search_and_replace_in_files(self, file_paths, *search_replace_tuples):
-
-        GLib.idle_add(self._search_and_replace_in_files, file_paths, search_replace_tuples)
-
-    def _search_and_replace_in_files(self, file_paths, search_replace_tuples):
+    def update_file(self, relative_file_path, update_source_view):
         """
-        Replace text in the specified files. The files tree containing
-        the specified files must exist prior to calling this method,
-        because the text replacements are made in the source buffer
-        stored in the tree, prior to being saved.
+        Update text in the specified file. Update the source view first,
+        using the supplied update_source_view() function. Then save the
+        source view to the corresponding file.
 
-        file_path : list of path
-            A list of relative file paths
-        search_replace_tuples : list of tuple (str, str)
-            List of tuples containing (search text, replacement text).
+        This method checks if the files tree exists before attempting to
+        update the source view.
+
+        relative_file_path : str
+            A file path relative to the root of the files tree.
+        update_source_view : function
+            A function used by files_tree to update the source view.
         """
 
         # logger.log_label('Search and replace in files')
 
-        for file_path in file_paths:
-            self.files_tree.search_and_replace_in_file(file_path, search_replace_tuples)
+        # Check if the files tree exists before attempting to update
+        # the file. For example:
+        # Upon leaving the Options page on back action:
+        # 1. The Kernel, Preseed, and Boot tabs are unmapped (as a
+        #    consequence of no longer being visible).
+        # 2. The Options page leave() function removes the files trees
+        #    associated with the Preseed and Boot tabs.
+        # Next, when the Kernel tab is unmapped:
+        # 3. The options_page.on_unmap__options_page__kernel_tab()
+        #    function attempts to update the boot configurations.
+        # 4. However, the files tree associated to the boot tab no
+        #    longer exists (see step 2 above).
+
+        if self.files_tree: self.files_tree.update_file(relative_file_path, update_source_view)
+
+    def get_line_text(self, source_buffer, line_number):
+        """
+        Read text from the specified line of the source_buffer.
+
+        Arguments:
+        source_buffer : GtkSource.Buffer
+            The source buffer to read the text line from.
+        line_number : int
+            The line number to read.
+        """
+
+        text_iter_1 = source_buffer.get_iter_at_line(line_number)
+        if not text_iter_1.ends_line():
+            text_iter_2 = text_iter_1.copy()
+            text_iter_2.forward_to_line_end()
+            line_text = source_buffer.get_text(text_iter_1, text_iter_2, True)
+        else:
+            line_text = ''
+
+        return line_text
+
+    def insert_text(self, source_buffer, text, line_number, line_offset):
+        """
+        Insert text at specified line and offset in the source buffer.
+
+        Arguments:
+        source_buffer : GtkSource.Buffer
+            The source buffer to insert text into.
+        test : str
+            The text to insert.
+        line_number : int
+            The line number to insert the text on.
+        line_offset : int
+            The line offset to insert the text at.
+        """
+
+        text_iter = source_buffer.get_iter_at_line_offset(line_number, line_offset)
+        source_buffer.insert(text_iter, text)
+
+    def delete_text(self, source_buffer, line_number, line_offset_1, line_offset_2):
+        """
+        Delete text from the source buffer, corresponding to the
+        specified line number and the range specified by the start and
+        end offsets.
+
+        Arguments:
+        source_buffer : GtkSource.Buffer
+            The source buffer to delete text from.
+        line_number : int
+            The line number to delete text from.
+        line_offset_1 : int
+            The starting line offset to begin deleting the text.
+        line_offset_2 : int
+            The ending line offset to stop deleting the text.
+        """
+
+        text_iter_1 = source_buffer.get_iter_at_line_offset(line_number, line_offset_1)
+        text_iter_2 = source_buffer.get_iter_at_line_offset(line_number, line_offset_2)
+        source_buffer.delete(text_iter_1, text_iter_2)
 
     ####################################################################
     # Miscellaneous Functions

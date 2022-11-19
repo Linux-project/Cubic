@@ -77,7 +77,7 @@ def make_directory(directory):
     if not os.path.exists(directory):
         os.mkdir(directory)
     else:
-        logger.log_value('Cannot create directory', 'Directory already exists')
+        logger.log_value('Not creating directory', 'Directory already exists')
 
 
 def make_directories(file_path):
@@ -94,7 +94,7 @@ def make_directories(file_path):
     if not os.path.exists(file_path):
         os.makedirs(file_path, exist_ok=True)
     else:
-        logger.log_value('Cannot create directories', 'The directory path already exists')
+        logger.log_value('Not creating directories', 'The directory path already exists')
 
 
 # TODO: Check if this function is terminated when the thread is killed?
@@ -134,7 +134,7 @@ def delete_directory(directory):
             exit_status = None
             signal_status = 1
     else:
-        logger.log_value('Cannot delete directory', 'Directory does not exist')
+        logger.log_value('Not deleting directory', 'Directory does not exist')
         result = f'Directory {directory} does not exist.'
         exit_status = None
         signal_status = 1
@@ -246,7 +246,7 @@ def directory_is_writable(directory):
 
 def get_directory_for_file(file_name, start_directory):
     """
-    Find the directory for the file.
+    Find the directory that contains a file with the specified name.
 
     Arguments:
     file_name : str
@@ -466,7 +466,7 @@ def read_file(file_path, errors=None):
         with open(file_path, 'r', errors=errors) as file:
             file_contents = file.read()
     except FileNotFoundError as exception:
-        logger.log_value('Error. File does not exist', file_path)
+        logger.log_value('Warning. File does not exist', file_path)
         # logger.log_value('Error. The exception is', exception)
     except Exception as exception:
         logger.log_value('Error. The exception is', exception)
@@ -497,7 +497,7 @@ def read_lines(file_path):
         with open(file_path, 'r') as file:
             lines = [line.strip() for line in file.readlines() if line.strip()]
     except FileNotFoundError as exception:
-        logger.log_value('Error. File does not exist', file_path)
+        logger.log_value('Warning. File does not exist', file_path)
         # logger.log_value('The exception is', exception)
     except Exception as exception:
         logger.log_value('Error. Unable to read lines from file', file_path)
@@ -509,7 +509,7 @@ def read_lines(file_path):
     return lines
 
 
-def write_line(line, file_path):
+def write_line(line, file_path, create_directories=False, raise_exception=True):
     """
     Write the line to the file. If the file does not exist, it will be
     created.
@@ -519,12 +519,25 @@ def write_line(line, file_path):
         The line to write.
     file_path : string
         The full path of the file to write to.
-    """
+    create_directories : boolean
+        True to create the parent directories if they do not exist.
+        False to not create the parent directories if they do not exist.
+    raise_exception : boolean
+        True to raise an exception if there was an error.
+        False to not raise an exception if there was an error.
 
-    logger.log_value('Write to file', file_path)
+    Raises:
+    : Exception
+        The exception that occurred, only if raise_exception is True.
+    """
 
     # Write the line to a new empty file.
     try:
+        # Ensure the parent directories exist.
+        if create_directories: make_directories(os.path.dirname(file_path))
+
+        # Write to the file.
+        logger.log_value('Write to file', file_path)
         with open(file_path, 'w') as file:
             # When writing in text mode, the default is to convert
             # occurrences of \n back to platform-specific line endings.
@@ -534,10 +547,10 @@ def write_line(line, file_path):
         logger.log_value('Error. Unable to write to file', file_path)
         logger.log_value('The exception is', exception)
         logger.log_value('The trace back is', traceback.format_exc())
-        raise exception
+        if raise_exception: raise exception
 
 
-def write_lines(lines, file_path):
+def write_lines(lines, file_path, create_directories=False, raise_exception=True):
     """
     Write the lines to the file. If the file does not exist, it will be
     created.
@@ -548,12 +561,25 @@ def write_lines(lines, file_path):
         or None.
     file_path : string
         The full path of the file to write to.
-    """
+    create_directories : boolean
+        True to create the parent directories if they do not exist.
+        False to not create the parent directories if they do not exist.
+    raise_exception : boolean
+        True to raise an exception if there was an error.
+        False to not raise an exception if there was an error.
 
-    logger.log_value('Write to file', file_path)
+    Raises:
+    : Exception
+        The exception that occurred, only if raise_exception is True.
+    """
 
     # Write the lines to a new empty file.
     try:
+        # Ensure the parent directories exist.
+        if create_directories: make_directories(os.path.dirname(file_path))
+
+        # Write to the file.
+        logger.log_value('Write to file', file_path)
         if len(lines) <= 100:
             _write_lines_1(lines, file_path)
         else:
@@ -562,7 +588,7 @@ def write_lines(lines, file_path):
         logger.log_value('Error. Unable to write lines to file', file_path)
         logger.log_value('The exception is', exception)
         logger.log_value('The trace back is', traceback.format_exc())
-        raise exception
+        if raise_exception: raise exception
 
 
 def _write_lines_1(lines, file_path):
@@ -575,6 +601,10 @@ def _write_lines_1(lines, file_path):
         A list of strings; may be an empty list.
     file_path : string
         The full path of the file to write to.
+
+    Raises:
+    : Exception
+        The exception that occurred.
     """
 
     # logger.log_value('Write 0-100 lines to file', file_path)
@@ -597,6 +627,10 @@ def _write_lines_2(lines, file_path):
         A list of strings; may not be an empty list.
     file_path : string
         The full path of the file to write to.
+
+    Raises:
+    : Exception
+        The exception that occurred.
     """
 
     # logger.log_value('Write > 100 lines to file', file_path)
@@ -613,6 +647,107 @@ def _write_lines_2(lines, file_path):
             file.write(line)
 
 
+def find_files_with_pattern(file_name_pattern, start_directory):
+    """
+    Recursively search files in the start directory that match the
+    file name pattern, and return a list of matching file paths relative
+    to the start directory.
+
+    Arguments:
+    file_name_pattern : r-str
+        A regular expression pattern for the file name to search for,
+        such as "r'.*\.squashfs$'" or "r'.*\.txt$'".
+    start_directory : str
+        The directory to search in.
+
+    Returns:
+    results : list
+        A list of matching file paths relative to the start directory.
+    """
+
+    # logger.log_label('Find files')
+    logger.log_value('Search for file name pattern', file_name_pattern)
+    logger.log_value('In directory', start_directory)
+
+    relative_file_paths = []
+    for directory_path, directory_names, file_names in os.walk(start_directory):
+        for file_name in filter(lambda x: re.match(file_name_pattern, x), file_names):
+            file_path = os.path.join(directory_path, file_name)
+            relative_file_path = os.path.relpath(file_path, start=start_directory)
+            relative_file_paths.append(relative_file_path)
+
+    return relative_file_paths
+
+
+def find_files_with_pattern_DOES_NOT_WORK(file_path_pattern, search_directory):
+    """
+    Warning: glob.glob() does not work because it always follows
+    symlinks when recursive=True.
+
+    Recursively search files in the root directory that match the
+    pattern, and return a list of matching files relative to the root
+    directory. This function works in Python 3.0+.
+
+    Arguments:
+    file_path_pattern : str
+        A wildcard pattern for the file to search for. For example,
+        "*.squashfs" or "*.txt".
+    search_directory : str
+        The root directory to search in.
+
+    Returns:
+    results : list
+        A list of matching files relative to the root directory
+    """
+
+    # logger.log_label('Find files')
+    logger.log_value('Search for pattern', file_path_pattern)
+    logger.log_value('In directory', search_directory)
+
+    # If recursive is true, the pattern "**" will match any files and
+    # zero or more directories, sub-directories and symbolic links to
+    # directories.
+    file_path_pattern = os.path.join(search_directory, '**', file_path_pattern)
+    file_paths = glob.glob(file_path_pattern, recursive=True)
+    file_paths = [os.path.relpath(file_path, start=search_directory) for file_path in file_paths]
+
+    return file_paths
+
+
+def find_files_with_pattern_python_310_DOES_NOT_WORK(file_path_pattern, search_directory):
+    """
+    Warning: glob.glob() does not work because it always follows
+    symlinks when recursive=True.
+
+    Recursively search files in the root directory that match the
+    pattern, and return a list of matching files relative to the root
+    directory. This function only works in Python 3.10+.
+
+    Arguments:
+    file_path_pattern : str
+        A wildcard pattern for the file to search for. For example,
+        "*.squashfs" or "*.txt".
+    search_directory : str
+        The root directory to search in.
+
+    Returns:
+    results : list
+        A list of matching files relative to the root directory
+    """
+
+    # logger.log_label('Find files')
+    logger.log_value('Search for pattern', file_path_pattern)
+    logger.log_value('In directory', search_directory)
+
+    # If recursive is true, the pattern "**" will match any files and
+    # zero or more directories, sub-directories and symbolic links to
+    # directories.
+    file_path_pattern = os.path.join('**', file_path_pattern)
+    file_paths = glob.glob(file_path_pattern, root_dir=search_directory, recursive=True)
+
+    return file_paths
+
+
 def find_in_file(search_regex, file_path):
     """
     Search the file using the regular expression.
@@ -620,7 +755,6 @@ def find_in_file(search_regex, file_path):
     Arguments:
     search_regex : r-str
         The regular expression to search for.
-        file_path
     file_path : str
         The full path of the file to search.
 

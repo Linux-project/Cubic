@@ -53,7 +53,6 @@ from cubic.constants import SLEEP_0500_MS
 from cubic.constants import TIME_STAMP_FORMAT_YYYYMMDD
 from cubic.navigator import InterruptException
 from cubic.pages import options_page
-from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import file_utilities
@@ -233,7 +232,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -247,7 +246,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -260,19 +259,19 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        configuration.save()
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+        model.project.configuration.save()
 
         return 'unknown'
 
@@ -289,9 +288,9 @@ def leave(action, new_page=None):
 # Support Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Copy Disk Kernel Files Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def copy_kernel_files():
@@ -446,9 +445,9 @@ def _copy_kernel_file(source_file_path, target_file_path, user, file_number, tot
     track_progress(command, progress_callback)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Create Squashfs Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def create_squashfs():
@@ -460,7 +459,7 @@ def create_squashfs():
     source_file_path = model.project.custom_root_directory
     logger.log_value('The source file path is', source_file_path)
 
-    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
     logger.log_value('The target file path is', target_file_path)
 
     displayer.update_label('generate_page__create_squashfs_message', f'Using {model.options.compression} compression.')
@@ -519,7 +518,7 @@ def create_squashfs_TESTING_1():
     source_file_path = model.project.custom_root_directory
     logger.log_value('The source file path is', source_file_path)
 
-    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
     logger.log_value('The target file path is', target_file_path)
 
     displayer.update_label('generate_page__create_squashfs_message', 'Testing.')
@@ -537,10 +536,10 @@ def create_squashfs_TESTING_2():
 
     file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
 
-    source_file_path = os.path.join(model.project.iso_mount_point, model.status.casper_directory, file_name)
+    source_file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, file_name)
     logger.log_value('The source file path is', source_file_path)
 
-    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+    target_file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
     logger.log_value('The target file path is', target_file_path)
 
     # Copy the original filesystem.squashfs or
@@ -575,9 +574,9 @@ def create_squashfs_TESTING_3():
     return False  # (No error)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Update File System Size Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def update_file_system_size():
@@ -621,7 +620,7 @@ def update_file_system_size():
     # Write the file system size.
     try:
         file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SIZE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.casper_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
         file_utilities.write_line(str(size_in_bytes), file_path)
     except InterruptException as exception:
         displayer.update_label('generate_page__update_file_system_size_message', 'Error. Unable to save file system size.')
@@ -638,9 +637,9 @@ def update_file_system_size():
     return False  # (No error)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Update Disk Name and Disk Info Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def update_disk_name_and_disk_info():
@@ -704,7 +703,7 @@ def _update_disk_name():
     new_lines.append(line)
     logger.log_value('Update disk name', line)
     # Append the new disk note line.
-    display_version = constructor.get_major_minor_version(model.application.cubic_version)
+    display_version = constructor.get_display_version(model.application.cubic_version)
     # Use the modify date from the model.
     line = f'#define DISKNOTE  Generated using Cubic version {display_version} on {model.project.modify_date} based on {model.original.iso_file_name}'
     new_lines.append(line)
@@ -743,9 +742,9 @@ def _update_disk_info():
     file_utilities.write_line(line, file_path)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Update Checksums Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 # TODO: This doesn't use a pexpect process.
@@ -879,9 +878,9 @@ def update_checksums():
     return False  # (No error)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Check Disk Size Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def check_custom_disk_directory_size():
@@ -937,9 +936,9 @@ def check_custom_disk_directory_size():
     return False  # (No error)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Create Disk Image Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 '''
 https://askubuntu.com/questions/1289400/remaster-installation-image-for-ubuntu-20-10
 https://unix.stackexchange.com/users/135084/thomas-schmitt
@@ -1040,9 +1039,9 @@ def create_iso_image():
     return False  # (No error)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Get Xorriso Command Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def _get_xorriso_command():
@@ -1078,9 +1077,9 @@ def _get_xorriso_command():
     return command
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Calculate Disk Image Checksum Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def calculate_checksum_for_iso():

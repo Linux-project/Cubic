@@ -54,12 +54,12 @@ from cubic.constants import BOLD_RED, NORMAL
 from cubic.pages.boot_tab import BootTab
 from cubic.pages.kernel_tab import KernelTab
 from cubic.pages.preseed_tab import PreseedTab
-from cubic.utilities import configuration
 from cubic.utilities import displayer
 from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
+from cubic.utilities.processor import execute_synchronous
 
 ########################################################################
 # Global Variables & Constants
@@ -117,13 +117,13 @@ def setup(action, old_page=None):
     elif action == 'next':
 
         # Setup the Kernel tab.
-        setup_kernel_tab()
+        GLib.idle_add(setup_kernel_tab)
 
         # Setup the Preseed tab.
-        setup_preseed_tab()
+        GLib.idle_add(setup_preseed_tab)
 
         # Setup the Boot tab.
-        setup_boot_tab()
+        GLib.idle_add(setup_boot_tab)
 
         validate_page()
 
@@ -135,13 +135,13 @@ def setup(action, old_page=None):
     elif action == 'next-options':
 
         # Setup the Kernel tab.
-        setup_kernel_tab()
+        GLib.idle_add(setup_kernel_tab)
 
         # Setup the Preseed tab.
-        setup_preseed_tab()
+        GLib.idle_add(setup_preseed_tab)
 
         # Setup the Boot tab.
-        setup_boot_tab()
+        GLib.idle_add(setup_boot_tab)
 
         validate_page()
 
@@ -206,7 +206,7 @@ def leave(action, new_page=None):
         displayer.set_visible('boot_tab__header_box', False)
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        configuration.save()
+        model.project.configuration.save()
 
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
@@ -221,7 +221,7 @@ def leave(action, new_page=None):
         displayer.set_visible('options_page__stack_switcher', False)
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -233,7 +233,7 @@ def leave(action, new_page=None):
         displayer.set_visible('options_page__stack_switcher', False)
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -251,7 +251,7 @@ def leave(action, new_page=None):
         displayer.set_visible('boot_tab__header_box', False)
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        configuration.save()
+        model.project.configuration.save()
 
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
@@ -270,7 +270,7 @@ def leave(action, new_page=None):
         displayer.set_visible('boot_tab__header_box', False)
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        configuration.save()
+        model.project.configuration.save()
 
         return
 
@@ -279,7 +279,7 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        configuration.save()
+        model.project.configuration.save()
 
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
@@ -290,14 +290,14 @@ def leave(action, new_page=None):
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        configuration.save()
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+        model.project.configuration.save()
 
         return 'unknown'
 
@@ -329,7 +329,7 @@ def on_unmap__options_page__kernel_tab(*args):
         model.selected_kernel_index = kernel_tab.selected_kernel_index
 
         # Update the boot configurations based on the selected kernel.
-        update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
+        GLib.idle_add(boot_tab.update_boot_configurations, model.options.boot_configurations)
 
 
 def on_map__options_page__preseed_tab(*args):
@@ -372,14 +372,6 @@ def on_unmap__options_page__boot_tab(*args):
 def setup_kernel_tab():
     """
     Setup the Kernel tab.
-    """
-
-    GLib.idle_add(_setup_kernel_tab)
-
-
-def _setup_kernel_tab():
-    """
-    Setup the Kernel tab.
     This function must be invoked using GLib.idle_add().
     """
 
@@ -408,14 +400,6 @@ def _setup_kernel_tab():
 
 
 def setup_preseed_tab():
-    """
-    Setup the Preseed tab.
-    """
-
-    GLib.idle_add(_setup_preseed_tab)
-
-
-def _setup_preseed_tab():
     """
     Setup the Preseed tab.
     This function must be invoked using GLib.idle_add().
@@ -453,16 +437,31 @@ def _setup_preseed_tab():
 def setup_boot_tab():
     """
     Setup the Boot tab.
-    """
-
-    GLib.idle_add(_setup_boot_tab)
-
-
-def _setup_boot_tab():
-    """
-    Setup the Boot tab.
     This function must be invoked using GLib.idle_add().
     """
+
+    # Boot configuration files:
+    #
+    # Ubuntu
+    # • isolinux/txt.cfg
+    #
+    # Linux Mint (Bug #1885464)
+    # • isolinux/isolinux.cfg
+    #
+    # Elementry
+    # • isolinux/live.cfg
+    #
+    # Debian (Enhancement GH:#114)
+    # • isolinux/menu.cfg
+    #
+    # Grml Live Linux (Enhancement GH:#93)
+    # • boot/grub/grml64full_default.cfg
+    # • boot/grub/grml64full_options.cfg
+    # • boot/isolinux/default.cfg
+    # • boot/isolinux/grml.cfg
+    # • boot/isolinux/hidden.cfg
+
+    # Prepare the boot tab.
 
     global boot_tab
     if not boot_tab:
@@ -481,81 +480,39 @@ def _setup_boot_tab():
         header_bar.add(box)
         box.set_visible(False)
 
+    # Identify relative root directories for the boot configurations.
     # Ensure root directories in the files tree exist, in order to avoid
     # FileNotFoundError errors and to allow adding new items to them.
 
-    # If the boot/grub directory does not exist, create it.
-    file_path = os.path.join(model.project.custom_disk_directory, 'boot/grub')
+    root_file_paths = []
+
+    # The boot directory is required. If it does not exist, create it.
+    file_path = os.path.join(model.project.custom_disk_directory, 'boot')
     file_utilities.make_directories(file_path)
+    if os.path.isdir(file_path):
+        root_file_paths.append('boot')
 
-    # If the isolinux directory does not exist, create it. The isolinux
-    # directory is optional.
+    # The isolinux directory is optional.
     file_path = os.path.join(model.project.custom_disk_directory, 'isolinux')
-    file_utilities.make_directory(file_path)
+    # file_utilities.make_directories(file_path)
+    if os.path.isdir(file_path):
+        root_file_paths.append('isolinux')
 
-    # Create the list of boot configurations files.
-    boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)
+    # Get the the boot configuration files. These are text files located
+    # in the root file paths that contain the words vmlinuz and initrd.
+    if not model.options.boot_configurations:
+        command = f'find {" ".join(root_file_paths)} -type f -exec grep -HiIl "linux.*vmlinuz\|kernel.*vmlinuz" {{}} \;'
+        result, exit_status, signal_status = execute_synchronous(command, model.project.custom_disk_directory)
+        model.options.boot_configurations = result.split()
+
+    # Create the tree of boot configurations files.
+    # boot_tab.create_tree(['boot/grub', 'isolinux'], model.options.boot_configurations)
+    boot_tab.create_tree(root_file_paths, model.options.boot_configurations)
 
     # Update the boot configurations based on the selected kernel.
-    update_boot_configurations(model.options.boot_configurations, model.kernel_details_list, model.selected_kernel_index)
-
-
-def update_boot_configurations(file_paths, kernel_details_list, selected_index):
-    """
-    Update the boot configuration files, replacing references to vmlinuz
-    and initrd with the correct file names based on the currently
-    selected kernel.
-
-    The contents of the boot configurations files is also replaced in
-    kernel_tab.on_toggled__kernel_tab__kernels_radio_button().
-
-    The files_tree must exist prior to invoking this function, and the
-    tree must contain tree iters corresponding to the specified files.
-    """
-
-    logger.log_label('Update boot configurations')
-
-    logger.log_value('The selected kernel is index number', selected_index)
-
-    # Remove all existing boot=casper; this will be added below.
-    search_text_1 = r'\s*boot=casper\s*'
-    replacement_text_1 = r' '
-
-    # Handle files like /boot/grub/grub.cfg and /boot/grub/loopback.cfg
-    # that have /casper/vmlinuz and boot=casper on the same line.
-
-    # linux + /casper/vmlinuz + boot=casper
-    search_text_2 = r'^(\s*linux\s+.*)/%s\S*/vmlinuz\S*' % model.status.casper_directory
-    replacement_text_2 = r'\1/%s/%s boot=casper' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_file_name'])
-
-    # Handle files like /isolinux/txt.cfg
-    # that have /casper/vmlinuz and boot=casper on separate lines.
-
-    # kernel + /casper/vmlinuz
-    search_text_3 = r'^(\s*kernel\s+.*)/%s\S*/vmlinuz\S*' % model.status.casper_directory
-    replacement_text_3 = r'\1/%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_vmlinuz_file_name'])
-
-    # append + boot=casper
-    search_text_4 = r'(^\s*append\s+)(.*)'
-    replacement_text_4 = r'\1boot=casper \2'
-
-    # initrd
-    search_text_5 = r'%s\S*/initrd\S*' % model.status.casper_directory
-    replacement_text_5 = r'%s/%s' % (model.status.casper_directory, kernel_details_list[selected_index]['new_initrd_file_name'])
-
-    # Search and replace text.
-    boot_tab.search_and_replace_in_files(
-        file_paths,
-        (search_text_1,
-         replacement_text_1),
-        (search_text_2,
-         replacement_text_2),
-        (search_text_3,
-         replacement_text_3),
-        (search_text_4,
-         replacement_text_4),
-        (search_text_5,
-         replacement_text_5))
+    # Since _setup_boot_tab was invoked using GLib.idle_add(), there is
+    # no need to use GLib.idle_add() here.
+    boot_tab.update_boot_configurations(model.options.boot_configurations)
 
 
 ########################################################################

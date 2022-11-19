@@ -44,7 +44,6 @@ import time
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_1000_MS
-from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import file_utilities
@@ -71,7 +70,7 @@ def setup(action, old_page=None):
 
     if action == 'migrate':
 
-        display_version = constructor.get_major_minor_version(model.project.cubic_version)
+        display_version = constructor.get_display_version(model.project.cubic_version)
         displayer.update_entry('migrate_page__project_cubic_version_entry', display_version)
         displayer.update_entry('migrate_page__project_directory_entry', model.project.directory)
         displayer.update_entry('migrate_page__custom_iso_version_number_entry', model.custom.iso_version_number)
@@ -147,11 +146,9 @@ def leave(action, new_page=None):
         # The following fields must be set before leaving this page:
         #
         # 1. model.project.cubic_version
-        #    - Set to model.application.cubic_version when the
-        #      configuration is saved.
         # 2. model.project.create_date
         # 3. model.project.directory
-        # 4. model.project.configuration_file_path
+        # 4. model.project.configuration
         # 5. model.project.iso_mount_point
         # 6. model.project.custom_root_directory
         # 7. model.project.custom_disk_directory
@@ -179,6 +176,8 @@ def leave(action, new_page=None):
 
         logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
         return 'unknown'
 
 
@@ -205,21 +204,25 @@ def migrate_configuration():
     is_error = False
 
     logger.log_label('Migrate the configuration')
-    logger.log_value('Update the configuration file to the current format', model.project.configuration_file_path)
+    logger.log_value('Update the configuration file to the current format', model.project.configuration.file_path)
 
     displayer.update_status('migrate_page__configuration', PROCESSING)
     time.sleep(SLEEP_1000_MS)
 
     try:
-        configuration.save()
-        logger.log_value('Migrated', model.project.configuration_file_path)
+        # Update the project Cubic version and the modify date.
+        model.project.cubic_version = model.application.cubic_version
+        model.project.modify_date = constructor.get_current_time_stamp()
+        # Save the configuration.
+        model.project.configuration.save()
+        logger.log_value('Migrated', model.project.configuration.file_path)
         displayer.update_status('migrate_page__configuration', OK)
         displayer.update_label('migrate_page__configuration_message', '')
     except Exception as exception:
-        logger.log_value('Error. Unable to migrate', model.project.configuration_file_path)
+        logger.log_value('Error. Unable to migrate', model.project.configuration.file_path)
         logger.log_value('The exception is', exception)
         displayer.update_status('migrate_page__configuration', ERROR)
-        displayer.update_label('migrate_page__configuration_message', f'Error. Unable to migrate {model.project.configuration_file_path}.')
+        displayer.update_label('migrate_page__configuration_message', f'Error. Unable to migrate {model.project.configuration.file_path}.')
         is_error = True
 
     # Pause to allow the user to see the result.

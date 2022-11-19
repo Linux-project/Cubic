@@ -1,4 +1,28 @@
-cubic (2022.06) bionic focal groovy hirsute impish jammy kinetic; urgency=low
+cubic (2022.11) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+
+  * Issues fixed in version 2022.11-73:
+
+  - Improve text search and replace in boot files.
+  - Update file choosers to open the home directory if a file or directory does
+    not exist.
+  - Automatically identify boot files; remove the list of distro specific boot
+    files in the constants module.
+  - Enhancement GH:#114, Add support for Debian.
+  - Enhancement GH:#93, Add support for Grml Live Linux.
+  - Enhancement GH:#116, Do not show the Test button on the Project page and the
+    Finish page if the dummy Qemu package (qemu-system-x86 version 0.0) has been
+    installed.
+  - Enhancement GH:#121, Add auto completion for Cubic command line arguments.
+    Add file `/usr/share/bash-completion/completions/cubic`. Require package
+    `python3-argcomplete`.
+  - Enhancement GH:#117, Format the output of the `cubic --version` command.
+  - Enhancement GH:#118, Remove "New" and "★" in the headerbar and menu items.
+  - Enhancement GH:#119, Open the file chooser to the previously used *.iso file
+    when selecting an original ISO for new projects.
+  - Enhancement GH:#120, Introduce an application specific configuration file
+    `~/.config/cubic/cubic.conf`. Updated the configuration module: add the
+    Configuration base class, the Application derived class, and the Project
+    derived class.
 
   * Issues fixed in version 2022.06-72:
 

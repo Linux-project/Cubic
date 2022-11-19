@@ -32,7 +32,7 @@ The following fields must be set before entering this page:
 1. model.project.cubic_version
 2. model.project.create_date
 3. model.project.directory
-4. model.project.configuration_file_path
+4. model.project.configuration
 5. model.project.iso_mount_point
 6. model.project.custom_root_directory
 7. model.project.custom_disk_directory
@@ -55,11 +55,9 @@ import urllib
 from cubic.choosers import directory_chooser
 from cubic.choosers import iso_image_chooser
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import DEFAULT_BOOT_CONFIGURATIONS_STRING
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.navigator import handle_navigation
 from cubic.utilities.fields import Fields, IsoFields, IsoFieldsHistory
-from cubic.utilities import configuration
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import emulator
@@ -113,7 +111,12 @@ def setup(action, old_page=None):
         # validate_page()
 
         # Navigation buttons are also set in the validate_page() function.
-        if status.is_success_copy and status.is_success_extract and status.iso_template and status.casper_directory:
+        if status.is_success_copy and    \
+           status.is_success_extract and \
+           status.iso_template and       \
+           status.squashfs_directory and \
+           status.squashfs_file_name and \
+           status.casper_directory:
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -153,7 +156,12 @@ def setup(action, old_page=None):
         # validate_page()
 
         # Navigation buttons are also set in the validate_page() function.
-        if status.is_success_copy and status.is_success_extract and status.iso_template and status.casper_directory:
+        if status.is_success_copy and    \
+           status.is_success_extract and \
+           status.iso_template and       \
+           status.squashfs_directory and \
+           status.squashfs_file_name and \
+           status.casper_directory:
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -222,7 +230,7 @@ def setup(action, old_page=None):
         original = None
         custom = None
 
-        if os.path.isfile(model.project.configuration_file_path):
+        if os.path.isfile(model.project.configuration.file_path):
 
             # There is a saved configuration.
 
@@ -292,8 +300,8 @@ def setup(action, old_page=None):
 
             displayer.set_visible('project_page__header_bar_box', True)
 
-            if model.original_iso_file_path:
-                selected_original_iso_file_path(model.original_iso_file_path)
+            if model.arguments.file_path and model.arguments.directory == model.project.directory:
+                selected_original_iso_file_path(model.arguments.file_path)
 
         return
 
@@ -305,7 +313,12 @@ def setup(action, old_page=None):
         # validate_page()
 
         # Navigation buttons are also set in the validate_page() function.
-        if status.is_success_copy and status.is_success_extract and status.iso_template and status.casper_directory:
+        if status.is_success_copy and    \
+           status.is_success_extract and \
+           status.iso_template and       \
+           status.squashfs_directory and \
+           status.squashfs_file_name and \
+           status.casper_directory:
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -483,8 +496,9 @@ def leave(action, new_page=None):
         model.status.is_success_copy = status.is_success_copy
         model.status.is_success_extract = status.is_success_extract
         model.status.iso_template = status.iso_template
-        model.status.casper_directory = status.casper_directory
+        model.status.squashfs_directory = status.squashfs_directory
         model.status.squashfs_file_name = status.squashfs_file_name
+        model.status.casper_directory = status.casper_directory
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
@@ -494,7 +508,7 @@ def leave(action, new_page=None):
         model.options.compression = options.compression
 
         # Save the model values.
-        configuration.save()
+        model.project.configuration.save()
         save_iso_release_notes_url()
 
         if custom.is_valid and custom != custom_history.current():
@@ -542,8 +556,9 @@ def leave(action, new_page=None):
         model.status.is_success_copy = status.is_success_copy
         model.status.is_success_extract = status.is_success_extract
         model.status.iso_template = status.iso_template
-        model.status.casper_directory = status.casper_directory
+        model.status.squashfs_directory = status.squashfs_directory
         model.status.squashfs_file_name = status.squashfs_file_name
+        model.status.casper_directory = status.casper_directory
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
@@ -553,7 +568,7 @@ def leave(action, new_page=None):
         model.options.compression = options.compression
 
         # Save the model values.
-        configuration.save()
+        model.project.configuration.save()
         save_iso_release_notes_url()
 
         return
@@ -574,6 +589,8 @@ def leave(action, new_page=None):
 
     else:
 
+        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         displayer.set_visible('project_page__header_bar_box', False)
@@ -583,8 +600,6 @@ def leave(action, new_page=None):
         displayer.set_visible('project_page__delete_header_bar_button', False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
-        logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         return 'unknown'
 
@@ -628,7 +643,7 @@ def selected_original_iso_file_path(original_iso_file_path):
 
         # A valid ISO file was supplied.
 
-        if os.path.isfile(model.project.configuration_file_path):
+        if os.path.isfile(model.project.configuration.file_path):
 
             # There is a saved configuration.
 
@@ -674,8 +689,9 @@ def selected_original_iso_file_path(original_iso_file_path):
                 status.is_success_copy = False
                 # status.is_success_extract = False or True
                 status.iso_template = None
-                status.casper_directory = None
+                status.squashfs_directory = None
                 status.squashfs_file_name = None
+                status.casper_directory = None
                 options = initialize_options()
 
                 original = initialize_original_from_iso(original_iso_file_path)
@@ -710,6 +726,10 @@ def selected_original_iso_file_path(original_iso_file_path):
             display_custom_fields(custom)
 
             validate_page()
+
+        # Update the previous application ISO file path to the newly
+        # selected file path.
+        model.application.iso_file_path = original_iso_file_path
 
     else:
 
@@ -749,9 +769,9 @@ def selected_custom_iso_directory(directory):
 # Initialization Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Initialize to Default Values
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def initialize_original():
@@ -799,8 +819,9 @@ def initialize_status():
     fields.is_success_copy = False
     fields.is_success_extract = False
     fields.iso_template = None
-    fields.casper_directory = None
+    fields.squashfs_directory = None
     fields.squashfs_file_name = None
+    fields.casper_directory = None
     fields.iso_checksum = None
     fields.iso_checksum_file_name = None
 
@@ -818,15 +839,15 @@ def initialize_options():
     # in custom_history to permit undo and redo. This value is
     # initialized to True in the initialize_custom() function.
     # fields.update_os_release = True
-    fields.boot_configurations = [boot_configuration.strip().strip(os.path.sep) for boot_configuration in DEFAULT_BOOT_CONFIGURATIONS_STRING.split(',')]
+    fields.boot_configurations = []
     fields.compression = None
 
     return fields
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Initialize from ISO
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def initialize_original_from_iso(original_iso_file_path):
@@ -919,9 +940,9 @@ def initialize_custom_from_iso():
     return fields
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Initialize from Version
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def refresh_custom_using_version_number():
@@ -976,9 +997,9 @@ def refresh_custom_using_version_number():
     return fields
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Initialize from Model
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def initialize_original_from_model():
@@ -1077,8 +1098,9 @@ def initialize_status_from_model():
       - is_success_copy
       - is_success_extract
       - iso_template
-      - casper_directory
+      - squashfs directory
       - squashfs_file_name
+      - casper directory
       - iso_checksum = None
       - iso_checksum_file_name = None
     """
@@ -1090,8 +1112,9 @@ def initialize_status_from_model():
     fields.is_success_copy = model.status.is_success_copy
     fields.is_success_extract = model.status.is_success_extract
     fields.iso_template = model.status.iso_template
-    fields.casper_directory = model.status.casper_directory
+    fields.squashfs_directory = model.status.squashfs_directory
     fields.squashfs_file_name = model.status.squashfs_file_name
+    fields.casper_directory = model.status.casper_directory
     # The saved ISO file size is never used.
     # The saved ISO checksum is never used.
     fields.iso_checksum = model.status.iso_checksum
@@ -1157,9 +1180,9 @@ def store_generated_iso_values():
 # Display Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Original Disk Section Display Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def display_original_fields(fields):
@@ -1256,9 +1279,9 @@ def unblock_original_handlers():
     entry.handler_unblock_by_func(on_changed__project_page__original_iso_release_notes_url_entry)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Custom Disk Section Display Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def display_custom_fields(fields):
@@ -1382,9 +1405,9 @@ def unblock_custom_handlers():
 # Handler Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Navigation Handler Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def on_clicked__project_page__test_header_bar_button(widget):
@@ -1401,9 +1424,9 @@ def on_clicked__project_page__delete_header_bar_button(widget):
     handle_navigation('delete')
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Original Disk Section Handler Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def on_clicked__project_page__original_iso_file_name_open_button(widget):
@@ -1411,12 +1434,12 @@ def on_clicked__project_page__original_iso_file_name_open_button(widget):
     logger.log_label('Clicked project page original ISO file name open button')
 
     if original.iso_directory.value:
-        if original.iso_file_name.value:
-            original_iso_file_path = os.path.join(original.iso_directory.value, original.iso_file_name.value)
-        else:
-            original_iso_file_path = os.path.join(original.iso_directory.value, '*')
+        # Use the project's the ISO directory and ISO file name.
+        original_iso_file_path = os.path.join(original.iso_directory.value, original.iso_file_name.value)
     else:
-        original_iso_file_path = None
+        # Use the previous ISO file path.
+        original_iso_file_path = model.application.iso_file_path
+
     iso_image_chooser.open(selected_original_iso_file_path, original_iso_file_path)
 
 
@@ -1508,9 +1531,9 @@ def on_changed__project_page__original_iso_release_notes_url_entry(widget):
     validate_page()
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Custom Disk Section Handler Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def on_clicked__project_page__undo_header_bar_button(widget):
@@ -1561,11 +1584,7 @@ def on_clicked__project_page__custom_iso_directory_open_button(widget):
 
     logger.log_label('Clicked project page custom ISO directory open button')
 
-    if custom.iso_directory.value:
-        custom_iso_directory = custom.iso_directory.value
-    else:
-        custom_iso_directory = None
-    directory_chooser.open(selected_custom_iso_directory, custom_iso_directory)
+    directory_chooser.open(selected_custom_iso_directory, custom.iso_directory.value)
 
 
 def on_changed__project_page__custom_iso_version_number_entry(widget):
@@ -1732,9 +1751,9 @@ def on_toggled__project_page__custom_options_update_os_release_check_button(widg
 # Validation Functions
 ########################################################################
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Page Validation Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def validate_page():
@@ -1766,8 +1785,9 @@ def validate_page():
     if status.is_success_copy and    \
        status.is_success_extract and \
        status.iso_template and       \
-       status.casper_directory and   \
-       status.squashfs_file_name:
+       status.squashfs_directory and \
+       status.squashfs_file_name and \
+       status.casper_directory:
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -1793,9 +1813,9 @@ def validate_page():
             is_next_visible=True)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Original Disk Section Validation Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def set_sensitive_original_section(is_valid):
@@ -1809,9 +1829,9 @@ def set_sensitive_original_section(is_valid):
     displayer.set_sensitive('project_page__original_iso_release_notes_url_entry', is_valid)
 
 
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Custom Disk Section Validation Functions
-#-----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def set_editable_custom_section(is_valid):
@@ -2270,27 +2290,42 @@ def is_url(url):
 
 def validate_test_header_bar_button():
 
-    custom_iso_file_path = os.path.join(model.generated.iso_directory, model.generated.iso_file_name)
-    logger.log_value('The generated ISO file path is', custom_iso_file_path)
-    if os.path.exists(custom_iso_file_path):
-        # Enable the Test button if the system has at least 1.5 GiB
-        # available memory.
-        is_adequate = emulator.check_available_memory()
-        if is_adequate:
-            displayer.set_sensitive('project_page__test_header_bar_button', True)
-            displayer.set_visible('project_page__test_header_bar_button', True)
-            logger.log_value('System has adequate available memory to enable testing?', 'Yes')
-            logger.log_value('Enable testing?', 'Yes')
-        else:
-            displayer.set_sensitive('project_page__test_header_bar_button', False)
-            displayer.set_visible('project_page__test_header_bar_button', True)
-            logger.log_value('System has adequate available memory to enable testing?', 'No')
-            logger.log_value('Enable testing?', 'No')
-    else:
-        logger.log_value('Does the custom ISO file exist?', 'No')
+    # Do not show the Test button if the dummy Qemu package is
+    # installed. The version of qemu-system-x86 should be >=1:4.2; the
+    # dummy package version is 0.0.
+    if constructor.get_package_version('qemu-system-x86') == '0.0':
+        logger.log_value('Is the dummy Qemu package installed', 'Yes')
         displayer.set_sensitive('project_page__test_header_bar_button', False)
         displayer.set_visible('project_page__test_header_bar_button', False)
         logger.log_value('Enable testing?', 'No')
+        return
+
+    # Do not enable the Test button if the generated ISO file does not
+    # exist.
+    custom_iso_file_path = os.path.join(model.generated.iso_directory, model.generated.iso_file_name)
+    if not os.path.exists(custom_iso_file_path):
+        logger.log_value('Does the custom ISO file exist?', 'No')
+        displayer.set_sensitive('project_page__test_header_bar_button', False)
+        displayer.set_visible('project_page__test_header_bar_button', True)
+        logger.log_value('Enable testing?', 'No')
+        return
+
+    # Do not enable the Test button if there is less than 1.5 GiB
+    # available memory.
+    is_adequate = emulator.check_available_memory()
+    if not is_adequate:
+        displayer.set_sensitive('project_page__test_header_bar_button', False)
+        displayer.set_visible('project_page__test_header_bar_button', True)
+        logger.log_value('System has adequate available memory to enable testing?', 'No')
+        logger.log_value('Enable testing?', 'No')
+        return
+
+    # Enable and show the Test button.
+    displayer.set_sensitive('project_page__test_header_bar_button', True)
+    displayer.set_visible('project_page__test_header_bar_button', True)
+    logger.log_value('The generated ISO file path is', custom_iso_file_path)
+    logger.log_value('System has adequate available memory to enable testing?', 'Yes')
+    logger.log_value('Enable testing?', 'Yes')
 
 
 ########################################################################
@@ -2303,13 +2338,8 @@ def save_iso_release_notes_url():
     logger.log_label('Update the custom ISO release notes url')
 
     logger.log_value('The custom ISO release notes URL is', model.custom.iso_release_notes_url)
-    try:
-        # Create the full directory path "custom-disk/.disk" because
-        # these directories may not exist yet.
-        directory = os.path.join(model.project.custom_disk_directory, '.disk')
-        file_utilities.make_directories(directory)
-        file_path = os.path.join(directory, 'release_notes_url')
-        file_utilities.write_line(model.custom.iso_release_notes_url, file_path)
-        return False  # There was no error.
-    except Exception as exception:
-        return True  # There was an error.
+
+    file_path = os.path.join(model.project.custom_disk_directory, '.disk', 'release_notes_url')
+    # Create the full directory path "custom-disk/.disk" because these
+    # directories may not exist.
+    file_utilities.write_line(model.custom.iso_release_notes_url, file_path, True, False)

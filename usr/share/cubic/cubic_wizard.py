@@ -37,6 +37,7 @@
 # Imports
 ########################################################################
 
+import argcomplete
 import argparse
 import gi
 import glob
@@ -53,7 +54,6 @@ from cubic.constants import CUBIC_COPYRIGHT
 from cubic.constants import STAR, CUBIC_WEBSITE, CUBIC_WIKI, CUBIC_PAGE_HELP, CUBIC_DONATE, CUBIC_SITES, CUBIC_URLS
 from cubic import navigator
 from cubic.utilities import constructor
-from cubic.utilities import file_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
 
@@ -82,70 +82,71 @@ if os.getuid() == 0:
     print()
     exit()
 
+argcomplete.autocomplete(parser)
 arguments = parser.parse_args()
 
 if arguments.version:
     version = constructor.get_package_version('cubic')
-    display_version = constructor.get_major_minor_version(version)
+    display_version = constructor.get_display_version(version)
     urls = constructor.decode_object(CUBIC_URLS)
     website = urls[CUBIC_WEBSITE]
-    print(f'Cubic version {display_version}')
-    print(f'Copyright {CUBIC_COPYRIGHT}')
-    print(f'Website {website}')
+    print(f'Cubic version... {display_version}')
+    print(f'Copyright....... {CUBIC_COPYRIGHT}')
+    print(f'Website......... {website}')
     exit()
 
 ########################################################################
 # Main Application
 ########################################################################
 
-# 1. Load the UI into the builder from the file.
-# 2. Connect the signals to the module that has the handlers.
+logger.verbose = arguments.verbose
+logger.log_title('Cubic - Custom Ubuntu ISO Creator')
 
 try:
 
-    #-------------------------------------------------------------------
-    # Initialize
-    #-------------------------------------------------------------------
-
-    logger.verbose = arguments.verbose
-
-    logger.log_title('Cubic - Custom Ubuntu ISO Creator')
-
-    if arguments.directory:
-        model.project_directory = os.path.realpath(arguments.directory)
-        logger.log_value('Project directory argument', arguments.directory)
-
-    if arguments.iso:
-        model.original_iso_file_path = os.path.realpath(arguments.iso)
-        logger.log_value('Original ISO file path argument', arguments.iso)
+    # ------------------------------------------------------------------
+    # Initialize.
+    # ------------------------------------------------------------------
 
     # Real path is necessary here.
     model.application.directory = os.path.dirname(os.path.realpath(__file__))
-    # os.chdir(model.application.directory)
+
+    # Get the user's home directory.
+    model.application.user_home = os.path.expanduser('~')
+
+    # Get the running Cubic version.
+    model.application.cubic_version = constructor.get_package_version('cubic')
+
+    # Get the running kernel version.
+    model.application.kernel_version = constructor.get_kernel_version()
+
+    # Set model values from the command line arguments, if supplied.
+    if arguments.directory:
+        # logger.log_value('Project directory argument', arguments.directory)
+        model.arguments.directory = os.path.realpath(arguments.directory)
+    if arguments.iso:
+        # logger.log_value('Original ISO file path argument', arguments.iso)
+        model.arguments.file_path = os.path.realpath(arguments.iso)
 
     # Add additional mime types.
     mimetypes.init()
     file_path = os.path.join(model.application.directory, 'assets', 'mime.types')
     mimetypes.types_map.update(mimetypes.read_mime_types(file_path))
 
-    # Get the user's home directory.
-    model.application.user_home = os.path.expanduser('~')
-
-    # Get the Cubic version.
-    model.application.cubic_version = constructor.get_package_version('cubic')
-
-    # Get the running kernel version.
-    model.application.kernel_version = constructor.get_kernel_version()
+    # ------------------------------------------------------------------
+    # Create the user interface.
+    # ------------------------------------------------------------------
 
     # Load the user interface.
     file_path = os.path.join(model.application.directory, 'cubic_wizard.ui')
     model.builder = Gtk.Builder.new_from_file(file_path)
+
     # Connect the signals to handlers in the associated module.
     model.builder.connect_signals(navigator)
 
-    #-------------------------------------------------------------------
+    #
     # Pages
-    #-------------------------------------------------------------------
+    #
 
     logger.log_label('Setup pages')
 
@@ -177,9 +178,9 @@ try:
     page = model.builder.get_object('start_page')
     pages.set_visible_child(page)
 
-    #-------------------------------------------------------------------
+    #
     # Header Bar
-    #-------------------------------------------------------------------
+    #
 
     # Add previously loaded widgets to the header bar.
 
@@ -215,41 +216,39 @@ try:
     widget = model.builder.get_object('finish_page__test_header_bar_button')
     header_bar.add(widget)
 
-    #-------------------------------------------------------------------
+    #
     # Menu
-    #-------------------------------------------------------------------
+    #
 
     # Alert label
-    try:
-        # Initialize the list of visited sites.
-        file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'visited_sites.conf')
-        lines = file_utilities.read_lines(file_path)
-        model.application.visited_sites = set([site for site in lines if site in CUBIC_SITES])
-    except Exception as exception:
-        model.application.visited_sites = set()
-        logger.log_value('Error. The exception is', exception)
     widget = model.builder.get_object('alert_label')
-    widget.set_visible(len(model.application.visited_sites) < len(CUBIC_SITES))
+    # Show the alert label if all of the sites have not been visited.
+    # widget.set_visible(len(model.application.visited_sites) < len(CUBIC_SITES))
+    # Do not show the alert label.
+    widget.set_visible(False)
 
     # Menu items
+    # Uncomment the lines below to show a ★ next to the menu item.
+    # Remember to uncommet lines in navigator.on_clicked_?_menu_button()
+    # functions to remove the ★ once the site has been visited.
 
-    if CUBIC_WIKI not in model.application.visited_sites:
-        widget = model.builder.get_object('wiki_menu_button')
-        label = widget.props.text
-        new_text = constructor.add_prefix(STAR, label)
-        if new_text: widget.props.text = new_text
+    # if CUBIC_WIKI not in model.application.visited_sites:
+    #     widget = model.builder.get_object('wiki_menu_button')
+    #     label = widget.props.text
+    #     new_text = constructor.add_prefix(STAR, label)
+    #     if new_text: widget.props.text = new_text
 
-    if CUBIC_PAGE_HELP not in model.application.visited_sites:
-        widget = model.builder.get_object('page_help_menu_button')
-        label = widget.props.text
-        new_text = constructor.add_prefix(STAR, label)
-        if new_text: widget.props.text = new_text
+    # if CUBIC_PAGE_HELP not in model.application.visited_sites:
+    #     widget = model.builder.get_object('page_help_menu_button')
+    #     label = widget.props.text
+    #     new_text = constructor.add_prefix(STAR, label)
+    #     if new_text: widget.props.text = new_text
 
-    if CUBIC_WEBSITE not in model.application.visited_sites:
-        widget = model.builder.get_object('website_menu_button')
-        label = widget.props.text
-        new_text = constructor.add_prefix(STAR, label)
-        if new_text: widget.props.text = new_text
+    # if CUBIC_WEBSITE not in model.application.visited_sites:
+    #     widget = model.builder.get_object('website_menu_button')
+    #     label = widget.props.text
+    #     new_text = constructor.add_prefix(STAR, label)
+    #     if new_text: widget.props.text = new_text
 
     # if CUBIC_ABOUT not in model.application.visited_sites:
     #     widget = model.builder.get_object('about_menu_button')
@@ -257,15 +256,15 @@ try:
     #     new_text = constructor.add_prefix(STAR, label)
     #     if new_text: widget.props.text = new_text
 
-    if CUBIC_DONATE not in model.application.visited_sites:
-        widget = model.builder.get_object('donate_menu_button')
-        label = widget.get_label()
-        new_text = constructor.add_prefix(STAR, label)
-        if new_text: widget.set_label(new_text)
+    # if CUBIC_DONATE not in model.application.visited_sites:
+    #     widget = model.builder.get_object('donate_menu_button')
+    #     label = widget.get_label()
+    #     new_text = constructor.add_prefix(STAR, label)
+    #     if new_text: widget.set_label(new_text)
 
-    #-------------------------------------------------------------------
+    #
     # File Choosers
-    #-------------------------------------------------------------------
+    #
 
     logger.log_label('Setup file choosers')
 
@@ -286,9 +285,9 @@ try:
         # Connect the signals to handlers in the associated module.
         model.builder.connect_signals(module)
 
-    #-------------------------------------------------------------------
-    # Start the User Interface
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Start the user interface.
+    # ------------------------------------------------------------------
 
     # Show the window.
     window = model.builder.get_object('window')

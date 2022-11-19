@@ -75,14 +75,18 @@ import threading
 
 gi.require_version('GLib', '2.0')
 gi.require_version('Gtk', '3.0')
-try:
-    gi.require_version('GtkSource', '4')
-except ValueError:
-    gi.require_version('GtkSource', '3.0')
+### TODO: Remove the following if there are no errors in various older
+###       Ubuntu releases.
+### try:
+###     gi.require_version('GtkSource', '4')
+### except ValueError:
+###     gi.require_version('GtkSource', '3.0')
 
 from gi.repository import GLib
 from gi.repository import Gtk
-from gi.repository import GtkSource
+### TODO: Remove the following if there are no errors in various older
+###       Ubuntu releases.
+### from gi.repository import GtkSource
 from gi.repository.GdkPixbuf import Pixbuf
 
 from cubic.utilities.displayer import MONOSPACE_FONT, SOURCE_LANGUAGE, SOURCE_STYLE_SCHEME
@@ -313,9 +317,9 @@ class FilesTree:
     # Handlers
     ####################################################################
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Selection Handlers
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_changed_tree_selection(self, tree_selection):
 
@@ -334,7 +338,7 @@ class FilesTree:
             Helper object to manage the TreeView selection.
         """
 
-        # Note: This method is similar to search_and_replace_in_file()
+        # Note: This method is similar to update_file()
 
         tree_model, tree_iter = tree_selection.get_selected()
 
@@ -496,9 +500,9 @@ class FilesTree:
 
         return source_view
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Source View Handlers
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def on_unmap_source_view(self, source_view):
         """
@@ -506,7 +510,7 @@ class FilesTree:
 
         Arguments:
         source_view : GtkSource.View
-            A source_view with source_view.file_path as the full file path.
+            A source view with source_view.file_path as the full file path.
         """
 
         logger.log_value('Close source view for', source_view.file_path)
@@ -529,7 +533,7 @@ class FilesTree:
 
         Arguments:
         source_view : GtkSource.View
-            A source_view with source_view.file_path as the full file path.
+            A source view with source_view.file_path as the full file path.
         """
 
         source_buffer = source_view.get_buffer()
@@ -558,19 +562,20 @@ class FilesTree:
             file_path = self.get_relative_file_path(source_view.file_path)
             logger.log_value('Do not save (no changes)', file_path)
 
-    def search_and_replace_in_file(self, file_path, search_replace_tuples):
+    def update_file(self, file_path, update_source_view):
         """
         Read the file corresponding to the tree iter for the specified
-        file path, and store the text or image data. If the file is a
-        text file, then replace the specified text in the source buffer,
-        and save the updated source buffer. Correct the file icon based
-        on the file's mime type.
+        file path, and store the text or image data. Also, correct the
+        file icon in the files tree based on the file's mime type. If
+        the file is a text file, then update the source view's source
+        buffer using the supplied function, and save the updated source
+        buffer.
 
         Arguments:
         file_path : path
             The file path of the file to update.
-        search_replace_tuples : list of tuple (str, str)
-            List of tuples containing (search text, replacement text).
+        update_source_view : function
+            A function used to update the source view.
         """
 
         # Note: This method is similar to change_tree_selection()
@@ -623,7 +628,8 @@ class FilesTree:
                 self.file_map[file_path][IS_EDITED] = is_edited
 
                 if file_data:
-                    self.search_and_replace_in_source_view(file_data, search_replace_tuples)
+                    replacement_count = update_source_view(file_data)
+                    logger.log_value('Number of replacements', replacement_count)
                     self.save_source_buffer(file_data)
 
             elif mime_type == 'image':
@@ -652,42 +658,13 @@ class FilesTree:
                 tree_model.set_value(tree_iter, FILE_ICON, file_icon)
                 self.file_map[file_path][MIME_TYPE] = mime_type
 
-    def search_and_replace_in_source_view(self, source_view, search_replace_tuples):
-        """
-        Arguments:
-        source_view : GtkSource.View
-            The source view to update.
-        search_replace_tuples : list of tuple
-            List of tuples containing (search text, replacement text).
-        """
-
-        # logger.log_label('Search and replace in source view')
-
-        # Prepare search settings.
-        search_settings = GtkSource.SearchSettings()
-        search_settings.set_regex_enabled(True)
-        search_settings.set_wrap_around(True)
-
-        source_buffer = source_view.get_buffer()
-        total_replacement_count = 0
-        for search_replace_tuple in search_replace_tuples:
-            search_text, replacement_text = search_replace_tuple
-            logger.log_value('Search and replace', f'{search_text} ⊳ {replacement_text}')
-            search_settings.set_search_text(search_text)
-            search_context = GtkSource.SearchContext.new(source_buffer, search_settings)
-            replacement_count = search_context.replace_all(replacement_text, -1)
-            logger.log_value('Number of matches', replacement_count)
-            total_replacement_count += replacement_count
-
-        return total_replacement_count
-
     ####################################################################
     # Tree Functions
     ####################################################################
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Build
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def build_tree(self, file_path, source_file_path=None):
         """
@@ -962,9 +939,9 @@ class FilesTree:
 
         return COLLATOR.compare(file_name_a, file_name_b)
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Information
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def is_root(self, file_path):
         """

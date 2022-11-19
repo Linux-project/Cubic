@@ -219,9 +219,9 @@ def watch_virtual_environment(pseudo_terminal, task, data):
 
     logger.log_label('Watch virtual environment')
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Subscribe to virtual environment entered signals.
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     subscribe_virtual_environment_entered()
 
@@ -235,9 +235,9 @@ def watch_virtual_environment(pseudo_terminal, task, data):
     logger.log_value('The pseudo terminal process id is', process_id)
     pseudo_terminal.process_id = process_id
 
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Subscribe to virtual environment exited events.
-    #-------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     subscribe_virtual_environment_exited(process_id, pseudo_terminal)
 

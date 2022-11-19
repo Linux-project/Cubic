@@ -266,7 +266,7 @@
         </child>
         <child>
           <object class="GtkLabel" id="alert_label">
-            <property name="visible">True</property>
+            <property name="visible">False</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">★ New ➜</property>
             <property name="use_markup">True</property>

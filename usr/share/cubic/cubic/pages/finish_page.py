@@ -49,6 +49,7 @@ from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0500_MS, SLEEP_1500_MS
 from cubic.navigator import handle_navigation
 from cubic.pages import options_page
+from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import emulator
 from cubic.utilities import file_utilities
@@ -243,9 +244,9 @@ def leave(action, new_page=None):
 
     else:
 
-        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
         logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
+
+        displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         return 'unknown'
 
@@ -362,10 +363,10 @@ def delete_project_files():
     #
     # Delete the configuration file
     #
-    logger.log_value('Delete the configuration file', model.project.configuration_file_path)
+    logger.log_value('Delete the configuration file', model.project.configuration.file_path)
     # time.sleep(SLEEP_1000_MS)
-    if os.path.exists(model.project.configuration_file_path):
-        result, exit_status, signal_status = file_utilities.delete_file(model.project.configuration_file_path)
+    if os.path.exists(model.project.configuration.file_path):
+        result, exit_status, signal_status = file_utilities.delete_file(model.project.configuration.file_path)
         if not signal_status:
             # OK
             pass
@@ -445,24 +446,39 @@ def validate_page():
 
 def validate_test_header_bar_button():
 
+    # Do not show the Test button if the dummy Qemu package is
+    # installed. The version of qemu-system-x86 should be >=1:4.2; the
+    # dummy package version is 0.0.
+    if constructor.get_package_version('qemu-system-x86') == '0.0':
+        logger.log_value('Is the dummy Qemu package installed', 'Yes')
+        displayer.set_sensitive('finish_page__test_header_bar_button', False)
+        displayer.set_visible('finish_page__test_header_bar_button', False)
+        logger.log_value('Enable testing?', 'No')
+        return
+
+    # Do not enable the Test button if the generated ISO file does not
+    # exist.
     custom_iso_file_path = os.path.join(model.generated.iso_directory, model.generated.iso_file_name)
-    logger.log_value('The generated ISO file path is', custom_iso_file_path)
-    if os.path.exists(custom_iso_file_path):
-        # Enable the Test button if the system has at least 1.5 GiB
-        # available memory.
-        is_adequate = emulator.check_available_memory()
-        if is_adequate:
-            displayer.set_sensitive('finish_page__test_header_bar_button', True)
-            displayer.set_visible('finish_page__test_header_bar_button', True)
-            logger.log_value('System has adequate available memory to enable testing?', 'Yes')
-            logger.log_value('Enable testing?', 'Yes')
-        else:
-            displayer.set_sensitive('finish_page__test_header_bar_button', False)
-            displayer.set_visible('finish_page__test_header_bar_button', True)
-            logger.log_value('System has adequate available memory to enable testing?', 'No')
-            logger.log_value('Enable testing?', 'No')
-    else:
+    if not os.path.exists(custom_iso_file_path):
         logger.log_value('Does the custom ISO file exist?', 'No')
         displayer.set_sensitive('finish_page__test_header_bar_button', False)
-        displayer.set_sensitive('finish_page__test_header_bar_button', False)
+        displayer.set_visible('finish_page__test_header_bar_button', True)
         logger.log_value('Enable testing?', 'No')
+        return
+
+    # Do not enable the Test button if there is less than 1.5 GiB
+    # available memory.
+    is_adequate = emulator.check_available_memory()
+    if not is_adequate:
+        displayer.set_sensitive('finish_page__test_header_bar_button', False)
+        displayer.set_visible('finish_page__test_header_bar_button', True)
+        logger.log_value('System has adequate available memory to enable testing?', 'No')
+        logger.log_value('Enable testing?', 'No')
+        return
+
+    # Enable and show the Test button.
+    displayer.set_sensitive('finish_page__test_header_bar_button', True)
+    displayer.set_visible('finish_page__test_header_bar_button', True)
+    logger.log_value('The generated ISO file path is', custom_iso_file_path)
+    logger.log_value('System has adequate available memory to enable testing?', 'Yes')
+    logger.log_value('Enable testing?', 'Yes')
