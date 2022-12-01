@@ -1,4 +1,22 @@
-cubic (2022.11) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+cubic (2022.12) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+
+  * Issues fixed in version 2022.12-74:
+
+  - Fixed Bug GH:#130, Error `invalid file name 'boot=casper'` when booting from
+    an ISO created with Cubic version 2022.11.73.
+  - Enhancement GH:#133, Highlight automatic changes to the boot configuration
+    files.
+  - Enhancement GH:#129, Include Debian in the Cubic man page description and
+    command line help.
+  - Enhancement GH:#119, Open the file chooser to the previously used *.iso file
+    when selecting an original ISO for new projects. Includes fix to pre-select
+    directories.
+  - Remove `grml64-full.squashfs` from the predefined list of `squashfs` files
+    in the constants module. See Enhancement GH:#93, Add support for Grml Live
+    Linux.
+  - Revise file_utilities.find_files_with_pattern() to traverse symlinks to
+    support Pop_OS! which uses a symlink named `casper` for the *.squashfs
+    directory.
 
   * Issues fixed in version 2022.11-73:
 
@@ -330,4 +348,4 @@ cubic (2022.11) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 30 Jun 2022 18:10:25 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 01 Dec 2022 17:52:57 -0500

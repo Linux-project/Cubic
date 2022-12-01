@@ -65,6 +65,7 @@ def open(calback, file_path=None):
 
     if file_path:
         if not os.path.isfile(file_path):
+            # The file does not exist.
             directory = os.path.dirname(file_path)
             if os.path.isdir(directory):
                 file_path = os.path.join(directory, '*')

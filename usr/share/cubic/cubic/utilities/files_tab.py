@@ -175,12 +175,12 @@ class FilesTab:
 
         is_show_all_files = button.get_active()
 
-        # Save the file and mark it as required before filtering the
-        # tree to include it in the filtered list.
+        # Before filtering the tree, save the file, marking it as
+        # required, in order to include it in the filtered list.
         scrolled_window = model.builder.get_object(self.SCROLLED_WINDOW_2)
         child = scrolled_window.get_child()
         if type(child) is GtkSource.View:
-            self.files_tree.save_source_buffer(child)
+            self.files_tree.save_source_view(child)
 
         self.files_tree.filter(is_show_all_files)
 
@@ -1001,10 +1001,10 @@ class FilesTab:
     # Search and Replace Functions
     ####################################################################
 
-    def update_file(self, relative_file_path, update_source_view):
+    def update_file(self, relative_file_path, edit_source_view):
         """
         Update text in the specified file. Update the source view first,
-        using the supplied update_source_view() function. Then save the
+        using the supplied edit_source_view() function. Then save the
         source view to the corresponding file.
 
         This method checks if the files tree exists before attempting to
@@ -1012,8 +1012,10 @@ class FilesTab:
 
         relative_file_path : str
             A file path relative to the root of the files tree.
-        update_source_view : function
-            A function used by files_tree to update the source view.
+        edit_source_view : function
+            A function used by files_tree to make changes to the source
+            view. This function may add, delete, update, or highlight
+            text in the source view.
         """
 
         # logger.log_label('Search and replace in files')
@@ -1031,7 +1033,7 @@ class FilesTab:
         # 4. However, the files tree associated to the boot tab no
         #    longer exists (see step 2 above).
 
-        if self.files_tree: self.files_tree.update_file(relative_file_path, update_source_view)
+        if self.files_tree: self.files_tree.update_source_view(relative_file_path, edit_source_view)
 
     def get_line_text(self, source_buffer, line_number):
         """
@@ -1061,16 +1063,28 @@ class FilesTab:
         Arguments:
         source_buffer : GtkSource.Buffer
             The source buffer to insert text into.
-        test : str
+        text : str
             The text to insert.
         line_number : int
             The line number to insert the text on.
         line_offset : int
             The line offset to insert the text at.
+
+        Returns:
+        text_iter_1 : Gtk.TextIter
+            The start text iter where the text was inserted.
+        text_iter_2 : Gtk.TextIter
+            The end text iter where the text was inserted.
         """
 
-        text_iter = source_buffer.get_iter_at_line_offset(line_number, line_offset)
-        source_buffer.insert(text_iter, text)
+        text_iter_1 = source_buffer.get_iter_at_line_offset(line_number, line_offset)
+        source_buffer.insert(text_iter_1, text)
+        # Get the text iter again because the buffer was modified since
+        # the iterator was created.
+        text_iter_1 = source_buffer.get_iter_at_line_offset(line_number, line_offset)
+        text_iter_2 = source_buffer.get_iter_at_line_offset(line_number, line_offset + len(text))
+
+        return text_iter_1, text_iter_2
 
     def delete_text(self, source_buffer, line_number, line_offset_1, line_offset_2):
         """
@@ -1087,11 +1101,20 @@ class FilesTab:
             The starting line offset to begin deleting the text.
         line_offset_2 : int
             The ending line offset to stop deleting the text.
+
+        Returns:
+        text_iter_1 : Gtk.TextIter
+            The start text iter where the text was deleted.
         """
 
         text_iter_1 = source_buffer.get_iter_at_line_offset(line_number, line_offset_1)
         text_iter_2 = source_buffer.get_iter_at_line_offset(line_number, line_offset_2)
         source_buffer.delete(text_iter_1, text_iter_2)
+        # Get the text iter again because the buffer was modified since
+        # the iterator was created.
+        text_iter_1 = source_buffer.get_iter_at_line_offset(line_number, line_offset_1)
+
+        return text_iter_1
 
     ####################################################################
     # Miscellaneous Functions

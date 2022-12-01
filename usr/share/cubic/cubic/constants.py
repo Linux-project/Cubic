@@ -163,10 +163,14 @@ LOCK_FILE_NAME = '.#custom-root.lck'
 #
 # Grml Live Linux ISO
 # • live/grml64-full/grml64-full.squashfs
+#
+# Pop_OS! 21.10
+# • /casper_pop-os_21.10_amd64_intel_debug_59/filesystem.squashfs
+# • /casper -> casper_pop-os_21.10_amd64_intel_debug_59
+# • /casper/filesystem.squashfs
 
-SQUASHFS_FILE_NAMES = ['filesystem.squashfs',            \
-                       'ubuntu-server-minimal.squashfs', \
-                       'grml64-full.squashfs']
+# Used to select a squashfs file if multiple files are discovered.
+SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs']
 
 # This list is used to select the correct casper directory in
 # extract_page.identify_casper_directory() if multiple casper files are
@@ -196,7 +200,15 @@ SQUASHFS_FILE_NAMES = ['filesystem.squashfs',            \
 # Grml live ISO
 # • boot/grml64full/vmlinuz
 # • boot/grml64full/initrd.img
+#
+# Pop_OS! 21.10
+# • /casper_pop-os_21.10_amd64_intel_debug_59/vmlinuz.efi
+# • /casper_pop-os_21.10_amd64_intel_debug_59/initrd.gz
+# • /casper -> casper_pop-os_21.10_amd64_intel_debug_59
+# • /casper/vmlinuz.efi
+# • /casper/initrd.gz
 
+# Used to select a casper directory if multiple directories are discovered.
 CASPER_DIRECTORIES = ['casper', 'live', 'boot']
 
 EXTENSION_MANIFEST = 'manifest'

@@ -64,7 +64,8 @@ def open(calback, file_path=None):
     # See https://lazka.github.io/pgi-docs/Gtk-3.0/classes/FileChooser.html#Gtk.FileChooser.set_filename
 
     if file_path:
-        if not os.path.isfile(file_path):
+        if not os.path.exists(file_path):
+            # The file or directory does not exist.
             directory = os.path.dirname(file_path)
             if os.path.isdir(directory):
                 file_path = os.path.join(directory, '*')

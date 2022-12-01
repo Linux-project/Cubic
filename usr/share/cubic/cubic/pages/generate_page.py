@@ -367,7 +367,7 @@ def copy_kernel_files():
 
     # Workaround for Pop!_OS.
 
-    # Create a symlink from vmlinuz.eft to vmlinuz.
+    # Create a symlink from vmlinuz.efi to vmlinuz.
     # Workaround for Bug #1900917, "Kernel Panic on Boot After
     # Installation (No initrd in grub.cfg)."
     # Reference Bug #1898749, "Pop!_OS expects vmlinuz on the ISO to

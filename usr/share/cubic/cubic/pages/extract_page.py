@@ -372,6 +372,11 @@ def identify_squashfs_file_path():
     # - filesystem.size
     # - filesystem.squashfs
 
+    # For Pop!_OS the identified squashfs directories will be "casper"
+    # and "casper_pop-os_20.04_amd64_intel_debug_25". However,
+    # identify_squashfs_file_path() will select "casper" because it
+    # appears in constants.CASPER_DIRECTORIES.
+
     file_paths = _get_squashfs_file_paths()
 
     if not file_paths:
@@ -452,12 +457,23 @@ def _get_squashfs_file_paths():
         The relative squashfs file paths.
     """
 
-    # Search the mounted ISO directory, first.
-    file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.iso_mount_point)
+    # Follow symlinks to accommodate Pop!_OS, because the init script
+    # specifically requires "casper" directory, instead of the real path
+    # to the squashfs directory. Pop!_OS has a symlink to the
+    # squashfs directory named "casper":
+    #   lrwxrwxrwx  casper -> casper_pop-os_20.04_amd64_intel_debug_25
+    #   drwxr-xr-x  casper_pop-os_20.04_amd64_intel_debug_25
+    # For Pop!_OS the identified squashfs directories will be "casper"
+    # and "casper_pop-os_20.04_amd64_intel_debug_25". However,
+    # identify_squashfs_file_path() will select "casper" because it
+    # appears in constants.CASPER_DIRECTORIES.
 
-    # Search the custom disk directory, second.
+    # Search the mounted ISO directory, first. Follow symlinks.
+    file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.iso_mount_point, follow_links=True)
+
+    # Search the custom disk directory, second. Follow symlinks.
     if not file_paths:
-        file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.custom_disk_directory)
+        file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.custom_disk_directory, follow_links=True)
 
     logger.log_value('The squashfs file paths are', file_paths)
 
@@ -477,10 +493,10 @@ def _get_vmlinuz_file_paths():
 
     # logger.log_label('Find the vmlinuz file paths')
 
-    # Search the mounted ISO directory, first.
+    # Search the mounted ISO directory, first. Do not follow symlinks.
     file_paths = file_utilities.find_files_with_pattern(r'vmlinuz.*', model.project.iso_mount_point)
 
-    # Search the custom disk directory, second.
+    # Search the custom disk directory, second. Do not follow symlinks.
     if not file_paths:
         file_paths = file_utilities.find_files_with_pattern(r'vmlinuz.*', model.project.custom_disk_directory)
 

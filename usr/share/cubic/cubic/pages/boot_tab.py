@@ -163,27 +163,34 @@ class BootTab(FilesTab):
 
         relative_file_paths : list of str
             A list of file paths relative to the root of the files tree.
-        update_source_view : function
-            A function used by files_tree to update the source view.
+        edit_source_view : function
+            A function used by files_tree to make changes to the source
+            view. This function may add, delete, update, or highlight
+            text in the source view.
         """
 
         logger.log_label('Update boot configurations')
 
         for relative_file in relative_file_paths:
-            self.update_file(relative_file, self.update_source_view)
+            self.update_file(relative_file, self.edit_source_view)
 
-    def update_source_view(self, source_view):
+    def edit_source_view(self, source_view):
         """
         Search and replace text in the source view associated with a
-        file displayed on the boot tab. The source view is updated first
-        and the changes are then saved to the file. This function is a
-        required argument for the files_tab.update_file() function.
+        file displayed on the boot tab. The source view is updated
+        first, and then changes are saved to the file. This function may
+        add, delete, update, or highlight text in the source view and is
+        a required argument for the files_tab.update_file() function.
 
         Arguments:
         self : BootTab
             A derived class of FilesTab.
         source_view : GtkSource.View
             The source view to updated.
+
+        Returns:
+        update_count : int
+            The number of updates (deletions, additions) made.
         """
 
         logger.log_value('Search and replace in source view', source_view.file_path)
@@ -194,82 +201,145 @@ class BootTab(FilesTab):
         new_vmlinuz_file_name = model.kernel_details_list[model.selected_kernel_index]['new_vmlinuz_file_name']
         new_initrd_file_name = model.kernel_details_list[model.selected_kernel_index]['new_initrd_file_name']
 
+        # Process each line of the source buffer.
         source_buffer = source_view.get_buffer()
         number_of_lines = source_buffer.get_line_count()
-
-        replacement_count = 0
+        update_count = 0
         for line_number in range(number_of_lines):
 
             # Get the current line.
             line = self.get_line_text(source_buffer, line_number)
 
+            #
             # append
-            match = re.search(r'^\s*(?i:APPEND)\s+', line)
-            if match:
-                # boot
-                if not re.search(r'(?i:BOOT)=', line):
-                    text = f'boot={squashfs_directory} '
-                    self.insert_text(source_buffer, text, line_number, match.end(0))
-                    # Get the current line because it has changed.
-                    line = self.get_line_text(source_buffer, line_number)
-                    replacement_count += 1
-                # initrd
-                match = re.search(rf'{casper_directory}/(?i:INITRD)\S*\s*', line)
-                if match:
-                    text = f'{casper_directory}/{new_initrd_file_name} '
-                    self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
-                    self.insert_text(source_buffer, text, line_number, match.start(0))
-                    # Get the current line because it has changed.
-                    line = self.get_line_text(source_buffer, line_number)
-                    replacement_count += 1
+            #
+            if re.search(r'^\s*(?i:APPEND)\s+', line):
 
-            # linux
-            match = re.search(r'^\s*(?i:LINUX)\s+', line)
-            if match:
-                # Check if the next line starts with "append".
-                next_line = self.get_line_text(source_buffer, line_number + 1)
-                if not re.search(r'^\s*(?i:APPEND)\s+', next_line):
+                # initrd
+                match = re.search(r'(?i:INITRD)=(\S+(?i:INITRD)\S*)', line)
+                if match:
+                    self.delete_text(source_buffer, line_number, match.start(1), match.end(1))
+                    update_count += 1
+                    logger.log_value('%d. Removed the initrd path on line' % update_count, line_number)
+                    text = f'{os.path.sep}{casper_directory}{os.path.sep}{new_initrd_file_name}'
+                    text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(1))
+                    source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                    update_count += 1
+                    logger.log_value('%d. Updated the initrd path on line' % update_count, line_number)
+                    # Get the current line because it has changed.
+                    line = self.get_line_text(source_buffer, line_number)
+
                     # boot
-                    if not re.search(r'(?i:BOOT)=', line):
-                        text = f'boot={squashfs_directory} '
-                        self.insert_text(source_buffer, text, line_number, match.end(0))
-                        # Get the current line because it has changed.
-                        line = self.get_line_text(source_buffer, line_number)
-                        replacement_count += 1
-                    # vmlinuz
-                    match = re.search(rf'{casper_directory}/(?i:VMLINUZ)\S*\s*', line)
+                    match = re.search(r'(?i:BOOT)=(\S+)', line)
                     if match:
-                        text = f'{casper_directory}/{new_vmlinuz_file_name} '
-                        self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
-                        self.insert_text(source_buffer, text, line_number, match.start(0))
+                        self.delete_text(source_buffer, line_number, match.start(1), match.end(1))
+                        update_count += 1
+                        logger.log_value('%d. Removed the boot path on line' % update_count, line_number)
+                        text = f'{squashfs_directory}'
+                        text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(1))
+                        source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                        update_count += 1
+                        logger.log_value('%d. Updated the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
-                        replacement_count += 1
+                    else:
+                        text = f' boot={squashfs_directory}'
+                        text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, text_iter_2.get_line_offset())
+                        text_iter_1.forward_char()
+                        source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                        update_count += 1
+                        logger.log_value('%d. Added the boot path on line' % update_count, line_number)
+                        # Get the current line because it has changed.
+                        line = self.get_line_text(source_buffer, line_number)
+                else:
+                    logger.log_value('Warning', 'Expected the initrd path on line %d, but it was not found' % line_number)
 
-            # kernel
-            match = re.search(r'^\s*(?i:KERNEL)\s+', line)
-            if match:
+            #
+            # linux
+            #
+            elif re.search(r'^\s*(?i:LINUX)\s+', line):
+
                 # vmlinuz
-                match = re.search(rf'{casper_directory}/(?i:VMLINUZ)\S*\s*', line)
+                match = re.search(r'(?i:LINUX)\s+(\S+(?i:VMLINUZ)\S*)', line)
                 if match:
-                    text = f'{casper_directory}/{new_vmlinuz_file_name} '
-                    self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
-                    self.insert_text(source_buffer, text, line_number, match.start(0))
+                    self.delete_text(source_buffer, line_number, match.start(1), match.end(1))
+                    update_count += 1
+                    logger.log_value('%d. Removed the vmlinuz path on line' % update_count, line_number)
+                    text = f'{os.path.sep}{casper_directory}{os.path.sep}{new_vmlinuz_file_name}'
+                    text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(1))
+                    source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                    update_count += 1
+                    logger.log_value('%d. Updated the vmlinuz path on line' % update_count, line_number)
                     # Get the current line because it has changed.
                     line = self.get_line_text(source_buffer, line_number)
-                    replacement_count += 1
 
+                    # boot
+                    match = re.search(r'(?i:BOOT)=(\S+)', line)
+                    if match:
+                        self.delete_text(source_buffer, line_number, match.start(1), match.end(1))
+                        update_count += 1
+                        logger.log_value('%d. Removed the boot path on line' % update_count, line_number)
+                        text = f'{squashfs_directory}'
+                        text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(1))
+                        source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                        update_count += 1
+                        logger.log_value('%d. Updated the boot path on line' % update_count, line_number)
+                        # Get the current line because it has changed.
+                        line = self.get_line_text(source_buffer, line_number)
+                    elif not re.search(r'^\s*(?i:APPEND)\s+', self.get_line_text(source_buffer, line_number + 1)):
+                        # If the next line does not start with "append"
+                        # and "boot=" is missing from this line, add it.
+                        text = f' boot={squashfs_directory}'
+                        text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, text_iter_2.get_line_offset())
+                        text_iter_1.forward_char()
+                        source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                        update_count += 1
+                        logger.log_value('%d. Added the boot path on line' % update_count, line_number)
+                        # Get the current line because it has changed.
+                        line = self.get_line_text(source_buffer, line_number)
+                else:
+                    logger.log_value('Warning', 'Expected the vmlinuz path on line %d, but it was not found' % line_number)
+
+            #
+            # kernel
+            #
+            elif re.search(r'^\s*(?i:KERNEL)\s+', line):
+
+                # vmlinuz
+                match = re.search(r'(?i:KERNEL)\s+(\S+(?i:VMLINUZ)\S*)', line)
+                if match:
+                    self.delete_text(source_buffer, line_number, match.start(1), match.end(1))
+                    update_count += 1
+                    logger.log_value('%d. Removed the vmlinuz path on line' % update_count, line_number)
+                    text = f'{os.path.sep}{casper_directory}{os.path.sep}{new_vmlinuz_file_name}'
+                    text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(1))
+                    source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                    update_count += 1
+                    logger.log_value('%d. Updated the vmlinuz path on line' % update_count, line_number)
+                    # Get the current line because it has changed.
+                    line = self.get_line_text(source_buffer, line_number)
+                else:
+                    logger.log_value('Warning', 'Expected the vmlinuz path on line %d, but it was not found' % line_number)
+
+            #
             # initrd
-            match = re.search(r'^\s*(?i:INITRD)\s+', line)
-            if match:
+            #
+            elif re.search(r'^\s*(?i:INITRD)\s+', line):
+
                 # initrd
-                match = re.search(rf'{casper_directory}/(?i:INITRD)\S*\s*', line)
+                match = re.search(r'(?i:INITRD)\s+(\S+(?i:INITRD)\S*)', line)
                 if match:
-                    text = f'{casper_directory}/{new_initrd_file_name} '
-                    self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
-                    self.insert_text(source_buffer, text, line_number, match.start(0))
+                    self.delete_text(source_buffer, line_number, match.start(1), match.end(1))
+                    update_count += 1
+                    logger.log_value('%d. Removed the initrd path on line' % update_count, line_number)
+                    text = f'{os.path.sep}{casper_directory}{os.path.sep}{new_initrd_file_name}'
+                    text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(1))
+                    source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                    update_count += 1
+                    logger.log_value('%d. Updated the initrd path on line' % update_count, line_number)
                     # Get the current line because it has changed.
                     line = self.get_line_text(source_buffer, line_number)
-                    replacement_count += 1
+                else:
+                    logger.log_value('Warning', 'Expected the initrd path on line %d, but it was not found' % line_number)
 
-        return replacement_count
+        return update_count

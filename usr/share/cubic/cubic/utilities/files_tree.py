@@ -338,7 +338,7 @@ class FilesTree:
             Helper object to manage the TreeView selection.
         """
 
-        # Note: This method is similar to update_file()
+        # Note: This method is similar to update_source_view()
 
         tree_model, tree_iter = tree_selection.get_selected()
 
@@ -471,11 +471,18 @@ class FilesTree:
                 builder = Gtk.Builder.new_from_file(SOURCE_VIEW_UI_FILE_PATH)
                 source_view = builder.get_object('source_view')
 
-                # Set font, style, language, and content of the source buffer.
+                # Set font, style, and language of the source buffer.
                 source_buffer = source_view.get_buffer()
                 source_view.override_font(MONOSPACE_FONT)
                 source_buffer.set_style_scheme(SOURCE_STYLE_SCHEME)
                 source_buffer.set_language(SOURCE_LANGUAGE)
+
+                # Create a tag to highlight text in the source buffer.
+                text_tag = source_buffer.create_tag(tag_name='HIGHLIGHT')
+                text_tag.set_property('foreground', 'black')
+                # https://www.color-meanings.com/shades-of-yellow-color-names-html-hex-rgb-codes/
+                # text_tag.set_property('background', '#FEDF00')  # Yellow (Pantone)
+                text_tag.set_property('background', '#FFFE71')  # Pastel Yellow
 
                 # Read file into source view buffer.
                 source_buffer.begin_not_undoable_action()
@@ -521,11 +528,11 @@ class FilesTree:
         # 2. has been unmapped and is not being displayed, so idle_add
         #    is unnecessary
         #
-        # GLib.idle_add(save_source_buffer, source_view)
+        # GLib.idle_add(save_source_view, source_view)
 
-        self.save_source_buffer(source_view)
+        self.save_source_view(source_view)
 
-    def save_source_buffer(self, source_view):
+    def save_source_view(self, source_view):
         """
         Save changes to the source view buffer if it has been modified.
         The source_view must have the attribute, file_path, representing
@@ -562,7 +569,7 @@ class FilesTree:
             file_path = self.get_relative_file_path(source_view.file_path)
             logger.log_value('Do not save (no changes)', file_path)
 
-    def update_file(self, file_path, update_source_view):
+    def update_source_view(self, file_path, edit_source_view):
         """
         Read the file corresponding to the tree iter for the specified
         file path, and store the text or image data. Also, correct the
@@ -574,8 +581,10 @@ class FilesTree:
         Arguments:
         file_path : path
             The file path of the file to update.
-        update_source_view : function
-            A function used to update the source view.
+        edit_source_view : function
+            A function used to make changes to the source view. This
+            function may add, delete, update, or highlight text in the
+            source view.
         """
 
         # Note: This method is similar to change_tree_selection()
@@ -628,9 +637,11 @@ class FilesTree:
                 self.file_map[file_path][IS_EDITED] = is_edited
 
                 if file_data:
-                    replacement_count = update_source_view(file_data)
-                    logger.log_value('Number of replacements', replacement_count)
-                    self.save_source_buffer(file_data)
+                    # Update the source view.
+                    update_count = edit_source_view(file_data)
+                    logger.log_value('Number of updates', update_count)
+                    # Save the source view.
+                    self.save_source_view(file_data)
 
             elif mime_type == 'image':
 
@@ -1062,7 +1073,7 @@ class FilesTree:
                 # but its buffer will still contain the recent edits.
                 # When this file is unmapped, the modified buffer will
                 # be saved, overwriting the file with old buffer data.
-                # The save_source_buffer() method checks to see if the
+                # The save_source_view() method checks to see if the
                 # buffer has been modified before saving a file, so
                 # marking the buffer as unmodified will prevented this.
                 logger.log_value('Undo buffer', 'Reset')
