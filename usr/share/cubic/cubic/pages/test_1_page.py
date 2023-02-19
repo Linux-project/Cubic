@@ -65,8 +65,7 @@ def setup(action, old_page=None):
 
     if action == 'test':
 
-        displayer.update_label('test_1_page__banner_label', '')
-        displayer.set_label_error('test_1_page__banner_label', False)
+        displayer.update_label('test_1_page__banner_label', '', False)
 
         displayer.empty_box('test_1_page__alerts_box')
 
@@ -125,8 +124,7 @@ def leave(action, new_page=None):
         # by the status call back function.
         emulator.remove_status_callback()
 
-        displayer.update_label('test_1_page__banner_label', '')
-        displayer.set_label_error('test_1_page__banner_label', False)
+        displayer.update_label('test_1_page__banner_label', '', False)
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -209,8 +207,7 @@ def update_status(status):
 
     elif status == emulator.RUNNING:
 
-        displayer.update_label('test_1_page__banner_label', 'Testing the generated disk image...')
-        displayer.set_label_error('test_1_page__banner_label', False)
+        displayer.update_label('test_1_page__banner_label', 'Testing the generated disk image...', False)
 
         is_virtualization_supported = emulator.host_has_virtualization_support()
         if not is_virtualization_supported:
@@ -252,7 +249,8 @@ def update_status(status):
 
         displayer.empty_box('test_1_page__alerts_box')
 
-        displayer.update_label('test_1_page__banner_label', 'Error. Unable to test the generated disk image.')
+        message = 'Error. Unable to test the generated disk image.'
+        displayer.update_label('test_1_page__banner_label', message, True)
         displayer.set_label_error('test_1_page__banner_label', True)
 
         displayer.reset_buttons(

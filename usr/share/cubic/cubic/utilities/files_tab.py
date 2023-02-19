@@ -67,8 +67,15 @@ from cubic.utilities import model
 # FILE_NAME_PATTERN = r'[a-zA-Z0-9][a-zA-Z0-9\.\-_]*[a-zA-Z0-9]'
 FILE_NAME_PATTERN = r'[a-zA-Z0-9]([a-zA-Z0-9\.\-_]*[a-zA-Z0-9])*'
 
+DELETE_FILE_MESSAGE = 'Warning. This file will be permanently removed.'
 FILE_NAME_EXISTS_MESSAGE = 'A file with this name already exists.'
 INVALID_FILE_NAME_MESSAGE = 'Enter a valid file name containing alpha-numeric characters, dashes, underscores, or periods.'
+NEW_FILE_NAME_MESSAGE = 'Enter a new name for the file.'
+
+DELETE_DIRECTORY_MESSAGE = 'Warning. This directory and its contents will be permanently removed.'
+DIRECTORY_NAME_EXISTS_MESSAGE = 'A directory with this name already exists.'
+INVALID_DIRECTORY_NAME_MESSAGE = 'Enter a valid directory name containing alpha-numeric characters, dashes, underscores, or periods.'
+NEW_DIRECTORY_NAME_MESSAGE = 'Enter a new name for the directory.'
 
 ########################################################################
 # Files Tab Class
@@ -366,8 +373,13 @@ class FilesTab:
         button = model.builder.get_object(self.CREATE_FILE_BUTTON)
         button.set_sensitive(is_valid)
 
-        label = model.builder.get_object(self.CREATE_FILE_MESSAGE)
+        label = model.builder.get_object(self.CREATE_FILE_MESSAGE_LABEL)
         label.set_text(message)
+        context = label.get_style_context()
+        if not is_valid:
+            context.add_class('error')
+        else:
+            context.remove_class('error')
 
     def on_clicked_create_file_button(self, button):
 
@@ -429,19 +441,24 @@ class FilesTab:
             full_file_path = self.get_full_file_path(file_path)
             if os.path.exists(full_file_path):
                 is_valid = False
-                message = FILE_NAME_EXISTS_MESSAGE
+                message = DIRECTORY_NAME_EXISTS_MESSAGE
             else:
                 is_valid = True
                 message = ''
         else:
             is_valid = False
-            message = INVALID_FILE_NAME_MESSAGE
+            message = INVALID_DIRECTORY_NAME_MESSAGE
 
         button = model.builder.get_object(self.CREATE_DIRECTORY_BUTTON)
         button.set_sensitive(is_valid)
 
-        label = model.builder.get_object(self.CREATE_DIRECTORY_MESSAGE)
+        label = model.builder.get_object(self.CREATE_DIRECTORY_MESSAGE_LABEL)
         label.set_text(message)
+        context = label.get_style_context()
+        if not is_valid:
+            context.add_class('error')
+        else:
+            context.remove_class('error')
 
     def on_clicked_create_directory_button(self, button):
 
@@ -501,19 +518,24 @@ class FilesTab:
             full_file_path = self.get_full_file_path(file_path)
             if os.path.exists(full_file_path):
                 is_valid = False
-                message = FILE_NAME_EXISTS_MESSAGE
+                message = DIRECTORY_NAME_EXISTS_MESSAGE
             else:
                 is_valid = True
                 message = ''
         else:
             is_valid = False
-            message = INVALID_FILE_NAME_MESSAGE
+            message = INVALID_DIRECTORY_NAME_MESSAGE
 
         button = model.builder.get_object(self.RENAME_DIRECTORY_BUTTON)
         button.set_sensitive(is_valid)
 
-        label = model.builder.get_object(self.RENAME_DIRECTORY_MESSAGE)
+        label = model.builder.get_object(self.RENAME_DIRECTORY_MESSAGE_LABEL)
         label.set_text(message)
+        context = label.get_style_context()
+        if not is_valid:
+            context.add_class('error')
+        else:
+            context.remove_class('error')
 
     def on_clicked_rename_directory_button(self, button):
 
@@ -614,8 +636,13 @@ class FilesTab:
         button = model.builder.get_object(self.RENAME_FILE_BUTTON)
         button.set_sensitive(is_valid)
 
-        label = model.builder.get_object(self.RENAME_FILE_MESSAGE)
+        label = model.builder.get_object(self.RENAME_FILE_MESSAGE_LABEL)
         label.set_text(message)
+        context = label.get_style_context()
+        if not is_valid:
+            context.add_class('error')
+        else:
+            context.remove_class('error')
 
     def on_clicked_rename_file_button(self, button):
 
@@ -791,8 +818,10 @@ class FilesTab:
         # entry = model.builder.get_object(self.CREATE_FILE_FILE_NAME_ENTRY)
         # entry.set_text('')
 
-        # label = model.builder.get_object(self.CREATE_FILE_MESSAGE)
+        # label = model.builder.get_object(self.CREATE_FILE_MESSAGE_LABEL)
         # label.set_text('')
+        # context = label.get_style_context()
+        # context.remove_class('error')
 
         # button = model.builder.get_object(self.CREATE_FILE_BUTTON)
         # button.set_sensitive(False)
@@ -828,8 +857,10 @@ class FilesTab:
         # entry = model.builder.get_object(self.CREATE_DIRECTORY_FILE_NAME_ENTRY)
         # entry.set_text('')
 
-        # label = model.builder.get_object(self.CREATE_DIRECTORY_MESSAGE)
+        # label = model.builder.get_object(self.CREATE_DIRECTORY_MESSAGE_LABEL)
         # label.set_text('')
+        # context = label.get_style_context()
+        # context.remove_class('error')
 
         # button = model.builder.get_object(self.CREATE_DIRECTORY_BUTTON)
         # button.set_sensitive(False)
@@ -866,10 +897,14 @@ class FilesTab:
         entry.set_text(file_name)
 
         entry = model.builder.get_object(self.RENAME_DIRECTORY_TARGET_FILE_NAME_ENTRY)
+        entry.handler_block_by_func(self.on_changed_rename_directory_target_file_name_entry)
         entry.set_text(file_name)
+        entry.handler_unblock_by_func(self.on_changed_rename_directory_target_file_name_entry)
 
-        label = model.builder.get_object(self.RENAME_DIRECTORY_MESSAGE)
-        label.set_text('Enter a new name for the directory.')
+        label = model.builder.get_object(self.RENAME_DIRECTORY_MESSAGE_LABEL)
+        label.set_text(NEW_DIRECTORY_NAME_MESSAGE)
+        context = label.get_style_context()
+        context.remove_class('error')
 
         # button = model.builder.get_object(self.RENAME_DIRECTORY_BUTTON)
         # button.set_sensitive(False)
@@ -901,8 +936,10 @@ class FilesTab:
         entry = model.builder.get_object(self.DELETE_DIRECTORY_FILE_NAME_ENTRY)
         entry.set_text(file_name)
 
-        label = model.builder.get_object(self.DELETE_DIRECTORY_MESSAGE)
-        label.set_text('Warning. This directory will be permanently removed.')
+        label = model.builder.get_object(self.DELETE_DIRECTORY_MESSAGE_LABEL)
+        label.set_text(DELETE_DIRECTORY_MESSAGE)
+        context = label.get_style_context()
+        context.add_class('error')
 
         # button = model.builder.get_object(self.DELETE_DIRECTORY_BUTTON)
         # button.set_sensitive(False)
@@ -938,10 +975,14 @@ class FilesTab:
         entry.set_text(file_name)
 
         entry = model.builder.get_object(self.RENAME_FILE_TARGET_FILE_NAME_ENTRY)
+        entry.handler_block_by_func(self.on_changed_rename_file_target_file_name_entry)
         entry.set_text(file_name)
+        entry.handler_unblock_by_func(self.on_changed_rename_file_target_file_name_entry)
 
-        label = model.builder.get_object(self.RENAME_FILE_MESSAGE)
-        label.set_text('Enter a new name for the file.')
+        label = model.builder.get_object(self.RENAME_FILE_MESSAGE_LABEL)
+        label.set_text(NEW_FILE_NAME_MESSAGE)
+        context = label.get_style_context()
+        context.remove_class('error')
 
         # button = model.builder.get_object(self.RENAME_FILE_BUTTON)
         # button.set_sensitive(False)
@@ -972,8 +1013,10 @@ class FilesTab:
         entry = model.builder.get_object(self.DELETE_FILE_FILE_NAME_ENTRY)
         entry.set_text(file_name)
 
-        label = model.builder.get_object(self.DELETE_FILE_MESSAGE)
-        label.set_text('Warning. This file will be permanently removed.')
+        label = model.builder.get_object(self.DELETE_FILE_MESSAGE_LABEL)
+        label.set_text(DELETE_FILE_MESSAGE)
+        context = label.get_style_context()
+        context.add_class('error')
 
         # button = model.builder.get_object(self.DELETE_FILE_BUTTON)
         # button.set_sensitive(False)

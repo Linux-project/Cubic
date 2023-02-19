@@ -71,8 +71,10 @@ def setup(action, old_page=None):
         display_version = constructor.get_display_version(model.application.cubic_version)
         about_dialog = model.builder.get_object('about_dialog')
         about_dialog.set_version(f'<small>{display_version}</small>')
-        displayer.update_label('start_page__version_label', f'Version {display_version}')
-        displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
+        message = f'Version {display_version}'
+        displayer.update_label('start_page__version_label', message)
+        message = 'Select a project directory.'
+        displayer.update_label('start_page__project_directory_message', message, False)
 
         # Create the application configuration.
         file_path = constructor.construct_application_configuration_file_path(model.application.user_home)
@@ -313,7 +315,8 @@ def validate_page():
             is_next_sensitive=False,
             is_next_visible=True)
 
-        displayer.update_label('start_page__project_directory_message', 'Select a project directory.')
+        message = 'Select a project directory.'
+        displayer.update_label('start_page__project_directory_message', message, False)
         displayer.set_entry_error('start_page__project_directory_entry', OK)
 
         return  # Done
@@ -341,7 +344,9 @@ def validate_page():
             logger.log_value('Remove inaccessible directory from projects list', model.project.directory)
             model.application.projects.remove(model.project.directory)
 
-        displayer.update_label('start_page__project_directory_message', '<span foreground="red">Error. Select a valid directory.</span>')
+        # message = '<span foreground="red">Error. Select a valid directory.</span>'
+        message = 'Error. Select a valid directory.'
+        displayer.update_label('start_page__project_directory_message', message, True)
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
 
         return  # Done
@@ -369,7 +374,9 @@ def validate_page():
             logger.log_value('Remove inaccessible directory from projects list', model.project.directory)
             model.application.projects.remove(model.project.directory)
 
-        displayer.update_label('start_page__project_directory_message', '<span foreground="red">Error. Cannot access directory.</span>')
+        # message = '<span foreground="red">Error. Cannot access directory.</span>'
+        message = 'Error. Cannot access directory.'
+        displayer.update_label('start_page__project_directory_message', message, True)
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
 
         return  # Done
@@ -398,9 +405,9 @@ def validate_page():
             logger.log_value('Remove excluded directory from projects list', model.project.directory)
             model.application.projects.remove(model.project.directory)
 
-        displayer.update_label(
-            'start_page__project_directory_message',
-            f'<span foreground="red">Error. Cannot customize Linux using the {FILE_SYSTEM_TYPES[file_system_type]} file system.</span>')
+        # message = f'<span foreground="red">Error. Cannot customize Linux using the {FILE_SYSTEM_TYPES[file_system_type]} file system.</span>'
+        message = f'Error. Cannot customize Linux using the {FILE_SYSTEM_TYPES[file_system_type]} file system.'
+        displayer.update_label('start_page__project_directory_message', message, True)
         displayer.set_entry_error('start_page__project_directory_entry', ERROR)
 
         return  # Done
@@ -437,7 +444,8 @@ def validate_page():
             is_next_sensitive=True,
             is_next_visible=True)
 
-        displayer.update_label('start_page__project_directory_message', 'A new Cubic project will be created using this directory.')
+        message = 'A new Cubic project will be created using this directory.'
+        displayer.update_label('start_page__project_directory_message', message, False)
         displayer.set_entry_error('start_page__project_directory_entry', OK)
 
         return  # Done
@@ -473,7 +481,8 @@ def validate_page():
             is_next_sensitive=True,
             is_next_visible=True)
 
-        displayer.update_label('start_page__project_directory_message', 'This directory contains a legacy Cubic project.')
+        message = 'This directory contains a legacy Cubic project.'
+        displayer.update_label('start_page__project_directory_message', message, False)
         displayer.set_entry_error('start_page__project_directory_entry', OK)
 
         return  # Done
@@ -504,13 +513,21 @@ def validate_page():
             is_next_visible=True)
 
         boot_configurations_string = ', '.join(model.options.boot_configurations)
-        displayer.update_label(
-            'start_page__project_directory_message',
-            '<span foreground="red">Warning. Cubic will require the'
-            ' original disk image to copy important files and may'
-            f' overwrite your changes to the disk boot configurations ({boot_configurations_string})'
-            ' or preseed files. Before proceeding, make backups of these'
-            f' files located in {model.project.custom_disk_directory}.</span>')
+        # message = (
+        #     '<span foreground="red">Warning. Cubic will require the'
+        #     ' original disk image to copy important files and may'
+        #     f' overwrite your changes to the disk boot configurations ({boot_configurations_string})'
+        #     ' or preseed files. Before proceeding, make backups of these'
+        #     f' files located in {model.project.custom_disk_directory}.</span>')
+        message = (
+            'Warning. Cubic will require the original disk image '
+            'to copy important files and may overwrite your '
+            'changes to the disk boot configurations '
+            f'({boot_configurations_string}) '
+            'or preseed files. Before proceeding, make backups '
+            'of these files located in '
+            f'{model.project.custom_disk_directory}.')
+        displayer.update_label('start_page__project_directory_message', message, True)
 
         displayer.set_entry_error('start_page__project_directory_entry', OK)
 
@@ -550,7 +567,8 @@ def validate_page():
             model.status.iso_template = constructor.encode(template)
     # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
-    displayer.update_label('start_page__project_directory_message', 'This directory contains an existing Cubic project.')
+    message = 'This directory contains an existing Cubic project.'
+    displayer.update_label('start_page__project_directory_message', message, False)
     displayer.set_entry_error('start_page__project_directory_entry', OK)
 
     return  # Done

@@ -507,7 +507,39 @@ def hide_popover(popover_name):
 ########################################################################
 
 
-def update_label(label_name, text):
+def update_label(label_name, text, is_error=None):
+    """
+    Update the label text. If specified, add or remove the "error" style
+    context for the label.
+
+    Arguments:
+    label_name : str
+        The name of the label.
+    text : str
+        The text to display.
+    is_error : bool or None
+        None to not change the style context. The style context will
+        retain its previous value ("error" or no "error"). None is the
+        default.
+        True to set the "error" style context.
+        False to remove the "error" style context.
+    """
+    # logger.log_value(f'Update label {label_name}', text)
+
+    # Set the label with markup enabled.
+    label = model.builder.get_object(label_name)
+    GLib.idle_add(Gtk.Label.set_markup, label, text)
+
+    # Add or remove the "error" style context.
+    if is_error is not None:
+        context = label.get_style_context()
+        if is_error:
+            GLib.idle_add(Gtk.StyleContext.add_class, context, 'error')
+        else:
+            GLib.idle_add(Gtk.StyleContext.remove_class, context, 'error')
+
+
+def update_label_ORIGINAL(label_name, text):
     """
     Update the label text.
 

@@ -304,8 +304,6 @@ FINAL_PERCENT = 100  # %
 # Terminal Font Colors & Console Codes
 ########################################################################
 
-# TODO: Replace colors in other modules with these.
-
 # https://en.wikipedia.org/wiki/ANSI_escape_code
 # https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
 
@@ -325,6 +323,7 @@ BOLD_MAGENTA = '\033[1;35m'
 BOLD_CYAN = '\033[1;36m'
 # BOLD_GRAY = '\033[1;90m'
 
+UNDERLINE = '\033[4m'
 NORMAL = '\033[0m'
 
 # https://stackoverflow.com/questions/45065919/move-cursor-position-in-bash-at-specific-column

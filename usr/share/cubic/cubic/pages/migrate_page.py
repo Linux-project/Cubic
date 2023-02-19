@@ -79,13 +79,13 @@ def setup(action, old_page=None):
         displayer.update_entry('migrate_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
 
         displayer.update_status('migrate_page__configuration', BULLET)
-        displayer.update_label('migrate_page__configuration_message', '')
+        displayer.update_label('migrate_page__configuration_message', '', False)
 
         displayer.update_status('migrate_page__custom_root', BULLET)
-        displayer.update_label('migrate_page__custom_root_message', '')
+        displayer.update_label('migrate_page__custom_root_message', '', False)
 
         displayer.update_status('migrate_page__custom_disk', BULLET)
-        displayer.update_label('migrate_page__custom_disk_message', '')
+        displayer.update_label('migrate_page__custom_disk_message', '', False)
 
         displayer.reset_buttons(
             back_button_label='❬Cancel',
@@ -217,12 +217,14 @@ def migrate_configuration():
         model.project.configuration.save()
         logger.log_value('Migrated', model.project.configuration.file_path)
         displayer.update_status('migrate_page__configuration', OK)
-        displayer.update_label('migrate_page__configuration_message', '')
+        message = ''
+        displayer.update_label('migrate_page__configuration_message', message, False)
     except Exception as exception:
         logger.log_value('Error. Unable to migrate', model.project.configuration.file_path)
         logger.log_value('The exception is', exception)
         displayer.update_status('migrate_page__configuration', ERROR)
-        displayer.update_label('migrate_page__configuration_message', f'Error. Unable to migrate {model.project.configuration.file_path}.')
+        message = f'Error. Unable to migrate {model.project.configuration.file_path}.'
+        displayer.update_label('migrate_page__configuration_message', message, True)
         is_error = True
 
     # Pause to allow the user to see the result.
@@ -261,19 +263,22 @@ def migrate_custom_root():
         if not exit_status:
             logger.log_value('Migrated', source_file_path)
             displayer.update_status('migrate_page__custom_root', OK)
-            displayer.update_label('migrate_page__custom_root_message', '')
+            message = ''
+            displayer.update_label('migrate_page__custom_root_message', message, False)
         else:
             logger.log_value('Error. Unable to migrate', source_file_path)
             logger.log_value('The result is', result)
             displayer.update_status('migrate_page__custom_root', ERROR)
-            displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_file_path}.')
+            message = f'Error. Unable to migrate {source_file_path}.'
+            displayer.update_label('migrate_page__custom_root_message', message, True)
             is_error = True
 
     else:
 
         logger.log_value('Error. Unable to migrate because the source directory does not exist', source_file_path)
         displayer.update_status('migrate_page__custom_root', ERROR)
-        displayer.update_label('migrate_page__custom_root_message', f'Error. Unable to migrate {source_file_path}.')
+        message = f'Error. Unable to migrate {source_file_path}.'
+        displayer.update_label('migrate_page__custom_root_message', message, True)
         is_error = True
 
     # Pause to allow the user to see the result.
@@ -317,19 +322,22 @@ def migrate_custom_disk():
         if not exit_status:
             logger.log_value('Migrated', source_file_path)
             displayer.update_status('migrate_page__custom_disk', OK)
-            displayer.update_label('migrate_page__custom_disk_message', '')
+            message = ''
+            displayer.update_label('migrate_page__custom_disk_message', message, False)
         else:
             logger.log_value('Error. Unable to migrate', source_file_path)
             logger.log_value('The result is', result)
             displayer.update_status('migrate_page__custom_disk', ERROR)
-            displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_file_path}.')
+            message = f'Error. Unable to migrate {source_file_path}.'
+            displayer.update_label('migrate_page__custom_disk_message', message, True)
             is_error = True
 
     else:
 
         logger.log_value('Error. Unable to migrate because the source directory does not exist', source_file_path)
         displayer.update_status('migrate_page__custom_disk', ERROR)
-        displayer.update_label('migrate_page__custom_disk_message', f'Error. Unable to migrate {source_file_path}.')
+        message = f'Error. Unable to migrate {source_file_path}.'
+        displayer.update_label('migrate_page__custom_disk_message', message, True)
         is_error = True
 
     # Pause to allow the user to see the result.

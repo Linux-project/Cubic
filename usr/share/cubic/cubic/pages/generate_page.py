@@ -80,34 +80,34 @@ def setup(action, old_page=None):
         displayer.update_status('generate_page__copy_boot_files', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__copy_boot_files_progress_bar', 0)
         # displayer.update_progress_bar_text('generate_page__copy_boot_files_progress_bar', ' ')
-        displayer.update_label('generate_page__copy_boot_files_message', '...')
+        displayer.update_label('generate_page__copy_boot_files_message', '...', False)
 
         displayer.update_status('generate_page__create_squashfs', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_squashfs_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__create_squashfs_progress_bar', ' ')
-        displayer.update_label('generate_page__create_squashfs_message', '...')
+        displayer.update_label('generate_page__create_squashfs_message', '...', False)
 
         displayer.update_status('generate_page__update_file_system_size', displayer.BULLET)
-        displayer.update_label('generate_page__update_file_system_size_message', '...')
+        displayer.update_label('generate_page__update_file_system_size_message', '...', False)
 
         displayer.update_status('generate_page__update_disk_name', displayer.BULLET)
-        displayer.update_label('generate_page__update_disk_name_message', '...')
+        displayer.update_label('generate_page__update_disk_name_message', '...', False)
 
         displayer.update_status('generate_page__update_checksums', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', ' ')
-        displayer.update_label('generate_page__update_checksums_message', '...')
+        displayer.update_label('generate_page__update_checksums_message', '...', False)
 
         displayer.update_status('generate_page__check_custom_disk_size', displayer.BULLET)
-        displayer.update_label('generate_page__check_custom_disk_size_message', '...')
+        displayer.update_label('generate_page__check_custom_disk_size_message', '...', False)
 
         displayer.update_status('generate_page__create_iso_image', displayer.BULLET)
         displayer.update_progress_bar_percent('generate_page__create_iso_image_progress_bar', 0)
         displayer.update_progress_bar_text('generate_page__create_iso_image_progress_bar', ' ')
-        displayer.update_label('generate_page__create_iso_image_message', '...')
+        displayer.update_label('generate_page__create_iso_image_message', '...', False)
 
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.BULLET)
-        displayer.update_label('generate_page__calculate_iso_image_checksum_message', '...')
+        displayer.update_label('generate_page__calculate_iso_image_checksum_message', '...', False)
 
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -355,12 +355,16 @@ def copy_kernel_files():
     try:
         _copy_kernel_file(source_file_path, target_file_path, user, file_number=0, total_files=2)
     except InterruptException as exception:
-        displayer.update_label('generate_page__copy_boot_files_message', '<span foreground="red">Error. Unable to update the vmlinuz boot file.</span>')
+        # message = '<span foreground="red">Error. Unable to update the vmlinuz boot file.</span>'
+        message = 'Error. Unable to update the vmlinuz boot file.'
+        displayer.update_label('generate_page__copy_boot_files_message', message, True)
         displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
-        displayer.update_label('generate_page__copy_boot_files_message', '<span foreground="red">Error. Unable to update the vmlinuz boot file.</span>')
+        # message = '<span foreground="red">Error. Unable to update the vmlinuz boot file.</span>'
+        message = 'Error. Unable to update the vmlinuz boot file.'
+        displayer.update_label('generate_page__copy_boot_files_message', message, True)
         displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
@@ -405,17 +409,22 @@ def copy_kernel_files():
     try:
         _copy_kernel_file(source_file_path, target_file_path, user, file_number=1, total_files=2)
     except InterruptException as exception:
-        displayer.update_label('generate_page__copy_boot_files_message', '<span foreground="red">Error. Unable to update the initrd boot file.</span>')
+        # displayer.update_label('generate_page__copy_boot_files_message', '<span foreground="red">Error. Unable to update the initrd boot file.</span>')
+        message = 'Error. Unable to update the initrd boot file.'
+        displayer.update_label('generate_page__copy_boot_files_message', message, True)
         displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
-        displayer.update_label('generate_page__copy_boot_files_message', '<span foreground="red">Error. Unable to update the initrd boot file.</span>')
+        # displayer.update_label('generate_page__copy_boot_files_message', '<span foreground="red">Error. Unable to update the initrd boot file.</span>')
+        message = 'Error. Unable to update the initrd boot file.'
+        displayer.update_label('generate_page__copy_boot_files_message', message, True)
         displayer.update_status('generate_page__copy_boot_files', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
-    displayer.update_label('generate_page__copy_boot_files_message', 'Success.')
+    message = 'Success.'
+    displayer.update_label('generate_page__copy_boot_files_message', message, False)
     displayer.update_status('generate_page__copy_boot_files', displayer.OK)
     return False  # (No error)
 
@@ -462,7 +471,8 @@ def create_squashfs():
     target_file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
     logger.log_value('The target file path is', target_file_path)
 
-    displayer.update_label('generate_page__create_squashfs_message', f'Using {model.options.compression} compression.')
+    message = f'Using {model.options.compression} compression.'
+    displayer.update_label('generate_page__create_squashfs_message', message, False)
 
     # Create filesystem.squashfs or
     # ubuntu-server-minimal.ubuntu-server.squashfs.
@@ -486,22 +496,29 @@ def create_squashfs():
         track_progress(command, progress_callback)
     except InterruptException as exception:
         if 'No space left on device' in str(exception):
-            displayer.update_label('generate_page__create_squashfs_message', 'Error. Not enough space on the disk.')
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label('generate_page__create_squashfs_message', 'Error. Unable to create the compressed Linux file system.')
+            # message = '<span foreground="red">Error. Unable to create the compressed Linux file system.</span>'
+            message = 'Error. Unable to create the compressed Linux file system.'
+        displayer.update_label('generate_page__create_squashfs_message', message, True)
         displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         if 'No space left on device' in str(exception):
-            displayer.update_label('generate_page__create_squashfs_message', 'Error. Not enough space on the disk.')
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label('generate_page__create_squashfs_message', 'Error. Unable to create the compressed Linux file system.')
+            # message = '<span foreground="red">Error. Unable to create the compressed Linux file system.</span>'
+            message = 'Error. Unable to create the compressed Linux file system.'
+        displayer.update_label('generate_page__create_squashfs_message', message, True)
         displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
-    displayer.update_label('generate_page__create_squashfs_message', 'Success.')
+    message = 'Success.'
+    displayer.update_label('generate_page__create_squashfs_message', message, False)
     displayer.update_status('generate_page__create_squashfs', displayer.OK)
     return False  # (No error)
 
@@ -521,7 +538,8 @@ def create_squashfs_TESTING_1():
     target_file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
     logger.log_value('The target file path is', target_file_path)
 
-    displayer.update_label('generate_page__create_squashfs_message', 'Testing.')
+    message = 'Testing.'
+    displayer.update_label('generate_page__create_squashfs_message', message, False)
     displayer.update_status('generate_page__create_squashfs', displayer.OK)
     return False  # (No error)
 
@@ -547,11 +565,13 @@ def create_squashfs_TESTING_2():
     file_utilities.copy_file(source_file_path, target_file_path)
 
     if not os.path.exists(target_file_path):
-        displayer.update_label('generate_page__create_squashfs_message', f'Testing. Error. {file_name} already exists.')
+        message = f'Testing. Error. {file_name} already exists.'
+        displayer.update_label('generate_page__create_squashfs_message', message, True)
         displayer.update_status('generate_page__create_squashfs', displayer.ERROR)
         return True  # (Error)
 
-    displayer.update_label('generate_page__create_squashfs_message', 'Testing.')
+    message = 'Testing.'
+    displayer.update_label('generate_page__create_squashfs_message', message, False)
     displayer.update_status('generate_page__create_squashfs', displayer.OK)
     return False  # (No error)
 
@@ -595,24 +615,23 @@ def update_file_system_size():
         size_in_gib = size_in_bytes / GIB
         logger.log_value('The file system size is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
         if size_in_bytes > GIB:
-            displayer.update_label(
-                'generate_page__update_file_system_size_message',
-                f'The file system size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).')
+            message = f'The file system size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).'
         else:
-            displayer.update_label(
-                'generate_page__update_file_system_size_message',
-                f'The file system size is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).')
+            message = f'The file system size is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).'
+        displayer.update_label('generate_page__update_file_system_size_message', message, False)
     except InterruptException as exception:
         logger.log_value(f'Unable to get file system size for {model.project.custom_root_directory}', result)
         logger.log_value('The exception is', exception)
-        displayer.update_label('generate_page__update_file_system_size_message', 'Error. Unable to get file system size.')
+        message = 'Error. Unable to get file system size.'
+        displayer.update_label('generate_page__update_file_system_size_message', message, True)
         displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         logger.log_value(f'Unable to get file system size for {model.project.custom_root_directory}', result)
         logger.log_value('The exception is', exception)
-        displayer.update_label('generate_page__update_file_system_size_message', 'Error. Unable to get file system size.')
+        message = 'Error. Unable to get file system size.'
+        displayer.update_label('generate_page__update_file_system_size_message', message, True)
         displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
@@ -623,12 +642,14 @@ def update_file_system_size():
         file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
         file_utilities.write_line(str(size_in_bytes), file_path)
     except InterruptException as exception:
-        displayer.update_label('generate_page__update_file_system_size_message', 'Error. Unable to save file system size.')
+        message = 'Error. Unable to save file system size.'
+        displayer.update_label('generate_page__update_file_system_size_message', message, True)
         displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
     except Exception as exception:
-        displayer.update_label('generate_page__update_file_system_size_message', 'Error. Unable to save file system size.')
+        message = 'Error. Unable to save file system size.'
+        displayer.update_label('generate_page__update_file_system_size_message', message, True)
         displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
@@ -648,13 +669,15 @@ def update_disk_name_and_disk_info():
         _update_disk_name()
     except InterruptException as exception:
         logger.log_value('Unable to update the disk name to', model.custom.iso_disk_name)
-        displayer.update_label('generate_page__update_disk_name_message', 'Error. Unable to update the disk name.')
+        message = 'Error. Unable to update the disk name.'
+        displayer.update_label('generate_page__update_disk_name_message', message, True)
         displayer.update_status('generate_page__update_disk_name', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         logger.log_value('Unable to update the disk name to', model.custom.iso_disk_name)
-        displayer.update_label('generate_page__update_disk_name_message', 'Error. Unable to update the disk name.')
+        message = 'Error. Unable to update the disk name.'
+        displayer.update_label('generate_page__update_disk_name_message', message, True)
         displayer.update_status('generate_page__update_disk_name', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
@@ -663,18 +686,21 @@ def update_disk_name_and_disk_info():
         _update_disk_info()
     except InterruptException as exception:
         logger.log_value('Unable to update the disk name to', model.custom.iso_disk_name)
-        displayer.update_label('generate_page__update_disk_name_message', 'Error. Unable to update the disk name.')
+        message = 'Error. Unable to update the disk name.'
+        displayer.update_label('generate_page__update_disk_name_message', message, True)
         displayer.update_status('generate_page__update_disk_name', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         logger.log_value('Unable to update the disk name to', model.custom.iso_disk_name)
-        displayer.update_label('generate_page__update_disk_name_message', 'Error. Unable to update the disk name.')
+        message = 'Error. Unable to update the disk name.'
+        displayer.update_label('generate_page__update_disk_name_message', message, True)
         displayer.update_status('generate_page__update_disk_name', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
-    displayer.update_label('generate_page__update_disk_name_message', 'Success.')
+    message = 'Success.'
+    displayer.update_label('generate_page__update_disk_name_message', message, False)
     displayer.update_status('generate_page__update_disk_name', displayer.OK)
     return False  # (No error)
 
@@ -801,7 +827,8 @@ def update_checksums():
     total_files = len(file_paths)
     if total_files == 0:
         logger.log_value('Unable to update checksums. No files found in', checksums_file_path)
-        displayer.update_label('generate_page__update_checksums_message', 'Error. Unable to calculate checksums.')
+        message = 'Error. Unable to calculate checksums.'
+        displayer.update_label('generate_page__update_checksums_message', message, True)
         displayer.update_status('generate_page__update_checksums', displayer.ERROR)
         return True  # (Error)
 
@@ -839,7 +866,8 @@ def update_checksums():
         logger.log_value('Write to file', checksums_file_path)
         with open(checksums_file_path, 'w') as file:
             for file_number, file_path in enumerate(file_paths, start=1):
-                # displayer.update_label('generate_page__update_checksums_message', f'Calculating checksum for file {file_number} of {total_files}.')
+                # message =  f'Calculating checksum for file {file_number} of {total_files}.'
+                # displayer.update_label('generate_page__update_checksums_message', message, False)
                 checksum, file_path = file_utilities.calculate_md5_hash(file_path, start_path)
                 if file_number == 1:
                     file.write(f'{checksum}  ./{file_path}')
@@ -854,9 +882,10 @@ def update_checksums():
         logger.log_value('Error', 'Unable to update checksums')
         logger.log_value('The exception is', exception)
         if 'No space left on device' in str(exception):
-            displayer.update_label('generate_page__update_checksums_message', 'Error. Not enough space on the disk.')
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label('generate_page__update_checksums_message', 'Error. Unable to calculate checksums.')
+            message = 'Error. Unable to calculate checksums.'
+        displayer.update_label('generate_page__update_checksums_message', message, True)
         displayer.update_status('generate_page__update_checksums', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
@@ -864,16 +893,18 @@ def update_checksums():
         logger.log_value('Error', 'Unable to update checksums')
         logger.log_value('The exception is', exception)
         if 'No space left on device' in str(exception):
-            displayer.update_label('generate_page__update_checksums_message', 'Error. Not enough space on the disk.')
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label('generate_page__update_checksums_message', 'Error. Unable to calculate checksums.')
+            message = 'Error. Unable to calculate checksums.'
+        displayer.update_label('generate_page__update_checksums_message', message, True)
         displayer.update_status('generate_page__update_checksums', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
     logger.log_value('Calculated checksums for', f'{total_files} files')
     displayer.update_progress_bar_text('generate_page__update_checksums_progress_bar', '100%')
-    displayer.update_label('generate_page__update_checksums_message', f'Calculated checksums for {total_files} files.')
+    message = f'Calculated checksums for {total_files} files.'
+    displayer.update_label('generate_page__update_checksums_message', message, False)
     displayer.update_status('generate_page__update_checksums', displayer.OK)
     return False  # (No error)
 
@@ -899,14 +930,16 @@ def check_custom_disk_directory_size():
     except InterruptException as exception:
         logger.log_value('Unable to get the total size', model.project.custom_disk_directory)
         logger.log_value('The exception is', exception)
-        displayer.update_label('generate_page__check_custom_disk_size_message', 'Error. Unable to get the total size.')
+        message = 'Error. Unable to get the total size.'
+        displayer.update_label('generate_page__check_custom_disk_size_message', message, True)
         displayer.update_status('generate_page__check_custom_disk_size', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         logger.log_value('Unable to get the total size', model.project.custom_disk_directory)
         logger.log_value('The exception is', exception)
-        displayer.update_label('generate_page__check_custom_disk_size_message', 'Error. Unable to get the total size.')
+        message = 'Error. Unable to get the total size.'
+        displayer.update_label('generate_page__check_custom_disk_size_message', message, True)
         displayer.update_status('generate_page__check_custom_disk_size', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
@@ -916,22 +949,19 @@ def check_custom_disk_directory_size():
     logger.log_value('The maximum size limit for all files on the disk is', f'{MAXIMUM_DISK_SIZE_GIB:.2f} GiB ({MAXIMUM_DISK_SIZE_BYTES:n} bytes)')
     if size_in_bytes > MAXIMUM_DISK_SIZE_BYTES:
         logger.log_value('Error', 'The total size exceeds the maximum size')
-        displayer.update_label(
-            'generate_page__check_custom_disk_size_message',
+        message = (
             f'The the custom disk directory size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).{os.linesep}'
             f'This is larger than the {MAXIMUM_DISK_SIZE_GIB:.2f} GiB ({MAXIMUM_DISK_SIZE_BYTES:n} bytes) limit.{os.linesep}'
             f'Click the Back button, and reduce the size of the Linux file system.')
+        displayer.update_label('generate_page__check_custom_disk_size_message', message, True)
         displayer.update_status('generate_page__check_custom_disk_size', displayer.ERROR)
         return True  # (Error)
 
     if size_in_bytes > GIB:
-        displayer.update_label(
-            'generate_page__check_custom_disk_size_message',
-            f'The total size of all files is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).')
+        message = f'The total size of all files is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).'
     else:
-        displayer.update_label(
-            'generate_page__check_custom_disk_size_message',
-            f'The total size of all files is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).')
+        message = f'The total size of all files is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).'
+    displayer.update_label('generate_page__check_custom_disk_size_message', message, False)
     displayer.update_status('generate_page__check_custom_disk_size', displayer.OK)
     return False  # (No error)
 
@@ -977,17 +1007,19 @@ def create_iso_image():
         track_progress(command, progress_callback, working_directory=model.project.custom_disk_directory)
     except InterruptException as exception:
         if 'exceeds free space on media' in str(exception):
-            displayer.update_label('generate_page__create_iso_image_message', 'Error. Not enough space on the disk.')
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label('generate_page__create_iso_image_message', 'Error. Unable to create the customized disk image.')
+            message = 'Error. Unable to create the customized disk image.'
+        displayer.update_label('generate_page__create_iso_image_message', message, True)
         displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         if 'exceeds free space on media' in str(exception):
-            displayer.update_label('generate_page__create_iso_image_message', 'Error. Not enough space on the disk.')
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label('generate_page__create_iso_image_message', 'Error. Unable to create the customized disk image.')
+            message = 'Error. Unable to create the customized disk image.'
+        displayer.update_label('generate_page__create_iso_image_message', message, True)
         displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
@@ -1012,28 +1044,28 @@ def create_iso_image():
     except InterruptException as exception:
         logger.log_value('Unable to get the size of the custom disk', iso_file_path)
         logger.log_value('The exception is', exception)
-        displayer.update_label('generate_page__create_iso_image_message', 'Error. Unable to get the size of the custom disk.')
+        message = 'Error. Unable to get the size of the custom disk.'
+        displayer.update_label('generate_page__create_iso_image_message', message, True)
         displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         logger.log_value('Unable to get the size of the custom disk', iso_file_path)
         logger.log_value('The exception is', exception)
-        displayer.update_label('generate_page__create_iso_image_message', 'Error. Unable to get the size of the custom disk.')
+        message = 'Error. Unable to get the size of the custom disk.'
+        displayer.update_label('generate_page__create_iso_image_message', message, True)
         displayer.update_status('generate_page__create_iso_image', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
     if size_in_bytes > GIB:
         logger.log_value('The size of the custom disk is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
-        displayer.update_label(
-            'generate_page__create_iso_image_message',
-            f'Generated {model.custom.iso_file_name}. The disk image size is {locale.format_string("%.2f", size_in_gib, True)} GiB.')
+        message = f'Generated {model.custom.iso_file_name}. The disk image size is {locale.format_string("%.2f", size_in_gib, True)} GiB.'
+        displayer.update_label('generate_page__create_iso_image_message', message, False)
     else:
         logger.log_value('The size of the custom disk is', f'{locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes)')
-        displayer.update_label(
-            'generate_page__create_iso_image_message',
-            f'Generated {model.custom.iso_file_name}. The disk image size is {locale.format_string("%.2f", size_in_mib, True)} MiB.')
+        message = f'Generated {model.custom.iso_file_name}. The disk image size is {locale.format_string("%.2f", size_in_mib, True)} MiB.'
+        displayer.update_label('generate_page__create_iso_image_message', message, False)
 
     displayer.update_status('generate_page__create_iso_image', displayer.OK)
     return False  # (No error)
@@ -1087,7 +1119,8 @@ def calculate_checksum_for_iso():
     logger.log_label('Calculate checksum for ISO')
 
     model.status.iso_checksum, _ = file_utilities.calculate_md5_hash(model.custom.iso_file_name, model.custom.iso_directory)
-    displayer.update_label('generate_page__calculate_iso_image_checksum_message', f'The checksum is {model.status.iso_checksum}.')
+    message = f'The checksum is {model.status.iso_checksum}.'
+    displayer.update_label('generate_page__calculate_iso_image_checksum_message', message, False)
     time.sleep(SLEEP_0500_MS)
 
     model.status.iso_checksum_file_name = constructor.construct_custom_iso_checksum_file_name(model.custom.iso_file_name)
@@ -1095,22 +1128,19 @@ def calculate_checksum_for_iso():
         file_path = os.path.join(model.custom.iso_directory, model.status.iso_checksum_file_name)
         file_utilities.write_line(f'{model.status.iso_checksum}  {model.custom.iso_file_name}', file_path)
     except InterruptException as exception:
-        displayer.update_label(
-            'generate_page__calculate_iso_image_checksum_message',
-            f'Unable to save the checksum file {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.')
+        message = f'Unable to save the checksum file {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.'
+        displayer.update_label('generate_page__calculate_iso_image_checksum_message', message, True)
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
-        displayer.update_label(
-            'generate_page__calculate_iso_image_checksum_message',
-            f'Unable to save the checksum file {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.')
+        message = f'Unable to save the checksum file {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.'
+        displayer.update_label('generate_page__calculate_iso_image_checksum_message', message, True)
         displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
-    displayer.update_label(
-        'generate_page__calculate_iso_image_checksum_message',
-        f'The checksum is {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.')
+    message = f'The checksum is {model.status.iso_checksum}.{os.linesep}The checksum file is {model.status.iso_checksum_file_name}.'
+    displayer.update_label('generate_page__calculate_iso_image_checksum_message', message, False)
     displayer.update_status('generate_page__calculate_iso_image_checksum', displayer.OK)
     return False  # (No error)

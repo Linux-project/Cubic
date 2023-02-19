@@ -647,47 +647,29 @@ def _write_lines_2(lines, file_path):
             file.write(line)
 
 
-def is_recursive_symlink(file_path):
-    """
-    Check if a file path is a recursive symlink. A link is recursive if
-    the link's target is a parent ancestor of the link. A link and its
-    target have the same parent ancestor if the real path (the target of
-    the link) is the same as the common path between the target and the
-    link. This function only finds direct recursive loops, but can not
-    detect complex recursive loops involving symlinks in sibling
-    directories.
-
-    Arguments:
-    file_pah : str
-        The simlink file path to check.
-
-    Returns:
-    : boolean
-        True if the file path is a recursive sumlink. False if the file
-        path is not a symlink or is not a recursive symlink.
-    """
-
-    real_path = os.path.realpath(file_path)
-    common_path = os.path.commonpath([real_path, file_path])
-    return real_path == common_path
-
-
 def find_files_with_pattern(file_name_pattern, start_directory, follow_links=False):
     """
     Recursively search files in the start directory that match the file
-    name pattern, and return a list of matching file paths relative to`
-    the start directory. Symlinks that are not recursive are also
+    name pattern, and return a list of matching file paths relative to
+    the start directory. If follow links is True, symlinks that do not
+    result in a recursive loop with their parent directory will also be
     searched.
+
+    Warning: If follow links is True, recursive loops caused by symlinks
+    in sibling directories will cause this function to execute
+    indefinitely, crashing the application.
 
     Arguments:
     file_name_pattern : r-str
         A regular expression pattern for the file name to search for,
         such as "r'.*\.squashfs$'" or "r'.*\.txt$'".
     start_directory : str
-        The directory to search in.
+        The full path of the directory to search in.
     follow_links : boolean
-        True to follow symlinks (only if the symlink does not result in
-        a recursive loop with the parent directory of the link). The
+        True to follow symlinks.
+        False to not follow symlinks.
+        A symlink to a directory will be searched only if it does not
+        result in a recursive loop with its parent directory. The
         default value is False.
 
     Returns:
@@ -695,157 +677,92 @@ def find_files_with_pattern(file_name_pattern, start_directory, follow_links=Fal
         A list of matching file paths relative to the start directory.
     """
 
-    # logger.log_label('Find files')
-    logger.log_value('Search for file name pattern', file_name_pattern)
-    logger.log_value('In directory', start_directory)
-
-    relative_file_paths = []
-    _find_files_with_pattern(file_name_pattern, start_directory, start_directory, relative_file_paths, follow_links)
-
-    return relative_file_paths
-
-
-def _find_files_with_pattern(file_name_pattern, start_directory, directory, relative_file_paths, follow_links):
-    """
-    Recursively search files in the start directory that match the file
-    name pattern, and return a list of matching file paths relative to`
-    the start directory. Symlinks that are not recursive are also
-    searched. Do not call this function directly, instead use
-    find_files_with_pattern().
-
-    Arguments:
-    file_name_pattern : r-str
-        A regular expression pattern for the file name to search for,
-        such as "r'.*\.squashfs$'" or "r'.*\.txt$'".
-    start_directory : str
-        The directory to search in.
-    directory : str
-        The full path of the current directory being searched in the
-        start directory.
-    relative_file_paths : list of str
-        A list of matching file paths relative to the start directory.
-    follow_links : boolean
-        True to follow symlinks (only if the symlink does not result in
-        a recursive loop with the parent directory of the link).
-    """
-
-    file_names = os.listdir(directory)
-    for file_name in file_names:
-        file_path = os.path.join(directory, file_name)
-        if os.path.isdir(file_path):
-            if os.path.islink(file_path):
-                if follow_links:
-                    if not is_recursive_symlink(file_path):
-                        _find_files_with_pattern(file_name_pattern, start_directory, file_path, relative_file_paths, follow_links)
-                    else:
-                        logger.log_value('Ignore recursive directory', file_path)
-            else:
-                _find_files_with_pattern(file_name_pattern, start_directory, file_path, relative_file_paths, follow_links)
-        elif re.match(file_name_pattern, file_name):
-            relative_file_path = os.path.relpath(file_path, start=start_directory)
-            relative_file_paths.append(relative_file_path)
-            logger.log_value('Matched file', relative_file_path)
-
-
-def find_files_with_pattern_ORIGINAL(file_name_pattern, start_directory):
-    """
-    Recursively search files in the start directory that match the
-    file name pattern, and return a list of matching file paths relative
-    to the start directory.
-
-    Arguments:
-    file_name_pattern : r-str
-        A regular expression pattern for the file name to search for,
-        such as "r'.*\.squashfs$'" or "r'.*\.txt$'".
-    start_directory : str
-        The directory to search in.
-
-    Returns:
-    results : list
-        A list of matching file paths relative to the start directory.
-    """
+    # Implementation note/warning: Do not use glob.glob(), because it
+    # always follows symlinks when recursive=True, and this will fail
+    # when recursive symlinks are encountered.
 
     # logger.log_label('Find files')
     logger.log_value('Search for file name pattern', file_name_pattern)
     logger.log_value('In directory', start_directory)
 
+    # Nested function (used below) to match the file name pattern.
+    def is_match(file_name):
+        """
+        Check if the file name matches the file name pattern.
+
+        Note: This function expects the file name pattern to be set
+        prior to invocation because filter() requires a function that
+        only takes a single argument.
+
+        Arguments:
+        file_name : str
+            The file name to check.
+
+        Returns:
+        : boolean
+            True if the file name matches the pattern.
+            False if the file name does not match the pattern.
+        """
+        return re.match(file_name_pattern, file_name)
+
     relative_file_paths = []
-    for directory_path, directory_names, file_names in os.walk(start_directory):
-        for file_name in filter(lambda x: re.match(file_name_pattern, x), file_names):
+    for directory_path, directory_names, file_names in os.walk(start_directory, followlinks=follow_links):
+
+        if follow_links:
+
+            # Nested function to ensure the directory file path is not a
+            # recursive symlink.
+            def is_not_recursive(directory_name):
+                """
+                Check if a file path is not a recursive symlink. A link
+                is recursive if the link's target is a parent ancestor
+                of the link. A link and its target have the same parent
+                ancestor if the real path (the target of the link) is
+                the same as the common path between the target and the
+                link.
+
+                Warning: This function only detects loops where a
+                symlink in a child directory points to a parent
+                directory, but it can not detect complex recursive loops
+                involving symlinks in sibling directories.
+
+                Note: This function expects the parent directory path to
+                be set prior to invocation because filter() requires a
+                function that only takes a single argument.
+
+                Arguments:
+                file_pah : str
+                    The simlink file path to check.
+
+                Returns:
+                : boolean
+                    True if the file path is not a simlink.
+                    True if the file path is not a recursive simlink.
+                    False if the file path is a recursive simlink.
+                """
+                file_path = os.path.join(directory_path, directory_name)
+                if os.path.islink(file_path):
+                    real_path = os.path.realpath(file_path)
+                    common_path = os.path.commonpath([real_path, file_path])
+                    if real_path == common_path:
+                        return False
+                return True
+
+            # Remove recursive symlinks from the directory names list.
+            # The caller can modify the directory names list in-place
+            # (perhaps using del or slice assignment), and walk() will
+            # only recurse into the sub-directories whose names remain
+            # in the directory names list.
+            # (See https://docs.python.org/3/library/os.html#os.walk)
+            directory_names[:] = list(filter(is_not_recursive, directory_names))
+
+        # Select files that match the file name pattern.
+        for file_name in filter(is_match, file_names):
             file_path = os.path.join(directory_path, file_name)
             relative_file_path = os.path.relpath(file_path, start=start_directory)
             relative_file_paths.append(relative_file_path)
 
     return relative_file_paths
-
-
-def find_files_with_pattern_DOES_NOT_WORK(file_path_pattern, search_directory):
-    """
-    Warning: glob.glob() does not work because it always follows
-    symlinks when recursive=True.
-
-    Recursively search files in the root directory that match the
-    pattern, and return a list of matching files relative to the root
-    directory. This function works in Python 3.0+.
-
-    Arguments:
-    file_path_pattern : str
-        A wildcard pattern for the file to search for. For example,
-        "*.squashfs" or "*.txt".
-    search_directory : str
-        The root directory to search in.
-
-    Returns:
-    results : list
-        A list of matching files relative to the root directory
-    """
-
-    # logger.log_label('Find files')
-    logger.log_value('Search for pattern', file_path_pattern)
-    logger.log_value('In directory', search_directory)
-
-    # If recursive is true, the pattern "**" will match any files and
-    # zero or more directories, sub-directories and symbolic links to
-    # directories.
-    file_path_pattern = os.path.join(search_directory, '**', file_path_pattern)
-    file_paths = glob.glob(file_path_pattern, recursive=True)
-    file_paths = [os.path.relpath(file_path, start=search_directory) for file_path in file_paths]
-
-    return file_paths
-
-
-def find_files_with_pattern_python_310_DOES_NOT_WORK(file_path_pattern, search_directory):
-    """
-    Warning: glob.glob() does not work because it always follows
-    symlinks when recursive=True.
-
-    Recursively search files in the root directory that match the
-    pattern, and return a list of matching files relative to the root
-    directory. This function only works in Python 3.10+.
-
-    Arguments:
-    file_path_pattern : str
-        A wildcard pattern for the file to search for. For example,
-        "*.squashfs" or "*.txt".
-    search_directory : str
-        The root directory to search in.
-
-    Returns:
-    results : list
-        A list of matching files relative to the root directory
-    """
-
-    # logger.log_label('Find files')
-    logger.log_value('Search for pattern', file_path_pattern)
-    logger.log_value('In directory', search_directory)
-
-    # If recursive is true, the pattern "**" will match any files and
-    # zero or more directories, sub-directories and symbolic links to
-    # directories.
-    file_path_pattern = os.path.join('**', file_path_pattern)
-    file_paths = glob.glob(file_path_pattern, root_dir=search_directory, recursive=True)
-
-    return file_paths
 
 
 def find_in_file(search_regex, file_path):

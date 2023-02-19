@@ -92,28 +92,28 @@ def setup(action, old_page=None):
         # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__installed_packages', BULLET)
-        displayer.update_label('prepare_page__installed_packages_message', '...')
+        displayer.update_label('prepare_page__installed_packages_message', '...', False)
 
         # --------------------------------------------------------------
         # Create the package manifest for a typical install.
         # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_1', BULLET)
-        displayer.update_label('prepare_page__package_manifest_1_message', '...')
+        displayer.update_label('prepare_page__package_manifest_1_message', '...', False)
 
         # --------------------------------------------------------------
         # Create the package manifest for a minimal install.
         # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_2', BULLET)
-        displayer.update_label('prepare_page__package_manifest_2_message', '...')
+        displayer.update_label('prepare_page__package_manifest_2_message', '...', False)
 
         # --------------------------------------------------------------
         # Save the package manifest.
         # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__save_package_manifest', BULLET)
-        displayer.update_label('prepare_page__save_package_manifest_message', '...')
+        displayer.update_label('prepare_page__save_package_manifest_message', '...', False)
 
         # --------------------------------------------------------------
         # Determine if the Packages page should be skipped.
@@ -171,11 +171,13 @@ def enter(action, old_page=None):
             logger.log_value('Number of installed packages found', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('package', 'packages', count)
-            displayer.update_label('prepare_page__installed_packages_message', f'Found {number_text} installed {plural_text}.')
+            message = f'Found {number_text} installed {plural_text}.'
+            displayer.update_label('prepare_page__installed_packages_message', message, False)
             displayer.update_status('prepare_page__installed_packages', OK)
         else:
             logger.log_value('Error. Number of installed packages found', 0)
-            displayer.update_label('prepare_page__installed_packages_message', 'Error. No installed packages found.')
+            message = 'Error. No installed packages found.'
+            displayer.update_label('prepare_page__installed_packages_message', message, True)
             displayer.update_status('prepare_page__installed_packages', ERROR)
             return  # Stay on this page.
         time.sleep(SLEEP_0500_MS)
@@ -194,13 +196,13 @@ def enter(action, old_page=None):
             logger.log_value('Number of installed packages matching typical install list', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('package', 'packages', count)
-            displayer.update_label('prepare_page__package_manifest_1_message', f'Identified {number_text} {plural_text} for removal during a typical install.')
+            message = f'Identified {number_text} {plural_text} for removal during a typical install.'
+            displayer.update_label('prepare_page__package_manifest_1_message', message, False)
             displayer.update_status('prepare_page__package_manifest_1', OK)
         else:
             displayer.update_status('prepare_page__package_manifest_1', OPTIONAL)
-            displayer.update_label(
-                'prepare_page__package_manifest_1_message',
-                'This disk does not have a list of packages to be removed for a typical install.')
+            message = 'This disk does not have a list of packages to be removed for a typical install.'
+            displayer.update_label('prepare_page__package_manifest_1_message', message, False)
         time.sleep(SLEEP_0500_MS)
 
         # --------------------------------------------------------------
@@ -217,14 +219,14 @@ def enter(action, old_page=None):
             logger.log_value('Number of installed packages matching minimal install list', count)
             number_text = constructor.number_as_text(count)
             plural_text = constructor.get_plural('package', 'packages', count)
-            displayer.update_label('prepare_page__package_manifest_2_message', f'Identified {number_text} {plural_text} for removal during a minimal install.')
+            message = f'Identified {number_text} {plural_text} for removal during a minimal install.'
+            displayer.update_label('prepare_page__package_manifest_2_message', message, False)
             displayer.update_status('prepare_page__package_manifest_2', OK)
             # displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
         else:
             displayer.update_status('prepare_page__package_manifest_2', OPTIONAL)
-            displayer.update_label(
-                'prepare_page__package_manifest_2_message',
-                'This disk does not have a list of packages to be removed for a minimal install.')
+            message = 'This disk does not have a list of packages to be removed for a minimal install.'
+            displayer.update_label('prepare_page__package_manifest_2_message', message, False)
             # displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
         time.sleep(SLEEP_0500_MS)
 
@@ -237,10 +239,12 @@ def enter(action, old_page=None):
         is_success = save_file_system_manifest_file(model.package_details_list)
         if is_success:
             displayer.update_status('prepare_page__save_package_manifest', OK)
-            displayer.update_label('prepare_page__save_package_manifest_message', 'Saved the package manifest file.')
+            message = 'Saved the package manifest file.'
+            displayer.update_label('prepare_page__save_package_manifest_message', message, False)
         else:
             displayer.update_status('prepare_page__save_package_manifest', ERROR)
-            displayer.update_label('prepare_page__save_package_manifest_message', 'Unable to save the package manifest file.')
+            message = 'Unable to save the package manifest file.'
+            displayer.update_label('prepare_page__save_package_manifest_message', message, True)
             return  # Stay on this page.
         time.sleep(SLEEP_1000_MS)
 
@@ -592,12 +596,15 @@ def _update_kernel_details_list(kernel_details_list):
             note += 'This kernel is used to bootstrap the original disk.'
             if len(kernel_details_list) > 1:
                 if note: note += ' '  # os.linesep
-                note += 'Select this kernel if you encounter issues such as BusyBox when using other kernel versions.'
+                note += 'Select this kernel if you are unable to boot the disk using other kernel versions.'
             # if is_server_image()
             #     # if note: note += ' ' # os.linesep
             #     # note += 'Since you are customizing a server image, select this option if you encounter issues using other kernel versions.'
             #     # Set the selected index for the the original disk kernel.
             #     selected_index = index
+        else:
+            if note: note += ' '  # os.linesep
+            note += 'This kernel is installed in the <span font_family="monospace">/boot</span> directory of the Linux file system and can be used to bootstrap the customized disk.'
         new_vmlinuz_file_name = kernel_details['new_vmlinuz_file_name']
         new_initrd_file_name = kernel_details['new_initrd_file_name']
         if note: note += ' '  # os.linesep

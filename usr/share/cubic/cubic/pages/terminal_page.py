@@ -667,12 +667,12 @@ def update_status(status):
     if status:
         message = 'You are in the virtual environment.'
         displayer.update_status_image('terminal_page__status', displayer.OK)
-        displayer.update_label('terminal_page__status_label', message)
+        displayer.update_label('terminal_page__status_label', message, False)
         displayer.update_label('terminal_page__kernel_version_label', f'kernel {model.application.kernel_version}')
     else:
         message = 'You are not in the virtual environment.'
         displayer.update_status_image('terminal_page__status', displayer.ERROR)
-        displayer.update_label('terminal_page__status_label', message)
+        displayer.update_label('terminal_page__status_label', message, True)
         displayer.update_label('terminal_page__kernel_version_label', '')
 
     logger.log_value('Virtual environment status message', message)

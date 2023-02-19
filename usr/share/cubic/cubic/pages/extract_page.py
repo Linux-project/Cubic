@@ -111,7 +111,7 @@ def setup(action, old_page=None):
                               not model.status.squashfs_file_name or \
                               not model.status.casper_directory)
 
-        displayer.update_label('extract_page__analyze_original_iso_message', '...')
+        displayer.update_label('extract_page__analyze_original_iso_message', '...', False)
         displayer.update_status('extract_page__analyze_original_iso', displayer.BULLET)
 
         # --------------------------------------------------------------
@@ -121,7 +121,7 @@ def setup(action, old_page=None):
         displayer.set_visible('extract_page__copy_original_iso_files_section', not model.status.is_success_copy)
         displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', 0)
         # displayer.update_progress_bar_text('extract_page__copy_original_iso_files_progress_bar', None)
-        displayer.update_label('extract_page__copy_original_iso_files_message', '')
+        displayer.update_label('extract_page__copy_original_iso_files_message', '', False)
         displayer.update_status('extract_page__copy_original_iso_files', displayer.BULLET)
 
         # --------------------------------------------------------------
@@ -131,7 +131,7 @@ def setup(action, old_page=None):
         displayer.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
         # displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
-        displayer.update_label('extract_page__unsquashfs_message', '')
+        displayer.update_label('extract_page__unsquashfs_message', '', False)
         displayer.update_status('extract_page__unsquashfs', displayer.BULLET)
 
         displayer.reset_buttons(
@@ -228,7 +228,8 @@ def enter(action, old_page=None):
             # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
             # Success. Pause to allow the user to see the result.
-            displayer.update_label('extract_page__analyze_original_iso_message', 'Success.')
+            message = 'Success.'
+            displayer.update_label('extract_page__analyze_original_iso_message', message, False)
             displayer.update_status('extract_page__analyze_original_iso', displayer.OK)
             time.sleep(SLEEP_1000_MS)
 
@@ -341,15 +342,14 @@ def identify_iso_template():
         model.status.iso_template = None
 
     if not model.status.iso_template:
-        is_error = True
-        displayer.update_label(
-            'extract_page__analyze_original_iso_message',
-            '<span foreground="red">Error. Unable to identify information about this disk.</span>')
+        logger.log_value('Error', 'Unable to identify information about this disk')
+        # message = '<span foreground="red">Error. Unable to identify information about this disk.</span>'
+        message = 'Error. Unable to identify information about this disk'
+        displayer.update_label('extract_page__analyze_original_iso_message', message, True)
         displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
+        return True
     else:
-        is_error = False
-
-    return is_error
+        return False
 
 
 def identify_squashfs_file_path():
@@ -402,7 +402,9 @@ def identify_squashfs_file_path():
     if not model.status.squashfs_directory or \
        not model.status.squashfs_file_name:
         logger.log_value('Error', 'Unable to locate the squashfs file path')
-        displayer.update_label('extract_page__analyze_original_iso_message', '<span foreground="red">Unable to locate the compressed Linux file system.</span>')
+        # message = '<span foreground="red">Unable to locate the compressed Linux file system.</span>'
+        message = 'Unable to locate the compressed Linux file system.'
+        displayer.update_label('extract_page__analyze_original_iso_message', message, True)
         displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
         return True  # (Error)
     return False  # (No error)
@@ -439,7 +441,9 @@ def identify_casper_directory():
 
     if not model.status.casper_directory:
         logger.log_value('Error', 'Unable to locate the casper directory')
-        displayer.update_label('extract_page__analyze_original_iso_message', '<span foreground="red">Unable to locate the casper kernel files.</span>')
+        # message = '<span foreground="red">Unable to locate the casper kernel files.</span>'
+        message = 'Unable to locate the casper kernel files.'
+        displayer.update_label('extract_page__analyze_original_iso_message', message, True)
         displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
         return True  # (Error)
 
@@ -633,22 +637,24 @@ def copy_original_iso_files():
     except InterruptException as exception:
         model.status.is_success_copy = False
         if 'No space left on device' in str(exception):
-            displayer.update_label('extract_page__copy_original_iso_files_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label(
-                'extract_page__copy_original_iso_files_message',
-                '<span foreground="red">Error. Unable to copy files from the original disk image.</span>')
+            # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
+            message = 'Error. Unable to copy files from the original disk image.'
+        displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
         displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         model.status.is_success_copy = False
         if 'No space left on device' in str(exception):
-            displayer.update_label('extract_page__copy_original_iso_files_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label(
-                'extract_page__copy_original_iso_files_message',
-                '<span foreground="red">Error. Unable to copy files from the original disk image.</span>')
+            # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
+            message = 'Error. Unable to copy files from the original disk image.'
+        displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
         displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
@@ -692,22 +698,24 @@ def extract_squashfs():
     except InterruptException as exception:
         model.status.is_success_extract = False
         if 'No space left on device' in str(exception):
-            displayer.update_label('extract_page__unsquashfs_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label(
-                'extract_page__unsquashfs_message',
-                '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>')
+            # message = '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>'
+            message = 'Error. Unable to extract the compressed Linux file system.'
+        displayer.update_label('extract_page__unsquashfs_message', message, True)
         displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         model.status.is_success_extract = False
         if 'No space left on device' in str(exception):
-            displayer.update_label('extract_page__unsquashfs_message', '<span foreground="red">Error. Not enough space on the disk.</span>')
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
         else:
-            displayer.update_label(
-                'extract_page__unsquashfs_message',
-                '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>')
+            # message = '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>'
+            message = 'Error. Unable to extract the compressed Linux file system.'
+        displayer.update_label('extract_page__unsquashfs_message', message, True)
         displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)

@@ -1199,33 +1199,39 @@ def display_original_fields(fields):
 
     displayer.update_entry('project_page__original_iso_file_name_entry', fields.iso_file_name.value)
     displayer.update_status('project_page__original_iso_file_name', fields.iso_file_name.status)
-    displayer.set_entry_error('project_page__original_iso_file_name_entry', fields.iso_file_name.status == ERROR)
-    displayer.update_label('project_page__original_iso_file_name_message', fields.iso_file_name.message)
+    is_error = fields.iso_file_name.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_file_name_entry', is_error)
+    displayer.update_label('project_page__original_iso_file_name_message', fields.iso_file_name.message, is_error)
 
     displayer.update_entry('project_page__original_iso_directory_entry', fields.iso_directory.value)
     displayer.update_status('project_page__original_iso_directory', fields.iso_directory.status)
-    displayer.set_entry_error('project_page__original_iso_directory_entry', fields.iso_directory.status == ERROR)
-    displayer.update_label('project_page__original_iso_directory_message', fields.iso_directory.message)
+    is_error = fields.iso_directory.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_directory_entry', is_error)
+    displayer.update_label('project_page__original_iso_directory_message', fields.iso_directory.message, is_error)
 
     displayer.update_entry('project_page__original_iso_volume_id_entry', fields.iso_volume_id.value)
     displayer.update_status('project_page__original_iso_volume_id', fields.iso_volume_id.status)
-    displayer.set_entry_error('project_page__original_iso_volume_id_entry', fields.iso_volume_id.status == ERROR)
-    displayer.update_label('project_page__original_iso_volume_id_message', fields.iso_volume_id.message)
+    is_error = fields.iso_volume_id.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_volume_id_entry', is_error)
+    displayer.update_label('project_page__original_iso_volume_id_message', fields.iso_volume_id.message, is_error)
 
     displayer.update_entry('project_page__original_iso_release_name_entry', fields.iso_release_name.value)
     displayer.update_status('project_page__original_iso_release_name', fields.iso_release_name.status)
-    displayer.set_entry_error('project_page__original_iso_release_name_entry', fields.iso_release_name.status == ERROR)
-    displayer.update_label('project_page__original_iso_release_name_message', fields.iso_release_name.message)
+    is_error = fields.iso_release_name.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_release_name_entry', is_error)
+    displayer.update_label('project_page__original_iso_release_name_message', fields.iso_release_name.message, is_error)
 
     displayer.update_entry('project_page__original_iso_disk_name_entry', fields.iso_disk_name.value)
     displayer.update_status('project_page__original_iso_disk_name', fields.iso_disk_name.status)
-    displayer.set_entry_error('project_page__original_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
-    displayer.update_label('project_page__original_iso_disk_name_message', fields.iso_disk_name.message)
+    is_error = fields.iso_disk_name.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_disk_name_entry', is_error)
+    displayer.update_label('project_page__original_iso_disk_name_message', fields.iso_disk_name.message, is_error)
 
     displayer.update_entry('project_page__original_iso_release_notes_url_entry', fields.iso_release_notes_url.value)
     displayer.update_status('project_page__original_iso_release_notes_url', fields.iso_release_notes_url.status)
-    displayer.set_entry_error('project_page__original_iso_release_notes_url_entry', fields.iso_release_notes_url.status == ERROR)
-    displayer.update_label('project_page__original_iso_release_notes_url_message', fields.iso_release_notes_url.message)
+    is_error = fields.iso_release_notes_url.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_release_notes_url_entry', is_error)
+    displayer.update_label('project_page__original_iso_release_notes_url_message', fields.iso_release_notes_url.message, is_error)
 
     # Unblock handlers.
     displayer.idle_add(unblock_original_handlers)
@@ -1298,38 +1304,45 @@ def display_custom_fields(fields):
 
     displayer.update_entry('project_page__custom_iso_version_number_entry', fields.iso_version_number.value)
     displayer.update_status('project_page__custom_iso_version_number', fields.iso_version_number.status)
-    displayer.set_entry_error('project_page__custom_iso_version_number_entry', fields.iso_version_number.status == ERROR)
-    displayer.update_label('project_page__custom_iso_version_number_message', fields.iso_version_number.message)
+    is_error = fields.iso_version_number.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_version_number_entry', is_error)
+    displayer.update_label('project_page__custom_iso_version_number_message', fields.iso_version_number.message, is_error)
 
     displayer.update_entry('project_page__custom_iso_file_name_entry', fields.iso_file_name.value)
     displayer.update_status('project_page__custom_iso_file_name', fields.iso_file_name.status)
-    displayer.set_entry_error('project_page__custom_iso_file_name_entry', fields.iso_file_name.status == ERROR)
-    displayer.update_label('project_page__custom_iso_file_name_message', fields.iso_file_name.message)
+    is_error = fields.iso_file_name.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_file_name_entry', is_error)
+    displayer.update_label('project_page__custom_iso_file_name_message', fields.iso_file_name.message, is_error)
 
     displayer.update_entry('project_page__custom_iso_directory_entry', fields.iso_directory.value)
     displayer.update_status('project_page__custom_iso_directory', fields.iso_directory.status)
-    displayer.set_entry_error('project_page__custom_iso_directory_entry', fields.iso_directory.status == ERROR)
-    displayer.update_label('project_page__custom_iso_directory_message', fields.iso_directory.message)
+    is_error = fields.iso_directory.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_directory_entry', is_error)
+    displayer.update_label('project_page__custom_iso_directory_message', fields.iso_directory.message, is_error)
 
     displayer.update_entry('project_page__custom_iso_volume_id_entry', fields.iso_volume_id.value)
     displayer.update_status('project_page__custom_iso_volume_id', fields.iso_volume_id.status)
-    displayer.set_entry_error('project_page__custom_iso_volume_id_entry', fields.iso_volume_id.status == ERROR)
-    displayer.update_label('project_page__custom_iso_volume_id_message', fields.iso_volume_id.message)
+    is_error = fields.iso_volume_id.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_volume_id_entry', is_error)
+    displayer.update_label('project_page__custom_iso_volume_id_message', fields.iso_volume_id.message, is_error)
 
     displayer.update_entry('project_page__custom_iso_release_name_entry', fields.iso_release_name.value)
     displayer.update_status('project_page__custom_iso_release_name', fields.iso_release_name.status)
-    displayer.set_entry_error('project_page__custom_iso_release_name_entry', fields.iso_release_name.status == ERROR)
-    displayer.update_label('project_page__custom_iso_release_name_message', fields.iso_release_name.message)
+    is_error = fields.iso_release_name.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_release_name_entry', is_error)
+    displayer.update_label('project_page__custom_iso_release_name_message', fields.iso_release_name.message, is_error)
 
     displayer.update_entry('project_page__custom_iso_disk_name_entry', fields.iso_disk_name.value)
     displayer.update_status('project_page__custom_iso_disk_name', fields.iso_disk_name.status)
-    displayer.set_entry_error('project_page__custom_iso_disk_name_entry', fields.iso_disk_name.status == ERROR)
-    displayer.update_label('project_page__custom_iso_disk_name_message', fields.iso_disk_name.message)
+    is_error = fields.iso_disk_name.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_disk_name_entry', is_error)
+    displayer.update_label('project_page__custom_iso_disk_name_message', fields.iso_disk_name.message, is_error)
 
     displayer.update_entry('project_page__custom_iso_release_notes_url_entry', fields.iso_release_notes_url.value)
     displayer.update_status('project_page__custom_iso_release_notes_url', fields.iso_release_notes_url.status)
-    displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', fields.iso_release_notes_url.status == ERROR)
-    displayer.update_label('project_page__custom_iso_release_notes_url_message', fields.iso_release_notes_url.message)
+    is_error = fields.iso_release_notes_url.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', is_error)
+    displayer.update_label('project_page__custom_iso_release_notes_url_message', fields.iso_release_notes_url.message, is_error)
 
     # The field options_update_os_release is stored in "custom"
     # IsoFields instead of "options" Fields, so changes can be tracked
@@ -1460,8 +1473,9 @@ def on_changed__project_page__original_iso_file_name_entry(widget):
     original.iso_file_name.value = widget.get_text()
 
     displayer.update_status('project_page__original_iso_file_name', original.iso_file_name.status)
-    displayer.set_entry_error('project_page__original_iso_file_name_entry', original.iso_file_name.status == ERROR)
-    displayer.update_label('project_page__original_iso_file_name_message', original.iso_file_name.message)
+    is_error = original.iso_file_name.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_file_name_entry', is_error)
+    displayer.update_label('project_page__original_iso_file_name_message', original.iso_file_name.message, is_error)
 
     validate_page()
 
@@ -1473,8 +1487,9 @@ def on_changed__project_page__original_iso_directory_entry(widget):
     original.iso_directory.value = widget.get_text()
 
     displayer.update_status('project_page__original_iso_directory', original.iso_directory.status)
-    displayer.set_entry_error('project_page__original_iso_directory_entry', original.iso_directory.status == ERROR)
-    displayer.update_label('project_page__original_iso_directory_message', original.iso_directory.message)
+    is_error = original.iso_directory.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_directory_entry', is_error)
+    displayer.update_label('project_page__original_iso_directory_message', original.iso_directory.message, is_error)
 
     validate_page()
 
@@ -1486,8 +1501,9 @@ def on_changed__project_page__original_iso_volume_id_entry(widget):
     original.iso_volume_id.value = widget.get_text()
 
     displayer.update_status('project_page__original_iso_volume_id', original.iso_volume_id.status)
-    displayer.set_entry_error('project_page__original_iso_volume_id_entry', original.iso_volume_id.status == ERROR)
-    displayer.update_label('project_page__original_iso_volume_id_message', original.iso_volume_id.message)
+    is_error = original.iso_volume_id.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_volume_id_entry', is_error)
+    displayer.update_label('project_page__original_iso_volume_id_message', original.iso_volume_id.message, is_error)
 
     validate_page()
 
@@ -1499,8 +1515,9 @@ def on_changed__project_page__original_iso_release_name_entry(widget):
     original.iso_release_name.value = widget.get_text()
 
     displayer.update_status('project_page__original_iso_release_name', original.iso_release_name.status)
-    displayer.set_entry_error('project_page__original_iso_release_name_entry', original.iso_release_name.status == ERROR)
-    displayer.update_label('project_page__original_iso_release_name_message', original.iso_release_name.message)
+    is_error = original.iso_release_name.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_release_name_entry', is_error)
+    displayer.update_label('project_page__original_iso_release_name_message', original.iso_release_name.message, is_error)
 
     validate_page()
 
@@ -1512,8 +1529,9 @@ def on_changed__project_page__original_iso_disk_name_entry(widget):
     original.iso_disk_name.value = widget.get_text()
 
     displayer.update_status('project_page__original_iso_disk_name', original.iso_disk_name.status)
-    displayer.set_entry_error('project_page__original_iso_disk_name_entry', original.iso_disk_name.status == ERROR)
-    displayer.update_label('project_page__original_iso_disk_name_message', original.iso_disk_name.message)
+    is_error = original.iso_disk_name.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_disk_name_entry', is_error)
+    displayer.update_label('project_page__original_iso_disk_name_message', original.iso_disk_name.message, is_error)
 
     validate_page()
 
@@ -1525,8 +1543,9 @@ def on_changed__project_page__original_iso_release_notes_url_entry(widget):
     original.iso_release_notes_url.value = widget.get_text()
 
     displayer.update_status('project_page__original_iso_release_notes_url', original.iso_release_notes_url.status)
-    displayer.set_entry_error('project_page__original_iso_release_notes_url_entry', original.iso_release_notes_url.status == ERROR)
-    displayer.update_label('project_page__original_iso_release_notes_url_message', original.iso_release_notes_url.message)
+    is_error = original.iso_release_notes_url.status == ERROR
+    displayer.set_entry_error('project_page__original_iso_release_notes_url_entry', is_error)
+    displayer.update_label('project_page__original_iso_release_notes_url_message', original.iso_release_notes_url.message, is_error)
 
     validate_page()
 
@@ -1594,8 +1613,9 @@ def on_changed__project_page__custom_iso_version_number_entry(widget):
     custom.iso_version_number.value = widget.get_text()
 
     displayer.update_status('project_page__custom_iso_version_number', custom.iso_version_number.status)
-    displayer.set_entry_error('project_page__custom_iso_version_number_entry', custom.iso_version_number.status == ERROR)
-    displayer.update_label('project_page__custom_iso_version_number_message', custom.iso_version_number.message)
+    is_error = custom.iso_version_number.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_version_number_entry', is_error)
+    displayer.update_label('project_page__custom_iso_version_number_message', custom.iso_version_number.message, is_error)
 
     # Propagate.
 
@@ -1629,8 +1649,9 @@ def on_changed__project_page__custom_iso_file_name_entry(widget):
     custom.iso_file_name.value = widget.get_text()
 
     displayer.update_status('project_page__custom_iso_file_name', custom.iso_file_name.status)
-    displayer.set_entry_error('project_page__custom_iso_file_name_entry', custom.iso_file_name.status == ERROR)
-    displayer.update_label('project_page__custom_iso_file_name_message', custom.iso_file_name.message)
+    is_error = custom.iso_file_name.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_file_name_entry', is_error)
+    displayer.update_label('project_page__custom_iso_file_name_message', custom.iso_file_name.message, is_error)
 
     validate_page()
 
@@ -1642,8 +1663,9 @@ def on_changed__project_page__custom_iso_directory_entry(widget):
     custom.iso_directory.value = widget.get_text()
 
     displayer.update_status('project_page__custom_iso_directory', custom.iso_directory.status)
-    displayer.set_entry_error('project_page__custom_iso_directory_entry', custom.iso_directory.status == ERROR)
-    displayer.update_label('project_page__custom_iso_directory_message', custom.iso_directory.message)
+    is_error = custom.iso_directory.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_directory_entry', is_error)
+    displayer.update_label('project_page__custom_iso_directory_message', custom.iso_directory.message, is_error)
 
     validate_page()
 
@@ -1655,8 +1677,9 @@ def on_changed__project_page__custom_iso_volume_id_entry(widget):
     custom.iso_volume_id.value = widget.get_text()
 
     displayer.update_status('project_page__custom_iso_volume_id', custom.iso_volume_id.status)
-    displayer.set_entry_error('project_page__custom_iso_volume_id_entry', custom.iso_volume_id.status == ERROR)
-    displayer.update_label('project_page__custom_iso_volume_id_message', custom.iso_volume_id.message)
+    is_error = custom.iso_volume_id.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_volume_id_entry', is_error)
+    displayer.update_label('project_page__custom_iso_volume_id_message', custom.iso_volume_id.message, is_error)
 
     # Propagate.
 
@@ -1686,8 +1709,9 @@ def on_changed__project_page__custom_iso_release_name_entry(widget):
     custom.iso_release_name.value = widget.get_text()
 
     displayer.update_status('project_page__custom_iso_release_name', custom.iso_release_name.status)
-    displayer.set_entry_error('project_page__custom_iso_release_name_entry', custom.iso_release_name.status == ERROR)
-    displayer.update_label('project_page__custom_iso_release_name_message', custom.iso_release_name.message)
+    is_error = custom.iso_release_name.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_release_name_entry', is_error)
+    displayer.update_label('project_page__custom_iso_release_name_message', custom.iso_release_name.message, is_error)
 
     # Propagate.
 
@@ -1706,8 +1730,9 @@ def on_changed__project_page__custom_iso_disk_name_entry(widget):
     custom.iso_disk_name.value = widget.get_text()
 
     displayer.update_status('project_page__custom_iso_disk_name', custom.iso_disk_name.status)
-    displayer.set_entry_error('project_page__custom_iso_disk_name_entry', custom.iso_disk_name.status == ERROR)
-    displayer.update_label('project_page__custom_iso_disk_name_message', custom.iso_disk_name.message)
+    is_error = custom.iso_disk_name.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_disk_name_entry', is_error)
+    displayer.update_label('project_page__custom_iso_disk_name_message', custom.iso_disk_name.message, is_error)
 
     validate_page()
 
@@ -1719,8 +1744,9 @@ def on_changed__project_page__custom_iso_release_notes_url_entry(widget):
     custom.iso_release_notes_url.value = widget.get_text()
 
     displayer.update_status('project_page__custom_iso_release_notes_url', custom.iso_release_notes_url.status)
-    displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', custom.iso_release_notes_url.status == ERROR)
-    displayer.update_label('project_page__custom_iso_release_notes_url_message', custom.iso_release_notes_url.message)
+    is_error = custom.iso_release_notes_url.status == ERROR
+    displayer.set_entry_error('project_page__custom_iso_release_notes_url_entry', is_error)
+    displayer.update_label('project_page__custom_iso_release_notes_url_message', custom.iso_release_notes_url.message, is_error)
 
     validate_page()
 
@@ -1735,8 +1761,9 @@ def on_toggled__project_page__custom_options_update_os_release_check_button(widg
     custom.options_update_os_release.value = widget.get_active()
 
     displayer.update_status('project_page__custom_options_update_os_release', custom.options_update_os_release.status)
-    # displayer.set_check_button_error('project_page__custom_options_update_os_release', custom.options_update_os_release.status == ERROR)
-    # displayer.update_label('project_page__custom_options_update_os_release', custom.options_update_os_release.message)
+    # is_error = custom.options_update_os_release.status == ERROR
+    # displayer.set_check_button_error('project_page__custom_options_update_os_release', is_error)
+    # displayer.update_label('project_page__custom_options_update_os_release', custom.options_update_os_release.message, is_error)
 
     validate_page()
 
@@ -1974,25 +2001,29 @@ def validate_original_iso_file_name(fields):
             # The original disk is required; display an error because it
             # is not available.
             is_valid = False
-            message = '<span foreground="red">Error. The original disk image is required to copy important files and extract the Linux file system, but it is not available.</span>'
+            # message = '<span foreground="red">Error. The original disk image is required to copy important files and extract the Linux file system, but it is not available.</span>'
+            message = 'Error. The original disk image is required to copy important files and extract the Linux file system, but it is not available.'
             status = ERROR
         elif not model.status.is_success_copy:
             # The original disk is required; display an error because it
             # is not available.
             is_valid = False
-            message = '<span foreground="red">Error. The original disk image is required to copy important files, but it is not available.</span>'
+            # message = '<span foreground="red">Error. The original disk image is required to copy important files, but it is not available.</span>'
+            message = 'Error. The original disk image is required to copy important files, but it is not available.'
             status = ERROR
         elif not model.status.iso_template:
             # The original disk is required; display an error because it
             # is not available.
             is_valid = False
-            message = '<span foreground="red">Error. The original disk image is required to copy important files, but it is not available.</span>'
+            # message = '<span foreground="red">Error. The original disk image is required to copy important files, but it is not available.</span>'
+            message = 'Error. The original disk image is required to copy important files, but it is not available.'
             status = ERROR
         elif not model.status.is_success_extract:
             # The original disk is required; display an error because it
             # is not available.
             is_valid = False
-            message = '<span foreground="red">Error. The original disk image is required to extract the Linux file system, but it is not available.</span>'
+            # message = '<span foreground="red">Error. The original disk image is required to extract the Linux file system, but it is not available.</span>'
+            message = 'Error. The original disk image is required to extract the Linux file system, but it is not available.'
             status = ERROR
         else:
             # The original disk is optional; display a warning because it
@@ -2015,7 +2046,8 @@ def validate_original_iso_directory(fields):
         if is_valid:
             message = None
         else:
-            message = '<span foreground="red">Error. The original disk directory is required.</span>'
+            # message = '<span foreground="red">Error. The original disk directory is required.</span>'
+            message = 'Error. The original disk directory is required.'
     return is_valid, status, message
 
 
@@ -2032,7 +2064,8 @@ def validate_original_iso_volume_id(fields):
             # message = f'{32-len(fields.iso_volume_id.value)} of 32 characters left.'
             message = None
         else:
-            message = '<span foreground="red">Error. The original volume ID is required.</span>'
+            # message = '<span foreground="red">Error. The original volume ID is required.</span>'
+            message = 'Error. The original volume ID is required.'
     return is_valid, status, message
 
 
@@ -2144,7 +2177,8 @@ def validate_custom_iso_file_name(fields):
         if is_valid:
             message = None
         else:
-            message = '<span foreground="red">Error. Filename is required.</span>'
+            # message = '<span foreground="red">Error. Filename is required.</span>'
+            message = 'Error. Filename is required.'
     return is_valid, status, message
 
 
@@ -2162,16 +2196,19 @@ def validate_custom_iso_directory(fields):
                 status = OK
             else:
                 is_valid = False
-                message = '<span foreground="red">Error. Cannot access directory.</span>'
+                # message = '<span foreground="red">Error. Cannot access directory.</span>'
+                message = 'Error. Cannot access directory.'
                 status = ERROR
         else:
             is_valid = False
-            message = '<span foreground="red">Error. Directory not found.</span>'
+            # message = '<span foreground="red">Error. Directory not found.</span>'
+            message = 'Error. Directory not found.'
             status = ERROR
     else:
         is_valid = False
         status = ERROR
-        message = '<span foreground="red">Error. Directory is required.</span>'
+        # message = '<span foreground="red">Error. Directory is required.</span>'
+        message = 'Error. Directory is required.'
     return is_valid, status, message
 
 
@@ -2187,7 +2224,8 @@ def validate_custom_iso_volume_id(fields):
         if is_valid:
             message = f'{32-len(fields.iso_volume_id.value)} of 32 characters left.'
         else:
-            message = '<span foreground="red">Error. Volume ID is required.</span>'
+            # message = '<span foreground="red">Error. Volume ID is required.</span>'
+            message = 'Error. Volume ID is required.'
     return is_valid, status, message
 
 
@@ -2221,7 +2259,8 @@ def validate_custom_iso_disk_name(fields):
         if is_valid:
             message = None
         else:
-            message = '<span foreground="red">Error. Disk name is required.</span>'
+            # message = '<span foreground="red">Error. Disk name is required.</span>'
+            message = 'Error. Disk name is required.'
     return is_valid, status, message
 
 
@@ -2237,7 +2276,8 @@ def validate_custom_iso_release_notes_url(fields):
             message = None
             status = OK
         else:
-            message = '<span foreground="red">Error. Invalid URL format.</span>'
+            # message = '<span foreground="red">Error. Invalid URL format.</span>'
+            message = 'Error. Invalid URL format.'
             status = ERROR
     else:
         # Set True because this is an optional field.

@@ -98,7 +98,7 @@
         </child>
         <child>
           <object class="GtkTreeViewColumn" id="kernel_tab__tree_view_column_2">
-            <property name="title" translatable="yes">Boot Files</property>
+            <property name="title" translatable="yes">Kernel Files</property>
             <child>
               <object class="GtkCellRendererText" id="kernel_tab__cellrenderertext_2a">
                 <property name="height">48</property>

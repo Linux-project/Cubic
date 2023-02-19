@@ -10,6 +10,10 @@ Files: usr/share/applications/*
 Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
 
+Files: usr/share/bash-completion/cubic
+Copyright: 2022 PJ Singh
+License: /usr/share/common-licenses/Apache-2.0
+
 Files: usr/share/cubic/*
 Copyright: 2015, 2020 PJ Singh
 License: /usr/share/common-licenses/GPL-3
@@ -26,7 +30,7 @@ Files: usr/share/icons/*
 Copyright: 2015, 2020 PJ Singh
 License: CC BY-NC-SA
 
-License: CC BY-NC-SA
+CC BY-NC-SA:
 
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License
 

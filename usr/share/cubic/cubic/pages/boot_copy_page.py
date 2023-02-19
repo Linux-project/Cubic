@@ -80,7 +80,7 @@ def setup(action, old_page=None):
         # Create a file details list of files to be copied.
         file_details_list = create_file_details_list(model.selected_uris)
 
-        displayer.update_label('boot_copy_page__progress_message', message)
+        displayer.update_label('boot_copy_page__progress_message', message, False)
         displayer.update_progress_bar_text('boot_copy_page__copy_files_progress_bar', None)
         displayer.update_progress_bar_percent('boot_copy_page__copy_files_progress_bar', 0)
         displayer.update_status('boot_copy_page__progress', displayer.BLANK)
@@ -234,26 +234,30 @@ def copy_files(current_directory, uris):
                 message = f'Copying one file to {current_directory}...'
             else:
                 message = f'Copying file {(file_number+1):n} of {total_files:n} to {current_directory}...'
-            displayer.update_label('boot_copy_page__progress_message', message)
+            displayer.update_label('boot_copy_page__progress_message', message, False)
             displayer.scroll_to_tree_view_row('boot_copy_page__tree_view', file_number)
             displayer.select_tree_view_row('boot_copy_page__tree_view', file_number)
             copy_file(file_path, file_number, target_directory, total_files)
     except InterruptException as exception:
         displayer.update_status('boot_copy_page__progress', displayer.ERROR)
         if 'No space left on device' in str(exception):
-            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
+            # message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
+            message = f'Error. Unable to copy files to {current_directory}. Not enough space on the disk.'
         else:
-            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}.</span>'
-        displayer.update_label('boot_copy_page__progress_message', message)
+            # message = f'<span foreground="red">Error. Unable to copy files to {current_directory}.</span>'
+            message = f'Error. Unable to copy files to {current_directory}.'
+        displayer.update_label('boot_copy_page__progress_message', message, True)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
         displayer.update_status('boot_copy_page__progress', displayer.ERROR)
         if 'No space left on device' in str(exception):
-            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
+            # message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
+            message = f'Error. Unable to copy files to {current_directory}. Not enough space on the disk.'
         else:
-            message = f'<span foreground="red">Error. Unable to copy files to {current_directory}.</span>'
-        displayer.update_label('boot_copy_page__progress_message', message)
+            # message = f'<span foreground="red">Error. Unable to copy files to {current_directory}.</span>'
+            message = f'Error. Unable to copy files to {current_directory}.'
+        displayer.update_label('boot_copy_page__progress_message', message, True)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
@@ -261,7 +265,7 @@ def copy_files(current_directory, uris):
     number_text = constructor.number_as_text(total_files)
     plural_text = constructor.get_plural('file', 'files', total_files)
     message = f'Copied {number_text} {plural_text} to {current_directory}.'
-    displayer.update_label('boot_copy_page__progress_message', message)
+    displayer.update_label('boot_copy_page__progress_message', message, False)
     return False  # (No error)
 
 

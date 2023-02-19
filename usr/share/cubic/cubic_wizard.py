@@ -153,6 +153,7 @@ try:
     # Get the stack.
     pages = model.builder.get_object('pages')
 
+    # Setup each page.
     pattern = os.path.join(model.application.directory, 'cubic', 'pages', '*_page.ui')
     file_paths = sorted(glob.glob(pattern))
     for file_path in file_paths:
@@ -170,7 +171,7 @@ try:
         # Connect the signals to handlers in the associated module.
         model.builder.connect_signals(module)
 
-        # Add page to stack.
+        # Add the page to the stack.
         page = model.builder.get_object(module.name)
         pages.add_named(page, module.name)
 

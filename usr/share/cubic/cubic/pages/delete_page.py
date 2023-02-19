@@ -84,16 +84,16 @@ def setup(action, old_page=None):
         displayer.update_entry('delete_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
 
         displayer.update_status('delete_page__project_configuration_file', BULLET)
-        displayer.update_label('delete_page__project_configuration_file_message', '')
+        displayer.update_label('delete_page__project_configuration_file_message', '', False)
 
         displayer.update_status('delete_page__project_iso_mount_point', BULLET)
-        displayer.update_label('delete_page__project_iso_mount_point_message', '')
+        displayer.update_label('delete_page__project_iso_mount_point_message', '', False)
 
         displayer.update_status('delete_page__custom_root_directory', BULLET)
-        displayer.update_label('delete_page__custom_root_directory_message', '')
+        displayer.update_label('delete_page__custom_root_directory_message', '', False)
 
         displayer.update_status('delete_page__custom_disk_directory', BULLET)
-        displayer.update_label('delete_page__custom_disk_directory_message', '')
+        displayer.update_label('delete_page__custom_disk_directory_message', '', False)
 
         displayer.update_status('delete_page__custom_iso_and_checksum', BULLET)
 
@@ -299,7 +299,7 @@ def delete_project_files_TEST():
     displayer.update_status('delete_page__project_iso_mount_point', PROCESSING)
     time.sleep(SLEEP_1000_MS)
     displayer.update_status('delete_page__project_iso_mount_point', OK)
-    displayer.update_label('delete_page__project_iso_mount_point_message', 'Testing testing testing.')
+    displayer.update_label('delete_page__project_iso_mount_point_message', 'Testing testing testing.', False)
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
@@ -311,7 +311,7 @@ def delete_project_files_TEST():
     displayer.update_status('delete_page__project_configuration_file', PROCESSING)
     time.sleep(SLEEP_1000_MS)
     displayer.update_status('delete_page__project_configuration_file', OK)
-    displayer.update_label('delete_page__project_configuration_file_message', 'Testing testing testing.')
+    displayer.update_label('delete_page__project_configuration_file_message', 'Testing testing testing.', False)
     time.sleep(SLEEP_1000_MS)
 
     # ------------------------------------------------------------------
@@ -322,7 +322,7 @@ def delete_project_files_TEST():
     displayer.update_status('delete_page__custom_root_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
     displayer.update_status('delete_page__custom_root_directory', OK)
-    displayer.update_label('delete_page__custom_root_directory_message', 'Testing testing testing.')
+    displayer.update_label('delete_page__custom_root_directory_message', 'Testing testing testing.', False)
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
@@ -334,7 +334,7 @@ def delete_project_files_TEST():
     displayer.update_status('delete_page__custom_disk_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
     displayer.update_status('delete_page__custom_disk_directory', OK)
-    displayer.update_label('delete_page__custom_disk_directory_message', 'Testing testing testing.')
+    displayer.update_label('delete_page__custom_disk_directory_message', 'Testing testing testing.', False)
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
@@ -345,7 +345,7 @@ def delete_project_files_TEST():
     displayer.update_status('delete_page__custom_iso_and_checksum', PROCESSING)
     time.sleep(SLEEP_1000_MS)
     displayer.update_status('delete_page__custom_iso_and_checksum', OK)
-    displayer.update_label('delete_page__custom_iso_and_checksum_message', 'Testing testing testing.')
+    displayer.update_label('delete_page__custom_iso_and_checksum_message', 'Testing testing testing.', False)
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
 
@@ -371,25 +371,25 @@ def delete_project_files():
         result, exit_status, signal_status = iso_utilities.unmount(model.project.iso_mount_point)
         if not signal_status:
             displayer.update_status('delete_page__project_iso_mount_point', OK)
-            displayer.update_label('delete_page__project_iso_mount_point_message', '')
+            displayer.update_label('delete_page__project_iso_mount_point_message', '', False)
             time.sleep(SLEEP_0500_MS)
             # Delete the mount point.
             logger.log_value('Delete the original disk mount point', model.project.iso_mount_point)
             result, exit_status, signal_status = file_utilities.delete_directory(model.project.iso_mount_point)
             if not signal_status:
                 displayer.update_status('delete_page__project_iso_mount_point', OK)
-                displayer.update_label('delete_page__project_iso_mount_point_message', '')
+                displayer.update_label('delete_page__project_iso_mount_point_message', '', False)
             else:
                 displayer.update_status('delete_page__project_iso_mount_point', ERROR)
-                displayer.update_label('delete_page__project_iso_mount_point_message', 'Unable to delete the mount point.')
+                displayer.update_label('delete_page__project_iso_mount_point_message', 'Unable to delete the mount point.', True)
                 is_error = True
         else:
             displayer.update_status('delete_page__project_iso_mount_point', ERROR)
-            displayer.update_label('delete_page__project_iso_mount_point_message', 'Unable to unmount the iso.')
+            displayer.update_label('delete_page__project_iso_mount_point_message', 'Unable to unmount the iso.', True)
             is_error = True
     else:
         displayer.update_status('delete_page__project_iso_mount_point', OK)
-        displayer.update_label('delete_page__project_iso_mount_point_message', 'Nothing to unmount.')
+        displayer.update_label('delete_page__project_iso_mount_point_message', 'Nothing to unmount.', False)
 
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
@@ -406,14 +406,14 @@ def delete_project_files():
         result, exit_status, signal_status = file_utilities.delete_file(model.project.configuration.file_path)
         if not signal_status:
             displayer.update_status('delete_page__project_configuration_file', OK)
-            displayer.update_label('delete_page__project_configuration_file_message', '')
+            displayer.update_label('delete_page__project_configuration_file_message', '', False)
         else:
             displayer.update_status('delete_page__project_configuration_file', ERROR)
-            displayer.update_label('delete_page__project_configuration_file_message', 'Unable to delete this file.')
+            displayer.update_label('delete_page__project_configuration_file_message', 'Unable to delete this file.', True)
             is_error = True
     else:
         displayer.update_status('delete_page__project_configuration_file', OK)
-        displayer.update_label('delete_page__project_configuration_file_message', 'Nothing to delete. This file does not exist.')
+        displayer.update_label('delete_page__project_configuration_file_message', 'Nothing to delete. This file does not exist.', False)
 
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
@@ -430,14 +430,14 @@ def delete_project_files():
         result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_root_directory)
         if not signal_status:
             displayer.update_status('delete_page__custom_root_directory', OK)
-            displayer.update_label('delete_page__custom_root_directory_message', '')
+            displayer.update_label('delete_page__custom_root_directory_message', '', False)
         else:
             displayer.update_status('delete_page__custom_root_directory', ERROR)
-            displayer.update_label('delete_page__custom_root_directory_message', 'Unable to delete the customized Linux files.')
+            displayer.update_label('delete_page__custom_root_directory_message', 'Unable to delete the customized Linux files.', True)
             is_error = True
     else:
         displayer.update_status('delete_page__custom_root_directory', OK)
-        displayer.update_label('delete_page__custom_root_directory_message', 'Nothing to delete. These files not exist.')
+        displayer.update_label('delete_page__custom_root_directory_message', 'Nothing to delete. These files not exist.', False)
 
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)
@@ -447,7 +447,6 @@ def delete_project_files():
     # ------------------------------------------------------------------
 
     logger.log_value('Delete the custom disk directory', model.project.custom_disk_directory)
-    # displayer.update_label('delete_page__custom_disk_directory_message', model.project.custom_disk_directory)
     displayer.update_status('delete_page__custom_disk_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
 
@@ -474,15 +473,15 @@ def delete_project_files():
 
         if is_error_1 or is_error_2:
             displayer.update_status('delete_page__custom_disk_directory', ERROR)
-            displayer.update_label('delete_page__custom_disk_directory_message', 'Unable to delete the customized disk image files.')
+            displayer.update_label('delete_page__custom_disk_directory_message', 'Unable to delete the customized disk image files.', True)
             is_error = True
         else:
             displayer.update_status('delete_page__custom_disk_directory', OK)
-            displayer.update_label('delete_page__custom_disk_directory_message', '')
+            displayer.update_label('delete_page__custom_disk_directory_message', '', False)
 
     else:
         displayer.update_status('delete_page__custom_disk_directory', OK)
-        displayer.update_label('delete_page__custom_disk_directory_message', 'Nothing to delete. These files do not exist.')
+        displayer.update_label('delete_page__custom_disk_directory_message', 'Nothing to delete. These files do not exist.', False)
 
     # Pause to allow the user to see the result.
     time.sleep(SLEEP_1000_MS)

@@ -1,4 +1,20 @@
-cubic (2022.12) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+cubic (2023.02) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+
+  * Issues fixed in version 2023.02-75:
+
+  - Improved the file_utilities.find_files_with_pattern() function.
+  - Corrected the license for usr/share/bash-completion/cubic from GPL 3.0 to
+    Apache 2.0.
+  - Changed table heading from "Boot Files" to "Kernel Files" on the Options
+    page, Kernel tab.
+  - Updated notes on the Options page, Kernel tab to indicate which kernel files
+    are from the custom Linux file system's /boot directory.
+  - Use the system error color to display error message(s) on the following
+    pages: Boot Copy page, Boot tab, Delete page, Extract page, Generate page,
+    Migrate page, Prepare page, Preseed Copy page, Preseed Tab, Project page,
+    Start page, Terminal Copy page, Terminal page, Test 1 page, and Test 2 page.
+  - Differentiated file and directory error messages on the Boot tab and the
+    Preseed tab.
 
   * Issues fixed in version 2022.12-74:
 
@@ -348,4 +364,4 @@ cubic (2022.12) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 01 Dec 2022 17:52:57 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 18 Feb 2023 21:07:23 -0500

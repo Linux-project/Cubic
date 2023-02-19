@@ -128,7 +128,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="boot_tab__create_directory_message">
+          <object class="GtkLabel" id="boot_tab__create_directory_message_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="opacity">0.5</property>
@@ -301,7 +301,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="boot_tab__create_file_message">
+          <object class="GtkLabel" id="boot_tab__create_file_message_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="opacity">0.5</property>
@@ -477,7 +477,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="boot_tab__delete_directory_message">
+          <object class="GtkLabel" id="boot_tab__delete_directory_message_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="opacity">0.5</property>
@@ -656,7 +656,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="boot_tab__delete_file_message">
+          <object class="GtkLabel" id="boot_tab__delete_file_message_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="opacity">0.5</property>
@@ -997,7 +997,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="boot_tab__rename_directory_message">
+          <object class="GtkLabel" id="boot_tab__rename_directory_message_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="opacity">0.5</property>
@@ -1220,7 +1220,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="boot_tab__rename_file_message">
+          <object class="GtkLabel" id="boot_tab__rename_file_message_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="opacity">0.5</property>

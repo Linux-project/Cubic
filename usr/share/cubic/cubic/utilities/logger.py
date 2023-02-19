@@ -40,22 +40,14 @@
 
 import textwrap
 
+from cubic.constants import GREEN, YELLOW, NORMAL
+
 ########################################################################
 # Global Variables & Constants
 ########################################################################
 
 verbose = False
 total_width = 80
-
-RED = '\033[30;41m'
-GREEN = '\033[30;42m'
-BLUE = '\033[30;44m'
-YELLOW = '\033[30;43m'
-MAGENTA = '\033[30;45m'
-CYAN = '\033[30;46m'
-
-UNDERLINE = '\033[4m'
-NORMAL = '\033[0m'
 
 ########################################################################
 # Logging Functions
