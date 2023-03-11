@@ -138,6 +138,7 @@ generated.iso_release_notes_url = None
 
 options = Fields('options')
 options.update_os_release = None
+options.add_minimal_install = None
 options.boot_configurations = None
 options.compression = None
 

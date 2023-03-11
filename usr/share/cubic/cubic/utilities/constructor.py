@@ -2,7 +2,7 @@
 
 ########################################################################
 #                                                                      #
-# constructor.py                                                      #
+# constructor.py                                                       #
 #                                                                      #
 # Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #

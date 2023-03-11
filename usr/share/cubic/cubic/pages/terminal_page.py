@@ -403,6 +403,9 @@ def leave(action, new_page=None):
         lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
         result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
 
+        # Save the model values.
+        model.project.configuration.save()
+
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return

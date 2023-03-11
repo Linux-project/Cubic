@@ -212,6 +212,9 @@ def leave(action, new_page=None):
         options_page.preseed_tab.remove_tree()
         options_page.boot_tab.remove_tree()
 
+        # Save the model values.
+        model.project.configuration.save()
+
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         # Delete project files.
@@ -237,6 +240,9 @@ def leave(action, new_page=None):
 
         options_page.preseed_tab.remove_tree()
         options_page.boot_tab.remove_tree()
+
+        # Save the model values.
+        model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 

@@ -190,18 +190,17 @@ try:
     header_bar = model.builder.get_object('header_bar')
 
     # Project page
-
     widget = model.builder.get_object('project_page__test_header_bar_button')
     header_bar.add(widget)
-
     widget = model.builder.get_object('project_page__delete_header_bar_button')
     header_bar.add(widget)
-
     widget = model.builder.get_object('project_page__header_bar_box')
     header_bar.add(widget)
 
     # Packages page
-    widget = model.builder.get_object('packages_page__header_bar_box')
+    widget = model.builder.get_object('packages_page__header_bar_box_1')
+    header_bar.add(widget)
+    widget = model.builder.get_object('packages_page__header_bar_box_2')
     header_bar.add(widget)
 
     # Options page

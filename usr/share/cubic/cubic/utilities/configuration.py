@@ -31,25 +31,34 @@ Cubic versions:
 
 "Classic" 2019 Version:
   From: Release 2015.11-1  on 11/05/2015
-  To:   Release 2020.02-62 on 02/01/2020
+  Thru: Release 2020.02-62 on 02/01/2020
 
 "Release" 2020 Version:
   From: Release 2020.04-1  on 04/26/2020
-  To:   Release 2020.10-35 on 10/23/2020
+  Thru: Release 2020.10-35 on 10/23/2020
   • Renamed the "General" section to "Project"
   • Added new options and renamed options
 
 "Release" 2021 Version:
   From: Release 2020.12-36 on 12/19/2020
-  To:   Release 2022.06-72 on 06/30/2022
-  • Added the "iso_template option"
+  Thru: Release 2022.06-72 on 06/30/2022
+  • Added the "iso_template" option
   • Renamed both "iso_filename" options to "iso_file_name"
   • Renamed "iso_checksum_filename" option to "iso_checksum_file_name"
 
 "Release" 2022 Version:
-  From: Release 2022.11-73 on 11/??/2022
-  To:   Release 20??.??-?? on ??/??/20??
-  • Added ~/.config/cubic/cubic.conf
+  From: Release 2022.11-73 on 11/19/2022
+  Thru: Release 2023.03-75 on 03/02/2023
+  • Refactored this module
+  • Added the abstract Configuration class
+  • Added the derived Application class for ~/.config/cubic/cubic.conf
+  • Added the derived Project class for <project directory>/cubic.conf
+
+"Release" 2023 Version:
+  From: Release 2023.03-76 on 03/11/2023
+  Thru: Release 20__.__-__ on __/__/20__
+  • Continue to use 2022 version for Application configuration 
+  • Added the "add_minimal_install" option to the Project configuration
 """
 
 ########################################################################
@@ -69,7 +78,7 @@ import os
 from abc import ABC, abstractmethod
 from packaging import version
 
-from cubic.constants import CUBIC_VERSION_2019, CUBIC_VERSION_2020, CUBIC_VERSION_2021, CUBIC_VERSION_2022
+from cubic.constants import CUBIC_VERSION_2019, CUBIC_VERSION_2020, CUBIC_VERSION_2021, CUBIC_VERSION_2022, CUBIC_VERSION_2023
 from cubic.utilities import constructor
 from cubic.utilities import file_utilities
 from cubic.utilities import logger
@@ -639,8 +648,10 @@ class Project(Configuration):
             self._load_model_2020_layout()
         elif previous_version < version.parse(CUBIC_VERSION_2022):
             self._load_model_2021_layout()
-        else:
+        elif previous_version < version.parse(CUBIC_VERSION_2023):
             self._load_model_2022_layout()
+        else:
+            self._load_model_2023_layout()
 
     def _load_model_2019_layout(self):
         """
@@ -702,6 +713,8 @@ class Project(Configuration):
         # Options
         # Not in the original 2019 layout.
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
+        # Not in the original 2019 layout.
+        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         # Not in the original 2019 layout.
         model.options.compression = self.get_value('Options', 'compression', default=None)
@@ -760,6 +773,8 @@ class Project(Configuration):
         # Options
         # Not in the original 2020 layout.
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
+        # Not in the original 2020 layout.
+        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
 
@@ -816,6 +831,8 @@ class Project(Configuration):
         # Options
         # Not in the original 2021 layout.
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
+        # Not in the original 2021 layout.
+        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
 
@@ -870,6 +887,63 @@ class Project(Configuration):
 
         # Options
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
+        # Not in the original 2022 layout.
+        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
+        model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
+        model.options.compression = self.get_value('Options', 'compression', default=None)
+
+    def _load_model_2023_layout(self):
+        """
+        Load the project model from the 2023 configuration file layout.
+
+        This method should only be called by the _load_model() method.
+
+        Arguments:
+        self : Configuration
+            A derived class of Configuration.
+        """
+
+        logger.log_value('Load project configuration', '2022 layout from %s' % self.file_path)
+
+        # The following fields must be set prior to invoking this method:
+        # 1. model.project.directory
+
+        # Project
+        model.project.cubic_version = self.get_value('Project', 'cubic_version')
+        model.project.create_date = self.get_value('Project', 'create_date')
+        model.project.modify_date = self.get_value('Project', 'modify_date')
+        # model.project.directory = self.get_value('Project', 'directory')
+        # model.project.configuration = self
+
+        # Original
+        model.original.iso_file_name = self.get_value('Original', 'iso_file_name')
+        model.original.iso_directory = self.get_value('Original', 'iso_directory')
+        model.original.iso_volume_id = self.get_value('Original', 'iso_volume_id')[:32]
+        model.original.iso_release_name = self.get_value('Original', 'iso_release_name')
+        model.original.iso_disk_name = self.get_value('Original', 'iso_disk_name')
+
+        # Custom
+        model.custom.iso_version_number = self.get_value('Custom', 'iso_version_number')
+        model.custom.iso_file_name = self.get_value('Custom', 'iso_file_name')
+        model.custom.iso_directory = self.get_value('Custom', 'iso_directory')
+        model.custom.iso_volume_id = self.get_value('Custom', 'iso_volume_id')[:32]
+        model.custom.iso_release_name = self.get_value('Custom', 'iso_release_name')
+        model.custom.iso_disk_name = self.get_value('Custom', 'iso_disk_name')
+
+        # Status
+        model.status.is_success_copy = self.get_boolean('Status', 'is_success_copy', default=False)
+        model.status.is_success_extract = self.get_boolean('Status', 'is_success_extract', default=False)
+        model.status.iso_template = self.get_value('Status', 'iso_template', default=None)
+        # Not in the original 2022 layout.
+        model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
+        model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
+        model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
+        model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
+        model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
+
+        # Options
+        model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
+        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
 
@@ -892,7 +966,7 @@ class Project(Configuration):
         logger.log_label('Save project configuration')
 
         # Save using the current layout.
-        self._save_model_2022_layout()
+        self._save_model_2023_layout()
 
     def _save_model_2019_layout(self):
         """
@@ -949,6 +1023,8 @@ class Project(Configuration):
         # Options
         # Not in the original 2019 layout.
         self.set('Options', 'update_os_release', model.options.update_os_release)
+        # Not in the original 2019 layout.
+        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         # Not in the original 2019 layout.
         self.set('Options', 'compression', model.options.compression)
@@ -1007,6 +1083,8 @@ class Project(Configuration):
         # Options
         # Not in the original 2020 layout.
         self.set('Options', 'update_os_release', model.options.update_os_release)
+        # Not in the original 2020 layout.
+        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         self.set('Options', 'compression', model.options.compression)
 
@@ -1063,6 +1141,8 @@ class Project(Configuration):
         # Options
         # Not in the original 2021 layout.
         self.set('Options', 'update_os_release', model.options.update_os_release)
+        # Not in the original 2021 layout.
+        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         self.set('Options', 'compression', model.options.compression)
 
@@ -1114,5 +1194,59 @@ class Project(Configuration):
 
         # Options
         self.set('Options', 'update_os_release', model.options.update_os_release)
+        # Not in the original 2022 layout.
+        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
+        self.set('Options', 'boot_configurations', model.options.boot_configurations)
+        self.set('Options', 'compression', model.options.compression)
+
+    def _save_model_2023_layout(self):
+        """
+        Save the project model to the 2023 configuration file layout.
+
+        This method should only be called by the _save_model() method.
+        Be sure to specify the correct sections in the __init__()
+        method.
+
+        Arguments:
+        self : Configuration
+            A derived class of Configuration.
+        """
+
+        logger.log_value('Save project configuration', '2023 layout to %s' % self.file_path)
+
+        # Project
+        self.set('Project', 'cubic_version', model.application.cubic_version)
+        self.set('Project', 'create_date', model.project.create_date)
+        self.set('Project', 'modify_date', model.project.modify_date)
+        self.set('Project', 'directory', model.project.directory)
+
+        # Original
+        self.set('Original', 'iso_file_name', model.original.iso_file_name)
+        self.set('Original', 'iso_directory', model.original.iso_directory)
+        self.set('Original', 'iso_volume_id', model.original.iso_volume_id)
+        self.set('Original', 'iso_release_name', model.original.iso_release_name)
+        self.set('Original', 'iso_disk_name', model.original.iso_disk_name)
+
+        # Custom
+        self.set('Custom', 'iso_version_number', model.custom.iso_version_number)
+        self.set('Custom', 'iso_file_name', model.custom.iso_file_name)
+        self.set('Custom', 'iso_directory', model.custom.iso_directory)
+        self.set('Custom', 'iso_volume_id', model.custom.iso_volume_id)
+        self.set('Custom', 'iso_release_name', model.custom.iso_release_name)
+        self.set('Custom', 'iso_disk_name', model.custom.iso_disk_name)
+
+        # Status
+        self.set('Status', 'is_success_copy', model.status.is_success_copy)
+        self.set('Status', 'is_success_extract', model.status.is_success_extract)
+        self.set('Status', 'iso_template', model.status.iso_template)
+        self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
+        self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
+        self.set('Status', 'casper_directory', model.status.casper_directory)
+        self.set('Status', 'iso_checksum', model.status.iso_checksum)
+        self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
+
+        # Options
+        self.set('Options', 'update_os_release', model.options.update_os_release)
+        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         self.set('Options', 'compression', model.options.compression)

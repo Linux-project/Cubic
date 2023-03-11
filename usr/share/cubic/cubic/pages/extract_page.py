@@ -282,15 +282,11 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        model.project.configuration.save()
-
         return
 
     elif action == 'next':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
-        model.project.configuration.save()
 
         return
 
@@ -298,9 +294,10 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
+        # Save the model values.
         model.project.configuration.save()
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
 
@@ -309,8 +306,6 @@ def leave(action, new_page=None):
         logger.log_value('Error', f'{BOLD_RED}Unknown action for leave{NORMAL}')
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
-        model.project.configuration.save()
 
         return 'unknown'
 

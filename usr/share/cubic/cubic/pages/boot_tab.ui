@@ -1314,7 +1314,7 @@
     <property name="can_focus">False</property>
     <property name="icon_name">format-indent-less-symbolic</property>
   </object>
-  <object class="GtkBox" id="boot_tab__header_box">
+  <object class="GtkBox" id="boot_tab__header_bar_box">
     <property name="can_focus">False</property>
     <property name="spacing">6</property>
     <child>
@@ -1335,7 +1335,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="boot_tab__directory_header_box">
+      <object class="GtkBox" id="boot_tab__directory_header_bar_box">
         <property name="can_focus">False</property>
         <child>
           <object class="GtkButton" id="boot_tab__copy_files_header_bar_button">
@@ -1433,7 +1433,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="boot_tab__file_header_box">
+      <object class="GtkBox" id="boot_tab__file_header_bar_box">
         <property name="can_focus">False</property>
         <child>
           <object class="GtkToggleButton" id="boot_tab__rename_file_header_bar_button">

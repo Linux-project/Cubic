@@ -45,6 +45,7 @@ import re
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import EXTENSION_MANIFEST_MINIMAL_REMOVE
 from cubic.constants import EXTENSION_SIZE, EXTENSION_SQUASHFS
 from cubic.constants import FINAL_PERCENT
 from cubic.constants import GAP
@@ -232,8 +233,6 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        model.project.configuration.save()
-
         return
 
     elif action == 'error':
@@ -246,8 +245,6 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        model.project.configuration.save()
-
         return
 
     elif action == 'quit':
@@ -257,9 +254,10 @@ def leave(action, new_page=None):
         options_page.preseed_tab.remove_tree()
         options_page.boot_tab.remove_tree()
 
-        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
+        # Save the model values.
         model.project.configuration.save()
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
 
@@ -270,8 +268,6 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
-        model.project.configuration.save()
 
         return 'unknown'
 
@@ -817,6 +813,12 @@ def update_checksums():
         file_path = os.path.join(model.project.custom_disk_directory, file_path)
         exclude_paths.append(file_path)
 
+    # Exclude the *.manifest-minimal-remove file if not required.
+    if not model.options.add_minimal_install:
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        exclude_paths.append(file_path)
+
     #
     # Get file paths to include in the checksums.
     #
@@ -1096,15 +1098,30 @@ def _get_xorriso_command():
 
     complete_template = template.format(volume_id=volume_id, boot_image_directory=boot_image_directory)
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
-    command = ('xorriso '               \
-               '-as mkisofs '           \
-               '-r '                    \
-               '-J '                    \
-               '-joliet-long '          \
-               '-l '                    \
-               '-iso-level 3 '          \
-               f'{complete_template} '  \
-               f'-o "{iso_file_path}" .')
+
+    if model.options.add_minimal_install:
+        command = ('xorriso '                   \
+                   '-as mkisofs '               \
+                   '-r '                        \
+                   '-J '                        \
+                   '-joliet-long '              \
+                   '-l '                        \
+                   '-iso-level 3 '              \
+                   f'{complete_template} '      \
+                   f'-o "{iso_file_path}" .')
+    else:
+        exclude_file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
+        exclude_file_path = os.path.join(model.status.squashfs_directory, exclude_file_name)
+        command = ('xorriso '                   \
+                   '-as mkisofs '               \
+                   '-r '                        \
+                   '-J '                        \
+                   '-joliet-long '              \
+                   '-l '                        \
+                   '-iso-level 3 '              \
+                   f'-m "{exclude_file_path}" ' \
+                   f'{complete_template} '      \
+                   f'-o "{iso_file_path}" .')
 
     return command
 

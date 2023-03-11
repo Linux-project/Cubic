@@ -201,12 +201,12 @@ def leave(action, new_page=None):
         displayer.set_visible('title_label', True)
         displayer.set_visible('options_page__stack_switcher', False)
 
-        # displayer.set_visible('kernel_tab__header_box', False)
-        displayer.set_visible('preseed_tab__header_box', False)
-        displayer.set_visible('boot_tab__header_box', False)
+        # displayer.set_visible('kernel_tab__header_bar_box', False)
+        displayer.set_visible('preseed_tab__header_bar_box', False)
+        displayer.set_visible('boot_tab__header_bar_box', False)
 
+        # Update the model to acknowledge changes.
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        model.project.configuration.save()
 
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
@@ -220,8 +220,8 @@ def leave(action, new_page=None):
         displayer.set_visible('title_label', True)
         displayer.set_visible('options_page__stack_switcher', False)
 
+        # Update the model to acknowledge changes.
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        model.project.configuration.save()
 
         return
 
@@ -232,8 +232,8 @@ def leave(action, new_page=None):
         displayer.set_visible('title_label', True)
         displayer.set_visible('options_page__stack_switcher', False)
 
+        # Update the model to acknowledge changes.
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        model.project.configuration.save()
 
         return
 
@@ -246,12 +246,12 @@ def leave(action, new_page=None):
         displayer.set_visible('title_label', True)
         displayer.set_visible('options_page__stack_switcher', False)
 
-        # displayer.set_visible('kernel_tab__header_box', False)
-        displayer.set_visible('preseed_tab__header_box', False)
-        displayer.set_visible('boot_tab__header_box', False)
+        # displayer.set_visible('kernel_tab__header_bar_box', False)
+        displayer.set_visible('preseed_tab__header_bar_box', False)
+        displayer.set_visible('boot_tab__header_bar_box', False)
 
+        # Update the model to acknowledge changes.
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        model.project.configuration.save()
 
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
@@ -265,12 +265,12 @@ def leave(action, new_page=None):
         displayer.set_visible('title_label', True)
         displayer.set_visible('options_page__stack_switcher', False)
 
-        # displayer.set_visible('kernel_tab__header_box', False)
-        displayer.set_visible('preseed_tab__header_box', False)
-        displayer.set_visible('boot_tab__header_box', False)
+        # displayer.set_visible('kernel_tab__header_bar_box', False)
+        displayer.set_visible('preseed_tab__header_bar_box', False)
+        displayer.set_visible('boot_tab__header_bar_box', False)
 
+        # Update the model to acknowledge changes.
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        model.project.configuration.save()
 
         return
 
@@ -278,11 +278,14 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
+        # Update the model to acknowledge changes.
         model.options.boot_configurations = boot_tab.get_required_file_paths()
-        model.project.configuration.save()
 
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
+
+        # Save the model values.
+        model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -296,9 +299,6 @@ def leave(action, new_page=None):
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
-        model.options.boot_configurations = boot_tab.get_required_file_paths()
-        model.project.configuration.save()
-
         return 'unknown'
 
 
@@ -310,17 +310,17 @@ def leave(action, new_page=None):
 def on_map__options_page__kernel_tab(*args):
 
     logger.log_label('Show Options page, Kernel tab')
-    # displayer.set_visible('kernel_tab__header_box', True)
+    # displayer.set_visible('kernel_tab__header_bar_box', True)
 
-    # displayer.set_visible('kernel_tab__header_box', False)
-    displayer.set_visible('preseed_tab__header_box', False)
-    displayer.set_visible('boot_tab__header_box', False)
+    # displayer.set_visible('kernel_tab__header_bar_box', False)
+    displayer.set_visible('preseed_tab__header_bar_box', False)
+    displayer.set_visible('boot_tab__header_bar_box', False)
 
 
 def on_unmap__options_page__kernel_tab(*args):
 
     logger.log_value('Leave', 'Options page Kernel tab')
-    # displayer.set_visible('kernel_tab__header_box', False)
+    # displayer.set_visible('kernel_tab__header_bar_box', False)
 
     # Update the boot configurations if the selected kernel has changed.
     if kernel_tab.selected_kernel_index != model.selected_kernel_index:
@@ -336,32 +336,32 @@ def on_map__options_page__preseed_tab(*args):
 
     logger.log_label('Show Options page, Preseed tab')
 
-    # displayer.set_visible('kernel_tab__header_box', False)
-    displayer.set_visible('preseed_tab__header_box', True)
-    displayer.set_visible('boot_tab__header_box', False)
+    # displayer.set_visible('kernel_tab__header_bar_box', False)
+    displayer.set_visible('preseed_tab__header_bar_box', True)
+    displayer.set_visible('boot_tab__header_bar_box', False)
 
 
 def on_unmap__options_page__preseed_tab(*args):
 
     logger.log_value('Leave', 'Options page Preseed tab')
 
-    displayer.set_visible('preseed_tab__header_box', False)
+    displayer.set_visible('preseed_tab__header_bar_box', False)
 
 
 def on_map__options_page__boot_tab(*args):
 
     logger.log_label('Show Options page, Boot tab')
 
-    # displayer.set_visible('kernel_tab__header_box', False)
-    displayer.set_visible('preseed_tab__header_box', False)
-    displayer.set_visible('boot_tab__header_box', True)
+    # displayer.set_visible('kernel_tab__header_bar_box', False)
+    displayer.set_visible('preseed_tab__header_bar_box', False)
+    displayer.set_visible('boot_tab__header_bar_box', True)
 
 
 def on_unmap__options_page__boot_tab(*args):
 
     logger.log_value('Leave', 'Options page Boot tab')
 
-    displayer.set_visible('boot_tab__header_box', False)
+    displayer.set_visible('boot_tab__header_bar_box', False)
 
 
 ########################################################################
@@ -388,7 +388,7 @@ def setup_kernel_tab():
 
         # Add previously loaded widgets to the header bar.
         # header_bar = model.builder.get_object('header_bar')
-        # box = model.builder.get_object('kernel_tab__header_box')
+        # box = model.builder.get_object('kernel_tab__header_bar_box')
         # header_bar.add(box)
         # box.set_visible(False)
 
@@ -418,7 +418,7 @@ def setup_preseed_tab():
 
         # Add previously loaded widgets to the header bar.
         header_bar = model.builder.get_object('header_bar')
-        box = model.builder.get_object('preseed_tab__header_box')
+        box = model.builder.get_object('preseed_tab__header_bar_box')
         header_bar.add(box)
         box.set_visible(False)
 
@@ -476,7 +476,7 @@ def setup_boot_tab():
 
         # Add previously loaded widgets to the header bar.
         header_bar = model.builder.get_object('header_bar')
-        box = model.builder.get_object('boot_tab__header_box')
+        box = model.builder.get_object('boot_tab__header_bar_box')
         header_bar.add(box)
         box.set_visible(False)
 

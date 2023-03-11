@@ -40,7 +40,7 @@
 
 import textwrap
 
-from cubic.constants import GREEN, YELLOW, NORMAL
+from cubic.constants import BACKGROUD_GREEN, BACKGROUD_YELLOW, NORMAL
 
 ########################################################################
 # Global Variables & Constants
@@ -83,7 +83,7 @@ def _log_title(text):
 
     global total_width
     lines = textwrap.fill(str(text).strip(), width=total_width, initial_indent='', subsequent_indent='')
-    lines = f'{YELLOW}{lines:<{total_width}}{NORMAL}'
+    lines = f'{BACKGROUD_YELLOW}{lines:<{total_width}}{NORMAL}'
 
     print()
     print(lines)
@@ -102,7 +102,7 @@ def _log_label(text):
     print()
     for index in range(column_a_size):
         column_a_line = f'{column_a_lines[index]:<{width_column_a}}'
-        print(f'{GREEN}{column_a_line}{NORMAL}')
+        print(f'{BACKGROUD_GREEN}{column_a_line}{NORMAL}')
     print()
 
 

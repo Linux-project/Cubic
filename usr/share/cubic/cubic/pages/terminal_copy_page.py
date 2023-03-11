@@ -168,6 +168,9 @@ def leave(action, new_page=None):
         # process must be explicitly killed.
         console.exit_virtual_environment()
 
+        # Save the model values.
+        model.project.configuration.save()
+
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return

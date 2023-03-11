@@ -46,6 +46,8 @@ import re
 import string
 import time
 
+from packaging import version
+
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import EXTENSION_MANIFEST, EXTENSION_MANIFEST_MINIMAL_REMOVE, EXTENSION_MANIFEST_REMOVE
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
@@ -190,19 +192,20 @@ def enter(action, old_page=None):
         time.sleep(SLEEP_0500_MS)
         file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
         file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
-        if os.path.exists(file_path):
-            removable_packages_list = file_utilities.read_lines(file_path)
-            count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
-            logger.log_value('Number of installed packages matching typical install list', count)
-            number_text = constructor.number_as_text(count)
-            plural_text = constructor.get_plural('package', 'packages', count)
-            message = f'Identified {number_text} {plural_text} for removal during a typical install.'
-            displayer.update_label('prepare_page__package_manifest_1_message', message, False)
-            displayer.update_status('prepare_page__package_manifest_1', OK)
+        # If the file path does not exist, the packages list will be empty.
+        removable_packages_list = file_utilities.read_lines(file_path)
+        count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
+        logger.log_value('Number of installed packages matching typical install list', count)
+        number_text = constructor.number_as_text(count)
+        plural_text = constructor.get_plural('package', 'packages', count)
+        message = f'Identified {number_text} {plural_text} for removal during a typical install.'
+        if not model.ubiquity_version:
+            status = OPTIONAL
+            message += os.linesep + 'Ubiquity is not installed.'
         else:
-            displayer.update_status('prepare_page__package_manifest_1', OPTIONAL)
-            message = 'This disk does not have a list of packages to be removed for a typical install.'
-            displayer.update_label('prepare_page__package_manifest_1_message', message, False)
+            status = OK
+        displayer.update_label('prepare_page__package_manifest_1_message', message, False)
+        displayer.update_status('prepare_page__package_manifest_1', status)
         time.sleep(SLEEP_0500_MS)
 
         # --------------------------------------------------------------
@@ -213,21 +216,24 @@ def enter(action, old_page=None):
         time.sleep(SLEEP_0500_MS)
         file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
         file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
-        if os.path.exists(file_path):
-            removable_packages_list = file_utilities.read_lines(file_path)
-            count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
-            logger.log_value('Number of installed packages matching minimal install list', count)
-            number_text = constructor.number_as_text(count)
-            plural_text = constructor.get_plural('package', 'packages', count)
-            message = f'Identified {number_text} {plural_text} for removal during a minimal install.'
-            displayer.update_label('prepare_page__package_manifest_2_message', message, False)
-            displayer.update_status('prepare_page__package_manifest_2', OK)
-            # displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
+        # If the file path does not exist, the packages list will be empty.
+        removable_packages_list = file_utilities.read_lines(file_path)
+        count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
+        logger.log_value('Number of installed packages matching minimal install list', count)
+        number_text = constructor.number_as_text(count)
+        plural_text = constructor.get_plural('package', 'packages', count)
+        message = f'Identified {number_text} {plural_text} for removal during a minimal install.'
+        if not model.ubiquity_version:
+            status = OPTIONAL
+            message += os.linesep + 'Ubiquity is not installed.'
+        elif version.parse(model.ubiquity_version) < version.parse('18.04'):
+            # The minimal install option was introduced in Ubuntu 18.04.
+            status = OPTIONAL
+            message += os.linesep + f'Ubiquity {model.ubiquity_version} does not support minimal install.'
         else:
-            displayer.update_status('prepare_page__package_manifest_2', OPTIONAL)
-            message = 'This disk does not have a list of packages to be removed for a minimal install.'
-            displayer.update_label('prepare_page__package_manifest_2_message', message, False)
-            # displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
+            status = OK
+        displayer.update_label('prepare_page__package_manifest_2_message', message, False)
+        displayer.update_status('prepare_page__package_manifest_2', status)
         time.sleep(SLEEP_0500_MS)
 
         # --------------------------------------------------------------
@@ -263,6 +269,10 @@ def enter(action, old_page=None):
             # Do not show the Packages page.
             logger.log_value('Is Ubiquity installed?', 'No')
             logger.log_value('Show the Packages page?', 'No')
+            # Set the minimal install option to False.
+            # The Packages page, which sets the minimal install option, will be
+            # skipped, so the the minimal install option must be set here.
+            model.options.add_minimal_install = False
             return 'next-options'
 
     else:
@@ -295,6 +305,9 @@ def leave(action, new_page=None):
     elif action == 'quit':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # Save the model values.
+        model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 

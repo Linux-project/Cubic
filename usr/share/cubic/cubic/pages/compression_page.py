@@ -40,6 +40,7 @@
 ########################################################################
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import LZ4, LZO, GZIP, ZSTD, LZMA, XZ
 from cubic.pages import options_page
 from cubic.utilities import displayer
 from cubic.utilities import iso_utilities
@@ -53,13 +54,15 @@ from cubic.utilities import model
 name = 'compression_page'
 
 radio_buttons = {
-    'lz4': 'compression_page__radio_button_1',
-    'lzo': 'compression_page__radio_button_2',
-    'gzip': 'compression_page__radio_button_3',
-    'zstd': 'compression_page__radio_button_4',
-    'lzma': 'compression_page__radio_button_5',
-    'xz': 'compression_page__radio_button_6'
+    LZ4: 'compression_page__radio_button_1',
+    LZO: 'compression_page__radio_button_2',
+    GZIP: 'compression_page__radio_button_3',
+    ZSTD: 'compression_page__radio_button_4',
+    LZMA: 'compression_page__radio_button_5',
+    XZ: 'compression_page__radio_button_6'
 }
+
+compression = None
 
 ########################################################################
 # Navigation Functions
@@ -98,6 +101,18 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
+        # 1 = lz4
+        # 2 = lzo
+        # 3 = gzip
+        # 4 = zstd
+        # 5 = lzma
+        # 6 = xz
+
+        # Display the initial selection.
+        global compression
+        compression = model.options.compression
+        displayer.activate_radio_button(radio_buttons[compression], True)
+
         return
 
     else:
@@ -115,16 +130,6 @@ def enter(action, old_page=None):
 
     elif action == 'next':
 
-        # 1 = lz4
-        # 2 = lzo
-        # 3 = gzip
-        # 4 = zstd
-        # 5 = lzma
-        # 6 = xz
-
-        if not model.options.compression: model.options.compression = 'gzip'
-        displayer.activate_radio_button(radio_buttons[model.options.compression], True)
-
         return
 
     else:
@@ -140,17 +145,14 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        model.project.configuration.save()
-
         return
 
     elif action == 'generate':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # logger.log_value('Selected compression', model.options.compression)
-
-        model.project.configuration.save()
+        # Update the model to acknowledge changes.
+        model.options.compression = compression
 
         return
 
@@ -161,9 +163,10 @@ def leave(action, new_page=None):
         options_page.preseed_tab.remove_tree()
         options_page.boot_tab.remove_tree()
 
-        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
-
+        # Save the model values.
         model.project.configuration.save()
+
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
 
@@ -173,7 +176,7 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        model.project.configuration.save()
+        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return 'unknown'
 
@@ -193,8 +196,9 @@ def on_toggled__compression_page__radio_button(toggle_button):
     # 6 = xz
 
     if toggle_button.get_active():
-        model.options.compression = toggle_button.get_label()
-        # logger.log_value('Selected compression', model.options.compression)
+        global compression
+        compression = toggle_button.get_label()
+        logger.log_value('Selected compression', compression)
 
 
 ########################################################################

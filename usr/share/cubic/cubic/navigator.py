@@ -1032,4 +1032,12 @@ def quit():
     # • model.application.iso_directory - the current ISO directory
     model.application.configuration.save()
 
+    # Note the project configuration is persisted in the quit() function
+    # of most pages. This ensures that the project configuration is
+    # written to disk only once. Exceptions: The project configuration
+    # is not saved on the Start page or the Delete page. The updated
+    # project configuration is saved on the Migrate page. On the Project
+    # page, the configuration is only saved when going back to the
+    # Project page from the Extract page or the Terminal page.
+
     displayer.main_quit()

@@ -45,6 +45,7 @@ from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import FINAL_PERCENT
 from cubic.constants import SLEEP_1000_MS
 from cubic.navigator import InterruptException
+from cubic.pages import options_page
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import iso_utilities
@@ -157,6 +158,15 @@ def leave(action, new_page=None):
     elif action == 'quit':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # Update the model to acknowledge changes.
+        model.options.boot_configurations = options_page.boot_tab.get_required_file_paths()
+
+        options_page.preseed_tab.remove_tree()
+        options_page.boot_tab.remove_tree()
+
+        # Save the model values.
+        model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 

@@ -58,6 +58,8 @@ name = 'packages_page'
 undo_index = 0
 undo_list = None
 
+add_minimal_install = None
+
 ########################################################################
 # Navigation Functions
 ########################################################################
@@ -82,7 +84,21 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        displayer.set_visible('packages_page__header_bar_box', True)
+        displayer.set_visible('packages_page__header_bar_box_1', True)
+
+        # The minimal install option was introduced in Ubuntu 18.04.
+        logger.log_value('The installed version of Ubiquity is', model.ubiquity_version)
+        if version.parse(model.ubiquity_version) >= version.parse('18.04'):
+            # The ubiquity version supports minimal installs.
+            # Show the minimal install switch.
+            logger.log_value('Show the the minimal install switch?', 'Yes')
+            displayer.set_visible('packages_page__header_bar_box_2', True)
+        else:
+            # The ubiquity version does not support minimal installs.
+            # Hide the minimal install switch.
+            logger.log_value('Show the the minimal install switch?', 'No')
+            displayer.set_visible('packages_page__header_bar_box_2', False)
+
         displayer.set_visible('options_page__stack_switcher', False)
 
         return
@@ -106,8 +122,7 @@ def setup(action, old_page=None):
             is_next_sensitive=True,
             is_next_visible=True)
 
-        displayer.set_visible('packages_page__header_bar_box', True)
-        displayer.set_visible('options_page__stack_switcher', False)
+        displayer.set_visible('packages_page__header_bar_box_1', True)
 
         displayer.set_sensitive('packages_page__redo_header_bar_button', False)
         displayer.set_sensitive('packages_page__revert_header_bar_button', False)
@@ -115,14 +130,42 @@ def setup(action, old_page=None):
 
         # The minimal install option was introduced in Ubuntu 18.04.
         logger.log_value('The installed version of Ubiquity is', model.ubiquity_version)
+        # Display the initial selection.
+        global add_minimal_install
         if version.parse(model.ubiquity_version) >= version.parse('18.04'):
-            # Show the minimal install check box column.
-            logger.log_value('Show the minimal install column?', 'Yes')
-            displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
+            # Initialize the minimal install option.
+            add_minimal_install = model.options.add_minimal_install
+            if add_minimal_install:
+                # Activate the the minimal install switch.
+                logger.log_value('Activate the minimal install switch?', 'Yes')
+                displayer.activate_switch('packages_page__minimal_install_header_bar_switch', True)
+                # Show the minimal install check box column.
+                logger.log_value('Show the minimal install column?', 'Yes')
+                displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
+            else:
+                # Deactivate the the minimal install switch.
+                logger.log_value('Activate the minimal install switch?', 'No')
+                displayer.activate_switch('packages_page__minimal_install_header_bar_switch', False)
+                # Hide the minimal install check box column.
+                logger.log_value('Show the minimal install column?', 'No')
+                displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
+            # The ubiquity version supports minimal installs.
+            # Show the minimal install switch.
+            logger.log_value('Show the minimal install switch?', 'Yes')
+            displayer.set_visible('packages_page__header_bar_box_2', True)
         else:
-            # Do not show the minimal install check box column.
-            logger.log_value('Show the minimal install column?', 'Yes')
+            # Set the minimal install option to False.
+            add_minimal_install = False
+            # The ubiquity version does not  support minimal installs.
+            # Hide the minimal install switch.
+            logger.log_value('Show the minimal install switch?', 'No')
+            displayer.set_visible('packages_page__header_bar_box_2', False)
+            # Deactivate the the minimal install switch.
+            displayer.activate_switch('packages_page__minimal_install_header_bar_switch', False)
+            # Hide the minimal install check box column.
             displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
+
+        displayer.set_visible('options_page__stack_switcher', False)
 
         return
 
@@ -168,7 +211,8 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('packages_page__header_bar_box', False)
+        displayer.set_visible('packages_page__header_bar_box_1', False)
+        displayer.set_visible('packages_page__header_bar_box_2', False)
 
         return
 
@@ -176,35 +220,29 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        displayer.set_visible('packages_page__header_bar_box', False)
+        displayer.set_visible('packages_page__header_bar_box_1', False)
+        displayer.set_visible('packages_page__header_bar_box_2', False)
 
-        # Update *.manifest-remove file.
-        # Always save the *.manifest-remove file, even if there
-        # are no packages to remove. If the file does not exist an empty
-        # file will be created.
-        try:
-            file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
-            file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
-            removable_packages_list = create_typical_removable_packages_list()
-            logger.log_label('Update the typical removable packages list')
-            file_utilities.write_lines(removable_packages_list, file_path)
-        except Exception as exception:
-            # TODO: Show an error.
-            return 'error'  # Stay on this page.
+        # Save the typical install *.manifest-remove file, even if there are
+        # no packages to remove. If the file does not exist an empty file will
+        # be created.
+        logger.log_label('Update the typical removable packages list')
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        removable_packages_list = create_typical_removable_packages_list()
+        file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)
 
-        # Update *.manifest-minimal-remove file.
-        # Always save the *.manifest-minimal-remove file, even if there
-        # are no packages to remove. If the file does not exist an empty
+        # Save the minimal install *.manifest-minimal-remove file, even if
+        # there are no packages to remove. If the file does not exist an empty
         # file will be created.
-        try:
-            file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-            file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
-            removable_packages_list = create_minimal_removable_packages_list()
-            logger.log_label('Update the minimal removable packages list')
-            file_utilities.write_lines(removable_packages_list, file_path)
-        except Exception as exception:
-            # TODO: Show an error.
-            return 'error'  # Stay on this page.
+        logger.log_label('Update the minimal removable packages list')
+        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        removable_packages_list = create_minimal_removable_packages_list()
+        file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)
+
+        # Update the model to acknowledge changes.
+        model.options.add_minimal_install = add_minimal_install
 
         return
 
@@ -232,6 +270,9 @@ def leave(action, new_page=None):
     elif action == 'quit':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # Save the model values.
+        model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -475,6 +516,21 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
         f' Length: {len(undo_list)},'
         f' Index: {undo_index}')
     """
+
+
+def on_state_set__packages_page__minimal_install_header_bar_switch(widget, is_active):
+
+    global add_minimal_install
+    if is_active:
+        # Show the minimal install check box column.
+        add_minimal_install = True
+        logger.log_value('Show the minimal install column?', 'Yes')
+        displayer.set_column_visible('packages_page__remove_2_tree_view_column', True)
+    else:
+        # Do not show the minimal install check box column.
+        add_minimal_install = False
+        logger.log_value('Show the minimal install column?', 'No')
+        displayer.set_column_visible('packages_page__remove_2_tree_view_column', False)
 
 
 def on_toggled__packages_page__remove_1_check_button(widget, row):

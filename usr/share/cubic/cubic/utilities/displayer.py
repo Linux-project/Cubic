@@ -909,6 +909,23 @@ def activate_check_button(check_button_name, is_active):
     GLib.idle_add(Gtk.CheckButton.set_active, check_button, is_active)
 
 
+def activate_switch(switch_name, is_active):
+    """
+    This function is used on the Packages page.
+
+    Activate or deactivate the switch.
+
+    Arguments:
+    switch_name : str
+        The name of the switch.
+    is_active : bool
+        True to set the switch active. False to set it inactive.
+    """
+
+    switch = model.builder.get_object(switch_name)
+    GLib.idle_add(Gtk.Switch.set_active, switch, is_active)
+
+
 def update_check_button_label(check_button_name, label):
     """
     This function is used on the Delete page.

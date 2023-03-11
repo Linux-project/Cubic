@@ -142,7 +142,7 @@
     </child>
   </object>
   <!--
-  <object class="GtkBox" id="kernel_tab__header_box">
+  <object class="GtkBox" id="kernel_tab__header_bar_box">
     <property name="can_focus">False</property>
     <property name="spacing">6</property>
     <child>

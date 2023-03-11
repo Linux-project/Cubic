@@ -55,6 +55,7 @@ import urllib
 from cubic.choosers import directory_chooser
 from cubic.choosers import iso_image_chooser
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import GZIP
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.navigator import handle_navigation
 from cubic.utilities.fields import Fields, IsoFields, IsoFieldsHistory
@@ -103,9 +104,17 @@ def setup(action, old_page=None):
 
     if action == 'back':
 
+        # Save the model values because they may have changed.
+        model.project.configuration.save()
+
         # Set status from the model, because values may have changed on
-        # subsequent pages (Extract page, Options page).
+        # subsequent pages (Extract page, Generate page).
         status = initialize_status_from_model()
+
+        # Set options from the model, because values may have changed on
+        # subsequent pages (Packages page, Options page,
+        # Compression page).
+        options = initialize_options_from_model()
 
         # Validation is not required since nothing changed.
         # validate_page()
@@ -230,9 +239,13 @@ def setup(action, old_page=None):
         original = None
         custom = None
 
-        if os.path.isfile(model.project.configuration.file_path):
+        # if os.path.isfile(model.project.configuration.file_path):
+        if model.project.modify_date:
 
             # There is a saved configuration.
+            print('- ' * 80)
+            print('There is a saved configuration.')
+            print('- ' * 80)
 
             configured_original_iso_file_path = os.path.join(model.original.iso_directory, model.original.iso_file_name)
             mount_original_iso(configured_original_iso_file_path)
@@ -272,6 +285,9 @@ def setup(action, old_page=None):
         else:
 
             # There is no saved configuration.
+            print('- ' * 80)
+            print('There is no saved configuration.')
+            print('- ' * 80)
 
             # Set the original and custom ISO release notes URLs on the
             # model.
@@ -504,11 +520,12 @@ def leave(action, new_page=None):
 
         # Options
         model.options.update_os_release = custom.options_update_os_release.value
+        model.options.add_minimal_install = options.add_minimal_install
         model.options.boot_configurations = options.boot_configurations
         model.options.compression = options.compression
 
         # Save the model values.
-        model.project.configuration.save()
+        ### model.project.configuration.save()
         save_iso_release_notes_url()
 
         if custom.is_valid and custom != custom_history.current():
@@ -564,11 +581,12 @@ def leave(action, new_page=None):
 
         # Options
         model.options.update_os_release = custom.options_update_os_release.value
+        model.options.add_minimal_install = options.add_minimal_install
         model.options.boot_configurations = options.boot_configurations
         model.options.compression = options.compression
 
         # Save the model values.
-        model.project.configuration.save()
+        ### model.project.configuration.save()
         save_iso_release_notes_url()
 
         return
@@ -582,6 +600,10 @@ def leave(action, new_page=None):
         displayer.set_sensitive('project_page__test_header_bar_button', False)
 
         displayer.set_sensitive('project_page__delete_header_bar_button', False)
+
+        # Do not save the model values because they must be acknowledged first.
+        # model.project.configuration.save()
+        # save_iso_release_notes_url()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -643,7 +665,8 @@ def selected_original_iso_file_path(original_iso_file_path):
 
         # A valid ISO file was supplied.
 
-        if os.path.isfile(model.project.configuration.file_path):
+        # if os.path.isfile(model.project.configuration.file_path):
+        if model.project.modify_date:
 
             # There is a saved configuration.
 
@@ -839,8 +862,9 @@ def initialize_options():
     # in custom_history to permit undo and redo. This value is
     # initialized to True in the initialize_custom() function.
     # fields.update_os_release = True
+    fields.add_minimal_install = True
     fields.boot_configurations = []
-    fields.compression = None
+    fields.compression = GZIP
 
     return fields
 
@@ -1128,6 +1152,7 @@ def initialize_options_from_model():
     """
     Initialize the following options fields from the model.
       - (options.update_os_release)
+      - add_minimal_install
       - boot_configurations
       - compression
     """
@@ -1142,6 +1167,7 @@ def initialize_options_from_model():
     # initialized from the model in the initialize_custom_from_model()
     # function.
     # fields.update_os_release = model.options.update_os_release
+    fields.add_minimal_install = model.options.add_minimal_install
     fields.boot_configurations = model.options.boot_configurations
     fields.compression = model.options.compression
 
@@ -1753,7 +1779,7 @@ def on_changed__project_page__custom_iso_release_notes_url_entry(widget):
 
 def on_toggled__project_page__custom_options_update_os_release_check_button(widget):
 
-    logger.log_label('Custom options_update os release changed')
+    logger.log_label('Custom options update OS release changed')
 
     # The field options_update_os_release is stored in "custom"
     # IsoFields instead of "options" Fields, so changes can be tracked

@@ -100,26 +100,31 @@ CUBIC_COPYRIGHT = '© 2015, 2020 PJ Singh'
 #
 # "Classic" 2019 Version:
 #   From: Release 2015.11-1  on 11/05/2015
-#   To:   Release 2020.02-62 on 02/01/2020
+#   Thru: Release 2020.02-62 on 02/01/2020
 #
 # "Release" 2020 Version:
 #   From: Release 2020.04-1  on 04/26/2020
-#   To:   Release 2020.10-35 on 10/23/2020
+#   Thru: Release 2020.10-35 on 10/23/2020
 #
 # "Release" 2021 Version:
 #   From: Release 2020.12-36 on 12/19/2020
-#   To:   Release 2022.06-72 on 06/30/2022
+#   Thru: Release 2022.06-72 on 06/30/2022
 #
 # "Release" 2022 Version:
-#   From: Release 2022.11-73 on 11/??/2022
-#   To:   Release 20??.??-?? on ??/??/20??
+#   From: Release 2022.11-73 on 11/19/2022
+#   Thru: Release 2023.03-75 on 03/02/2023
+#
+# "Release" 2023 Version:
+#   From: Release 2023.03-76 on 03/11/2023
+#   Thru: Release 20__.__-__ on __/__/20__
 
 # Cubic release version numbers in YYYY.MM.RR format.
 CUBIC_VERSION_0000 = '0000.00.00'  # Unknown version
 CUBIC_VERSION_2019 = '2015.11.1'  # Releases 2015.11-1 thru 2020.02-62
 CUBIC_VERSION_2020 = '2020.04.1'  # Releases 2020.04-1 thru 2020.10-35
-CUBIC_VERSION_2021 = '2020.12.36'  # Releases 2020.12-36 thru 2022.06-72
-CUBIC_VERSION_2022 = '2022.11.73'  # Releases 2020.11-73 thru present
+CUBIC_VERSION_2021 = '2021.12.36'  # Releases 2021.12-36 thru 2022.06-72
+CUBIC_VERSION_2022 = '2022.11.73'  # Releases 2022.11-73 thru 2023.02-75
+CUBIC_VERSION_2023 = '2023.03.76'  # Releases 2023.03-76 thru present
 
 ###############################################################
 # File Sizes
@@ -289,6 +294,17 @@ FILE_SYSTEM_TYPES = {
 EXCLUDED_FILE_SYSTEM_TYPES = ['exfat', 'fat12', 'fat16', 'fat32', 'fuseblk', 'ntfs', 'vfat', 'fuse.gvfsd-fuse', 'fuse.sshfs']
 
 ########################################################################
+# Compression Algorithms
+########################################################################
+
+LZ4 = 'lz4'
+LZO = 'lzo'
+GZIP = 'gzip'
+ZSTD = 'zstd'
+LZMA = 'lzma'
+XZ = 'xz'
+
+########################################################################
 # Progress
 ########################################################################
 
@@ -322,6 +338,14 @@ BOLD_BLUE = '\033[1;34m'
 BOLD_MAGENTA = '\033[1;35m'
 BOLD_CYAN = '\033[1;36m'
 # BOLD_GRAY = '\033[1;90m'
+
+BACKGROUD_RED = '\033[30;41m'
+BACKGROUD_GREEN = '\033[30;42m'
+BACKGROUD_YELLOW = '\033[30;43m'
+BACKGROUD_BLUE = '\033[30;44m'
+BACKGROUD_MAGENTA = '\033[30;45m'
+BACKGROUD_CYAN = '\033[30;46m'
+# BACKGROUD_GRAY = '\033[0;100m'
 
 UNDERLINE = '\033[4m'
 NORMAL = '\033[0m'

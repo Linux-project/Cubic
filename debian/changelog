@@ -1,4 +1,17 @@
-cubic (2023.02) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+cubic (2023.03) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+
+  * Issues fixed in version 2023.03-76:
+
+  - Enhancement GH:#143, Please stop creating
+    "filesystem.manifest-minimal-remove".
+  - Fixed Bug GH:#167, The compression algorithm resets to "gzip" after clicking
+    back to the Project page.
+  - Enhancement GH:#171, Minimize the number of times the cubic.conf project
+    configuration file is saved.
+  - Fixed issue where the required boot configurations (i.e. the filtered list
+    of boot configuration files) were not updated in the project configuration
+    file, if the user quit Cubic while on the Boot Copy page.
+  - Fixed logger output background colors for yellow titles and green labels.
 
   * Issues fixed in version 2023.02-75:
 
@@ -364,4 +377,4 @@ cubic (2023.02) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 18 Feb 2023 21:07:23 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 11 Mar 2023 10:51:41 -0500
