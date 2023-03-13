@@ -175,7 +175,7 @@ LOCK_FILE_NAME = '.#custom-root.lck'
 # • /casper/filesystem.squashfs
 
 # Used to select a squashfs file if multiple files are discovered.
-SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs']
+SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs', 'minimal.squashfs']
 
 # This list is used to select the correct casper directory in
 # extract_page.identify_casper_directory() if multiple casper files are
@@ -216,12 +216,11 @@ SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs']
 # Used to select a casper directory if multiple directories are discovered.
 CASPER_DIRECTORIES = ['casper', 'live', 'boot']
 
-EXTENSION_MANIFEST = 'manifest'
-EXTENSION_MANIFEST_MINIMAL_REMOVE = 'manifest-minimal-remove'
-EXTENSION_MANIFEST_REMOVE = 'manifest-remove'
-EXTENSION_SIZE = 'size'
-EXTENSION_SQUASHFS_GPG = 'squashfs.gpg'
 EXTENSION_SQUASHFS = 'squashfs'
+FILE_SYSTEM_MANIFEST = 'filesystem.manifest'
+FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE = 'filesystem.manifest-minimal-remove'
+FILE_SYSTEM_MANIFEST_REMOVE = 'filesystem.manifest-remove'
+FILE_SYSTEM_SIZE = 'filesystem.size'
 
 ########################################################################
 # Status

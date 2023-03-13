@@ -57,7 +57,7 @@ import time
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CASPER_DIRECTORIES, SQUASHFS_FILE_NAMES
-from cubic.constants import EXTENSION_MANIFEST, EXTENSION_SIZE, EXTENSION_SQUASHFS, EXTENSION_SQUASHFS_GPG
+from cubic.constants import EXTENSION_SQUASHFS
 from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import SLEEP_1000_MS
 from cubic.navigator import InterruptException
@@ -616,10 +616,12 @@ def copy_original_iso_files():
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
         ' --exclude=".disk/release_notes_url"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SIZE}"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS_GPG}"')
+        f' --exclude="/{model.status.squashfs_directory}/*.squashfs"'
+        f' --exclude="/{model.status.squashfs_directory}/*.*.squashfs"'
+        f' --exclude="/{model.status.squashfs_directory}/*.manifest"'
+        f' --exclude="/{model.status.squashfs_directory}/*.size"'
+        f' --exclude="/{model.status.squashfs_directory}/*.gpg"'
+        f' --exclude="/{model.status.squashfs_directory}/*.yaml"')
 
     # The progress callback function.
     def progress_callback(percent):

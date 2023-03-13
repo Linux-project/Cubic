@@ -49,7 +49,7 @@ import time
 from packaging import version
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import EXTENSION_MANIFEST, EXTENSION_MANIFEST_MINIMAL_REMOVE, EXTENSION_MANIFEST_REMOVE
+from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0125_MS, SLEEP_0250_MS, SLEEP_0500_MS, SLEEP_1000_MS
 from cubic.utilities import constructor
@@ -190,8 +190,7 @@ def enter(action, old_page=None):
 
         displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_REMOVE)
         # If the file path does not exist, the packages list will be empty.
         removable_packages_list = file_utilities.read_lines(file_path)
         count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
@@ -214,8 +213,7 @@ def enter(action, old_page=None):
 
         displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
         # If the file path does not exist, the packages list will be empty.
         removable_packages_list = file_utilities.read_lines(file_path)
         count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
@@ -1582,8 +1580,7 @@ def save_file_system_manifest_file(package_details_list):
 
     logger.log_label('Create new file system manifest file')
 
-    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}'
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST)
     logger.log_value('Write file system manifest to', file_path)
     with open(file_path, 'w') as file:
         for package_details in package_details_list[:-1]:

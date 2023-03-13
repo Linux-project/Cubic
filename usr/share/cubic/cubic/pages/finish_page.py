@@ -123,7 +123,7 @@ def setup(action, old_page=None):
 
     elif action == 'next':
 
-        # TODO: FOR TESTING ONLY
+        # For testing only.
 
         displayer.update_entry('finish_page__custom_iso_version_number_entry', model.custom.iso_version_number)
         displayer.update_entry('finish_page__custom_iso_file_name_entry', model.custom.iso_file_name)
@@ -172,7 +172,7 @@ def enter(action, old_page=None):
 
     elif action == 'next':
 
-        # TODO: FOR TESTING ONLY
+        # For testing only.
 
         return
 

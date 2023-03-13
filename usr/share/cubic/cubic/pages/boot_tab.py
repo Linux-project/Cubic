@@ -297,6 +297,26 @@ class BootTab(FilesTab):
                         logger.log_value('%d. Added the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
+
+                    # layerfs-path
+                    # Added to support Ubuntu 22.03.
+                    match = re.search(r'(?i:LAYERFS-PATH=\S+)', line)
+                    if match:
+                        # Remove layerfs-path=minimal.standard.live.squashfs.
+                        self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
+                        update_count += 1
+                        logger.log_value('%d. Removed the layerfs path on line' % update_count, line_number)
+                        if model.ubiquity_version:
+                            # If Ubiquity is installed, replace with
+                            # maybe-ubiquity
+                            text = 'maybe-ubiquity'
+                            text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(0))
+                            source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
+                            update_count += 1
+                            logger.log_value('%d. Added maybe-ubiquity on line' % update_count, line_number)
+                            # Get the current line because it has changed.
+                            line = self.get_line_text(source_buffer, line_number)
+
                 else:
                     logger.log_value('Warning', 'Expected the vmlinuz path on line %d, but it was not found' % line_number)
 

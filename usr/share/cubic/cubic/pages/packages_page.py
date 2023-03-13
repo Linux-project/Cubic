@@ -41,7 +41,7 @@ import os
 
 from packaging import version
 
-from cubic.constants import EXTENSION_MANIFEST_MINIMAL_REMOVE, EXTENSION_MANIFEST_REMOVE
+from cubic.constants import FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.utilities import displayer
 from cubic.utilities import file_utilities
@@ -223,21 +223,19 @@ def leave(action, new_page=None):
         displayer.set_visible('packages_page__header_bar_box_1', False)
         displayer.set_visible('packages_page__header_bar_box_2', False)
 
-        # Save the typical install *.manifest-remove file, even if there are
-        # no packages to remove. If the file does not exist an empty file will
-        # be created.
+        # Save the typical install filesystem.manifest-remove file, even
+        # if there are no packages to remove. If the file does not exist
+        # an empty file will be created.
         logger.log_label('Update the typical removable packages list')
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_REMOVE)
         removable_packages_list = create_typical_removable_packages_list()
         file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)
 
-        # Save the minimal install *.manifest-minimal-remove file, even if
-        # there are no packages to remove. If the file does not exist an empty
-        # file will be created.
+        # Save the minimal install filesystem.manifest-minimal-remove
+        # file, even if there are no packages to remove. If the file
+        # does not exist an empty file will be created.
         logger.log_label('Update the minimal removable packages list')
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
         removable_packages_list = create_minimal_removable_packages_list()
         file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)
 
@@ -332,10 +330,8 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
 
         if column == 0:
             list_store[row][0] = not list_store[row][0]
-            # Even though the minimal check button column may not be
-            # visible (if '*.manifest-minimal-remove' does not exist),
-            # still update the list_store. This is a little inefficient,
-            # but does no harm.
+            # Update the list store even though the minimal check button
+            # column may not be visible.
             if list_store[row][0]:
                 # Backup original minimal check button value
                 list_store[row][2] = list_store[row][1]
@@ -406,10 +402,8 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
-        # Even though the minimal check button column may not be
-        # visible (if '*.manifest-minimal-remove' does not exist),
-        # still update the list_store. This is a little inefficient,
-        # but does no harm.
+        # Update the list store even though the minimal check button
+        # column may not be visible.
         if list_store[row][0]:
             # Backup original minimal check button value
             list_store[row][2] = list_store[row][1]
@@ -478,10 +472,8 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
 
     if column == 0:
         list_store[row][0] = not list_store[row][0]
-        # Even though the minimal check button column may not be
-        # visible (if '*.manifest-minimal-remove' does not exist),
-        # still update the list_store. This is a little inefficient,
-        # but does no harm.
+        # Update the list store even though the minimal check button
+        # column may not be visible.
         if list_store[row][0]:
             # Backup original minimal check button value
             list_store[row][2] = list_store[row][1]
@@ -563,10 +555,8 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
 
     list_store[row][0] = not list_store[row][0]
 
-    # Even though the minimal check button column may not be
-    # visible (if '*.manifest-minimal-remove' does not exist),
-    # still update the list_store. This is a little inefficient,
-    # but does no harm.
+    # Update the list store even though the minimal check button
+    # column may not be visible.
     if list_store[row][0]:
         # Backup original minimal check button value
         list_store[row][2] = list_store[row][1]

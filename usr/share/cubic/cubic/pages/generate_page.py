@@ -44,9 +44,10 @@ import os
 import re
 import time
 
+from packaging import version
+
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import EXTENSION_MANIFEST_MINIMAL_REMOVE
-from cubic.constants import EXTENSION_SIZE, EXTENSION_SQUASHFS
+from cubic.constants import EXTENSION_SQUASHFS, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE, FILE_SYSTEM_SIZE
 from cubic.constants import FINAL_PERCENT
 from cubic.constants import GAP
 from cubic.constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
@@ -634,8 +635,7 @@ def update_file_system_size():
 
     # Write the file system size.
     try:
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SIZE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_SIZE)
         file_utilities.write_line(str(size_in_bytes), file_path)
     except InterruptException as exception:
         message = 'Error. Unable to save file system size.'
@@ -813,11 +813,25 @@ def update_checksums():
         file_path = os.path.join(model.project.custom_disk_directory, file_path)
         exclude_paths.append(file_path)
 
-    # Exclude the *.manifest-minimal-remove file if not required.
-    if not model.options.add_minimal_install:
-        file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
+    # Exclude the filesystem manifest remove files, as necessary.
+    # The minimal install option was introduced in Ubuntu 18.04.
+    if not model.ubiquity_version:
+        # Exclude the filesystem.manifest-remove.
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_REMOVE)
         exclude_paths.append(file_path)
+        # Exclude the filesystem.manifest-minimal-remove.
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+        exclude_paths.append(file_path)
+    elif version.parse(model.ubiquity_version) < version.parse('18.04'):
+        # Exclude the filesystem.manifest-minimal-remove.
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+        exclude_paths.append(file_path)
+    elif not model.options.add_minimal_install:
+        # Exclude the filesystem.manifest-minimal-remove.
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+        exclude_paths.append(file_path)
+
+    logger.log_value('Exclude files from the checksum', exclude_paths)
 
     #
     # Get file paths to include in the checksums.
@@ -1099,28 +1113,58 @@ def _get_xorriso_command():
     complete_template = template.format(volume_id=volume_id, boot_image_directory=boot_image_directory)
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
 
-    if model.options.add_minimal_install:
-        command = ('xorriso '                   \
-                   '-as mkisofs '               \
-                   '-r '                        \
-                   '-J '                        \
-                   '-joliet-long '              \
-                   '-l '                        \
-                   '-iso-level 3 '              \
-                   f'{complete_template} '      \
+    # Exclude the filesystem manifest remove files, as necessary.
+    # The minimal install option was introduced in Ubuntu 18.04.
+    exclude_file_path_1 = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_REMOVE)
+    exclude_file_path_2 = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+
+    if not model.ubiquity_version:
+        # Exclude the filesystem.manifest-remove.
+        # Exclude the filesystem.manifest-minimal-remove.
+        command = ('xorriso '                     \
+                   '-as mkisofs '                 \
+                   '-r '                          \
+                   '-J '                          \
+                   '-joliet-long '                \
+                   '-l '                          \
+                   '-iso-level 3 '                \
+                   f'-m "{exclude_file_path_1}" ' \
+                   f'-m "{exclude_file_path_2}" ' \
+                   f'{complete_template} '        \
+                   f'-o "{iso_file_path}" .')
+    elif version.parse(model.ubiquity_version) < version.parse('18.04'):
+        # Exclude the filesystem.manifest-minimal-remove.
+        command = ('xorriso '                     \
+                   '-as mkisofs '                 \
+                   '-r '                          \
+                   '-J '                          \
+                   '-joliet-long '                \
+                   '-l '                          \
+                   '-iso-level 3 '                \
+                   f'-m "{exclude_file_path_2}" ' \
+                   f'{complete_template} '        \
+                   f'-o "{iso_file_path}" .')
+    elif not model.options.add_minimal_install:
+        # Exclude the filesystem.manifest-minimal-remove.
+        command = ('xorriso '                     \
+                   '-as mkisofs '                 \
+                   '-r '                          \
+                   '-J '                          \
+                   '-joliet-long '                \
+                   '-l '                          \
+                   '-iso-level 3 '                \
+                   f'-m "{exclude_file_path_2}" ' \
+                   f'{complete_template} '        \
                    f'-o "{iso_file_path}" .')
     else:
-        exclude_file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST_MINIMAL_REMOVE}'
-        exclude_file_path = os.path.join(model.status.squashfs_directory, exclude_file_name)
-        command = ('xorriso '                   \
-                   '-as mkisofs '               \
-                   '-r '                        \
-                   '-J '                        \
-                   '-joliet-long '              \
-                   '-l '                        \
-                   '-iso-level 3 '              \
-                   f'-m "{exclude_file_path}" ' \
-                   f'{complete_template} '      \
+        command = ('xorriso '                     \
+                   '-as mkisofs '                 \
+                   '-r '                          \
+                   '-J '                          \
+                   '-joliet-long '                \
+                   '-l '                          \
+                   '-iso-level 3 '                \
+                   f'{complete_template} '        \
                    f'-o "{iso_file_path}" .')
 
     return command
