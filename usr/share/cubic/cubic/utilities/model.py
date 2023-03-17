@@ -114,6 +114,7 @@ status.iso_template = None
 status.squashfs_directory = None
 status.squashfs_file_name = None
 status.casper_directory = None
+status.is_subiquity = None
 status.iso_checksum = None
 status.iso_checksum_file_name = None
 

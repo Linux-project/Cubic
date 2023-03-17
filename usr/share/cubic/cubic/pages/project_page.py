@@ -239,13 +239,9 @@ def setup(action, old_page=None):
         original = None
         custom = None
 
-        # if os.path.isfile(model.project.configuration.file_path):
         if model.project.modify_date:
 
             # There is a saved configuration.
-            print('- ' * 80)
-            print('There is a saved configuration.')
-            print('- ' * 80)
 
             configured_original_iso_file_path = os.path.join(model.original.iso_directory, model.original.iso_file_name)
             mount_original_iso(configured_original_iso_file_path)
@@ -283,11 +279,6 @@ def setup(action, old_page=None):
             displayer.set_visible('project_page__header_bar_box', True)
 
         else:
-
-            # There is no saved configuration.
-            print('- ' * 80)
-            print('There is no saved configuration.')
-            print('- ' * 80)
 
             # Set the original and custom ISO release notes URLs on the
             # model.
@@ -515,6 +506,7 @@ def leave(action, new_page=None):
         model.status.squashfs_directory = status.squashfs_directory
         model.status.squashfs_file_name = status.squashfs_file_name
         model.status.casper_directory = status.casper_directory
+        model.status.is_subiquity = status.is_subiquity
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
@@ -525,7 +517,7 @@ def leave(action, new_page=None):
         model.options.compression = options.compression
 
         # Save the model values.
-        ### model.project.configuration.save()
+        # model.project.configuration.save()
         save_iso_release_notes_url()
 
         if custom.is_valid and custom != custom_history.current():
@@ -576,6 +568,7 @@ def leave(action, new_page=None):
         model.status.squashfs_directory = status.squashfs_directory
         model.status.squashfs_file_name = status.squashfs_file_name
         model.status.casper_directory = status.casper_directory
+        model.status.is_subiquity = status.is_subiquity
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
@@ -586,7 +579,7 @@ def leave(action, new_page=None):
         model.options.compression = options.compression
 
         # Save the model values.
-        ### model.project.configuration.save()
+        # model.project.configuration.save()
         save_iso_release_notes_url()
 
         return
@@ -665,7 +658,6 @@ def selected_original_iso_file_path(original_iso_file_path):
 
         # A valid ISO file was supplied.
 
-        # if os.path.isfile(model.project.configuration.file_path):
         if model.project.modify_date:
 
             # There is a saved configuration.
@@ -707,7 +699,7 @@ def selected_original_iso_file_path(original_iso_file_path):
                 # validator requires is_success_copy and is_success_extract.
                 status = initialize_status_from_model()
                 # Overwrite ISO configuration and boot files.
-                # Always set is success copy to False whenever iso
+                # Always set is success copy to False whenever ISO
                 # template is set to None.
                 status.is_success_copy = False
                 # status.is_success_extract = False or True
@@ -715,6 +707,7 @@ def selected_original_iso_file_path(original_iso_file_path):
                 status.squashfs_directory = None
                 status.squashfs_file_name = None
                 status.casper_directory = None
+                status.is_subiquity = False
                 options = initialize_options()
 
                 original = initialize_original_from_iso(original_iso_file_path)
@@ -845,6 +838,7 @@ def initialize_status():
     fields.squashfs_directory = None
     fields.squashfs_file_name = None
     fields.casper_directory = None
+    fields.is_subiquity = False
     fields.iso_checksum = None
     fields.iso_checksum_file_name = None
 
@@ -1125,6 +1119,7 @@ def initialize_status_from_model():
       - squashfs directory
       - squashfs_file_name
       - casper directory
+      - is_subiquity
       - iso_checksum = None
       - iso_checksum_file_name = None
     """
@@ -1139,6 +1134,7 @@ def initialize_status_from_model():
     fields.squashfs_directory = model.status.squashfs_directory
     fields.squashfs_file_name = model.status.squashfs_file_name
     fields.casper_directory = model.status.casper_directory
+    fields.is_subiquity = model.status.is_subiquity
     # The saved ISO file size is never used.
     # The saved ISO checksum is never used.
     fields.iso_checksum = model.status.iso_checksum

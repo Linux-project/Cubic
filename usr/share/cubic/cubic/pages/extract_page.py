@@ -57,7 +57,8 @@ import time
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CASPER_DIRECTORIES, SQUASHFS_FILE_NAMES
-from cubic.constants import EXTENSION_SQUASHFS
+from cubic.constants import EXTENSION_MANIFEST, EXTENSION_SIZE, EXTENSION_SQUASHFS, EXTENSION_SQUASHFS_GPG
+from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_SIZE
 from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import SLEEP_1000_MS
 from cubic.navigator import InterruptException
@@ -208,6 +209,9 @@ def enter(action, old_page=None):
 
                 is_error = identify_squashfs_file_path()
                 if is_error: return  # Stay on this page.
+
+                # Identify if the ISO uses Subiquity.
+                identify_is_subiquity()
 
             # Identify the casper relative directory.
             if not model.status.casper_directory:
@@ -360,12 +364,23 @@ def identify_squashfs_file_path():
     # Set model.status.squashfs_file_name
 
     # Remove the extension from the squashfs file name because this name
-    # is reused for various other files with different extensions:
+    # is reused for various files with different extensions:
+    # - *.manifest
+    # - *.size
+    # - *.squashfs
+    # - *.squashfs.gpg
+    # Also, see the copy_original_iso_files() function.
+    #
+    # The squashfs file name is not used for the following files,
+    # because Ubiquity expects the these specific file names:
     # - filesystem.manifest
     # - filesystem.manifest-minimal-remove
     # - filesystem.manifest-remove
-    # - filesystem.size
-    # - filesystem.squashfs
+    #
+    # The following files are preset when Subiquity is used:
+    # - filesystem.manifest - Aggregation of all *.manifest files.
+    # - filesystem.size - Aggregation of all *.size files.
+    #                     See generate_page.update_file_system_size()
 
     # For Pop!_OS the identified squashfs directories will be "casper"
     # and "casper_pop-os_20.04_amd64_intel_debug_25". However,
@@ -443,6 +458,43 @@ def identify_casper_directory():
         return True  # (Error)
 
     return False  # (No error)
+
+
+def identify_is_subiquity():
+    """
+    Identify if the ISO uses Subiquity.
+    (Added to support Ubuntu 23.04, which no longer uses Ubiquity).
+
+    Assume the ISO uses Subiquity if the file squashfs directory
+    contains at least one installer squashfs file.
+    """
+
+    # Ubuntu 23.04+ Desktop
+    # Search for install-sources.yaml in the squashfs directory.
+    # Assume the ISO uses Subiquity if the file install-sources.yaml
+    # exists in the squashfs directory.
+    file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, 'install-sources.yaml')
+    if os.path.isfile(file_path):
+        logger.log_value('Does the ISO use Subiquity?', True)
+        model.status.is_subiquity = True
+        return
+
+    # Ubuntu 21.04+ Server
+    # Search for installer squashfs files in the squashfs directory.
+    # Assume the ISO uses Subiquity if the squashfs directory contains
+    # at least one installer squashfs file. The file name must have the
+    # word "installer", and it must have the "squashfs" extension.
+    directory = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory)
+    file_names = file_utilities.find_files_with_pattern(rf'.*installer.*{EXTENSION_SQUASHFS}$', directory)
+    if file_names:
+        logger.log_value('Does the ISO use Subiquity?', True)
+        model.status.is_subiquity = True
+        return
+
+    logger.log_value('Does the ISO use Subiquity?', False)
+    model.status.is_subiquity = False
+
+    return
 
 
 def _get_squashfs_file_paths():
@@ -605,6 +657,14 @@ def copy_original_iso_files():
     # Add read and write permissions for the user.
     # Set read and write permissions for group and other.
 
+    # If the squashfs file name is not "filesystem", the files
+    # filesystem.manifest and filesystem.size still exist, so they must
+    # be explicitly excluded. filesystem.size is created on the
+    # Generate page. See generate_page.update_file_system_size().
+
+    # TODO: Create the filesystem.manifest file as an aggregation of all
+    #       *.squashfs files.
+
     command = (
         'rsync'
         f' --info=progress2 "{source_file_path}" "{target_file_path}"'
@@ -616,12 +676,12 @@ def copy_original_iso_files():
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
         ' --exclude=".disk/release_notes_url"'
-        f' --exclude="/{model.status.squashfs_directory}/*.squashfs"'
-        f' --exclude="/{model.status.squashfs_directory}/*.*.squashfs"'
-        f' --exclude="/{model.status.squashfs_directory}/*.manifest"'
-        f' --exclude="/{model.status.squashfs_directory}/*.size"'
-        f' --exclude="/{model.status.squashfs_directory}/*.gpg"'
-        f' --exclude="/{model.status.squashfs_directory}/*.yaml"')
+        f' --exclude="/{model.status.squashfs_directory}/{FILE_SYSTEM_MANIFEST}"'
+        f' --exclude="/{model.status.squashfs_directory}/{FILE_SYSTEM_SIZE}"'
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}"'
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SIZE}"'
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}"'
+        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS_GPG}"')
 
     # The progress callback function.
     def progress_callback(percent):

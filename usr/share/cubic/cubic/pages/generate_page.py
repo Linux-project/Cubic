@@ -47,7 +47,8 @@ import time
 from packaging import version
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import EXTENSION_SQUASHFS, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE, FILE_SYSTEM_SIZE
+from cubic.constants import EXTENSION_SIZE, EXTENSION_SQUASHFS
+from cubic.constants import FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE, FILE_SYSTEM_SIZE
 from cubic.constants import FINAL_PERCENT
 from cubic.constants import GAP
 from cubic.constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
@@ -600,55 +601,81 @@ def update_file_system_size():
 
     logger.log_label('Update the file system size')
 
-    # Get the file system size.
     try:
+        # Get the size of the customized Linux file system.
         # Pkexec is required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
         command = ['pkexec', program, model.project.custom_root_directory]
         result, exit_status, signal_status = execute_synchronous(command)
         size_information = re.search(r'^([0-9]+)\s', result)
         size_in_bytes = int(size_information.group(1))
+
         size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
-        logger.log_value('The file system size is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
+        logger.log_value('The customized Linux file system size is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
         if size_in_bytes > GIB:
-            message = f'The file system size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).'
+            message = f'The customized Linux file system size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).'
         else:
-            message = f'The file system size is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).'
-        displayer.update_label('generate_page__update_file_system_size_message', message, False)
-    except InterruptException as exception:
-        logger.log_value(f'Unable to get file system size for {model.project.custom_root_directory}', result)
-        logger.log_value('The exception is', exception)
-        message = 'Error. Unable to get file system size.'
-        displayer.update_label('generate_page__update_file_system_size_message', message, True)
-        displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
-        logger.log_value('Propagate exception', exception)
-        raise exception
-    except Exception as exception:
-        logger.log_value(f'Unable to get file system size for {model.project.custom_root_directory}', result)
-        logger.log_value('The exception is', exception)
-        message = 'Error. Unable to get file system size.'
-        displayer.update_label('generate_page__update_file_system_size_message', message, True)
-        displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
-        logger.log_value('Do not propagate exception', exception)
-        return True  # (Error)
+            message = f'The customized Linux file system size is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).'
 
-    # Write the file system size.
-    try:
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_SIZE)
+        # The squashfs file name may be "filesystem" or something else.
+        squashfs_file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SIZE}'
+
+        # Save the *.size file.
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, squashfs_file_name)
         file_utilities.write_line(str(size_in_bytes), file_path)
+
+        if squashfs_file_name != FILE_SYSTEM_SIZE:
+
+            # Calculate the total size of all squashfs files in the
+            # squashfs directory.
+
+            # The name of the squashfs file for the customized linux
+            # file system.
+            directory = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory)
+
+            # Get all *.size files in the squashfs directory.
+            file_names = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SIZE}$', directory)
+
+            # Sum the sizes from all *.size files. Excluding the file
+            # for the customized Linux file system, since this size was
+            # calculated above.
+            for file_name in file_names:
+                if file_name != squashfs_file_name:
+                    file_path = os.path.join(directory, file_name)
+                    size_in_bytes += int(file_utilities.read_file(file_path))
+
+            # Save the filesystem.size file.
+            file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_SIZE)
+            file_utilities.write_line(str(size_in_bytes), file_path)
+
+            size_in_mib = size_in_bytes / MIB
+            size_in_gib = size_in_bytes / GIB
+            logger.log_value('The total Linux file system size is', f'{locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes)')
+            if size_in_bytes > GIB:
+                message += f' The total Linux file system size is {locale.format_string("%.2f", size_in_gib, True)} GiB ({size_in_bytes:n} bytes).'
+            else:
+                message += f' The total Linux file system size is {locale.format_string("%.2f", size_in_mib, True)} MiB ({size_in_bytes:n} bytes).'
+
+        displayer.update_label('generate_page__update_file_system_size_message', message, False)
+
     except InterruptException as exception:
-        message = 'Error. Unable to save file system size.'
-        displayer.update_label('generate_page__update_file_system_size_message', message, True)
-        displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
-        logger.log_value('Do not propagate exception', exception)
-        return True  # (Error)
-    except Exception as exception:
-        message = 'Error. Unable to save file system size.'
+        logger.log_value(f'Unable to get file system size for {model.project.custom_root_directory}', result)
+        logger.log_value('The exception is', exception)
+        message = 'Error. Unable to get file system size.'
         displayer.update_label('generate_page__update_file_system_size_message', message, True)
         displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
+
+    except Exception as exception:
+        logger.log_value(f'Unable to get file system size for {model.project.custom_root_directory}', result)
+        logger.log_value('The exception is', exception)
+        message = 'Error. Unable to get file system size.'
+        displayer.update_label('generate_page__update_file_system_size_message', message, True)
+        displayer.update_status('generate_page__update_file_system_size', displayer.ERROR)
+        logger.log_value('Do not propagate exception', exception)
+        return True  # (Error)
 
     displayer.update_status('generate_page__update_file_system_size', displayer.OK)
     return False  # (No error)

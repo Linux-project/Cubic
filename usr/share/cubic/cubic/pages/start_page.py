@@ -608,6 +608,7 @@ def initialize_model():
     model.status.squashfs_directory = None
     model.status.squashfs_file_name = None
     model.status.casper_directory = None
+    model.status.is_subiquity = False
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 

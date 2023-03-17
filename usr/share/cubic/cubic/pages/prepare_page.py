@@ -49,6 +49,7 @@ import time
 from packaging import version
 
 from cubic.constants import BOLD_RED, NORMAL
+from cubic.constants import EXTENSION_MANIFEST
 from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0125_MS, SLEEP_0250_MS, SLEEP_0500_MS, SLEEP_1000_MS
@@ -608,6 +609,13 @@ def _update_kernel_details_list(kernel_details_list):
             if len(kernel_details_list) > 1:
                 if note: note += ' '  # os.linesep
                 note += 'Select this kernel if you are unable to boot the disk using other kernel versions.'
+            if model.status.is_subiquity:
+                # If Subiquity is used, select the original kernel.
+                # Added for Cubic 2023.03.78 to support Ubuntu 23.04.
+                if note: note += ' '  # os.linesep
+                note += 'Use this kernel to bootstrap Ubuntu Server 21.10+ or Desktop 23.04+.'
+                # Set the selected index for the the original disk kernel.
+                selected_index = index
             # if is_server_image()
             #     # if note: note += ' ' # os.linesep
             #     # note += 'Since you are customizing a server image, select this option if you encounter issues using other kernel versions.'
@@ -1580,7 +1588,8 @@ def save_file_system_manifest_file(package_details_list):
 
     logger.log_label('Create new file system manifest file')
 
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST)
+    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}'
+    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
     logger.log_value('Write file system manifest to', file_path)
     with open(file_path, 'w') as file:
         for package_details in package_details_list[:-1]:
@@ -1596,6 +1605,14 @@ def save_file_system_manifest_file(package_details_list):
         if package_details:
             package_details = package_details_list[-1]
             file.write(f'{package_name}\t{package_version}')
+
+    # TODO: Create a filesystem.manifest file that aggregates all
+    #      *.manifest files.
+    if file_name != FILE_SYSTEM_MANIFEST:
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST)
+        with open(file_path, 'w') as file:
+            # file.write(f'# Not implemented (Cubic {model.application.cubic_version})')
+            file.write('')
 
     return os.path.exists(file_path)
 

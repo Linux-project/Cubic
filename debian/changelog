@@ -1,5 +1,9 @@
 cubic (2023.03) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
 
+  * Issues fixed in version 2023.03-78:
+
+  - Fixed Bug GH:#172, Add additional support for Ubuntu 23.04 Lunar Lobster.
+
   * Issues fixed in version 2023.03-77:
 
   - Fixed Bug GH:#151, Extract Ubuntu 23.04 (Lunar) ISO image fails.
@@ -381,4 +385,4 @@ cubic (2023.03) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 12 Mar 2023 21:47:47 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 17 Mar 2023 18:23:58 -0400

@@ -216,7 +216,15 @@ SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs', 
 # Used to select a casper directory if multiple directories are discovered.
 CASPER_DIRECTORIES = ['casper', 'live', 'boot']
 
+# Extensions.
+EXTENSION_MANIFEST = 'manifest'
+EXTENSION_MANIFEST_MINIMAL_REMOVE = 'manifest-minimal-remove'
+EXTENSION_MANIFEST_REMOVE = 'manifest-remove'
+EXTENSION_SIZE = 'size'
+EXTENSION_SQUASHFS_GPG = 'squashfs.gpg'
 EXTENSION_SQUASHFS = 'squashfs'
+
+# File names specific to Ubiquity.
 FILE_SYSTEM_MANIFEST = 'filesystem.manifest'
 FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE = 'filesystem.manifest-minimal-remove'
 FILE_SYSTEM_MANIFEST_REMOVE = 'filesystem.manifest-remove'

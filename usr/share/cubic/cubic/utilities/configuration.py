@@ -706,6 +706,8 @@ class Project(Configuration):
         # Not in the original 2019 layout.
         model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
         # Not in the original 2019 layout.
+        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
+        # Not in the original 2019 layout.
         model.status.iso_checksum = self.get_value('Custom', 'custom_iso_image_checksum', default=None)
         # In the Custom section of the 2019 layout.
         model.status.iso_checksum_file_name = self.get_value('Custom', 'custom_iso_image_md5_filename', default=None)
@@ -767,6 +769,8 @@ class Project(Configuration):
         # Not in the original 2020 layout.
         model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
         model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
+        # Not in the original 2020 layout.
+        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
         model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
         model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_filename', default=None)
 
@@ -825,6 +829,8 @@ class Project(Configuration):
         # Not in the original 2021 layout.
         model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
         model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
+        # Not in the original 2021 layout.
+        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
         model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
         model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
 
@@ -882,6 +888,8 @@ class Project(Configuration):
         model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
         model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
         model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
+        # Not in the original 2022 layout.
+        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
         model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
         model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
 
@@ -938,6 +946,7 @@ class Project(Configuration):
         model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
         model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
         model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
+        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
         model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
         model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
 
@@ -1016,6 +1025,8 @@ class Project(Configuration):
         # Not in the original 2019 layout.
         self.set('Status', 'casper_directory', model.status.casper_directory)
         # Not in the original 2019 layout.
+        self.set('Status', 'is_subiquity', model.status.is_subiquity)
+        # Not in the original 2019 layout.
         self.set('Status', 'custom_iso_image_checksum', model.status.iso_checksum)
         # In the Custom section of the 2019 layout.
         self.set('Custom', 'custom_iso_image_md5_filename', model.status.iso_checksum_file_name)
@@ -1077,6 +1088,8 @@ class Project(Configuration):
         # Not in the original 2020 layout.
         self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
         self.set('Status', 'casper_directory', model.status.casper_directory)
+        # Not in the original 2020 layout.
+        self.set('Status', 'is_subiquity', model.status.is_subiquity)
         self.set('Status', 'iso_checksum', model.status.iso_checksum)
         self.set('Status', 'iso_checksum_filename', model.status.iso_checksum_file_name)
 
@@ -1135,6 +1148,8 @@ class Project(Configuration):
         # Not in the original 2021 layout.
         self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
         self.set('Status', 'casper_directory', model.status.casper_directory)
+        # Not in the original 2021 layout.
+        self.set('Status', 'is_subiquity', model.status.is_subiquity)
         self.set('Status', 'iso_checksum', model.status.iso_checksum)
         self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
 
@@ -1189,6 +1204,8 @@ class Project(Configuration):
         self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
         self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
         self.set('Status', 'casper_directory', model.status.casper_directory)
+        # Not in the original 2022 layout.
+        self.set('Status', 'is_subiquity', model.status.is_subiquity)
         self.set('Status', 'iso_checksum', model.status.iso_checksum)
         self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
 
@@ -1242,6 +1259,7 @@ class Project(Configuration):
         self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
         self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
         self.set('Status', 'casper_directory', model.status.casper_directory)
+        self.set('Status', 'is_subiquity', model.status.is_subiquity)
         self.set('Status', 'iso_checksum', model.status.iso_checksum)
         self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
 

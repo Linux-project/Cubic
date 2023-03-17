@@ -198,6 +198,7 @@ class BootTab(FilesTab):
         # Get new values.
         squashfs_directory = model.status.squashfs_directory.split(os.path.sep)[0]
         casper_directory = model.status.casper_directory
+        is_subiquity = model.status.is_subiquity
         new_vmlinuz_file_name = model.kernel_details_list[model.selected_kernel_index]['new_vmlinuz_file_name']
         new_initrd_file_name = model.kernel_details_list[model.selected_kernel_index]['new_initrd_file_name']
 
@@ -242,7 +243,9 @@ class BootTab(FilesTab):
                         logger.log_value('%d. Updated the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
-                    else:
+                    elif not is_subiquity:
+                        # If subiquity is not used and "boot=" is
+                        # missing, add it.
                         text = f' boot={squashfs_directory}'
                         text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, text_iter_2.get_line_offset())
                         text_iter_1.forward_char()
@@ -286,9 +289,10 @@ class BootTab(FilesTab):
                         logger.log_value('%d. Updated the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
-                    elif not re.search(r'^\s*(?i:APPEND)\s+', self.get_line_text(source_buffer, line_number + 1)):
-                        # If the next line does not start with "append"
-                        # and "boot=" is missing from this line, add it.
+                    elif not is_subiquity and not re.search(r'^\s*(?i:APPEND)\s+', self.get_line_text(source_buffer, line_number + 1)):
+                        # If subiquity is not used and the next line
+                        # does not start with "append" and "boot=" is
+                        # missing from this line, add it.
                         text = f' boot={squashfs_directory}'
                         text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, text_iter_2.get_line_offset())
                         text_iter_1.forward_char()
@@ -297,7 +301,15 @@ class BootTab(FilesTab):
                         logger.log_value('%d. Added the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
-
+                    '''
+                    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+                    # TODO: This section is no longer needed
+                    #       (03/14/2023). This code was added as a
+                    #       temporary fix for Ubuntu 23.04 in Cubic
+                    #       release 2023.03.77. See GH #172, Extract
+                    #       Ubuntu 23.04 (Lunar) ISO image fails.
+                    #       (https://github.com/PJ-Singh-001/Cubic/issues/151)
+                    #
                     # layerfs-path
                     # Added to support Ubuntu 22.03.
                     match = re.search(r'(?i:LAYERFS-PATH=\S+)', line)
@@ -316,7 +328,8 @@ class BootTab(FilesTab):
                             logger.log_value('%d. Added maybe-ubiquity on line' % update_count, line_number)
                             # Get the current line because it has changed.
                             line = self.get_line_text(source_buffer, line_number)
-
+                    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+                    '''
                 else:
                     logger.log_value('Warning', 'Expected the vmlinuz path on line %d, but it was not found' % line_number)
 
