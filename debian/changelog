@@ -1,5 +1,10 @@
 cubic (2023.03) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
 
+  * Issues fixed in version 2023.03-79:
+
+  - Fixed Bug GH:#172, Error `No root device specified` when booting customized
+    Ubuntu 23.04 daily.
+
   * Issues fixed in version 2023.03-78:
 
   - Fixed Bug GH:#172, Add additional support for Ubuntu 23.04 Lunar Lobster.
@@ -385,4 +390,4 @@ cubic (2023.03) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Fri, 17 Mar 2023 18:23:58 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 23 Mar 2023 21:26:03 -0400

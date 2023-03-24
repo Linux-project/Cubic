@@ -421,6 +421,17 @@ def copy_kernel_files():
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
+    # Create a symlink from initrd.* to initrd.
+    # Workaround for Ubuntu 23.04+ (Lunar).
+    directory = os.path.join(model.project.custom_disk_directory, model.status.casper_directory)
+    target_file_name = 'initrd'
+    target_file_path = os.path.join(directory, target_file_name)
+    if not os.path.exists(target_file_path):
+        source_file_name = list_store[selected_index][4]
+        logger.log_value('For Ubuntu 23.04+, create symlink', f'from {source_file_name} to {target_file_name} in {directory}')
+        # Create a relative symlink.
+        os.symlink(source_file_name, target_file_path)
+
     message = 'Success.'
     displayer.update_label('generate_page__copy_boot_files_message', message, False)
     displayer.update_status('generate_page__copy_boot_files', displayer.OK)
