@@ -301,14 +301,13 @@ FILE_SYSTEM_TYPES = {
 EXCLUDED_FILE_SYSTEM_TYPES = ['exfat', 'fat12', 'fat16', 'fat32', 'fuseblk', 'ntfs', 'vfat', 'fuse.gvfsd-fuse', 'fuse.sshfs']
 
 ########################################################################
-# Compression Algorithms
+# Squashfs Compression Algorithms
 ########################################################################
 
 LZ4 = 'lz4'
 LZO = 'lzo'
 GZIP = 'gzip'
 ZSTD = 'zstd'
-LZMA = 'lzma'
 XZ = 'xz'
 
 ########################################################################

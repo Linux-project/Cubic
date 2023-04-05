@@ -69,8 +69,8 @@ name = 'prepare_page'
 
 INITRAMFS_VERSION_PATTERN = re.compile(r'lib/modules/(\d[\d\.-]*\d)')
 
-# Valid compression formats are gzip, bzip2, lz4, lzma, lzop, or xz,
-# ignoring case. (See /etc/initramfs-tools/initramfs.conf).
+# Valid initramfs compression formats are gzip, bzip2, lz4, lzma, lzop,
+# or xz, ignoring case. (See /etc/initramfs-tools/initramfs.conf).
 INITRAMFS_COMPRESSION_PATTERN = re.compile(r'(?i).*(gzip|bzip2|lz4|lzma|lzop|xz).*')
 COMPRESSION_EXTENSIONS = {'gzip': 'gz', 'bzip2': 'bz', 'lz4': 'lz', 'lzma': 'lz', 'lzop': 'lz', 'xz': 'xz'}
 

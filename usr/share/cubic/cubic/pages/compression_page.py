@@ -40,7 +40,7 @@
 ########################################################################
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import LZ4, LZO, GZIP, ZSTD, LZMA, XZ
+from cubic.constants import LZ4, LZO, GZIP, ZSTD, XZ
 from cubic.pages import options_page
 from cubic.utilities import displayer
 from cubic.utilities import iso_utilities
@@ -58,8 +58,7 @@ radio_buttons = {
     LZO: 'compression_page__radio_button_2',
     GZIP: 'compression_page__radio_button_3',
     ZSTD: 'compression_page__radio_button_4',
-    LZMA: 'compression_page__radio_button_5',
-    XZ: 'compression_page__radio_button_6'
+    XZ: 'compression_page__radio_button_5'
 }
 
 compression = None
@@ -105,8 +104,7 @@ def setup(action, old_page=None):
         # 2 = lzo
         # 3 = gzip
         # 4 = zstd
-        # 5 = lzma
-        # 6 = xz
+        # 5 = xz
 
         # Display the initial selection.
         global compression
@@ -192,8 +190,7 @@ def on_toggled__compression_page__radio_button(toggle_button):
     # 2 = lzo
     # 3 = gzip
     # 4 = zstd
-    # 5 = lzma
-    # 6 = xz
+    # 5 = xz
 
     if toggle_button.get_active():
         global compression
