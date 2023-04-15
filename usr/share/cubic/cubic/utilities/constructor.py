@@ -207,7 +207,7 @@ def get_os_distribution(root_directory='/'):
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
-                key, value = line.split('=')
+                key, value = line.split('=', 1)
                 key = key.upper() if key else None
                 if key == 'ID':
                     distribution = value.rstrip().lower() if value else None
@@ -242,7 +242,7 @@ def os_is_distribution(distribution, root_directory=os.path.sep):
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
-                key, value = line.split('=')
+                key, value = line.split('=', 1)
                 key = key.upper() if key else None
                 value = value.rstrip().lower() if value else None
                 if key == 'ID':

@@ -1,5 +1,9 @@
 cubic (2023.04) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
 
+  * Issues fixed in version 2023.04-81:
+
+  - Error parsing `/etc/os-release` when values contain "=" symbols.
+
   * Issues fixed in version 2023.04-80:
 
   - Fixed Bug GH:#145, Selecting LZMA compression causes the ISO to not boot.
@@ -400,4 +404,4 @@ cubic (2023.04) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Wed, 05 Apr 2023 12:50:53 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 15 Apr 2023 11:10:07 -0400
