@@ -1,4 +1,17 @@
-cubic (2023.04) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=low
+cubic (2023.05) bionic focal groovy hirsute impish jammy kinetic lunar mantic; urgency=low
+
+  * Issues fixed in version 2023.05-82:
+
+  - Updated Cubic to require GKT 3.22 or above, because Ubuntu 18.04.5 Bionic
+    Beaver, which is the lowest version of Ubuntu that Cubic runs on, also uses
+    GKT 3.22. Previously, Cubic required GTK 3.20 or above.
+
+  - Updated all widget property names to use dashes ("-") instead of underscores
+    ("_"), to align with published GTK 3 property names. For example, properties
+    such as "can_focus", "icon_name", "left_attach", and "top_attach" were
+    renamed to "can-focus", "icon-name", "left-attach", and "top-attach",
+    respectively. This will standardize the Cubic code base and establish a
+    baseline for migrating to GTK 4.
 
   * Issues fixed in version 2023.04-81:
 
@@ -404,4 +417,4 @@ cubic (2023.04) bionic focal groovy hirsute impish jammy kinetic lunar; urgency=
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 15 Apr 2023 11:10:07 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 14 May 2023 20:39:33 -0400

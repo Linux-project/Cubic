@@ -26,43 +26,45 @@
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtk+" version="3.22"/>
+  <!-- n-columns=1 n-rows=2 -->
   <object class="GtkGrid" id="options_page">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <child>
       <object class="GtkLabel">
-        <property name="width_request">894</property>
+        <property name="width-request">894</property>
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="margin_left">24</property>
-        <property name="margin_right">24</property>
-        <property name="margin_top">18</property>
-        <property name="margin_bottom">18</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">24</property>
+        <property name="margin-right">24</property>
+        <property name="margin-top">18</property>
+        <property name="margin-bottom">18</property>
         <property name="label" translatable="yes">Make changes to advanced options on the tabs above, or proceed with default settings.</property>
         <property name="justify">fill</property>
         <property name="wrap">True</property>
-        <property name="max_width_chars">0</property>
+        <property name="max-width-chars">0</property>
         <property name="xalign">0</property>
         <attributes>
           <attribute name="scale" value="1.25"/>
         </attributes>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">0</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">0</property>
       </packing>
     </child>
     <child>
       <object class="GtkStack" id="options_page__stack">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
         <child>
+          <!-- n-columns=1 n-rows=1 -->
           <object class="GtkGrid" id="options_page__kernel_tab__grid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
@@ -71,21 +73,21 @@
             <child>
               <object class="GtkLabel" id="options_page__kernel_tab__instructions_label">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_left">24</property>
-                <property name="margin_right">24</property>
-                <property name="margin_bottom">6</property>
+                <property name="can-focus">False</property>
+                <property name="margin-left">24</property>
+                <property name="margin-right">24</property>
+                <property name="margin-bottom">6</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Select the kernel that will be used to bootstrap the customized disk.
 The disk boot configurations will be automatically updated with the correct &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names.</property>
-                <property name="use_markup">True</property>
+                <property name="use-markup">True</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
           </object>
@@ -95,9 +97,10 @@ The disk boot configurations will be automatically updated with the correct &lt;
           </packing>
         </child>
         <child>
+          <!-- n-columns=1 n-rows=1 -->
           <object class="GtkGrid" id="options_page__preseed_tab__grid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
@@ -106,21 +109,21 @@ The disk boot configurations will be automatically updated with the correct &lt;
             <child>
               <object class="GtkLabel" id="options_page__preseed_tab__instructions_label">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_left">24</property>
-                <property name="margin_right">24</property>
-                <property name="margin_bottom">6</property>
+                <property name="can-focus">False</property>
+                <property name="margin-left">24</property>
+                <property name="margin-right">24</property>
+                <property name="margin-bottom">6</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Update the preseed files used to automate installation.
 Reference these files in the disk boot configurations by prefixing them with &lt;tt&gt;/cdrom&lt;/tt&gt;.</property>
-                <property name="use_markup">True</property>
+                <property name="use-markup">True</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
           </object>
@@ -131,9 +134,10 @@ Reference these files in the disk boot configurations by prefixing them with &lt
           </packing>
         </child>
         <child>
+          <!-- n-columns=1 n-rows=1 -->
           <object class="GtkGrid" id="options_page__boot_tab__grid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
@@ -142,21 +146,21 @@ Reference these files in the disk boot configurations by prefixing them with &lt
             <child>
               <object class="GtkLabel" id="options_page__boot_tab__instructions_label">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_left">24</property>
-                <property name="margin_right">24</property>
-                <property name="margin_bottom">6</property>
+                <property name="can-focus">False</property>
+                <property name="margin-left">24</property>
+                <property name="margin-right">24</property>
+                <property name="margin-bottom">6</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Update the disk boot configurations.
 The &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names have been automatically updated to match the selected disk boot kernel.</property>
-                <property name="use_markup">True</property>
+                <property name="use-markup">True</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
           </object>
@@ -168,8 +172,8 @@ The &lt;tt&gt;vmlinuz&lt;/tt&gt; and &lt;tt&gt;initrd&lt;/tt&gt; file names have
         </child>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">1</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">1</property>
       </packing>
     </child>
   </object>

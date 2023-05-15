@@ -26,94 +26,97 @@
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtk+" version="3.22"/>
+  <!-- n-columns=1 n-rows=2 -->
   <object class="GtkGrid" id="generate_page">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <child>
       <object class="GtkLabel">
-        <property name="width_request">894</property>
+        <property name="width-request">894</property>
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="margin_left">24</property>
-        <property name="margin_right">24</property>
-        <property name="margin_top">18</property>
-        <property name="margin_bottom">18</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">24</property>
+        <property name="margin-right">24</property>
+        <property name="margin-top">18</property>
+        <property name="margin-bottom">18</property>
         <property name="label" translatable="yes">Generating the customized disk image...</property>
         <property name="justify">fill</property>
         <property name="wrap">True</property>
-        <property name="max_width_chars">0</property>
+        <property name="max-width-chars">0</property>
         <property name="xalign">0</property>
         <attributes>
           <attribute name="scale" value="1.25"/>
         </attributes>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">0</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">0</property>
       </packing>
     </child>
     <child>
+      <!-- n-columns=2 n-rows=4 -->
       <object class="GtkGrid">
-        <property name="width_request">894</property>
+        <property name="width-request">894</property>
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="column_spacing">24</property>
-        <property name="row_homogeneous">True</property>
-        <property name="column_homogeneous">True</property>
+        <property name="column-spacing">24</property>
+        <property name="row-homogeneous">True</property>
+        <property name="column-homogeneous">True</property>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__copy_boot_files_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__copy_boot_files_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Copy the selected boot kernel files to the disk.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -121,97 +124,98 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkProgressBar" id="generate_page__copy_boot_files_progress_bar">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="show_text">True</property>
+                <property name="show-text">True</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__copy_boot_files_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__create_squashfs_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__create_squashfs_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Compress the customized Linux file system.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -219,97 +223,98 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkProgressBar" id="generate_page__create_squashfs_progress_bar">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="show_text">True</property>
+                <property name="show-text">True</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__create_squashfs_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__update_file_system_size_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__update_file_system_size_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Update the customized Linux file system size.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -317,28 +322,28 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__update_file_system_size_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
@@ -346,59 +351,60 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">2</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__update_disk_name_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__update_disk_name_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Update the disk name.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -406,28 +412,28 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__update_disk_name_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
@@ -435,59 +441,60 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">3</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__update_checksums_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__update_checksums_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Update the checksums for all files on the disk.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -495,96 +502,97 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__update_checksums_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkProgressBar" id="generate_page__update_checksums_progress_bar">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="show_text">True</property>
+                <property name="can-focus">False</property>
+                <property name="show-text">True</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">0</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__check_custom_disk_size_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__check_custom_disk_size_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Check the total size of all files on the disk.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -592,28 +600,28 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__check_custom_disk_size_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
@@ -621,59 +629,60 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">1</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__create_iso_image_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__create_iso_image_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Generate the customized disk image.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -681,96 +690,97 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__create_iso_image_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkProgressBar" id="generate_page__create_iso_image_progress_bar">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="show_text">True</property>
+                <property name="can-focus">False</property>
+                <property name="show-text">True</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">2</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="row_spacing">12</property>
-            <property name="column_spacing">12</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <child>
               <object class="GtkImage" id="generate_page__calculate_iso_image_checksum_status">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
-                <property name="icon_name">cubic-bullet-symbolic</property>
+                <property name="icon-name">cubic-bullet-symbolic</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="generate_page__calculate_iso_image_checksum_spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="valign">start</property>
                 <property name="active">True</property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Calculate the checksum for the new disk image.</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">0</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">
 
 
@@ -778,28 +788,28 @@
 </property>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="generate_page__calculate_iso_image_checksum_message">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label" translatable="yes">...</property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
-                <property name="max_width_chars">0</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
@@ -807,14 +817,14 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">3</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">1</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">1</property>
       </packing>
     </child>
   </object>
