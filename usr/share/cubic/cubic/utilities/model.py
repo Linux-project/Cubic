@@ -114,7 +114,6 @@ status.iso_template = None
 status.squashfs_directory = None
 status.squashfs_file_name = None
 status.casper_directory = None
-status.is_subiquity = None
 status.iso_checksum = None
 status.iso_checksum_file_name = None
 
@@ -130,8 +129,6 @@ generated.iso_volume_id = None
 generated.iso_release_name = None
 generated.iso_disk_name = None
 generated.iso_release_notes_url = None
-# generated.iso_checksum = None
-# generated.iso_checksum_file_name = None
 
 ########################################################################
 # Options
@@ -139,9 +136,17 @@ generated.iso_release_notes_url = None
 
 options = Fields('options')
 options.update_os_release = None
-options.add_minimal_install = None
 options.boot_configurations = None
 options.compression = None
+
+########################################################################
+# Installer
+########################################################################
+
+installer = Fields('installer')
+installer.has_typical_install = None
+installer.has_minimal_install = None
+installer.has_subiquity = None
 
 ########################################################################
 # Page/Module Specific
@@ -173,12 +178,6 @@ kernel_details_list = None  # List of kernel detail dictionaries
 # ----------------------------------------------------------------------
 
 package_details_list = None
-
-# ----------------------------------------------------------------------
-# Prepare page, Packages page, Options page
-# ----------------------------------------------------------------------
-
-ubiquity_version = None
 
 # ----------------------------------------------------------------------
 # Generate page, Finish page

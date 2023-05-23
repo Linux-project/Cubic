@@ -48,7 +48,7 @@ import re
 import time
 import zlib
 
-from cubic.constants import CUBIC_VERSION_0000
+from cubic.constants import BLANK_VERSION_0000, CUBIC_VERSION_0000
 from cubic.constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
 from cubic.constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
 from cubic.constants import OK
@@ -293,6 +293,45 @@ def get_kernel_version_ALTERNATIVE():
 
 
 def get_display_version(package_version):
+    """
+    Get a displayable package version number. Delimiter characters, such as "-",
+    "+", "~", etc., are replaced with ".", and the version is truncated to
+    exclude alpha characters.
+
+    For example, "2021.10-61-release~202110150101~ubuntu21.10.1" will be
+    converted to "2021.10.61".
+
+    Returns:
+    : str
+        A truncated package version with leading digits delimited by ".". If a
+        displayable version can not be determined, the version is "00.00.00".
+    """
+
+    try:
+        # return re.search(r'([\d\W]*\d).*', re.sub(r'\W', '.', package_version))[1]
+        version = re.sub(r'\W', '.', package_version)
+        version = re.search(r'(^[\d\W]*\d).*', version)
+        version = version.group(1)
+        return version
+    except TypeError:
+        logger.log_value('Type error getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+    except IndexError:
+        logger.log_value('Index error getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+    except AttributeError:
+        logger.log_value('Attribute error getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+    except Exception:
+        logger.log_value('Exception getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+
+
+def get_display_version_ORIGINAL(package_version):
     """
     Get a displayable Cubic version in "YYYY.MM.RR" format. For example,
     the package version "2021.10-61-release~202110150101~ubuntu21.10.1"

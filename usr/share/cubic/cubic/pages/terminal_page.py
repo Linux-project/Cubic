@@ -439,8 +439,9 @@ def leave(action, new_page=None):
 
 def selected_uris(uris):
 
+    # logger.log_value('The selected uris are', uris)
+
     model.selected_uris = uris
-    logger.log_value('The selected uris are', model.selected_uris)
 
     model.current_directory = console.get_current_directory()
     logger.log_value('The current directory is', model.current_directory)

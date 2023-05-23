@@ -56,7 +56,7 @@
         <property name="margin-right">24</property>
         <property name="margin-top">18</property>
         <property name="margin-bottom">18</property>
-        <property name="label" translatable="yes">Select packages to be automatically removed for a typical or minimal install.</property>
+        <property name="label" translatable="yes">Select packages to be automatically removed for a standard or minimal install.</property>
         <property name="justify">fill</property>
         <property name="wrap">True</property>
         <property name="max-width-chars">0</property>
@@ -107,7 +107,7 @@
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="packages_page__remove_1_tree_view_column">
-                <property name="title" translatable="yes">Typical</property>
+                <property name="title" translatable="yes">Standard</property>
                 <property name="clickable">True</property>
                 <property name="alignment">0.5</property>
                 <child>
@@ -248,7 +248,7 @@
   </object>
   <object class="GtkBox" id="packages_page__header_bar_box_2">
     <property name="can-focus">False</property>
-    <property name="tooltip-text" translatable="yes">Select packages to be removed during a minimal install</property>
+    <property name="tooltip-text" translatable="yes">Select packages to be removed during a minimal install, if supported by the installer</property>
     <property name="spacing">3</property>
     <child>
       <object class="GtkSwitch" id="packages_page__minimal_install_header_bar_switch">

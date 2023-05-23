@@ -1031,8 +1031,9 @@ class FilesTab:
 
     def selected_uris(self, uris):
 
+        # logger.log_value('The selected uris are', uris)
+
         model.selected_uris = uris
-        logger.log_value('The selected uris are', model.selected_uris)
 
         model.current_directory = self.files_tree.get_selected()[1]
         logger.log_value('The current directory is', model.current_directory)

@@ -195,7 +195,7 @@ def on_toggled__compression_page__radio_button(toggle_button):
     if toggle_button.get_active():
         global compression
         compression = toggle_button.get_label()
-        logger.log_value('Selected compression', compression)
+        logger.log_value('The selected compression is', compression)
 
 
 ########################################################################

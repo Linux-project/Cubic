@@ -96,7 +96,9 @@ GAP = '\u200A'
 
 CUBIC_COPYRIGHT = '© 2015, 2020 PJ Singh'
 
-# Cubic versions:
+BLANK_VERSION_0000 = '00.00.00'  # Unknown version
+
+# Cubic release versions numbers used for configuration files:
 #
 # "Classic" 2019 Version:
 #   From: Release 2015.11-1  on 11/05/2015
@@ -112,19 +114,19 @@ CUBIC_COPYRIGHT = '© 2015, 2020 PJ Singh'
 #
 # "Release" 2022 Version:
 #   From: Release 2022.11-73 on 11/19/2022
-#   Thru: Release 2023.03-75 on 03/02/2023
+#   Thru: Release 2023.05-82 on 05/14/2023
 #
 # "Release" 2023 Version:
-#   From: Release 2023.03-76 on 03/11/2023
+#   From: Release 2023.05-83 on 05/22/2023
 #   Thru: Release 20__.__-__ on __/__/20__
 
-# Cubic release version numbers in YYYY.MM.RR format.
+# Cubic release version numbers are in YYYY.MM.RR format.
 CUBIC_VERSION_0000 = '0000.00.00'  # Unknown version
 CUBIC_VERSION_2019 = '2015.11.1'  # Releases 2015.11-1 thru 2020.02-62
 CUBIC_VERSION_2020 = '2020.04.1'  # Releases 2020.04-1 thru 2020.10-35
 CUBIC_VERSION_2021 = '2021.12.36'  # Releases 2021.12-36 thru 2022.06-72
-CUBIC_VERSION_2022 = '2022.11.73'  # Releases 2022.11-73 thru 2023.02-75
-CUBIC_VERSION_2023 = '2023.03.76'  # Releases 2023.03-76 thru present
+CUBIC_VERSION_2022 = '2022.11.73'  # Releases 2022.11-73 thru 2023.05.82
+CUBIC_VERSION_2023 = '2023.05.83'  # Releases 2023.03-76 thru present
 
 ###############################################################
 # File Sizes
@@ -219,7 +221,7 @@ CASPER_DIRECTORIES = ['casper', 'live', 'boot']
 # Extensions.
 EXTENSION_MANIFEST = 'manifest'
 EXTENSION_MANIFEST_MINIMAL_REMOVE = 'manifest-minimal-remove'
-EXTENSION_MANIFEST_REMOVE = 'manifest-remove'
+EXTENSION_MANIFEST_TYPICAL_REMOVE = 'manifest-remove'
 EXTENSION_SIZE = 'size'
 EXTENSION_SQUASHFS_GPG = 'squashfs.gpg'
 EXTENSION_SQUASHFS = 'squashfs'
@@ -227,7 +229,7 @@ EXTENSION_SQUASHFS = 'squashfs'
 # File names specific to Ubiquity.
 FILE_SYSTEM_MANIFEST = 'filesystem.manifest'
 FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE = 'filesystem.manifest-minimal-remove'
-FILE_SYSTEM_MANIFEST_REMOVE = 'filesystem.manifest-remove'
+FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE = 'filesystem.manifest-remove'
 FILE_SYSTEM_SIZE = 'filesystem.size'
 
 ########################################################################

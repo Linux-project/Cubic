@@ -36,6 +36,12 @@ Prior to entering this page:
   model.status.is_success_extract is set to False.
 • model.status.casper_directory must be set to None whenever
   model.status.is_success_extract is set to False.
+• model.installer.has_typical_install must be set to None whenever
+  model.status.is_success_copy is set to False.
+• model.installer.has_minimal_install must be set to None whenever
+  model.status.is_success_copy is set to False.
+• model.installer.has_subiquity must be set to None whenever
+  model.status.is_success_copy is set to False.
 """
 
 ########################################################################
@@ -59,6 +65,7 @@ from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CASPER_DIRECTORIES, SQUASHFS_FILE_NAMES
 from cubic.constants import EXTENSION_MANIFEST, EXTENSION_SIZE, EXTENSION_SQUASHFS, EXTENSION_SQUASHFS_GPG
 from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_SIZE
+from cubic.constants import FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE
 from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import SLEEP_1000_MS
 from cubic.navigator import InterruptException
@@ -210,26 +217,18 @@ def enter(action, old_page=None):
                 is_error = identify_squashfs_file_path()
                 if is_error: return  # Stay on this page.
 
+                # Identify if the ISO uses manifest remove files.
+                identify_has_typical_install()
+                identify_has_minimal_install()
+
                 # Identify if the ISO uses Subiquity.
-                identify_is_subiquity()
+                identify_has_subiquity()
 
             # Identify the casper relative directory.
             if not model.status.casper_directory:
 
                 is_error = identify_casper_directory()
                 if is_error: return  # Stay on this page.
-
-            # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-            # TODO: Remove this section in a future release. (12/27/2020)
-            #       Also, remove similar code from start_page and extract_page.
-
-            # Correct an error in the ISO template.
-            if model.status.iso_template:
-                template = constructor.decode(model.status.iso_template)
-                if '{{volume_id}}' in template:
-                    template = template.replace('{{volume_id}}', '{volume_id}')
-                    model.status.iso_template = constructor.encode(template)
-            # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
             # Success. Pause to allow the user to see the result.
             message = 'Success.'
@@ -460,13 +459,35 @@ def identify_casper_directory():
     return False  # (No error)
 
 
-def identify_is_subiquity():
+def identify_has_typical_install():
     """
-    Identify if the ISO uses Subiquity.
-    (Added to support Ubuntu 23.04, which no longer uses Ubiquity).
+    Identify if the ISO has the filesystem.manifest-remove file.
+    """
 
-    Assume the ISO uses Subiquity if the file squashfs directory
-    contains at least one installer squashfs file.
+    file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE)
+    model.installer.has_typical_install = os.path.exists(file_path)
+
+
+def identify_has_minimal_install():
+    """
+    Identify if the ISO has the "filesystem.manifest-minimal-remove"
+    file.
+    """
+
+    file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+    model.installer.has_minimal_install = os.path.exists(file_path)
+
+
+def identify_has_subiquity():
+    """
+    Identify if the ISO uses the Subiquity installer.
+    • Subiquity was introduced in Ubuntu 21.04+ Server ISO.
+    • Subiquity was introduced in Ubuntu 23.04+ Desktop ISO.
+
+    Assume the ISO uses Subiquity if:
+    • The file "install-sources.yaml" exists
+    • The squashfs directory contains at least one installer squashfs
+      file
     """
 
     # Ubuntu 23.04+ Desktop
@@ -476,7 +497,7 @@ def identify_is_subiquity():
     file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, 'install-sources.yaml')
     if os.path.isfile(file_path):
         logger.log_value('Does the ISO use Subiquity?', True)
-        model.status.is_subiquity = True
+        model.installer.has_subiquity = True
         return
 
     # Ubuntu 21.04+ Server
@@ -488,12 +509,11 @@ def identify_is_subiquity():
     file_names = file_utilities.find_files_with_pattern(rf'.*installer.*{EXTENSION_SQUASHFS}$', directory)
     if file_names:
         logger.log_value('Does the ISO use Subiquity?', True)
-        model.status.is_subiquity = True
+        model.installer.has_subiquity = True
         return
 
     logger.log_value('Does the ISO use Subiquity?', False)
-    model.status.is_subiquity = False
-
+    model.installer.has_subiquity = False
     return
 
 

@@ -731,7 +731,7 @@ def find_files_with_pattern(file_name_pattern, start_directory, follow_links=Fal
                 function that only takes a single argument.
 
                 Arguments:
-                file_pah : str
+                file_path : str
                     The simlink file path to check.
 
                 Returns:

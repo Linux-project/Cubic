@@ -46,11 +46,9 @@ import re
 import string
 import time
 
-from packaging import version
-
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import EXTENSION_MANIFEST
-from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE
+from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0125_MS, SLEEP_0250_MS, SLEEP_0500_MS, SLEEP_1000_MS
 from cubic.utilities import constructor
@@ -98,14 +96,14 @@ def setup(action, old_page=None):
         displayer.update_label('prepare_page__installed_packages_message', '...', False)
 
         # --------------------------------------------------------------
-        # Create the package manifest for a typical install.
+        # Create the removable packages list for a typical install.
         # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_1', BULLET)
         displayer.update_label('prepare_page__package_manifest_1_message', '...', False)
 
         # --------------------------------------------------------------
-        # Create the package manifest for a minimal install.
+        # Create the removable packages list for a minimal install.
         # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_2', BULLET)
@@ -186,51 +184,43 @@ def enter(action, old_page=None):
         time.sleep(SLEEP_0500_MS)
 
         # --------------------------------------------------------------
-        # Create the package manifest for a typical install.
+        # Create the removable packages list for a typical install.
         # --------------------------------------------------------------
 
+        logger.log_label('Create the removable packages list for a typical install')
         displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_REMOVE)
+
         # If the file path does not exist, the packages list will be empty.
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE)
         removable_packages_list = file_utilities.read_lines(file_path)
         count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
         logger.log_value('Number of installed packages matching typical install list', count)
         number_text = constructor.number_as_text(count)
         plural_text = constructor.get_plural('package', 'packages', count)
         message = f'Identified {number_text} {plural_text} for removal during a typical install.'
-        if not model.ubiquity_version:
-            status = OPTIONAL
-            message += os.linesep + 'Ubiquity is not installed.'
-        else:
-            status = OK
+        status = OK if model.installer.has_typical_install else OPTIONAL
         displayer.update_label('prepare_page__package_manifest_1_message', message, False)
         displayer.update_status('prepare_page__package_manifest_1', status)
         time.sleep(SLEEP_0500_MS)
 
         # --------------------------------------------------------------
-        # Create the package manifest for a minimal install.
+        # Create the removable packages list for a minimal install.
         # --------------------------------------------------------------
 
+        logger.log_label('Create the removable packages list for a minimal install')
         displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+
         # If the file path does not exist, the packages list will be empty.
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
         removable_packages_list = file_utilities.read_lines(file_path)
         count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
         logger.log_value('Number of installed packages matching minimal install list', count)
         number_text = constructor.number_as_text(count)
         plural_text = constructor.get_plural('package', 'packages', count)
         message = f'Identified {number_text} {plural_text} for removal during a minimal install.'
-        if not model.ubiquity_version:
-            status = OPTIONAL
-            message += os.linesep + 'Ubiquity is not installed.'
-        elif version.parse(model.ubiquity_version) < version.parse('18.04'):
-            # The minimal install option was introduced in Ubuntu 18.04.
-            status = OPTIONAL
-            message += os.linesep + f'Ubiquity {model.ubiquity_version} does not support minimal install.'
-        else:
-            status = OK
+        status = OK if model.installer.has_minimal_install else OPTIONAL
         displayer.update_label('prepare_page__package_manifest_2_message', message, False)
         displayer.update_status('prepare_page__package_manifest_2', status)
         time.sleep(SLEEP_0500_MS)
@@ -257,21 +247,18 @@ def enter(action, old_page=None):
         # Determine if the Packages page should be skipped.
         # --------------------------------------------------------------
 
-        # The validate function already set model.ubiquity_version.
-
-        if model.ubiquity_version:
+        if model.installer.has_typical_install:
             # Show the Packages page.
-            logger.log_value('Is Ubiquity installed?', 'Yes')
             logger.log_value('Show the Packages page?', 'Yes')
             return 'next'
         else:
             # Do not show the Packages page.
-            logger.log_value('Is Ubiquity installed?', 'No')
             logger.log_value('Show the Packages page?', 'No')
             # Set the minimal install option to False.
-            # The Packages page, which sets the minimal install option, will be
-            # skipped, so the the minimal install option must be set here.
-            model.options.add_minimal_install = False
+            # The Packages page, which sets the minimal install option,
+            # will be skipped, so the the minimal install option must be
+            # set here.
+            model.installer.has_minimal_install = False
             return 'next-options'
 
     else:
@@ -609,7 +596,7 @@ def _update_kernel_details_list(kernel_details_list):
             if len(kernel_details_list) > 1:
                 if note: note += ' '  # os.linesep
                 note += 'Select this kernel if you are unable to boot the disk using other kernel versions.'
-            if model.status.is_subiquity:
+            if model.installer.has_subiquity:
                 # If Subiquity is used, select the original kernel.
                 # Added for Cubic 2023.03.78 to support Ubuntu 23.04.
                 if note: note += ' '  # os.linesep
@@ -1459,7 +1446,7 @@ def create_package_details_list_02(root_directory):
 
 def populate_package_details_list_for_typical_install(package_details_list, removable_packages_list):
 
-    logger.log_label('Identify removable packages for a typical install')
+    # logger.log_label('Identify removable packages for a typical install')
 
     number_of_packages_total = len(package_details_list)
     number_of_packages_to_remove = 0
@@ -1503,7 +1490,7 @@ def populate_package_details_list_for_typical_install(package_details_list, remo
 
 def populate_package_details_list_for_minimal_install(package_details_list, removable_packages_list):
 
-    logger.log_label('Identify removable packages for a minimal install')
+    # logger.log_label('Identify removable packages for a minimal install')
 
     number_of_packages_total = len(package_details_list)
     number_of_packages_to_remove = 0
@@ -1627,11 +1614,9 @@ def validate_page():
     Determine if the Packages page should be skipped.
     """
 
-    model.ubiquity_version = constructor.get_package_version('ubiquity', model.project.custom_root_directory)
-
-    if model.ubiquity_version:
+    # Show the Packages page if the installer requires it.
+    if model.installer.has_typical_install:
         # Show the Packages page.
-        logger.log_value('Is Ubiquity installed?', 'Yes')
         logger.log_value('Show the Packages page?', 'Yes')
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -1647,7 +1632,6 @@ def validate_page():
 
     else:
         # Do not show the Packages page.
-        logger.log_value('Is Ubiquity installed?', 'No')
         logger.log_value('Show the Packages page?', 'No')
         displayer.reset_buttons(
             back_button_label='❬Back',

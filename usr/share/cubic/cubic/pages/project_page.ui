@@ -1186,7 +1186,7 @@
             <property name="can-focus">False</property>
             <property name="column-spacing">12</property>
             <child>
-              <object class="GtkLabel" id="project_page__custom_options_update_os_release_label">
+              <object class="GtkLabel" id="project_page__custom_update_os_release_label">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">OS Release</property>
@@ -1198,14 +1198,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="project_page__custom_options_update_os_release_check_button">
+              <object class="GtkCheckButton" id="project_page__custom_update_os_release_check_button">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">False</property>
                 <property name="image-position">right</property>
                 <property name="draw-indicator">True</property>
-                <signal name="toggled" handler="on_toggled__project_page__custom_options_update_os_release_check_button" swapped="no"/>
+                <signal name="toggled" handler="on_toggled__project_page__custom_update_os_release_check_button" swapped="no"/>
               </object>
               <packing>
                 <property name="left-attach">1</property>
@@ -1214,7 +1214,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="project_page__custom_options_update_os_release_instructions">
+              <object class="GtkLabel" id="project_page__custom_update_os_release_instructions">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="valign">start</property>
@@ -1230,7 +1230,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkImage" id="project_page__custom_options_update_os_release_status">
+              <object class="GtkImage" id="project_page__custom_update_os_release_status">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="icon-name">cubic-blank-symbolic</property>
@@ -1282,7 +1282,7 @@
       <widget name="project_page__custom_iso_release_name_label"/>
       <widget name="project_page__custom_iso_disk_name_label"/>
       <widget name="project_page__custom_iso_release_notes_url_label"/>
-      <widget name="project_page__custom_options_update_os_release_label"/>
+      <widget name="project_page__custom_update_os_release_label"/>
     </widgets>
   </object>
 </interface>

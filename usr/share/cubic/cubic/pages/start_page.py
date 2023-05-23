@@ -284,8 +284,7 @@ def on_changed__start_page__project_directory_entry(widget):
 
 def selected_project_directory(directory):
 
-    logger.log_label('Directory selected')
-    logger.log_value('Directory', directory)
+    # logger.log_value('The selected directory is', original_iso_file_path)
 
     displayer.update_entry('start_page__project_directory_entry', directory)
 
@@ -602,17 +601,19 @@ def initialize_model():
     model.custom.iso_disk_name = None
     model.custom.iso_release_notes_url = None
 
-    model.status.is_success_copy = False
-    model.status.is_success_extract = False
+    model.status.is_success_copy = None
+    model.status.is_success_extract = None
     model.status.iso_template = None
     model.status.squashfs_directory = None
     model.status.squashfs_file_name = None
     model.status.casper_directory = None
-    model.status.is_subiquity = False
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 
     model.options.update_os_release = None
-    model.options.add_minimal_install = None
     model.options.boot_configurations = None
     model.options.compression = None
+
+    model.installer.has_typical_install = None
+    model.installer.has_minimal_install = None
+    model.installer.has_subiquity = None

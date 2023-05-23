@@ -525,8 +525,9 @@ def validate_page():
     Determine if the Packages page should be skipped.
     """
 
-    if model.ubiquity_version:
+    if model.installer.has_typical_install:
         # Show the Packages page.
+        # logger.log_value('Show the Packages page?', 'Yes')
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -541,6 +542,7 @@ def validate_page():
 
     else:
         # Do not show the Packages page.
+        # logger.log_value('Show the Packages page?', 'No')
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back-terminal',

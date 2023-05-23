@@ -44,11 +44,9 @@ import os
 import re
 import time
 
-from packaging import version
-
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import EXTENSION_SIZE, EXTENSION_SQUASHFS
-from cubic.constants import FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_REMOVE, FILE_SYSTEM_SIZE
+from cubic.constants import FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE, FILE_SYSTEM_SIZE
 from cubic.constants import FINAL_PERCENT
 from cubic.constants import GAP
 from cubic.constants import MIB, GIB, MAXIMUM_DISK_SIZE_BYTES, MAXIMUM_DISK_SIZE_GIB
@@ -483,8 +481,10 @@ def create_squashfs():
     message = f'Using {model.options.compression} compression.'
     displayer.update_label('generate_page__create_squashfs_message', message, False)
 
-    # Create filesystem.squashfs or
-    # ubuntu-server-minimal.ubuntu-server.squashfs.
+    # Create one of the following files:
+    # • filesystem.squashfs
+    # • ubuntu-server-minimal.squashfs
+    # • minimal.squashfs
 
     # Pkexec is required.
     program = os.path.join(model.application.directory, 'commands', 'compress-root')
@@ -851,24 +851,19 @@ def update_checksums():
         file_path = os.path.join(model.project.custom_disk_directory, file_path)
         exclude_paths.append(file_path)
 
-    # Exclude the filesystem manifest remove files, as necessary.
-    # The minimal install option was introduced in Ubuntu 18.04.
-    if not model.ubiquity_version:
+    # Exclude the typical or minimal remove files as necessary.
+    # Exclude file paths must be full file paths.
+    if not model.installer.has_typical_install:
         # Exclude the filesystem.manifest-remove.
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_REMOVE)
+        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE)
         exclude_paths.append(file_path)
         # Exclude the filesystem.manifest-minimal-remove.
         file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
         exclude_paths.append(file_path)
-    elif version.parse(model.ubiquity_version) < version.parse('18.04'):
+    elif not model.installer.has_minimal_install:
         # Exclude the filesystem.manifest-minimal-remove.
         file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
         exclude_paths.append(file_path)
-    elif not model.options.add_minimal_install:
-        # Exclude the filesystem.manifest-minimal-remove.
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
-        exclude_paths.append(file_path)
-
     logger.log_value('Exclude files from the checksum', exclude_paths)
 
     #
@@ -1151,14 +1146,16 @@ def _get_xorriso_command():
     complete_template = template.format(volume_id=volume_id, boot_image_directory=boot_image_directory)
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
 
-    # Exclude the filesystem manifest remove files, as necessary.
-    # The minimal install option was introduced in Ubuntu 18.04.
-    exclude_file_path_1 = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_REMOVE)
-    exclude_file_path_2 = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+    # Exclude file paths must be relative to the custom disk directory.
+    file_path = os.path.join(model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE)
+    exclude_file_path_1 = file_path
+    file_path = os.path.join(model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
+    exclude_file_path_2 = file_path
 
-    if not model.ubiquity_version:
-        # Exclude the filesystem.manifest-remove.
-        # Exclude the filesystem.manifest-minimal-remove.
+    # Exclude the typical or minimal remove files as necessary.
+    if not model.installer.has_typical_install:
+        # Exclude filesystem.manifest-remove.
+        # Exclude filesystem.manifest-minimal-remove.
         command = ('xorriso '                     \
                    '-as mkisofs '                 \
                    '-r '                          \
@@ -1170,20 +1167,8 @@ def _get_xorriso_command():
                    f'-m "{exclude_file_path_2}" ' \
                    f'{complete_template} '        \
                    f'-o "{iso_file_path}" .')
-    elif version.parse(model.ubiquity_version) < version.parse('18.04'):
-        # Exclude the filesystem.manifest-minimal-remove.
-        command = ('xorriso '                     \
-                   '-as mkisofs '                 \
-                   '-r '                          \
-                   '-J '                          \
-                   '-joliet-long '                \
-                   '-l '                          \
-                   '-iso-level 3 '                \
-                   f'-m "{exclude_file_path_2}" ' \
-                   f'{complete_template} '        \
-                   f'-o "{iso_file_path}" .')
-    elif not model.options.add_minimal_install:
-        # Exclude the filesystem.manifest-minimal-remove.
+    elif not model.installer.has_minimal_install:
+        # Exclude filesystem.manifest-minimal-remove.
         command = ('xorriso '                     \
                    '-as mkisofs '                 \
                    '-r '                          \

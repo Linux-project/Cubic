@@ -589,6 +589,7 @@ class Project(Configuration):
     • Custom
     • Status
     • Options
+    • Installer
     """
 
     # ------------------------------------------------------------------
@@ -604,6 +605,7 @@ class Project(Configuration):
         • Custom
         • Status
         • Options
+        • Installer
 
         Arguments:
         self : Configuration
@@ -612,7 +614,7 @@ class Project(Configuration):
             The file path of the configuration file.
         """
 
-        super().__init__(file_path, 'Project', 'Original', 'Custom', 'Status', 'Options')
+        super().__init__(file_path, 'Project', 'Original', 'Custom', 'Status', 'Options', 'Installer')
 
     # ------------------------------------------------------------------
     # Load Methods
@@ -715,11 +717,16 @@ class Project(Configuration):
         # Options
         # Not in the original 2019 layout.
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        # Not in the original 2019 layout.
-        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         # Not in the original 2019 layout.
         model.options.compression = self.get_value('Options', 'compression', default=None)
+
+        # Installer
+        # Not in the original 2019 layout.
+        # Assume has_typical_install is True for older configurations.
+        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=True)
+        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
+        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
 
     def _load_model_2020_layout(self):
         """
@@ -777,10 +784,15 @@ class Project(Configuration):
         # Options
         # Not in the original 2020 layout.
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        # Not in the original 2020 layout.
-        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
+
+        # Installer
+        # Not in the original 2020 layout.
+        # Assume has_typical_install is True for older configurations.
+        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=True)
+        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
+        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
 
     def _load_model_2021_layout(self):
         """
@@ -837,10 +849,15 @@ class Project(Configuration):
         # Options
         # Not in the original 2021 layout.
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        # Not in the original 2021 layout.
-        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
+
+        # Installer
+        # Not in the original 2021 layout.
+        # Assume has_typical_install is True for older configurations.
+        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=True)
+        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
+        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
 
     def _load_model_2022_layout(self):
         """
@@ -888,17 +905,24 @@ class Project(Configuration):
         model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
         model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
         model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
-        # Not in the original 2022 layout.
-        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
+        # In the original 2022 layout.
+        # model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
         model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
         model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
 
         # Options
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        # Not in the original 2022 layout.
-        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
+
+        # Installer
+        # Installer is not in the original 2022 layout.
+        # is_subiquity is in the Status section of the original 2022 layout.
+        # Assume has_typical_install is the opposite of is_subiquity.
+        # Assume has_typical_install is True for older configurations.
+        model.installer.has_typical_install = not self.get_boolean('Status', 'is_subiquity', default=True)
+        model.installer.has_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=False)
+        model.installer.has_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
 
     def _load_model_2023_layout(self):
         """
@@ -911,7 +935,7 @@ class Project(Configuration):
             A derived class of Configuration.
         """
 
-        logger.log_value('Load project configuration', '2022 layout from %s' % self.file_path)
+        logger.log_value('Load project configuration', '2023 layout from %s' % self.file_path)
 
         # The following fields must be set prior to invoking this method:
         # 1. model.project.directory
@@ -946,15 +970,18 @@ class Project(Configuration):
         model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
         model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
         model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
-        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
         model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
         model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
 
         # Options
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        model.options.add_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=True)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
+
+        # Installer
+        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=False)
+        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
+        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
 
     # ------------------------------------------------------------------
     # Save Methods
@@ -1157,7 +1184,7 @@ class Project(Configuration):
         # Not in the original 2021 layout.
         self.set('Options', 'update_os_release', model.options.update_os_release)
         # Not in the original 2021 layout.
-        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
+        self.set('Options', 'add_minimal_install', model.installer.has_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         self.set('Options', 'compression', model.options.compression)
 
@@ -1212,7 +1239,7 @@ class Project(Configuration):
         # Options
         self.set('Options', 'update_os_release', model.options.update_os_release)
         # Not in the original 2022 layout.
-        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
+        self.set('Options', 'add_minimal_install', model.installer.has_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         self.set('Options', 'compression', model.options.compression)
 
@@ -1259,12 +1286,15 @@ class Project(Configuration):
         self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
         self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
         self.set('Status', 'casper_directory', model.status.casper_directory)
-        self.set('Status', 'is_subiquity', model.status.is_subiquity)
         self.set('Status', 'iso_checksum', model.status.iso_checksum)
         self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
 
         # Options
         self.set('Options', 'update_os_release', model.options.update_os_release)
-        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         self.set('Options', 'compression', model.options.compression)
+
+        # Installer
+        self.set('Installer', 'has_typical_install', model.installer.has_typical_install)
+        self.set('Installer', 'has_minimal_install', model.installer.has_minimal_install)
+        self.set('Installer', 'has_subiquity', model.installer.has_subiquity)

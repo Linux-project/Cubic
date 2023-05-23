@@ -198,7 +198,7 @@ class BootTab(FilesTab):
         # Get new values.
         squashfs_directory = model.status.squashfs_directory.split(os.path.sep)[0]
         casper_directory = model.status.casper_directory
-        is_subiquity = model.status.is_subiquity
+        has_subiquity = model.installer.has_subiquity
         new_vmlinuz_file_name = model.kernel_details_list[model.selected_kernel_index]['new_vmlinuz_file_name']
         new_initrd_file_name = model.kernel_details_list[model.selected_kernel_index]['new_initrd_file_name']
 
@@ -243,7 +243,7 @@ class BootTab(FilesTab):
                         logger.log_value('%d. Updated the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
-                    elif not is_subiquity:
+                    elif not has_subiquity:
                         # If subiquity is not used and "boot=" is
                         # missing, add it.
                         text = f' boot={squashfs_directory}'
@@ -289,7 +289,7 @@ class BootTab(FilesTab):
                         logger.log_value('%d. Updated the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
-                    elif not is_subiquity and not re.search(r'^\s*(?i:APPEND)\s+', self.get_line_text(source_buffer, line_number + 1)):
+                    elif not has_subiquity and not re.search(r'^\s*(?i:APPEND)\s+', self.get_line_text(source_buffer, line_number + 1)):
                         # If subiquity is not used and the next line
                         # does not start with "append" and "boot=" is
                         # missing from this line, add it.
@@ -318,7 +318,7 @@ class BootTab(FilesTab):
                         self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
                         update_count += 1
                         logger.log_value('%d. Removed the layerfs path on line' % update_count, line_number)
-                        if model.ubiquity_version:
+                        if model.installer.version:
                             # If Ubiquity is installed, replace with
                             # maybe-ubiquity
                             text = 'maybe-ubiquity'

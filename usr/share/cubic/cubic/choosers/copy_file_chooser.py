@@ -127,6 +127,8 @@ def on_file_activated__copy_file_chooser(widget):
 
     logger.log_label('Activated copy file chooser file')
     uris = get_selected_uris()
+    logger.log_value('The number of files selected', len(uris))
+    logger.log_value('The selected uris are', uris)
     if uris:
         close()
         callback(uris)
@@ -140,6 +142,7 @@ def on_clicked__copy_file_chooser__select_button(widget):
     logger.log_label('Clicked copy file chooser select button')
     uris = get_selected_uris()
     logger.log_value('The number of files selected', len(uris))
+    logger.log_value('The selected uris are', uris)
     if uris:
         close()
         callback(uris)

@@ -51,39 +51,164 @@ from cubic.utilities import logger
 
 
 class Fields:
+    """
+    Store multiple key value pairs, allow assignment of values to keys
+    using the "=" operator, and optionally print a log output whenever
+    a new value is set.
+
+    The log output has the format:
+    "Set <fields name> <key key>... <value>".
+
+    Logging can optionally be turned off for each assignment operation
+    by specifying the value as a tuple containing "value, False".
+    Logging is turned on by default, so specifying "value, True" is
+    unnecessary.
+
+    Each time a value is assigned, it will be logged if:
+    • Logging is not turned off for the assignment
+    • The key and value are new
+    • The value for an existing key has changed
+
+    Each time a value is assigned, it will not be logged if:
+    • Logging is turned off for the assignment
+    • The value for an existing key has not changed
+
+    Notes:
+    • The name of the Fields is stored with all underscore "_"
+      characters replaced with space " " characters and leading and
+      trailing spaces removed to facilitate printing the log in a
+      readable format.
+    • Keys are displayed with all underscore "_" characters replaced
+      with space " " characters and leading and trailing spaces removed
+      to facilitate printing the log in a readable format.
+    • Keys can be any accepted Python variable name, with the
+      restriction that the word "name" may not be used.
+    • Values can be any Python type (str, int, bool, list, etc).
+    • If the value is a string, all underscore "_" characters will be
+      replaced with space " " characters and leading and trailing spaces
+      will be removed to facilitate printing the log in a readable
+      format.
+    • If the value is a tuple, the second item must be False to turn off
+      logging.
+
+    Examples:
+
+    car_parts = Fields('sports_car')
+    # The name of the Fields, "sports car", will be used in all output
+
+    car_parts.name
+    # Output: sports car
+
+    car_parts.engine = '  V6  '
+    # Output: Set sports car engine................. V6
+
+    car_parts.engine
+    Output: V6
+
+    car_parts.spare_tire = None
+    # Output: Set sports car spare tire............. Empty
+
+    car_parts.spare_tire
+    # Output: None
+
+    car_parts.has_anti_lock_breaks = True
+    # Output: Set sports car has anti lock breaks... True
+
+    car_parts.has_anti_lock_breaks
+    # Output: True
+
+    car_parts.has_cd_player = False
+    # Output: Set sports car has cd player.......... False
+
+    car_parts.has_cd_player
+    # Output: False
+
+    car_parts.number_of_seats = 2
+    # Output: Set sports car number_of_seats........ 2
+
+    car_parts.number_of_seats
+    # Output: 2
+
+    car_parts.secret_agent = 'James Bond', False
+    # No output, because logging was turned off for this assignment
+
+    car_parts.secret_agent
+    # Output: James Bond
+    """
 
     def __init__(self, name):
+        """
+        Create a new instance of Fields with the specified name.
 
-        super().__setattr__('name', name.replace('_', ' '))
+        Arguments:
+        self : Fields
+            The Fields class.
+        name : str
+            The name of the new Fields. All underscore "_" characters
+            will be replaced with space " " characters and leading and
+            trailing spaces will be removed to facilitate printing the
+            log in a readable format.
+
+        Returns:
+        : Fields
+            A new instance of Fields with the specified name.
+        """
+
+        super().__setattr__('name', name.replace('_', ' ').strip())
 
     def __setattr__(self, key, value):
+        """
+        Override the assignment operation to optionally print a log
+        output whenever a new value is set.
+
+        The log output has the format:
+        "Set <fields name> <key key>... <value>".
+
+        Arguments:
+        key : str
+            The name of the variable being set; can be any accepted
+            Python variable name, with the restriction that the word
+            "name" may not be used. The key will be displayed with all
+            underscore "_" characters replaced with space " " characters
+            and leading and trailing spaces removed.
+
+        value : object or tuple
+            The value to be set; can be any Python type (str, int, bool,
+            list, etc). If the value is a string, all underscore "_"
+            characters will be replaced with space " " characters and
+            leading and trailing spaces will be removed. If the value is
+            a tuple, the second item must be False to turn off logging.
+        """
 
         # Check if an additional parameter was supplied, and set is_log.
         if isinstance(value, tuple):
             value, is_log = value
         else:
             is_log = True
-
         if isinstance(value, str):
             value = str(value).strip()
-
         if value is None:
+            # Check if value is None to retain boolean False values.
+            # (Do not use "if not value:").
             value = ''
-
         if not hasattr(self, key):
             if is_log:
-                display_key = key.replace('_', ' ')
+                display_key = key.replace('_', ' ').strip()
                 logger.log_value(f'Set {self.name} {display_key}', value)
             super().__setattr__(key, value)
         elif self.__getattribute__(key) != value:
             if is_log:
-                display_key = key.replace('_', ' ')
+                display_key = key.replace('_', ' ').strip()
                 logger.log_value(f'Set {self.name} {display_key}', value)
             super().__setattr__(key, value)
 
     def __repr__(self):
         """
-        Return the string representation of the underlying __dict__.
+        Get the string representation of the underlying __dict__.
+
+        Returns:
+        : str
+            The the string representation of the underlying __dict__.
         """
 
         return str(self.__dict__)
@@ -99,20 +224,28 @@ class IsoField:
     If appending a new field in IsoFields, update both references to the
     last field in the __setattr__() method. This ensures the validators
     are not invoked during the __init__() method. Currently the last
-    field is "options_update_os_release".
+    field is "update_os_release". When instantiating IsoField,
+    *never* use "name" as a key.
     """
 
     def __init__(self, value, iso_fields):
         """
         Create a new IsoField object.
-        value - Either a string that represents the name of the new
-        IsoField, or an IsoField object that will be copied into the new
-        IsoField object. If value is a string, the new IsoField object's
-        values will be initialized to default values. If value is an
-        existing IsoField object, then the new object will have the same
-        name as the original object, and its values will be the same as
-        the values of the original object.
-        iso_fields - The IsoFields container for the new Isofield.
+
+        Arguments:
+        self : IsoField
+            The IsoField class.
+        value : str
+            Either a string that represents the name of the new
+            IsoField, or an IsoField object that will be copied into the
+            new IsoField object. If value is a string, the new IsoField
+            object's values will be initialized to default values. If
+            value is an existing IsoField object, then the new object
+            will have the same name as the original object, and its
+            values will be the same as the values of the original
+            object.
+        iso_fields : IsoFields
+            The IsoFields container for the new Isofield.
         """
 
         # Ensure self.__dict__ contains all required keys. This
@@ -175,11 +308,11 @@ class IsoField:
         """
         Set iso_fields, if they have changed, converting to displayable
         format, as necessary, before storing:
-        - value is stored as a string or empty string if None
-        - is_valid is stored as a boolean or False if None
-        - status is stored as an integer or O if None
-        - message is stored as a string or empty string if None
-        - other iso_fields are stored as-is
+        • value is stored as a string or empty string if None
+        • is_valid is stored as a boolean or False if None
+        • status is stored as an integer or O if None
+        • message is stored as a string or empty string if None
+        • other iso_fields are stored as-is
         """
 
         # Check if an additional parameter was supplied, and set is_log.
@@ -200,7 +333,9 @@ class IsoField:
         elif key == 'value':
             if value:
                 value = str(value).strip()
-            if not value:
+            if value is None:
+                # Check if value is None to retain boolean False values.
+                # (Do not use "if not value:").
                 value = ''
             if self.value != value:
                 if is_log:
@@ -210,8 +345,8 @@ class IsoField:
                 # In order to ensure that the validator is not invoked
                 # during IsoField.__init__() using an incomplete
                 # IsoFields object, check if the last value,
-                # options_update_os_release, has been assigned.
-                if self.validator and self.iso_fields.options_update_os_release:
+                # update_os_release, has been assigned.
+                if self.validator and self.iso_fields.update_os_release:
                     # If a validator is available, validate the fields.
                     is_valid, status, message = self.validator(self.iso_fields)
                     self.is_valid = is_valid
@@ -245,8 +380,8 @@ class IsoField:
                 # In order to ensure that the validator is not invoked
                 # during IsoField.__init__() using an incomplete
                 # IsoFields object, check if the last value,
-                # options_update_os_release, has been assigned.
-                if self.validator and self.iso_fields.options_update_os_release:
+                # update_os_release, has been assigned.
+                if self.validator and self.iso_fields.update_os_release:
                     # if is_log:
                     #     logger.log_value(f'Set {self.iso_fields.name} {self.name} {key}', value)
                     is_valid, status, message = self.validator(self.iso_fields)
@@ -279,13 +414,16 @@ class IsoField:
 
 
 class IsoFields:
+    """
+    When instantiating IsoFields, *never* use "name" as a key.
+    """
 
     # TODO: Copy the name of the IsoField, if one is supplied.
     #       Use value instead of name and iso_fields. Then check value
     #       using isinstance(value, str).
     def __init__(self, name, iso_fields=None):
 
-        super().__setattr__('name', name.replace('_', ' '))
+        super().__setattr__('name', name.replace('_', ' ').strip())
 
         if iso_fields:
             super().__setattr__('iso_version_number', IsoField(iso_fields.iso_version_number, self))
@@ -295,7 +433,7 @@ class IsoFields:
             super().__setattr__('iso_release_name', IsoField(iso_fields.iso_release_name, self))
             super().__setattr__('iso_disk_name', IsoField(iso_fields.iso_disk_name, self))
             super().__setattr__('iso_release_notes_url', IsoField(iso_fields.iso_release_notes_url, self))
-            super().__setattr__('options_update_os_release', IsoField(iso_fields.options_update_os_release, self))
+            super().__setattr__('update_os_release', IsoField(iso_fields.update_os_release, self))
         else:
             super().__setattr__('iso_version_number', IsoField('iso_version_number', self))
             super().__setattr__('iso_file_name', IsoField('iso_file_name', self))
@@ -304,21 +442,21 @@ class IsoFields:
             super().__setattr__('iso_release_name', IsoField('iso_release_name', self))
             super().__setattr__('iso_disk_name', IsoField('iso_disk_name', self))
             super().__setattr__('iso_release_notes_url', IsoField('iso_release_notes_url', self))
-            super().__setattr__('options_update_os_release', IsoField('options_update_os_release', self))
+            super().__setattr__('update_os_release', IsoField('update_os_release', self))
 
     def __eq__(self, iso_fields):
         """
         Return True if the value property of each Isofield of this
         object is equal to the value property of each corresponding
         Isofield of iso_fields. Otherwise, return False.
-        - iso_version_number.value
-        - iso_file_name.value
-        - iso_directory.value
-        - iso_volume_id.value
-        - iso_release_name.value
-        - iso_disk_name.value
-        - iso_release_notes_url.value
-        - options_update_os_release
+        • iso_version_number.value
+        • iso_file_name.value
+        • iso_directory.value
+        • iso_volume_id.value
+        • iso_release_name.value
+        • iso_disk_name.value
+        • iso_release_notes_url.value
+        • update_os_release
         """
 
         return (
@@ -330,7 +468,7 @@ class IsoFields:
             and self.iso_release_name == iso_fields.iso_release_name                 \
             and self.iso_disk_name == iso_fields.iso_disk_name                       \
             and self.iso_release_notes_url == iso_fields.iso_release_notes_url       \
-            and self.options_update_os_release == iso_fields.options_update_os_release)
+            and self.update_os_release == iso_fields.update_os_release)
 
     def __getattr__(self, key):
         """
@@ -346,7 +484,7 @@ class IsoFields:
                 and self.iso_release_name.is_valid        \
                 and self.iso_disk_name.is_valid           \
                 and self.iso_release_notes_url.is_valid   \
-                and self.options_update_os_release.is_valid)
+                and self.update_os_release.is_valid)
 
     def __repr__(self):
         """
@@ -424,14 +562,16 @@ class IsoFieldsHistory:
     def has_history(self):
         """
         Indicate of there is at least one item in the history.
-        Args:
-            self (IsoFieldsHistory): This object.
+
+        Arguments:
+        self : IsoFieldsHistory
+            This object.
 
         Returns:
-            (bool): True if there are one or more items in the history
-                    to the left of the current item.
-                    False if there are zero items in the history to the
-                    left of the current item.
+        : bool
+            True if there are one or more items in the history to the
+            left of the current item. False if there are zero items in
+            the history to the left of the current item.
         """
         return len(self.history) > 0
 
@@ -439,14 +579,16 @@ class IsoFieldsHistory:
         """
         Indicate of there is at least one item in the history to the
         "left" of the currently selected item.
-        Args:
-            self (IsoFieldsHistory): This object.
+
+        Arguments:
+        self : IsoFieldsHistory
+            This object.
 
         Returns:
-            (bool): True if there are one or more items in the history
-                    to the left of the current item.
-                    False if there are zero items in the history to the
-                    left of the current item.
+        : bool
+            True if there are one or more items in the history to the
+            left of the current item. False if there are zero items in
+            the history to the left of the current item.
         """
         return self.selected > 0
 
