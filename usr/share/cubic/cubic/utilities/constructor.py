@@ -50,9 +50,10 @@ import zlib
 
 from cubic.constants import BLANK_VERSION_0000, CUBIC_VERSION_0000
 from cubic.constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
+from cubic.constants import LOG_FILE_NAME
 from cubic.constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
 from cubic.constants import OK
-from cubic.constants import TIME_STAMP_FORMAT, VERSION_NUMBER_FORMAT
+from cubic.constants import TIME_STAMP_FORMAT, TIME_STAMP_FORMAT_YYYYMMDDHHMMSS, VERSION_NUMBER_FORMAT
 from cubic.utilities import logger
 from cubic.utilities.processor import execute_synchronous
 
@@ -730,18 +731,22 @@ def construct_custom_iso_version_number():
     return version
 
 
-def get_current_time_stamp():
+def get_current_time_stamp(time_stamp_format=TIME_STAMP_FORMAT):
     """
-    Get the current time stamp.
+    Get the current time stamp in the specified format.
+
+    Arguments:
+    time_stamp : str
+        Optional time stamp format. The default is TIME_STAMP_FORMAT.
 
     Returns:
     time_stamp : str
         The current time stamp.
     """
 
-    # logger.log_label('Get current time stamp in localized format')
+    # logger.log_label('Get the current time stamp in the specified format')
 
-    time_stamp = time.strftime(TIME_STAMP_FORMAT)
+    time_stamp = time.strftime(time_stamp_format)
 
     return time_stamp
 
@@ -810,17 +815,46 @@ def get_file_time_stamp(file_path):
     return time_stamp
 
 
-def construct_application_configuration_file_path(user_home):
+def construct_log_file_path(project_directory):
     """
-    Construct the full file path for the "config.conf" file. This file
-    is located in the Cubic project directory.
+    Construct the full file path for the log file. This file is located
+    in the Cubic project directory.
+
+    Arguments:
+    project_directory : str
+        The project directory.
 
     Returns:
     file_path : str
         The full file path for the config.conf file.
     """
 
-    # logger.log_label('Construct application configuration file path')
+    # logger.log_label('Construct the log file path')
+    # logger.log_value('The project directory is', project_directory)
+
+    time_stamp = get_current_time_stamp(TIME_STAMP_FORMAT_YYYYMMDDHHMMSS)
+    # file_path = os.path.join(project_directory, f'cubic.{time_stamp}.log')
+    file_path = os.path.join(project_directory, LOG_FILE_NAME % time_stamp)
+    # logger.log_value('The constructed log file path is', file_path)
+
+    return file_path
+
+
+def construct_application_configuration_file_path(user_home):
+    """
+    Construct the full file path for the "config.conf" file. This file
+    is located in the Cubic project directory.
+
+    Arguments:
+    user_home : str
+        The user's home directory.
+
+    Returns:
+    file_path : str
+        The full file path for the config.conf file.
+    """
+
+    # logger.log_label('Construct the application configuration file path')
     # logger.log_value('The user home directory is', user_home)
 
     file_path = os.path.join(user_home, '.config', 'cubic', 'cubic.conf')
@@ -834,12 +868,16 @@ def construct_project_configuration_file_path(project_directory):
     Construct the full file path for the "config.conf" file. This file
     is located in the Cubic project directory.
 
+    Arguments:
+    project_directory : str
+        The project directory.
+
     Returns:
     file_path : str
         The full file path for the config.conf file.
     """
 
-    # logger.log_label('Construct project configuration file path')
+    # logger.log_label('Construct the project configuration file path')
     # logger.log_value('The project directory is', project_directory)
 
     file_path = os.path.join(project_directory, 'cubic.conf')
@@ -853,12 +891,16 @@ def construct_original_iso_mount_point(project_directory):
     Construct the full file path for the mount point for the original
     ISO. This file is located in the Cubic project directory.
 
+    Arguments:
+    project_directory : str
+        The project directory.
+
     Returns:
     original_iso_mount_point : str
         The full file path for the original ISO mount point.
     """
 
-    # logger.log_label('Construct original disk image mount point')
+    # logger.log_label('Construct the original disk image mount point')
     # logger.log_value('The project directory is', project_directory)
 
     original_iso_mount_point = os.path.join(project_directory, ISO_MOUNT_POINT)
@@ -872,12 +914,16 @@ def construct_custom_root_directory(project_directory):
     Construct the full file path for the custom root directory. This
     directory is located in the Cubic project directory.
 
+    Arguments:
+    project_directory : str
+        The project directory.
+
     Returns:
     custom_root_directory : str
         The full file path for the custom root directory.
     """
 
-    # logger.log_label('Construct custom root directory')
+    # logger.log_label('Construct the custom root directory')
     # logger.log_value('The project directory is', project_directory)
 
     custom_root_directory = os.path.join(project_directory, CUSTOM_ROOT_DIRECTORY)
@@ -891,12 +937,16 @@ def construct_custom_disk_directory(project_directory):
     Construct the full file path for the custom disk directory. This
     directory is located in the Cubic project directory.
 
+    Arguments:
+    project_directory : str
+        The project directory.
+
     Returns:
     custom_disk_directory : str
         The full file path for the custom disk directory.
     """
 
-    # logger.log_label('Construct custom disk directory')
+    # logger.log_label('Construct the custom disk directory')
     # logger.log_value('The project directory is', project_directory)
 
     custom_disk_directory = os.path.join(project_directory, CUSTOM_DISK_DIRECTORY)
@@ -921,7 +971,7 @@ def construct_custom_iso_file_name(original_iso_file_name, custom_iso_version_nu
         The custom ISO file name with a ".iso" extension.
     """
 
-    logger.log_label('Construct custom disk image file name')
+    logger.log_label('Construct the custom disk image file name')
     logger.log_value('The original disk image file name is', original_iso_file_name)
     logger.log_value('The custom disk image version number is', custom_iso_version_number)
 
@@ -1023,7 +1073,7 @@ def construct_custom_iso_volume_id(original_iso_volume_id, custom_iso_version_nu
         The custom ISO volume id.
     """
 
-    logger.log_label('Construct custom disk image volume id')
+    logger.log_label('Construct the custom disk image volume id')
     logger.log_value('The original disk image volume id is', original_iso_volume_id)
     logger.log_value('The custom disk image version number is', custom_iso_version_number)
 
@@ -1130,7 +1180,7 @@ def construct_custom_iso_release_name(original_iso_release_name):
         The custom ISO release name.
     """
 
-    # logger.log_label('Construct custom disk image release name')
+    # logger.log_label('Construct the custom disk image release name')
     # logger.log_value('The original disk image release name is', original_iso_release_name)
 
     try:
@@ -1194,7 +1244,7 @@ def construct_custom_iso_checksum_file_name(custom_iso_file_name):
         The custom ISO checksum file name  with a ".md5" extension.
     """
 
-    # logger.log_label('Construct custom disk image checksum file name')
+    # logger.log_label('Construct the custom disk image checksum file name')
     # logger.log_value('The custom disk image file name is', custom_iso_file_name)
 
     try:

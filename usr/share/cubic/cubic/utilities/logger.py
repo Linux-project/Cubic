@@ -46,8 +46,11 @@ from cubic.constants import BACKGROUD_GREEN, BACKGROUD_YELLOW, NORMAL
 # Global Variables & Constants
 ########################################################################
 
-verbose = False
 total_width = 80
+
+log = False
+log_file = None
+verbose = False
 
 ########################################################################
 # Logging Functions
@@ -56,22 +59,19 @@ total_width = 80
 
 def log_title(text):
 
-    global verbose
-    if verbose: _log_title(text)
+    if verbose or log: _log_title(text)
 
 
 def log_label(text):
 
-    global verbose
-    if verbose: _log_label(text)
+    if verbose or log: _log_label(text)
 
 
 def log_value(column_a_text, column_b_text=None):
 
-    global verbose
-    # if verbose: _log_value_top(column_a_text, column_b_text, column_a_initial_indent='    ')
-    # if verbose: _log_value_bottom(column_a_text, column_b_text, column_a_initial_indent='    ')
-    if verbose: _log_value_hanging(column_a_text, column_b_text, column_a_initial_indent='  • ', column_a_subsequent_indent='    ')
+    # if verbose or log: _log_value_top(column_a_text, column_b_text, column_a_initial_indent='    ')
+    # if verbose or log: _log_value_bottom(column_a_text, column_b_text, column_a_initial_indent='    ')
+    if verbose or log: _log_value_hanging(column_a_text, column_b_text, column_a_initial_indent='  • ', column_a_subsequent_indent='    ')
 
 
 ########################################################################
@@ -81,29 +81,38 @@ def log_value(column_a_text, column_b_text=None):
 
 def _log_title(text):
 
-    global total_width
     lines = textwrap.fill(str(text).strip(), width=total_width, initial_indent='', subsequent_indent='')
-    lines = f'{BACKGROUD_YELLOW}{lines:<{total_width}}{NORMAL}'
 
-    print()
-    print(lines)
-    print()
+    if verbose:
+        print()
+        print(f'{BACKGROUD_YELLOW}{lines:<{total_width}}{NORMAL}')
+        print()
+    if log_file:
+        _write('')
+        _write(f'{lines:<{total_width}}')
+        _write('')
 
 
 def _log_label(text):
 
-    global total_width
     width_column_a = int(total_width / 2.0) + 3
 
     column_a_lines = textwrap.wrap(str(text).strip(), width=width_column_a, initial_indent='  ', subsequent_indent='  ')
 
     column_a_size = len(column_a_lines)
 
-    print()
-    for index in range(column_a_size):
-        column_a_line = f'{column_a_lines[index]:<{width_column_a}}'
-        print(f'{BACKGROUD_GREEN}{column_a_line}{NORMAL}')
-    print()
+    if verbose:
+        print()
+        for index in range(column_a_size):
+            column_a_line = f'{column_a_lines[index]:<{width_column_a}}'
+            print(f'{BACKGROUD_GREEN}{column_a_line}{NORMAL}')
+        print()
+    if log_file:
+        _write('')
+        for index in range(column_a_size):
+            column_a_line = f'{column_a_lines[index]:<{width_column_a}}'
+            _write(f'{column_a_line}')
+        _write('')
 
 
 def _log_value_top(column_a_text, column_b_text=None, column_a_initial_indent='  ', column_a_subsequent_indent='  '):
@@ -112,7 +121,6 @@ def _log_value_top(column_a_text, column_b_text=None, column_a_initial_indent=' 
     # Column B width includes the initial/subsequent indents of one character.
     # The total width is the sum of column A width + column B width.
 
-    global total_width
     width_column_a = int(total_width / 2.0)
     width_column_b = total_width - width_column_a
 
@@ -149,7 +157,11 @@ def _log_value_top(column_a_text, column_b_text=None, column_a_initial_indent=' 
             column_b_line = ''
 
         # Print column A and column B.
-        print(f'{column_a_line}{column_b_line}')
+
+        if verbose:
+            print(f'{column_a_line}{column_b_line}')
+        if log_file:
+            _write(f'{column_a_line}{column_b_line}')
 
 
 def _log_value_bottom(column_a_text, column_b_text=None, column_a_initial_indent='  ', column_a_subsequent_indent='  '):
@@ -158,7 +170,6 @@ def _log_value_bottom(column_a_text, column_b_text=None, column_a_initial_indent
     # Column B width includes the initial/subsequent indents of one character.
     # The total width is the sum of column A width + column B width.
 
-    global total_width
     width_column_a = int(total_width / 2.0)
     width_column_b = total_width - width_column_a
 
@@ -196,7 +207,10 @@ def _log_value_bottom(column_a_text, column_b_text=None, column_a_initial_indent
             column_b_line = ''
 
         # Print column A and column B.
-        print(f'{column_a_line}{column_b_line}')
+        if verbose:
+            print(f'{column_a_line}{column_b_line}')
+        if log_file:
+            _write(f'{column_a_line}{column_b_line}')
 
 
 def _log_value_hanging(column_a_text, column_b_text=None, column_a_initial_indent='  ', column_a_subsequent_indent='  '):
@@ -205,7 +219,6 @@ def _log_value_hanging(column_a_text, column_b_text=None, column_a_initial_inden
     # Column B width includes the initial/subsequent indents of one character.
     # The total width is the sum of column A width + column B width.
 
-    global total_width
     width_column_a = int(total_width / 2.0)
     width_column_b = total_width - width_column_a
 
@@ -243,4 +256,42 @@ def _log_value_hanging(column_a_text, column_b_text=None, column_a_initial_inden
             column_b_line = ''
 
         # Print column A and column B.
-        print(f'{column_a_line}{column_b_line}')
+        if verbose:
+            print(f'{column_a_line}{column_b_line}')
+        if log_file:
+            _write(f'{column_a_line}{column_b_line}')
+
+
+# https://docs.python.org/3/library/functions.html#open
+#
+# r   Open text file for reading. The stream is positioned at the
+#     beginning of the file.
+#
+# r+  Open for reading and writing. The stream is positioned at the
+#     beginning of the file.
+#
+# w   Truncate file to zero length or create text file for writing.
+#     The stream is positioned at the beginning of the file.
+#
+# w+  Open for reading and writing. The file is created if it does
+#     not exist, otherwise it is truncated. The stream is positioned
+#     at the beginning of the file.
+#
+# a   Open for writing. The file is created if it does not exist.
+#     The stream is positioned at the end of the file.  Subsequent
+#     writes to the file will always end up at the then current end
+#     of file, irrespective of any intervening fseek(3) or similar.
+#
+# a+  Open for reading and writing. The file is created if it does
+#     not exist. The stream is positioned at the end of the file.
+#     Subsequent writes to the file will always end up at the then
+#     current end of file, irrespective of any intervening fseek(3)
+#     or similar.
+
+
+def _write(lines):
+    with open(log_file, 'a') as file:
+        # When writing in text mode, the default is to convert
+        # occurrences of \n back to platform-specific line endings.
+        # (See https://docs.python.org/3/tutorial/inputoutput.html)
+        file.write(f'{lines}\n')

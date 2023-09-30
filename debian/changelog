@@ -1,4 +1,8 @@
-cubic (2023.05) bionic focal groovy hirsute impish jammy kinetic lunar mantic; urgency=low
+cubic (2023.09) bionic focal groovy hirsute impish jammy kinetic lunar mantic; urgency=low
+
+  * Issues fixed in version 2023.09-84:
+
+  - Enhancement GH:#261, Add a --log command line option to Cubic.
 
   * Issues fixed in version 2023.05-83:
 
@@ -435,4 +439,4 @@ cubic (2023.05) bionic focal groovy hirsute impish jammy kinetic lunar mantic; u
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 22 May 2023 22:02:32 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 29 Sep 2023 20:44:07 -0400

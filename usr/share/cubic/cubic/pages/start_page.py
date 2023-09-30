@@ -205,8 +205,11 @@ def leave(action, new_page=None):
         # 4. model.project.configuration
         #    - Set in the validate_page() function
         # 5. model.project.iso_mount_point
+        #    - Set in the initialize_model() function
         # 6. model.project.custom_root_directory
+        #    - Set in the initialize_model() function
         # 7. model.project.custom_disk_directory
+        #    - Set in the initialize_model() function
 
         # Prepend the selected project directory to the list of previous
         # project directories, ensuring there are no duplicates.
@@ -231,8 +234,11 @@ def leave(action, new_page=None):
         # 4. model.project.configuration
         #    - Set in the validate_page() function
         # 5. model.project.iso_mount_point
+        #    - Set in the initialize_model() function
         # 6. model.project.custom_root_directory
+        #    - Set in the initialize_model() function
         # 7. model.project.custom_disk_directory
+        #    - Set in the initialize_model() function
 
         # Prepend the selected project directory to the list of previous
         # project directories, ensuring there are no duplicates. Truncate
@@ -412,11 +418,68 @@ def validate_page():
         return  # Done
 
     # ------------------------------------------------------------------
-    # Create a project configuration and initialize the model.
+    # Create a project log file, initialize the model, and create the
+    # project configuration.
     # ------------------------------------------------------------------
 
+    # Create a project log file.
+    if logger.log:
+        # Create a new log file. Prior checks above ensure the directory
+        # is valid.
+        logger.log_file = constructor.construct_log_file_path(model.project.directory)
+        # Temporarily disable verbose mode, if it is on.
+        verbose, logger.verbose = logger.verbose, False
+        # Write the application title to the log file (only).
+        logger.log_title('Cubic - Custom Ubuntu ISO Creator')
+        # Reset verbose mode to previous value.
+        logger.verbose = verbose
+        logger.log_value('The log file is', logger.log_file)
+
+    # Log the application information again because the log file does
+    # not exist until a valid project directory is selected.
+    logger.log_value('The application directory is', model.application.directory)
+    logger.log_value('The application user home is', model.application.user_home)
+    logger.log_value('The application kernel version is', model.application.kernel_version)
+    logger.log_value('The application configuration is', model.application.configuration)
+    logger.log_value('The application cubic version is', model.application.cubic_version)
+    logger.log_value('The application visited sites are', model.application.visited_sites)
+    logger.log_value('The application projects are', model.application.projects)
+    logger.log_value('The application iso file path is', model.application.iso_file_path)
+
+    # There is no need to log the following values because they are set
+    # as indicated.
+    # 1. model.project.cubic_version
+    #    - Set in the validate_page() function
+    # 2. model.project.create_date
+    #    - Loaded from an existing configuration, or set to current date
+    #      in the initialize_model() function
+    # 3. model.project.modify_date
+    #    - Set on the Project page
+    # 4. model.project.directory
+    #    - Set above
+    # 5. model.project.configuration
+    #    - Set in the validate_page() function
+    # 6. model.project.iso_mount_point
+    #    - Set in the validate_page() function
+    # 7. model.project.custom_root_directory
+    #    - Set in the validate_page() function
+    # 8. model.project.custom_disk_directory
+    #    - Set in the validate_page() function
+    #
+    # logger.log_value('The project cubic version is', model.project.cubic_version)
+    # logger.log_value('The project create date is', model.project.create_date)
+    # logger.log_value('The project modify date is', model.project.modify_date)
+    # logger.log_value('The project directory is', model.project.directory)
+    # logger.log_value('The project configuration is', model.project.configuration)
+    # logger.log_value('The project iso mount point is', model.project.iso_mount_point)
+    # logger.log_value('The project custom root directory is', model.project.custom_root_directory)
+    # logger.log_value('The project custom disk directory is', model.project.custom_disk_directory)
+
+    # Create the project configuration.
     file_path = constructor.construct_project_configuration_file_path(model.project.directory)
     model.project.configuration = configuration.Project(file_path)
+
+    # Initialize the model.
     initialize_model()
 
     # ------------------------------------------------------------------

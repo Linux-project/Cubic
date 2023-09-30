@@ -85,6 +85,7 @@ TIME_STAMP_FORMAT_LONG_1 = '%A %B %d, %Y %I:%M %p'
 TIME_STAMP_FORMAT_LONG_2 = '%A %B %d, %Y %I:%M'
 TIME_STAMP_FORMAT_LONG_3 = '%A %B %d, %Y %H:%M'
 TIME_STAMP_FORMAT_YYYYMMDD = '%Y%m%d'
+TIME_STAMP_FORMAT_YYYYMMDDHHMMSS = '%Y%m%d%H%M%S'
 VERSION_NUMBER_FORMAT = '%Y.%m.%d'
 
 # Unicode "Hair Space" character used to precede percent ("%") symbols.
@@ -148,6 +149,7 @@ CUSTOM_DISK_DIRECTORY = 'custom-disk'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'
 IMAGE_FILE_NAME = 'partition-%s.img'
 LOCK_FILE_NAME = '.#custom-root.lck'
+LOG_FILE_NAME = 'cubic.%s.log'
 
 # This list is used to select the correct squashfs directory and file
 # name in extract_page.identify_squashfs_file_path() if multiple
