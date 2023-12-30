@@ -209,9 +209,9 @@ def get_os_distribution(root_directory='/'):
         with open(file_path, 'r') as file:
             for line in file:
                 key, value = line.split('=', 1)
-                key = key.upper() if key else None
+                key = key.strip().upper() if key else None
                 if key == 'ID':
-                    distribution = value.rstrip().lower() if value else None
+                    distribution = value.strip().lower() if value else None
                     break
 
     return distribution
@@ -243,9 +243,12 @@ def os_is_distribution(distribution, root_directory=os.path.sep):
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
+                line = line.strip()
+                if not line: continue
+                if line.startswith('#'): continue
                 key, value = line.split('=', 1)
-                key = key.upper() if key else None
-                value = value.rstrip().lower() if value else None
+                key = key.strip().upper() if key else None
+                value = value.strip().lower() if value else None
                 if key == 'ID':
                     if root_directory == '/':
                         logger.log_value('The host OS distribution is', value)

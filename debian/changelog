@@ -1,4 +1,11 @@
-cubic (2023.09) bionic focal groovy hirsute impish jammy kinetic lunar mantic; urgency=low
+cubic (2023.12) bionic focal groovy hirsute impish jammy kinetic lunar mantic; urgency=low
+
+  * Issues fixed in version 2023.12-85:
+
+  - Fixed Bug GH:#273, Incorrect parsing of os-release file. Ignore comment
+    lines in os-release file.
+  - Fixed Bug GH:#277, Cubic gets stuck at 50% during "Copy Selected Boot Kernel
+    files to the disk". Ignore comment blank lines in os-release file.
 
   * Issues fixed in version 2023.09-84:
 
@@ -439,4 +446,4 @@ cubic (2023.09) bionic focal groovy hirsute impish jammy kinetic lunar mantic; u
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Fri, 29 Sep 2023 20:44:07 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 30 Dec 2023 14:47:05 -0500
