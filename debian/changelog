@@ -1,4 +1,9 @@
-cubic (2023.12) bionic focal groovy hirsute impish jammy kinetic lunar mantic; urgency=low
+cubic (2024.02) bionic focal groovy hirsute impish jammy kinetic lunar mantic noble; urgency=low
+
+  * Issues fixed in version 2024.02-86:
+
+  - Fixed Bug GH:#289, Unable to calculate checksum. Skip symlinks while
+    calculating checksums.
 
   * Issues fixed in version 2023.12-85:
 
@@ -446,4 +451,4 @@ cubic (2023.12) bionic focal groovy hirsute impish jammy kinetic lunar mantic; u
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sat, 30 Dec 2023 14:47:05 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Tue, 20 Feb 2024 19:19:34 -0500

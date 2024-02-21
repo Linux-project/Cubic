@@ -913,20 +913,21 @@ def update_checksums():
 
     try:
         logger.log_value('Write to file', checksums_file_path)
+        line_separator = ''
         with open(checksums_file_path, 'w') as file:
             for file_number, file_path in enumerate(file_paths, start=1):
-                # message =  f'Calculating checksum for file {file_number} of {total_files}.'
-                # displayer.update_label('generate_page__update_checksums_message', message, False)
-                checksum, file_path = file_utilities.calculate_md5_hash(file_path, start_path)
-                if file_number == 1:
-                    file.write(f'{checksum}  ./{file_path}')
-                else:
-                    file.write(f'\n{checksum}  ./{file_path}')
-                percent = 100 * file_number / total_files
-                displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', percent)
                 displayer.update_progress_bar_text(
                     'generate_page__update_checksums_progress_bar',
                     f'Calculating checksum for file {file_number:n} of {total_files:n}')
+                try:
+                    checksum, file_path = file_utilities.calculate_md5_hash(file_path, start_path)
+                    if checksum:
+                        file.write(f'{line_separator}{checksum}  ./{file_path}')
+                        line_separator = os.linesep
+                except FileNotFoundError as exception:
+                    logger.log_value('Skipping file', file_path)
+                percent = 100 * file_number / total_files
+                displayer.update_progress_bar_percent('generate_page__update_checksums_progress_bar', percent)
     except InterruptException as exception:
         logger.log_value('Error', 'Unable to update checksums')
         logger.log_value('The exception is', exception)
