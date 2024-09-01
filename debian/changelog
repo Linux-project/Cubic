@@ -1,4 +1,100 @@
-cubic (2024.02) bionic focal groovy hirsute impish jammy kinetic lunar mantic noble; urgency=low
+cubic (2024.09) bionic focal groovy hirsute impish jammy kinetic lunar mantic noble oracular; urgency=low
+
+  * Issues fixed in version 2024.09-87:
+
+  - With this release, users can see their changes in the Live environment, and
+    the same changes will be reflected in the installed system. Previously, the
+    Live environment did not reflect all of the user's customizations.
+  - Enhanced support for versions of Ubuntu that use the Subiquity installer
+    with a layered file system (Ubuntu Server 21.10 and newer, Ubuntu Desktop
+    23.04 and newer). Continue to support older versions of Ubuntu that use the
+    Ubiquity installer (Ubuntu Server 21.04 and older, Ubuntu Desktop 22.10 and
+    older).
+  - Combine the standard and minimal layered squashfs file systems into a single
+    file system that can be customized on the Terminal page.
+  - Extract both standard squashfs and tminimal squashfs when both files are
+    present (Ubuntu Server 21.10 and newer, Ubuntu Desktop 23.04 and newer).
+  - Updated the progress bar on the Extract page to show the extract process for
+    multiple squashfs file systems, if present. Display the progress in tenths
+    of a percent.
+  - When copying important files from the original disk on the Extract page: do
+    not copy "*.squashfs" files; do not copy "*.manifest" files; do not copy
+    "*.size" files; do not copy "*.gpg" files; do not copy minimal squashfs
+    files. Copy manifest remove files. Copy manifest minimal remove files; do
+    not copy secureboot squashfs files; do not copy language related files.
+  - Updated the "Analyze the original disk image" section on the Extract page to
+    analyze the layout of the original ISO.
+  - Identify the casper directory by checking for the presence of predefined
+    initrd and vmlinuz files in predefined directories, instead of searching for
+    a location containing "vmlinuz" and "initrd.*" files. The possible
+    directories and file names are predefined in the model module.
+  - Identify the squashfs directory by checking for the presence of predefined
+    squashfs files in predefined directories, instead of searching for a
+    location containing "*.squashfs" files. The possible directories and file
+    names are predefined in the model module.
+  - Updated the project configuration file (cubic.conf) layout. Added the Layout
+    section to represent the structure of the ISO file. Simplified the Status
+    section. Removed the Installer section; moved the has_minimal_install field
+    to the Options section.
+  - Removed support for migrating a project from Cubic Classic.
+  - Added ability to migrate a project from Cubic 2024.02-86 to 2024.07-87.
+  - Removed ability to load configuration files from projects created with
+    Cubic versions prior to 2024.02-86.
+  - Updated how file system size is calculated; file system size is now the sum
+    of the standard file system size and the installer file system size.
+  - Create links from minimal file system files (such as "*.squashfs",
+    "*.manifest", and "*.size") to the standard file system files.
+  - Added a note on the Test pages that Ctrl-Alt-F my be used to toggle full
+    screen when using the QEMU emulator.
+  - Renamed "Typical" install to "Standard" install on the Prepare page and the
+    Packages page to align with Ubuntu's terminology. Update code comments and
+    variable names accordingly.
+  - Renamed the "fields" module to "structures", and added the Attributes class
+    (to support ISO Layouts).
+  - Added ISO layout attributes to the model.
+  - Set filesystem size file name to "filesystem.size" if it is not available on
+    the original ISO, on the Extract page.
+  - Set standard manifest file name to "filesystem.manifest" if it is not
+    available on the original ISO, on the Extract page.
+  - Added workaround for Pop!_OS. The casper directory must be an unusual
+    directory (such as "casper_pop-os_20.04_amd64_intel_debug_25"), while the
+    squashfs (boot=) must be "casper".
+  - Tested Debian, Elementary OS, GRML, Kali, Neon, Pop!_OS, Ubuntu Desktop,
+    Ubuntu Server.
+  - Save the cubic.conf project configuration file when leaving the Project
+    page, Extract page, Packages page, Options page and Compression page. (This
+    reverts enhancement GH:#171, Minimize the number of times the cubic.conf
+    project configuration file is saved).
+  - Added is_success_analyze to the cubic.conf project configuration.
+  - Eliminated the Migrate page, since this was used for migrating from the
+    Classic version of Cubic.
+  - Added the Alert page to notify the user if a project was created using a
+    previous version of Cubic.
+  - Added create_link() function to the file_utilities module.
+  - Generate "minimal.standard.manifest" and create a link named
+    "minimal.manifest" to this file.
+  - Generate "minimal.standard.squashfs" and create a link named
+    "minimal.squashfs" to this file.
+  - Generate "minimal.standard.size" and create a link named "minimal.size" to
+    this file.
+  - Automatically update install-sources.yaml. Make the minimal install the
+    default because the installer crashes if standard install is used. Remove
+    languages and locale support. Update the description, id, name, and size.
+  - Added python3-yaml (>=3.12) as a required dependency to update yaml files.
+    Version 3.12 of python3-yaml was included with Bionic Beaver 18.04.
+  - Updated the extract-root command to extract into an existing destination, to
+    allow Cubic to extract and customize layered file systems.
+  - Added a General section to the ISO layout to improve support for legacy
+    layouts. Improved the Extract page and the Generate page.
+  - Use pattern matching to identify directories and files, when analyzing the
+    ISO layout on the Extract page, to support distros such as Pop!_OS that
+    require unusual casper directory names.
+  - Changed the way original files are copied on the Extract page, to only copy
+    specified files in the casper and squashfs directories. Previously, all
+    files in the casper and squashfs directories were copied, and specified
+    files were explicitly excluded.
+  - Documented the "-l" and "--log" command line arguments in Cubic's man page.
+  - Excluded install-sources.yaml.original from the md5sum.txt file.
 
   * Issues fixed in version 2024.02-86:
 
@@ -451,4 +547,4 @@ cubic (2024.02) bionic focal groovy hirsute impish jammy kinetic lunar mantic no
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 20 Feb 2024 19:19:34 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 01 Sep 2024 17:22:34 -0400

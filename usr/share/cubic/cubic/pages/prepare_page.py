@@ -47,8 +47,6 @@ import string
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import EXTENSION_MANIFEST
-from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0125_MS, SLEEP_0250_MS, SLEEP_0500_MS, SLEEP_1000_MS
 from cubic.utilities import constructor
@@ -78,6 +76,22 @@ COMPRESSION_EXTENSIONS = {'gzip': 'gz', 'bzip2': 'bz', 'lz4': 'lz', 'lzma': 'lz'
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'next':
 
@@ -96,7 +110,7 @@ def setup(action, old_page=None):
         displayer.update_label('prepare_page__installed_packages_message', '...', False)
 
         # --------------------------------------------------------------
-        # Create the removable packages list for a typical install.
+        # Create the removable packages list for a standard install.
         # --------------------------------------------------------------
 
         displayer.update_status('prepare_page__package_manifest_1', BULLET)
@@ -133,6 +147,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'next':
 
@@ -184,22 +216,28 @@ def enter(action, old_page=None):
         time.sleep(SLEEP_0500_MS)
 
         # --------------------------------------------------------------
-        # Create the removable packages list for a typical install.
+        # Create the removable packages list for a standard install.
         # --------------------------------------------------------------
 
-        logger.log_label('Create the removable packages list for a typical install')
+        logger.log_label('Create the removable packages list for a standard install')
         displayer.update_status('prepare_page__package_manifest_1', PROCESSING)
         time.sleep(SLEEP_0500_MS)
 
-        # If the file path does not exist, the packages list will be empty.
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE)
-        removable_packages_list = file_utilities.read_lines(file_path)
-        count = populate_package_details_list_for_typical_install(model.package_details_list, removable_packages_list)
-        logger.log_value('Number of installed packages matching typical install list', count)
+        if model.layout.standard_remove_file_name:
+            # If the file path does not exist, the packages list will be
+            # empty.
+            file_path = os.path.join(model.project.custom_disk_directory, \
+                                    model.layout.squashfs_directory, \
+                                    model.layout.standard_remove_file_name)
+            removable_packages_list = file_utilities.read_lines(file_path)
+        else:
+            removable_packages_list = []
+        count = populate_package_details_list_for_standard_install(model.package_details_list, removable_packages_list)
+        logger.log_value('Number of installed packages matching standard install list', count)
         number_text = constructor.number_as_text(count)
         plural_text = constructor.get_plural('package', 'packages', count)
-        message = f'Identified {number_text} {plural_text} for removal during a typical install.'
-        status = OK if model.installer.has_typical_install else OPTIONAL
+        message = f'Identified {number_text} {plural_text} for removal during a standard install.'
+        status = OK if model.layout.standard_remove_file_name else OPTIONAL
         displayer.update_label('prepare_page__package_manifest_1_message', message, False)
         displayer.update_status('prepare_page__package_manifest_1', status)
         time.sleep(SLEEP_0500_MS)
@@ -212,15 +250,20 @@ def enter(action, old_page=None):
         displayer.update_status('prepare_page__package_manifest_2', PROCESSING)
         time.sleep(SLEEP_0500_MS)
 
-        # If the file path does not exist, the packages list will be empty.
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
-        removable_packages_list = file_utilities.read_lines(file_path)
+        if model.layout.minimal_remove_file_name:
+            # If the file path does not exist, the packages list will be empty.
+            file_path = os.path.join(model.project.custom_disk_directory, \
+                                    model.layout.squashfs_directory, \
+                                    model.layout.minimal_remove_file_name)
+            removable_packages_list = file_utilities.read_lines(file_path)
+        else:
+            removable_packages_list = []
         count = populate_package_details_list_for_minimal_install(model.package_details_list, removable_packages_list)
         logger.log_value('Number of installed packages matching minimal install list', count)
         number_text = constructor.number_as_text(count)
         plural_text = constructor.get_plural('package', 'packages', count)
         message = f'Identified {number_text} {plural_text} for removal during a minimal install.'
-        status = OK if model.installer.has_minimal_install else OPTIONAL
+        status = OK if model.options.has_minimal_install else OPTIONAL
         displayer.update_label('prepare_page__package_manifest_2_message', message, False)
         displayer.update_status('prepare_page__package_manifest_2', status)
         time.sleep(SLEEP_0500_MS)
@@ -231,23 +274,23 @@ def enter(action, old_page=None):
 
         displayer.update_status('prepare_page__save_package_manifest', PROCESSING)
         time.sleep(SLEEP_0500_MS)
-        is_success = save_file_system_manifest_file(model.package_details_list)
-        if is_success:
-            displayer.update_status('prepare_page__save_package_manifest', OK)
-            message = 'Saved the package manifest file.'
-            displayer.update_label('prepare_page__save_package_manifest_message', message, False)
-        else:
+        is_error = save_file_system_manifest_file(model.package_details_list)
+        if is_error:
             displayer.update_status('prepare_page__save_package_manifest', ERROR)
             message = 'Unable to save the package manifest file.'
             displayer.update_label('prepare_page__save_package_manifest_message', message, True)
             return  # Stay on this page.
+        else:
+            displayer.update_status('prepare_page__save_package_manifest', OK)
+            message = 'Saved the package manifest file.'
+            displayer.update_label('prepare_page__save_package_manifest_message', message, False)
         time.sleep(SLEEP_1000_MS)
 
         # --------------------------------------------------------------
         # Determine if the Packages page should be skipped.
         # --------------------------------------------------------------
 
-        if model.installer.has_typical_install:
+        if model.layout.standard_remove_file_name:
             # Show the Packages page.
             logger.log_value('Show the Packages page?', 'Yes')
             return 'next'
@@ -258,7 +301,7 @@ def enter(action, old_page=None):
             # The Packages page, which sets the minimal install option,
             # will be skipped, so the the minimal install option must be
             # set here.
-            model.installer.has_minimal_install = False
+            model.options.has_minimal_install = False
             return 'next-options'
 
     else:
@@ -269,6 +312,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -293,7 +352,7 @@ def leave(action, new_page=None):
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
         # Save the model values.
-        model.project.configuration.save()
+        # model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -349,7 +408,7 @@ def create_boot_kernel_details_list():
     """
 
     directory_1 = os.path.join(model.project.custom_root_directory, 'boot')
-    directory_2 = os.path.join(model.project.iso_mount_point, model.status.casper_directory)
+    directory_2 = os.path.join(model.project.iso_mount_point, model.layout.casper_directory)
     kernel_details_list = create_kernel_details_list(directory_1, directory_2)
 
     return kernel_details_list
@@ -579,7 +638,7 @@ def _update_kernel_details_list(kernel_details_list):
     # Set the notes, and update the selected index if necessary.
     # current_kernel_release_name = get_current_kernel_release_name()
     current_kernel_version_name = get_current_kernel_version_name()
-    original_iso_image_directory = os.path.join(model.project.iso_mount_point, model.status.casper_directory)
+    original_iso_image_directory = os.path.join(model.project.iso_mount_point, model.layout.casper_directory)
     for index, kernel_details in enumerate(kernel_details_list):
         note = ''
         version_name = kernel_details['version_name']
@@ -596,7 +655,7 @@ def _update_kernel_details_list(kernel_details_list):
             if len(kernel_details_list) > 1:
                 if note: note += ' '  # os.linesep
                 note += 'Select this kernel if you are unable to boot the disk using other kernel versions.'
-            if model.installer.has_subiquity:
+            if model.layout.installer_sources_file_name:
                 # If Subiquity is used, select the original kernel.
                 # Added for Cubic 2023.03.78 to support Ubuntu 23.04.
                 if note: note += ' '  # os.linesep
@@ -1288,7 +1347,7 @@ def create_package_details_list(root_directory):
     Create a list of installed package details. Each package detail is a
     list containing the following elements. Only package name and
     package version are populated. All other elements are set to False.
-        0: is typical selected?
+        0: is standard selected?
         1: is minimal selected?
         2: is minimal selected initial?
         3: is minimal active?
@@ -1324,7 +1383,7 @@ def create_package_details_list(root_directory):
             package_name, package_version = package.split()
 
             # Create a new package details for the current package.
-            # 0: is typical selected?
+            # 0: is standard selected?
             # 1: is minimal selected?
             # 2: is minimal selected initial?
             # 3: is minimal active?
@@ -1345,7 +1404,7 @@ def create_package_details_list_01(root_directory):
     Create a list of installed package details. Each package detail is a
     list containing the following elements. Only package name and
     package version are populated. All other elements are set to False.
-        0: is typical selected?
+        0: is standard selected?
         1: is minimal selected?
         2: is minimal selected initial?
         3: is minimal active?
@@ -1373,7 +1432,7 @@ def create_package_details_list_01(root_directory):
         if apt_cache[package.name].is_installed:
 
             # Create a new package details for the current package.
-            # 0: is typical selected?
+            # 0: is standard selected?
             # 1: is minimal selected?
             # 2: is minimal selected initial?
             # 3: is minimal active?
@@ -1393,7 +1452,7 @@ def create_package_details_list_02(root_directory):
     Create a list of installed package details. Each package detail is a
     list containing the following elements. Only package name and
     package version are populated. All other elements are set to False.
-        0: is typical selected?
+        0: is standard selected?
         1: is minimal selected?
         2: is minimal selected initial?
         3: is minimal active?
@@ -1428,7 +1487,7 @@ def create_package_details_list_02(root_directory):
             package_name, package_version = package.split()
 
             # Create a new package details for the current package.
-            # 0: is typical selected?
+            # 0: is standard selected?
             # 1: is minimal selected?
             # 2: is minimal selected initial?
             # 3: is minimal active?
@@ -1444,9 +1503,9 @@ def create_package_details_list_02(root_directory):
 '''
 
 
-def populate_package_details_list_for_typical_install(package_details_list, removable_packages_list):
+def populate_package_details_list_for_standard_install(package_details_list, removable_packages_list):
 
-    # logger.log_label('Identify removable packages for a typical install')
+    # logger.log_label('Identify removable packages for a standard install')
 
     number_of_packages_total = len(package_details_list)
     number_of_packages_to_remove = 0
@@ -1465,25 +1524,25 @@ def populate_package_details_list_for_typical_install(package_details_list, remo
         #   the architecture suffix.
         package_name = package_details[4]
         package_name_without_architecture = package_name.rpartition(':')[0]
-        is_remove_typical = (package_name in removable_packages_list) or (package_name_without_architecture in removable_packages_list)
+        is_remove_standard = (package_name in removable_packages_list) or (package_name_without_architecture in removable_packages_list)
 
-        # 0: is typical selected?
+        # 0: is standard selected?
         # 1: is minimal selected?
         # 2: is minimal selected initial?
         # 3: is minimal active?
         # 4: package name
         # 5: package version
 
-        # Set is typical selected or unselected?
-        package_details[0] = is_remove_typical
+        # Set is standard selected or unselected?
+        package_details[0] = is_remove_standard
 
-        number_of_packages_to_remove += is_remove_typical
+        number_of_packages_to_remove += is_remove_standard
 
     number_of_packages_to_retain = number_of_packages_total - number_of_packages_to_remove
 
     logger.log_value('Total number of installed packages', number_of_packages_total)
-    logger.log_value('Number of packages to be removed for a typical install', number_of_packages_to_remove)
-    logger.log_value('Number of packages to be retained for a typical install', number_of_packages_to_retain)
+    logger.log_value('Number of packages to be removed for a standard install', number_of_packages_to_remove)
+    logger.log_value('Number of packages to be retained for a standard install', number_of_packages_to_retain)
 
     return number_of_packages_to_remove
 
@@ -1511,30 +1570,30 @@ def populate_package_details_list_for_minimal_install(package_details_list, remo
         package_name_without_architecture = package_name.rpartition(':')[0]
         is_remove_minimal = (package_name in removable_packages_list) or (package_name_without_architecture in removable_packages_list)
 
-        # 0: is typical selected?
+        # 0: is standard selected?
         # 1: is minimal selected?
         # 2: is minimal selected initial?
         # 3: is minimal active?
         # 4: package name
         # 5: package version
 
-        # Get is typical selected or unselected?
-        is_remove_typical = package_details[0]
+        # Get is standard selected or unselected?
+        is_remove_standard = package_details[0]
 
         # Set is minimal selected or unselected?
-        package_details[1] = is_remove_minimal or is_remove_typical
+        package_details[1] = is_remove_minimal or is_remove_standard
 
-        # Backup original minimal check button value. If the typical
+        # Backup original minimal check button value. If the standard
         # check button is unselected, then set the minimal check button
         # with this backup value.
         package_details[2] = is_remove_minimal
 
-        # Set minimal check button active or inactive. If the typical
+        # Set minimal check button active or inactive. If the standard
         # check button is active, then the minimal check button must not
         # be active.
-        package_details[3] = not is_remove_typical
+        package_details[3] = not is_remove_standard
 
-        number_of_packages_to_remove += (is_remove_minimal or is_remove_typical)
+        number_of_packages_to_remove += (is_remove_minimal or is_remove_standard)
 
     number_of_packages_to_retain = number_of_packages_total - number_of_packages_to_remove
 
@@ -1575,33 +1634,56 @@ def save_file_system_manifest_file(package_details_list):
 
     logger.log_label('Create new file system manifest file')
 
-    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}'
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, file_name)
-    logger.log_value('Write file system manifest to', file_path)
-    with open(file_path, 'w') as file:
-        for package_details in package_details_list[:-1]:
-            # 0: is typical selected?
-            # 1: is minimal selected?
-            # 2: is minimal selected initial?
-            # 3: is minimal active?
-            # 4: package name
-            # 5: package version
-            package_name = package_details[4]
-            package_version = package_details[5]
-            file.write(f'{package_name}\t{package_version}\n')
-        if package_details:
-            package_details = package_details_list[-1]
-            file.write(f'{package_name}\t{package_version}')
+    try:
+        if model.layout.minimal_squashfs_file_name:
+            file_name = model.layout.minimal_manifest_file_name
+        else:
+            file_name = model.layout.manifest_file_name
+        file_path = os.path.join(model.project.custom_disk_directory, model.layout.squashfs_directory, file_name)
 
-    # TODO: Create a filesystem.manifest file that aggregates all
-    #      *.manifest files.
-    if file_name != FILE_SYSTEM_MANIFEST:
-        file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST)
+        logger.log_value('Write file system manifest to', file_path)
         with open(file_path, 'w') as file:
-            # file.write(f'# Not implemented (Cubic {model.application.cubic_version})')
-            file.write('')
+            for package_details in package_details_list[:-1]:
+                # 0: is standard selected?
+                # 1: is minimal selected?
+                # 2: is minimal selected initial?
+                # 3: is minimal active?
+                # 4: package name
+                # 5: package version
+                package_name = package_details[4]
+                package_version = package_details[5]
+                file.write(f'{package_name}\t{package_version}\n')
+            if package_details:
+                package_details = package_details_list[-1]
+                file.write(f'{package_name}\t{package_version}')
+    except Exception as exception:
+        logger.log_value('Do not propagate exception', exception)
+        return True  # (Error)
+    if not os.path.exists(file_path):
+        return True  # (Error)
 
-    return os.path.exists(file_path)
+    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+    # TODO:
+    # Remove this *comment* in the future. [2024-08-10]
+    #
+    # In Cubic version 2024.02.86, minimal manifest is generated, and
+    # file system manifest is copied from the original ISO.
+    # In Cubic version 2024.08.87, minimal manifest is generated, and
+    # file system manifest must be a link to this file.
+    # Therefore, delete file system manifest, if it exists, and create
+    # the link.
+    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+    # Create a link to minimal_manifest_file_name from manifest_file_name.
+    if model.layout.minimal_squashfs_file_name:
+        directory_path = os.path.join(model.project.custom_disk_directory, model.layout.squashfs_directory)
+        file_name = model.layout.minimal_manifest_file_name
+        link_name = model.layout.manifest_file_name
+        _, _, signal_status = file_utilities.create_link(directory_path, file_name, link_name)
+        if signal_status:
+            return True  # (Error)
+
+    return False  # (No Error)
 
 
 ########################################################################
@@ -1615,7 +1697,7 @@ def validate_page():
     """
 
     # Show the Packages page if the installer requires it.
-    if model.installer.has_typical_install:
+    if model.layout.standard_remove_file_name:
         # Show the Packages page.
         logger.log_value('Show the Packages page?', 'Yes')
         displayer.reset_buttons(

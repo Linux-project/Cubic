@@ -187,6 +187,121 @@ def get_plural(singular_text, plural_text, number):
     return singular_text if number == 1 else plural_text
 
 
+def assemble_paths(*paths):
+    """
+    Creates a list of paths using using an arbitrary number of lists
+    containing path components (i.e. file names, directory names, or
+    sub-paths).
+
+    Example:
+
+        results = assemble_paths(['start'],                      \
+                                 ['dir_a', 'dir_b'],             \
+                                 ['file_1', 'file_2', 'file_3'], \
+                                 ['*'])
+
+        print(results)
+
+        ['start/dir_a/file_1/*', \
+         'start/dir_a/file_2/*', \
+         'start/dir_a/file_3/*', \
+         'start/dir_b/file_1/*', \
+         'start/dir_b/file_2/*', \
+         'start/dir_b/file_3/*']
+
+    Arguments:
+    *paths : arbitrary number of lists of str
+        An arbitrary number of lists. Each list contains path components
+        (i.e. file names, directory names, or sub-paths).
+
+    Returns:
+    results : list of str
+        A list of paths.
+    """
+    results = []
+    prefix = ''
+    _assemble_paths(prefix, paths, results)
+    return results
+
+
+def _assemble_paths(prefix, paths, results):
+    """
+    Creates a list of paths using using a list of lists containing path
+    components (i.e. file names, directory names, or sub-paths).
+
+    Example: paths = ['start'], \
+                     ['dir_a', 'dir_b'], \
+                     ['file_1', 'file_2', 'file_3'], \
+                     ['*']
+
+    Arguments:
+    prefix : str
+        The incomplete file path that is being assembled.
+    paths : list of lists of str
+        A list of lists containing path components (i.e. file names,
+        directory names, or sub-paths).
+    results : list of str
+        A list of paths.
+
+    Returns:
+        None
+    """
+    if not paths:
+        results.append(prefix)
+    else:
+        top_row = paths[0]
+        paths = paths[1:]
+        for column in top_row:
+            path = os.path.join(prefix, column)
+            _assemble_paths(path, paths, results)
+
+
+def construct_rsync_includes(*paths):
+    """
+    Create --include="..." arguments for the rsync command.
+
+    Arguments:
+    *paths : arbitrary number of lists of str
+        An arbitrary number of lists. Each list contains path components
+        (i.e. file names, directory names, or sub-paths).
+
+    Returns:
+    includes : str
+        A series --include="..." arguments.
+    """
+
+    paths = assemble_paths(*paths)
+    logger.log_value('The include paths are', paths)
+
+    includes = ''
+    for path in paths:
+        includes += f' --include="{path}"'
+    return includes.strip()
+
+
+def construct_rsync_excludes(*paths):
+    """
+    Create --exclude="..." arguments for the rsync command.
+
+    Arguments:
+    *paths : arbitrary number of lists of str
+        An arbitrary number of lists. Each list contains path components
+        (i.e. file names, directory names, or sub-paths).
+
+    Returns:
+    excludes : str
+        A series --exclude="..." arguments.
+    """
+
+    paths = assemble_paths(*paths)
+    logger.log_value('The exclude paths are', paths)
+
+    excludes = ''
+    for path in paths:
+        excludes += f' --exclude="{path}"'
+    return excludes.strip()
+
+
 def get_os_distribution(root_directory='/'):
     """
     Get the value of ID from '/etc/os-release'
@@ -397,7 +512,7 @@ def get_installed_packages_list(root_directory=os.path.sep):
             package_details_list.append(package_details)
 
     package_count = len(package_details_list)
-    logger.log_value('Total number of installed packages', len(package_details_list))
+    logger.log_value('Total number of installed packages', package_count)
 
     return package_details_list
 

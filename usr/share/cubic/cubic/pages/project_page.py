@@ -58,7 +58,7 @@ from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import GZIP
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.navigator import handle_navigation
-from cubic.utilities.fields import Fields, IsoFields, IsoFieldsHistory
+from cubic.utilities.structures import Fields, IsoFields, IsoFieldsHistory
 from cubic.utilities import constructor
 from cubic.utilities import displayer
 from cubic.utilities import emulator
@@ -88,13 +88,17 @@ def setup(action, old_page=None):
     Prepare this page for display. This function is executed while the
     previous page is still shown.
 
-    Args
-        action: The action from the previous page.
-        old_page: The previous page; optional.
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
 
     Returns:
-        None: To continue to page.
-        error (str): To automatically transition to an error page.
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
     """
 
     global original
@@ -105,9 +109,6 @@ def setup(action, old_page=None):
 
     if action == 'back':
 
-        # Save the model values because they may have changed.
-        model.project.configuration.save()
-
         # Set status from the model, because values may have changed on
         # subsequent pages (Extract page, Generate page).
         status = initialize_status_from_model()
@@ -117,20 +118,14 @@ def setup(action, old_page=None):
         # Compression page).
         options = initialize_options_from_model()
 
-        # Set installer from the model, because values may have changed
-        # on subsequent pages (Prepare page, Packages page).
-        installer = initialize_installer_from_model()
-
         # Validation is not required since nothing changed.
         # validate_page()
 
         # Navigation buttons are also set in the validate_page() function.
-        if status.is_success_copy and    \
-           status.is_success_extract and \
-           status.iso_template and       \
-           status.squashfs_directory and \
-           status.squashfs_file_name and \
-           status.casper_directory:
+        if status.iso_template and       \
+           status.is_success_analyze and \
+           status.is_success_copy and    \
+           status.is_success_extract:
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -170,12 +165,10 @@ def setup(action, old_page=None):
         # validate_page()
 
         # Navigation buttons are also set in the validate_page() function.
-        if status.is_success_copy and    \
-           status.is_success_extract and \
-           status.iso_template and       \
-           status.squashfs_directory and \
-           status.squashfs_file_name and \
-           status.casper_directory:
+        if status.iso_template and       \
+           status.is_success_analyze and \
+           status.is_success_copy and    \
+           status.is_success_extract:
             displayer.reset_buttons(
                 back_button_label='❬Back',
                 back_action='back',
@@ -214,11 +207,12 @@ def setup(action, old_page=None):
         original = None
         custom = None
 
-        # Set status before original, because the original ISO file name
-        # validator requires is_success_copy and is_success_extract.
+        # Set status before initializing original, because
+        # the original ISO file name validator requires
+        # is_success_analyze, is_success_copy, and
+        # is_success_extract.
         status = initialize_status()
         options = initialize_options()
-        installer = initialize_installer()
 
         original = initialize_original()
         custom = initialize_custom()
@@ -259,11 +253,12 @@ def setup(action, old_page=None):
             model.original.iso_release_notes_url = iso_utilities.get_iso_release_notes_url(model.project.iso_mount_point)
             model.custom.iso_release_notes_url = iso_utilities.get_iso_release_notes_url(model.project.custom_disk_directory)
 
-            # Set status before initializing original because file_name
-            # validator requires is_success_copy and is_success_extract.
+            # Set status before initializing original, because
+            # the original ISO file name validator requires
+            # is_success_analyze, is_success_copy, and
+            # is_success_extract.
             status = initialize_status_from_model()
             options = initialize_options_from_model()
-            installer = initialize_installer_from_model()
 
             original = initialize_original_from_model()
             custom = initialize_custom_from_model()
@@ -292,11 +287,12 @@ def setup(action, old_page=None):
             model.original.iso_release_notes_url = None
             model.custom.iso_release_notes_url = None
 
-            # Set status before initializing original because file_name
-            # validator requires is_success_copy and is_success_extract.
+            # Set status before initializing original, because
+            # the original ISO file name validator requires
+            # is_success_analyze, is_success_copy, and
+            # is_success_extract.
             status = initialize_status()
             options = initialize_options()
-            installer = initialize_installer()
 
             original = initialize_original()
             custom = initialize_custom()
@@ -320,53 +316,6 @@ def setup(action, old_page=None):
 
         return
 
-    elif action == 'migrate':
-
-        # There is a saved configuration.
-
-        # Validation is not required since nothing changed.
-        # validate_page()
-
-        # Navigation buttons are also set in the validate_page() function.
-        if status.is_success_copy and    \
-           status.is_success_extract and \
-           status.iso_template and       \
-           status.squashfs_directory and \
-           status.squashfs_file_name and \
-           status.casper_directory:
-            displayer.reset_buttons(
-                back_button_label='❬Back',
-                back_action='back',
-                back_button_style=None,
-                is_back_sensitive=True,
-                is_back_visible=True,
-                next_button_label='Customize❭',
-                next_action='next-terminal',
-                next_button_style='suggested-action',
-                is_next_sensitive=True,
-                is_next_visible=True)
-        else:
-            displayer.reset_buttons(
-                back_button_label='❬Back',
-                back_action='back',
-                back_button_style=None,
-                is_back_sensitive=True,
-                is_back_visible=True,
-                next_button_label='Next❭',
-                next_action='next',
-                next_button_style='suggested-action',
-                is_next_sensitive=True,
-                is_next_visible=True)
-
-        validate_test_header_bar_button()
-
-        # Show the Delete button because the project already exists.
-        displayer.set_visible('project_page__delete_header_bar_button', True)
-
-        displayer.set_visible('project_page__header_bar_box', True)
-
-        return
-
     else:
 
         logger.log_value('Error', f'{BOLD_RED}Unknown action for setup{NORMAL}')
@@ -380,13 +329,18 @@ def enter(action, old_page=None):
     executed after the previous page is hidden.
 
     Args:
-        action: The action from the previous page.
-        old_page: The previous page; optional.
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
 
     Returns:
-        None: To stay on this page.
-        action (str): To automatically transition to another page.
-        error (str): To automatically transition to an error page.
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
     """
 
     if action == 'back':
@@ -405,10 +359,6 @@ def enter(action, old_page=None):
 
         return
 
-    elif action == 'migrate':
-
-        return
-
     else:
 
         logger.log_value('Error', f'{BOLD_RED}Unknown action for enter{NORMAL}')
@@ -421,13 +371,17 @@ def leave(action, new_page=None):
     Preform functions on this page before leaving it. This function is
     executed while this page is visible.
 
-    Args
-    action: The action on this page.
-    old_page: The next page to show; optional.
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
 
     Returns:
-        None: To continue to the next page.
-        error (str): To automatically transition to an error page.
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
     """
 
     if action == 'back':
@@ -508,27 +462,21 @@ def leave(action, new_page=None):
         model.custom.iso_release_notes_url = custom.iso_release_notes_url.value
 
         # Status
+        model.status.is_success_analyze = status.is_success_analyze
         model.status.is_success_copy = status.is_success_copy
         model.status.is_success_extract = status.is_success_extract
         model.status.iso_template = status.iso_template
-        model.status.squashfs_directory = status.squashfs_directory
-        model.status.squashfs_file_name = status.squashfs_file_name
-        model.status.casper_directory = status.casper_directory
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
         # Options
         model.options.update_os_release = custom.update_os_release.value
+        model.options.has_minimal_install = options.has_minimal_install
         model.options.boot_configurations = options.boot_configurations
         model.options.compression = options.compression
 
-        # Installer
-        model.installer.has_typical_install = installer.has_typical_install
-        model.installer.has_minimal_install = installer.has_minimal_install
-        model.installer.has_subiquity = installer.has_subiquity
-
         # Save the model values.
-        # model.project.configuration.save()
+        model.project.configuration.save()
         save_iso_release_notes_url()
 
         if custom.is_valid and custom != custom_history.current():
@@ -573,27 +521,21 @@ def leave(action, new_page=None):
         model.custom.iso_release_notes_url = custom.iso_release_notes_url.value
 
         # Status
+        model.status.is_success_analyze = status.is_success_analyze
         model.status.is_success_copy = status.is_success_copy
         model.status.is_success_extract = status.is_success_extract
         model.status.iso_template = status.iso_template
-        model.status.squashfs_directory = status.squashfs_directory
-        model.status.squashfs_file_name = status.squashfs_file_name
-        model.status.casper_directory = status.casper_directory
         model.status.iso_checksum = status.iso_checksum
         model.status.iso_checksum_file_name = status.iso_checksum_file_name
 
         # Options
         model.options.update_os_release = custom.update_os_release.value
+        model.options.has_minimal_install = options.has_minimal_install
         model.options.boot_configurations = options.boot_configurations
         model.options.compression = options.compression
 
-        # Installer
-        model.installer.has_typical_install = installer.has_typical_install
-        model.installer.has_minimal_install = installer.has_minimal_install
-        model.installer.has_subiquity = installer.has_subiquity
-
         # Save the model values.
-        # model.project.configuration.save()
+        model.project.configuration.save()
         save_iso_release_notes_url()
 
         return
@@ -684,11 +626,12 @@ def selected_original_iso_file_path(original_iso_file_path):
 
                 mount_original_iso(original_iso_file_path)
 
-                # Set status before initializing original because file_name
-                # validator requires is_success_copy and is_success_extract.
+                # Set status before initializing original, because
+                # the original ISO file name validator requires
+                # is_success_analyze, is_success_copy, and
+                # is_success_extract.
                 status = initialize_status_from_model()
                 options = initialize_options_from_model()
-                installer = initialize_installer_from_model()
 
                 original = initialize_original_from_model()
                 custom = initialize_custom_from_model()
@@ -711,20 +654,19 @@ def selected_original_iso_file_path(original_iso_file_path):
 
                 mount_original_iso(original_iso_file_path)
 
-                # Set status before initializing original because file_name
-                # validator requires is_success_copy and is_success_extract.
+                # Set status before initializing original, because
+                # the original ISO file name validator requires
+                # is_success_analyze, is_success_copy, and
+                # is_success_extract.
                 status = initialize_status_from_model()
                 # Overwrite ISO configuration and boot files.
                 # Always set is success copy to False whenever ISO
                 # template is set to None.
+                status.is_success_analyze = False
                 status.is_success_copy = False
                 # status.is_success_extract = False or True
                 status.iso_template = None
-                status.squashfs_directory = None
-                status.squashfs_file_name = None
-                status.casper_directory = None
                 options = initialize_options()
-                installer = initialize_installer()
 
                 original = initialize_original_from_iso(original_iso_file_path)
                 # Do not use custom values from the saved configuration.
@@ -742,11 +684,12 @@ def selected_original_iso_file_path(original_iso_file_path):
             # Mount the disk for initialize_original_from_iso().
             mount_original_iso(original_iso_file_path)
 
-            # Set status before initializing original because file_name
-            # validator requires is_success_copy and is_success_extract.
+            # Set status before initializing original, because
+            # the original ISO file name validator requires
+            # is_success_analyze, is_success_copy, and
+            # is_success_extract.
             status = initialize_status()
             options = initialize_options()
-            installer = initialize_installer()
 
             original = initialize_original_from_iso(original_iso_file_path)
             custom = initialize_custom_from_iso()
@@ -770,11 +713,12 @@ def selected_original_iso_file_path(original_iso_file_path):
 
         iso_utilities.unmount(model.project.iso_mount_point)
 
-        # Set status before initializing original because file_name
-        # validator requires is_success_copy and is_success_extract.
+        # Set status before initializing original, because
+        # the original ISO file name validator requires
+        # is_success_analyze, is_success_copy, and
+        # is_success_extract.
         status = initialize_status()
         options = initialize_options()
-        installer = initialize_installer()
 
         original = initialize_original()
         custom = initialize_custom()
@@ -849,12 +793,10 @@ def initialize_status():
 
     fields = Fields('status')
 
+    fields.is_success_analyze = False
     fields.is_success_copy = False
     fields.is_success_extract = False
     fields.iso_template = None
-    fields.squashfs_directory = None
-    fields.squashfs_file_name = None
-    fields.casper_directory = None
     fields.iso_checksum = None
     fields.iso_checksum_file_name = None
 
@@ -872,21 +814,9 @@ def initialize_options():
     # custom_history to permit undo and redo. This value is initialized
     # to True in the initialize_custom() function.
     # fields.update_os_release = True
+    fields.has_minimal_install = None
     fields.boot_configurations = []
     fields.compression = GZIP
-
-    return fields
-
-
-def initialize_installer():
-
-    logger.log_label('Initialize the installer fields')
-
-    fields = Fields('installer')
-
-    fields.has_typical_install = None
-    fields.has_minimal_install = None
-    fields.has_subiquity = None
 
     return fields
 
@@ -1141,12 +1071,10 @@ def initialize_custom_from_model():
 def initialize_status_from_model():
     """
     Initialize the following status fields from the model.
+      - is_success_analyze
       - is_success_copy
       - is_success_extract
       - iso_template
-      - squashfs directory
-      - squashfs_file_name
-      - casper directory
       - iso_checksum = None
       - iso_checksum_file_name = None
     """
@@ -1155,12 +1083,10 @@ def initialize_status_from_model():
 
     fields = Fields('status')
 
+    fields.is_success_analyze = model.status.is_success_analyze
     fields.is_success_copy = model.status.is_success_copy
     fields.is_success_extract = model.status.is_success_extract
     fields.iso_template = model.status.iso_template
-    fields.squashfs_directory = model.status.squashfs_directory
-    fields.squashfs_file_name = model.status.squashfs_file_name
-    fields.casper_directory = model.status.casper_directory
     # The saved ISO file size is never used.
     # The saved ISO checksum is never used.
     fields.iso_checksum = model.status.iso_checksum
@@ -1174,6 +1100,7 @@ def initialize_options_from_model():
     """
     Initialize the following options fields from the model.
       - (options.update_os_release)
+      - has_minimal_install
       - boot_configurations
       - compression
     """
@@ -1187,27 +1114,9 @@ def initialize_options_from_model():
     # custom_history to permit undo and redo. This value is initialized
     # from the model in the initialize_custom_from_model() function.
     # fields.update_os_release = model.options.update_os_release
+    fields.has_minimal_install = model.options.has_minimal_install
     fields.boot_configurations = model.options.boot_configurations
     fields.compression = model.options.compression
-
-    return fields
-
-
-def initialize_installer_from_model():
-    """
-    Initialize the following installer fields from the model.
-    - has_typical_install
-    - has_minimal_install
-    - has_subiquity
-    """
-
-    logger.log_label('Initialize the installer fields from the model')
-
-    fields = Fields('installer')
-
-    fields.has_typical_install = model.installer.has_typical_install
-    fields.has_minimal_install = model.installer.has_minimal_install
-    fields.has_subiquity = model.installer.has_subiquity
 
     return fields
 
@@ -1872,12 +1781,10 @@ def validate_page():
     # Navigation buttons.
 
     # Navigation buttons are also set in the setup() function.
-    if status.is_success_copy and    \
-       status.is_success_extract and \
-       status.iso_template and       \
-       status.squashfs_directory and \
-       status.squashfs_file_name and \
-       status.casper_directory:
+    if status.iso_template and       \
+       status.is_success_analyze and \
+       status.is_success_copy and    \
+       status.is_success_extract:
         displayer.reset_buttons(
             back_button_label='❬Back',
             back_action='back',
@@ -2060,6 +1967,13 @@ def validate_original_iso_file_name(fields):
             is_valid = True
             message = None
             status = OK
+        elif not model.status.is_success_analyze:
+            # The original disk is required; display an error because it
+            # is not available.
+            is_valid = False
+            # message = '<span foreground="red">Error. The original disk image is required to copy important files, but it is not available.</span>'
+            message = 'Error. The original disk image is required to copy important files and extract the Linux file system, but it is not available.'
+            status = ERROR
         elif not model.status.is_success_copy and not model.status.is_success_extract:
             # The original disk is required; display an error because it
             # is not available.

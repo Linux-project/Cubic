@@ -47,7 +47,16 @@ source_file_path=${2}
 # Command
 ########################################################################
 
-rm -rf "${target_file_path}"
-unsquashfs -dest "${target_file_path}" "${source_file_path}"
-# unsquashfs -force -dest "${target_file_path}" "${source_file_path}"
+# https://manpages.ubuntu.com/manpages/noble/man1/unsquashfs.1.html
+# EXIT STATUS
+# 0 The filesystem listed or extracted OK.
+# 1 FATAL errors occurred, e.g. filesystem corruption, I/O errors.
+#   Unsquashfs did not continue and aborted.
+# 2 Non-fatal errors occurred, e.g. no support for XATTRs, Symbolic
+#   links in output filesystem or couldn't write permissions to
+#   output filesystem. Unsquashfs continued and did not abort.
+# See -ignore-errors, -strict-errors and -no-exit-code options for
+# how they affect the exit status.
+
+unsquashfs -force -no-exit-code -dest "${target_file_path}" "${source_file_path}"
 

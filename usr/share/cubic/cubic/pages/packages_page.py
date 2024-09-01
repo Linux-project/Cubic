@@ -40,7 +40,6 @@
 import os
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE
 from cubic.utilities import displayer
 from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
@@ -64,6 +63,22 @@ has_minimal_install = None
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     global undo_index
     global undo_list
@@ -115,7 +130,7 @@ def setup(action, old_page=None):
 
         # Show or hide the minimal install switch and column.
         global has_minimal_install
-        has_minimal_install = model.installer.has_minimal_install
+        has_minimal_install = model.options.has_minimal_install
         if has_minimal_install:
             # Activate the the minimal install switch.
             logger.log_value('Activate the minimal install switch?', 'Yes')
@@ -151,6 +166,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -174,6 +207,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -181,6 +230,9 @@ def leave(action, new_page=None):
 
         displayer.set_visible('packages_page__header_bar_box_1', False)
         displayer.set_visible('packages_page__header_bar_box_2', False)
+
+        # Save the model values.
+        model.project.configuration.save()
 
         return
 
@@ -191,16 +243,19 @@ def leave(action, new_page=None):
         displayer.set_visible('packages_page__header_bar_box_1', False)
         displayer.set_visible('packages_page__header_bar_box_2', False)
 
-        # Create the removable packages list for a typical install.
-        logger.log_label('Create the removable packages list for a typical install')
-        create_typical_removable_packages_list()
+        # Create the removable packages list for a standard install.
+        logger.log_label('Create the removable packages list for a standard install')
+        create_standard_removable_packages_list()
 
         # Create the removable packages list for a minimal install.
         logger.log_label('Create the removable packages list for a minimal install')
         create_minimal_removable_packages_list()
 
         # Update the model to acknowledge changes.
-        model.installer.has_minimal_install = has_minimal_install
+        model.options.has_minimal_install = has_minimal_install
+
+        # Save the model values.
+        model.project.configuration.save()
 
         return
 
@@ -257,7 +312,7 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
     global undo_index
     global undo_list
 
-    # 0: is typical selected?
+    # 0: is standard selected?
     # 1: is minimal selected?
     # 2: is minimal selected initial?
     # 3: is minimal active?
@@ -280,7 +335,7 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
             ' -'
             f' Row: {row},'
             f' Column: {column},'
-            f' Typical: {list_store[row][0]},'
+            f' Standard: {list_store[row][0]},'
             f' Minimal: {list_store[row][1]},'
             f' Previous: {list_store[row][2]},'
             f' Active: {list_store[row][3]},'
@@ -317,7 +372,7 @@ def on_clicked__packages_page__revert_header_bar_button(widget):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -333,7 +388,7 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
 
     undo_index -= 1
 
-    # 0: is typical selected?
+    # 0: is standard selected?
     # 1: is minimal selected?
     # 2: is minimal selected initial?
     # 3: is minimal active?
@@ -352,7 +407,7 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -389,7 +444,7 @@ def on_clicked__packages_page__undo_header_bar_button(widget):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -403,7 +458,7 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
     global undo_index
     global undo_list
 
-    # 0: is typical selected?
+    # 0: is standard selected?
     # 1: is minimal selected?
     # 2: is minimal selected initial?
     # 3: is minimal active?
@@ -422,7 +477,7 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -461,7 +516,7 @@ def on_clicked__packages_page__redo_header_bar_button(widget):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -490,7 +545,7 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
     global undo_index
     global undo_list
 
-    # 0: is typical selected?
+    # 0: is standard selected?
     # 1: is minimal selected?
     # 2: is minimal selected initial?
     # 3: is minimal active?
@@ -503,7 +558,7 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -548,7 +603,7 @@ def on_toggled__packages_page__remove_1_check_button(widget, row):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -562,7 +617,7 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
     global undo_index
     global undo_list
 
-    # 0: is typical selected?
+    # 0: is standard selected?
     # 1: is minimal selected?
     # 2: is minimal selected initial?
     # 3: is minimal active?
@@ -575,7 +630,7 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -605,7 +660,7 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
         ' -'
         f' Row: {row},'
         f' Column: {column},'
-        f' Typical: {list_store[row][0]},'
+        f' Standard: {list_store[row][0]},'
         f' Minimal: {list_store[row][1]},'
         f' Previous: {list_store[row][2]},'
         f' Active: {list_store[row][3]},'
@@ -619,18 +674,18 @@ def on_toggled__packages_page__remove_2_check_button(widget, row):
 ########################################################################
 
 
-def create_typical_removable_packages_list():
+def create_standard_removable_packages_list():
 
-    # logger.log_label('Create typical removable packages list')
+    # logger.log_label('Create standard removable packages list')
 
-    listore_name = 'packages_page__list_store'
-    logger.log_value('Get user selections from', listore_name)
-    list_store = model.builder.get_object(listore_name)
+    list_store_name = 'packages_page__list_store'
+    logger.log_value('Get user selections from', list_store_name)
+    list_store = model.builder.get_object(list_store_name)
     removable_packages_list = []
     item = list_store.get_iter_first()
     while item is not None:
 
-        # 0: is typical selected?
+        # 0: is standard selected?
         # 1: is minimal selected?
         # 2: is minimal selected initial?
         # 3: is minimal active?
@@ -647,28 +702,31 @@ def create_typical_removable_packages_list():
     number_of_packages_to_remove = len(removable_packages_list)
     number_of_packages_to_retain = number_of_packages_total - number_of_packages_to_remove
     logger.log_value('Total number of installed packages', number_of_packages_total)
-    logger.log_value('New number of packages to be removed for a typical install', number_of_packages_to_remove)
-    logger.log_value('New number of packages to be retained for a typical install', number_of_packages_to_retain)
+    logger.log_value('New number of packages to be removed for a standard install', number_of_packages_to_remove)
+    logger.log_value('New number of packages to be retained for a standard install', number_of_packages_to_retain)
 
-    # Save the typical install filesystem.manifest-remove file, even
-    # if there are no packages to remove. If the file does not exist
-    # an empty file will be created.
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE)
-    file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)
+    # Save the standard install filesystem.manifest-remove file. If there
+    # are no packages to remove, an empty file will be created.
+    if model.layout.standard_remove_file_name:
+        file_path = os.path.join(model.project.custom_disk_directory, \
+                                 model.layout.squashfs_directory, \
+                                 model.layout.standard_remove_file_name)
+
+        file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)
 
 
 def create_minimal_removable_packages_list():
 
     # logger.log_label('Create minimal removable packages list')
 
-    listore_name = 'packages_page__list_store'
-    logger.log_value('Get user selections from', listore_name)
-    list_store = model.builder.get_object(listore_name)
+    list_store_name = 'packages_page__list_store'
+    logger.log_value('Get user selections from', list_store_name)
+    list_store = model.builder.get_object(list_store_name)
     removable_packages_list = []
     item = list_store.get_iter_first()
     while item is not None:
 
-        # 0: is typical selected?
+        # 0: is standard selected?
         # 1: is minimal selected?
         # 2: is minimal selected initial?
         # 3: is minimal active?
@@ -676,12 +734,12 @@ def create_minimal_removable_packages_list():
         # 5: package version
 
         # Include packages that are selected for removal for a minimal
-        # install and are not selected for removal for a typical
+        # install and are not selected for removal for a standard
         # install.
         # flag = list_store.get_value(item, 1) and list_store.get_value(item, 3)
 
         # Include packages that are selected for removal for a minimal
-        # install, even if they are selected for removal for a typical
+        # install, even if they are selected for removal for a standard
         # install.
         flag = list_store.get_value(item, 1)
         package_name = list_store.get_value(item, 4)
@@ -699,5 +757,8 @@ def create_minimal_removable_packages_list():
     # Save the minimal install filesystem.manifest-minimal-remove
     # file, even if there are no packages to remove. If the file
     # does not exist an empty file will be created.
-    file_path = os.path.join(model.project.custom_disk_directory, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
-    file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)
+    if model.layout.minimal_remove_file_name:
+        file_path = os.path.join(model.project.custom_disk_directory, \
+                                 model.layout.squashfs_directory, \
+                                 model.layout.minimal_remove_file_name)
+        file_utilities.write_lines(removable_packages_list, file_path, raise_exception=False)

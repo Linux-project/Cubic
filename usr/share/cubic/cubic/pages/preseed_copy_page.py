@@ -43,6 +43,7 @@ import urllib
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import FINAL_PERCENT
+from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_1000_MS
 from cubic.navigator import InterruptException
 from cubic.pages import options_page
@@ -68,6 +69,22 @@ file_number = 0
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'copy-preseed':
 
@@ -84,7 +101,7 @@ def setup(action, old_page=None):
         displayer.update_label('preseed_copy_page__progress_message', message, False)
         displayer.update_progress_bar_text('preseed_copy_page__copy_files_progress_bar', None)
         displayer.update_progress_bar_percent('preseed_copy_page__copy_files_progress_bar', 0)
-        displayer.update_status('preseed_copy_page__progress', displayer.BLANK)
+        displayer.update_status('preseed_copy_page__progress', BLANK)
         displayer.update_list_store('preseed_copy_page__file_details__list_store', file_details_list)
 
         return
@@ -103,6 +120,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'copy-preseed':
 
@@ -134,6 +169,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'cancel':
 
@@ -235,7 +286,7 @@ def copy_files(current_directory, uris):
     logger.log_value('The custom disk directory is', model.project.custom_disk_directory)
     logger.log_value('The target directory is', target_directory)
 
-    displayer.update_status('preseed_copy_page__progress', displayer.PROCESSING)
+    displayer.update_status('preseed_copy_page__progress', PROCESSING)
 
     global file_number
     try:
@@ -250,7 +301,7 @@ def copy_files(current_directory, uris):
             displayer.select_tree_view_row('preseed_copy_page__tree_view', file_number)
             copy_file(file_path, file_number, target_directory, total_files)
     except InterruptException as exception:
-        displayer.update_status('preseed_copy_page__progress', displayer.ERROR)
+        displayer.update_status('preseed_copy_page__progress', ERROR)
         if 'No space left on device' in str(exception):
             # message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
             message = f'Error. Unable to copy files to {current_directory}. Not enough space on the disk.'
@@ -261,7 +312,7 @@ def copy_files(current_directory, uris):
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
-        displayer.update_status('preseed_copy_page__progress', displayer.ERROR)
+        displayer.update_status('preseed_copy_page__progress', ERROR)
         if 'No space left on device' in str(exception):
             # message = f'<span foreground="red">Error. Unable to copy files to {current_directory}. Not enough space on the disk.</span>'
             message = f'Error. Unable to copy files to {current_directory}. Not enough space on the disk.'
@@ -272,7 +323,7 @@ def copy_files(current_directory, uris):
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
-    displayer.update_status('preseed_copy_page__progress', displayer.OK)
+    displayer.update_status('preseed_copy_page__progress', OK)
     number_text = constructor.number_as_text(total_files)
     plural_text = constructor.get_plural('file', 'files', total_files)
     message = f'Copied {number_text} {plural_text} to {current_directory}.'

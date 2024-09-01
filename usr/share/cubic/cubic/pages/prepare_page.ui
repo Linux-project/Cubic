@@ -303,7 +303,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Create the package manifest for a typical install.</property>
+                <property name="label" translatable="yes">Create the package manifest for a standard install.</property>
                 <property name="wrap">True</property>
                 <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>

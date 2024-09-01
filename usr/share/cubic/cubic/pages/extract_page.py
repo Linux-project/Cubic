@@ -26,23 +26,6 @@
 # along with Cubic. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                      #
 ########################################################################
-"""
-Prior to entering this page:
-• model.status.iso_template must be set to None whenever
-  model.status.is_success_copy is set to False.
-• model.status.squashfs_directory must be set to None whenever
-  model.status.is_success_extract is set to False.
-• model.status.squashfs_file_name must be set to None whenever
-  model.status.is_success_extract is set to False.
-• model.status.casper_directory must be set to None whenever
-  model.status.is_success_extract is set to False.
-• model.installer.has_typical_install must be set to None whenever
-  model.status.is_success_copy is set to False.
-• model.installer.has_minimal_install must be set to None whenever
-  model.status.is_success_copy is set to False.
-• model.installer.has_subiquity must be set to None whenever
-  model.status.is_success_copy is set to False.
-"""
 
 ########################################################################
 # References
@@ -53,20 +36,25 @@ Prior to entering this page:
 # https://linux.die.net/man/8/mkisofs
 # http://manpages.ubuntu.com/manpages/groovy/man1/dd.1.html
 # https://stackoverflow.com/questions/65189149/best-regex-in-python-to-not-have-double-space-in-result-when-substring-is-remo/65189757#65189757
+# https://manpages.ubuntu.com/manpages/noble/man1/unsquashfs.1.html
 
 ########################################################################
 # Imports
 ########################################################################
 
+from packaging import version
+
+import glob
+import locale
 import os
 import time
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import CASPER_DIRECTORIES, SQUASHFS_FILE_NAMES
-from cubic.constants import EXTENSION_MANIFEST, EXTENSION_SIZE, EXTENSION_SQUASHFS, EXTENSION_SQUASHFS_GPG
-from cubic.constants import FILE_SYSTEM_MANIFEST, FILE_SYSTEM_SIZE
-from cubic.constants import FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE
+from cubic.constants import CUBIC_VERSION_2024
+from cubic.constants import FINAL_PERCENT
+from cubic.constants import GAP
 from cubic.constants import IMAGE_FILE_NAME
+from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_1000_MS
 from cubic.navigator import InterruptException
 from cubic.utilities import constructor
@@ -90,57 +78,106 @@ is_page_valid = False
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'next':
 
-        # The template must always be None if is_success_copy is None.
-        # This should be set correctly on the Project page, but set it
-        # here as a precaution (in case the user edited the
-        # configuration file.
-        if not model.status.is_success_copy:
-            model.status.iso_template = None
+        # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+        # TODO:
+        # Remove the "if" statement in a future release but keep the
+        # code inside the "if" clause. [2024-08-10]
+        #
+        # The code inside the "if" clause will not work for projects
+        # created using Cubic version 2024.02.86, so it should only be
+        # enabled for all projects after most users are no longer
+        # customizing legacy projects.
+        # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+        cubic_version = constructor.get_display_version(model.project.first_version)
+        if version.parse(cubic_version) >= version.parse(CUBIC_VERSION_2024):
 
-        # The casper directory must always be None if is_success_extract
-        # is None. This should be set correctly on the Project page, but
-        # set it here as a precaution (in case the user edited the
-        # configuration file.
-        if not model.status.is_success_extract:
-            model.status.squashfs_directory = None
-            model.status.squashfs_file_name = None
-            model.status.casper_directory = None
+            # Update the status in case the user modified the cubic.conf
+            # project configuration file or deleted some project files.
+
+            # Checks for legacy layouts (using ubiquity).
+            is_success_analyze_1 = bool(                    \
+                model.status.is_success_analyze and         \
+                model.layout.casper_directory and           \
+                model.layout.squashfs_directory and         \
+                model.layout.squashfs_file_name)
+            is_success_copy_1 = bool(                       \
+                model.status.is_success_copy and            \
+                model.layout.casper_directory and           \
+                model.layout.squashfs_directory)
+            is_success_extract_1 = bool(                    \
+                model.status.is_success_extract and         \
+                model.layout.squashfs_directory and         \
+                model.layout.squashfs_file_name)
+
+            # Checks for newer layouts (using subiquity).
+            is_success_analyze_2 = bool(                    \
+                model.status.is_success_analyze and         \
+                model.layout.casper_directory and           \
+                model.layout.squashfs_directory and         \
+                model.layout.minimal_squashfs_file_name and \
+                model.layout.standard_squashfs_file_name)
+            is_success_copy_2 = bool(                       \
+                model.status.is_success_copy and            \
+                model.layout.casper_directory and           \
+                model.layout.squashfs_directory)
+            is_success_extract_2 = bool(                    \
+                model.status.is_success_extract and         \
+                model.layout.squashfs_directory and         \
+                model.layout.minimal_squashfs_file_name and \
+                model.layout.standard_squashfs_file_name)
+
+            model.status.is_success_analyze = is_success_analyze_1 or is_success_analyze_2
+            model.status.is_success_copy = is_success_copy_1 or is_success_copy_2
+            model.status.is_success_extract = is_success_extract_1 or is_success_extract_2
 
         # --------------------------------------------------------------
-        # Identify important files on the original disk image.
+        # Analyze
         # --------------------------------------------------------------
 
         displayer.set_visible('extract_page__analyze_original_iso_section',
-                              not model.status.iso_template or \
-                              not model.status.squashfs_directory or \
-                              not model.status.squashfs_file_name or \
-                              not model.status.casper_directory)
-
+                              not model.status.is_success_analyze or \
+                              not model.status.iso_template)
+        displayer.update_status('extract_page__analyze_original_iso', BULLET)
         displayer.update_label('extract_page__analyze_original_iso_message', '...', False)
-        displayer.update_status('extract_page__analyze_original_iso', displayer.BULLET)
 
         # --------------------------------------------------------------
-        # Copy important files from the original disk image.
+        # Copy
         # --------------------------------------------------------------
 
         displayer.set_visible('extract_page__copy_original_iso_files_section', not model.status.is_success_copy)
+        displayer.update_status('extract_page__copy_original_iso_files', BULLET)
         displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', 0)
         # displayer.update_progress_bar_text('extract_page__copy_original_iso_files_progress_bar', None)
         displayer.update_label('extract_page__copy_original_iso_files_message', '', False)
-        displayer.update_status('extract_page__copy_original_iso_files', displayer.BULLET)
 
         # --------------------------------------------------------------
-        # Extract the compressed Linux file system.
+        # Extract
         # --------------------------------------------------------------
 
         displayer.set_visible('extract_page__unsquashfs_section', not model.status.is_success_extract)
+        displayer.update_status('extract_page__unsquashfs', BULLET)
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', 0)
         # displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', None)
         displayer.update_label('extract_page__unsquashfs_message', '', False)
-        displayer.update_status('extract_page__unsquashfs', displayer.BULLET)
 
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -165,109 +202,153 @@ def setup(action, old_page=None):
 
 def enter(action, old_page=None):
     """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+
     Specific success or error messages should be displayed in the called
     functions, but the display status should be set here because they
     depend on the outcome of multiple functions.
-
-    The following values are checked and set to None accordingly, in the
-    setup() function, prior to entering this page.
-
-    • model.status.iso_template must be set to None whenever
-      model.status.is_success_copy is set to False.
-
-    • model.status.squashfs_directory must be set to None whenever
-      model.status.is_success_extract is set to False.
-
-    • model.status.squashfs_file_name must be set to None whenever
-      model.status.is_success_extract is set to False.
-
-    • model.status.casper_directory must be set to None whenever
-      model.status.is_success_extract is set to False.
     """
 
     if action == 'next':
 
         # --------------------------------------------------------------
-        # Identify important files on the original disk image.
+        # Analyze
         # --------------------------------------------------------------
 
-        if not model.status.iso_template or \
-           not model.status.squashfs_directory or \
-           not model.status.squashfs_file_name or \
-           not model.status.casper_directory:
+        if not (model.status.iso_template and model.status.is_success_analyze):
 
-            displayer.update_status('extract_page__analyze_original_iso', displayer.PROCESSING)
+            displayer.update_status('extract_page__analyze_original_iso', PROCESSING)
+
             time.sleep(SLEEP_1000_MS)
 
-            # Identify the template for the original disk image.
             if not model.status.iso_template:
 
                 # Delete the old image files. Ignore errors.
                 file_path_pattern = os.path.join(model.project.directory, IMAGE_FILE_NAME % '[1-9]')
                 file_utilities.delete_files_with_pattern(file_path_pattern)
 
-                # Set model.status.iso_template.
-                is_error = identify_iso_template()
+                # Identify the template for the original disk image.
+                # • Set model.status.iso_template
+                is_error = analyze_iso_template()
+
                 if is_error: return  # Stay on this page.
 
-            # Identify the squashfs relative file path.
-            if not model.status.squashfs_directory or \
-               not model.status.squashfs_file_name:
+            if not model.status.is_success_analyze:
 
-                is_error = identify_squashfs_file_path()
+                source_directory_path = model.project.iso_mount_point
+
+                # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+                # TODO: Remove this section in the future. [2024-08-10]
+                # Migrate a project created using Cubic version
+                # 2024.02.86 to a newer version.
+                # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+                if not iso_utilities.is_mounted(model.project.iso_mount_point):
+                    source_directory_path = model.project.custom_disk_directory
+
+                # Analyze the ISO layout.
+                # • Set model.status.is_success_analyze
+                # • Set model.layout.squashfs_directory
+                # • Set model.layout.standard_squashfs_file_name
+                # • Set model.layout.casper_directory
+                # • Set model.layout.*
+                # • Set model.status.has_minimal_install
+
+                is_error = analyze_iso_layout(source_directory_path)
+
                 if is_error: return  # Stay on this page.
 
-                # Identify if the ISO uses manifest remove files.
-                identify_has_typical_install()
-                identify_has_minimal_install()
-
-                # Identify if the ISO uses Subiquity.
-                identify_has_subiquity()
-
-            # Identify the casper relative directory.
-            if not model.status.casper_directory:
-
-                is_error = identify_casper_directory()
-                if is_error: return  # Stay on this page.
-
-            # Success. Pause to allow the user to see the result.
+            # Pause to allow the user to see the result.
             message = 'Success.'
             displayer.update_label('extract_page__analyze_original_iso_message', message, False)
-            displayer.update_status('extract_page__analyze_original_iso', displayer.OK)
+            displayer.update_status('extract_page__analyze_original_iso', OK)
             time.sleep(SLEEP_1000_MS)
 
         # --------------------------------------------------------------
-        # Copy important files from the original disk image.
+        # Copy
         # --------------------------------------------------------------
 
         if not model.status.is_success_copy:
 
-            displayer.update_status('extract_page__copy_original_iso_files', displayer.PROCESSING)
+            displayer.update_status('extract_page__copy_original_iso_files', PROCESSING)
 
-            # Copy original disk files.
+            # Copy important files from the original disk image.
+            # Set the following:
+            # • Set model.status.is_success_copy
             is_error = copy_original_iso_files()
+
             if is_error: return  # Stay on this page.
 
-            # Success. Pause to allow the user to see the result.
-            model.status.is_success_copy = True
-            displayer.update_status('extract_page__copy_original_iso_files', displayer.OK)
+            # Pause to allow the user to see the result.
+            message = 'Success.'
+            displayer.update_label('extract_page__copy_original_iso_files_message', message, False)
+            displayer.update_status('extract_page__copy_original_iso_files', OK)
             time.sleep(SLEEP_1000_MS)
 
         # --------------------------------------------------------------
-        # Extract the compressed Linux file system.
+        # Extract
         # --------------------------------------------------------------
 
         if not model.status.is_success_extract:
 
-            displayer.update_status('extract_page__unsquashfs', displayer.PROCESSING)
+            displayer.update_status('extract_page__unsquashfs', PROCESSING)
 
-            # Extract the squashfs.
-            is_error = extract_squashfs()
-            if is_error: return  # Stay on this page.
+            # Clear the terminal because the history will no longer be
+            # valid when the new squashfs files are extracted.
+            terminal = model.builder.get_object('terminal_page__terminal')
+            terminal.reset(True, True)
 
-            # Success. Pause to allow the user to see the result.
-            model.status.is_success_copy = True
-            displayer.update_status('extract_page__unsquashfs', displayer.OK)
+            # Delete the custom root directory if it exists.
+            file_utilities.delete_path_as_root(model.project.custom_root_directory)
+
+            # Identify squashfs files to extract.
+            directory_path = os.path.join(model.project.iso_mount_point, model.layout.squashfs_directory)
+            if model.layout.squashfs_file_name:
+                file_names = [model.layout.squashfs_file_name]
+            else:
+                '''
+                file_names = [model.layout.minimal_squashfs_file_name,         \
+                              model.layout.standard_squashfs_file_name,        \
+                              model.layout.installer_squashfs_file_name,       \
+                              model.layout.installer_generic_squashfs_file_name]
+                '''
+                '''
+                file_names = [model.layout.minimal_squashfs_file_name,         \
+                              model.layout.standard_squashfs_file_name,        \
+                              model.layout.installer_squashfs_file_name,       ]
+                '''
+                file_names = [model.layout.minimal_squashfs_file_name, \
+                              model.layout.standard_squashfs_file_name]
+
+            # Exclude empty file names and links.
+            file_names = [file_name for file_name in file_names \
+                          if file_name and not os.path.islink(os.path.join(directory_path, file_name))]
+
+            # Extract each squashfs file in sequence.
+            # • Set model.status.is_success_extract
+            total_files = len(file_names)
+            for file_number, file_name in enumerate(file_names):
+                is_error = extract_squashfs(file_name, file_number, total_files)
+                if is_error: return  # Stay on this page.
+
+            # Pause to allow the user to see the result.
+            message = 'Success.'
+            displayer.update_label('extract_page__unsquashfs_message', message, False)
+            displayer.update_status('extract_page__unsquashfs', OK)
             time.sleep(SLEEP_1000_MS)
 
         return 'next'
@@ -280,16 +361,38 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # Save the model values.
+        model.project.configuration.save()
 
         return
 
     elif action == 'next':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
+
+        # Save the model values.
+        model.project.configuration.save()
 
         return
 
@@ -328,7 +431,7 @@ def leave(action, new_page=None):
 # ----------------------------------------------------------------------
 
 
-def identify_iso_template():
+def analyze_iso_template():
 
     logger.log_label('Generate the ISO template')
 
@@ -344,305 +447,316 @@ def identify_iso_template():
         # message = '<span foreground="red">Error. Unable to identify information about this disk.</span>'
         message = 'Error. Unable to identify information about this disk'
         displayer.update_label('extract_page__analyze_original_iso_message', message, True)
-        displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
+        displayer.update_status('extract_page__analyze_original_iso', ERROR)
         return True
     else:
         return False
 
 
-def identify_squashfs_file_path():
+def identify_directories_and_files(source_directory_path, directory_attribute, file_attribute):
     """
-    Set the squashfs directory and file name (without extension) in the
-    model. If there are multiple squashfs files, only the first one
-    matching the default squashfs file names will be selected.
+    Identify a directory by searching for files within the directory.
     """
 
-    logger.log_label('Find the compressed Linux file system')
-
-    # Set model.status.squashfs_directory
-    # Set model.status.squashfs_file_name
-
-    # Remove the extension from the squashfs file name because this name
-    # is reused for various files with different extensions:
-    # - *.manifest
-    # - *.size
-    # - *.squashfs
-    # - *.squashfs.gpg
-    # Also, see the copy_original_iso_files() function.
-    #
-    # The squashfs file name is not used for the following files,
-    # because Ubiquity expects the these specific file names:
-    # - filesystem.manifest
-    # - filesystem.manifest-minimal-remove
-    # - filesystem.manifest-remove
-    #
-    # The following files are preset when Subiquity is used:
-    # - filesystem.manifest - Aggregation of all *.manifest files.
-    # - filesystem.size - Aggregation of all *.size files.
-    #                     See generate_page.update_file_system_size()
-
-    # For Pop!_OS the identified squashfs directories will be "casper"
-    # and "casper_pop-os_20.04_amd64_intel_debug_25". However,
-    # identify_squashfs_file_path() will select "casper" because it
-    # appears in constants.CASPER_DIRECTORIES.
-
-    file_paths = _get_squashfs_file_paths()
-
-    if not file_paths:
-        model.status.squashfs_directory = None
-        model.status.squashfs_file_name = None
-    if len(file_paths) == 1:
-        directory, file_name = os.path.split(file_paths[0])
-        model.status.squashfs_directory = directory
-        model.status.squashfs_file_name, _ = os.path.splitext(file_name)
-    else:
-        # Handle multiple squashfs file paths.
-        for file_path in file_paths:
-            directory, file_name = os.path.split(file_path)
-            # Compare the file name to the list of squash file names.
-            if file_name in SQUASHFS_FILE_NAMES:
-                model.status.squashfs_directory = directory
-                model.status.squashfs_file_name, _ = os.path.splitext(file_name)
-                break
-
-    # logger.log_value('The selected squashfs directory is', model.status.squashfs_directory)
-    # logger.log_value('The selected squashfs file name is', model.status.squashfs_file_name)
-
-    if not model.status.squashfs_directory or \
-       not model.status.squashfs_file_name:
-        logger.log_value('Error', 'Unable to locate the squashfs file path')
-        # message = '<span foreground="red">Unable to locate the compressed Linux file system.</span>'
-        message = 'Unable to locate the compressed Linux file system.'
-        displayer.update_label('extract_page__analyze_original_iso_message', message, True)
-        displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
-        return True  # (Error)
-    return False  # (No error)
+    directory_patterns = model.layout.values(directory_attribute)
+    for directory_pattern in directory_patterns:
+        directory_path_pattern = os.path.join(source_directory_path, directory_pattern)
+        directory_paths = glob.glob(directory_path_pattern)
+        for directory_path in directory_paths:
+            if os.path.exists(directory_path):
+                file_name_patterns = model.layout.values(file_attribute)
+                for file_name_pattern in file_name_patterns:
+                    file_path_pattern = os.path.join(directory_path, file_name_pattern)
+                    file_paths = glob.glob(file_path_pattern)
+                    for file_path in file_paths:
+                        if os.path.exists(file_path):
+                            # Set the directory.
+                            directory = os.path.relpath(directory_path, source_directory_path)
+                            model.layout.set(directory_attribute, directory, True)
+                            # Set the file name.
+                            file_name = os.path.relpath(file_path, directory_path)
+                            model.layout.set(file_attribute, file_name, True)
 
 
-def identify_casper_directory():
+def identify_directories(source_directory_path, directory_attribute, file_attribute):
     """
-    Set the casper directory in the model. The casper directory contains
-    the vmlinuz annd initrd kernel files. If there are multiple casper
-    directories, only the first one matching the default casper
-    directories will be selected.
+    Identify a directory by searching for files within the directory.
     """
 
-    logger.log_label('Find the casper kernel files')
-
-    # Set model.status.casper_directory
-
-    # Assume vmlinuz and initrd are in the same directories.
-    # file_paths = _get_initrd_file_paths()
-    file_paths = _get_vmlinuz_file_paths()
-
-    if not file_paths:
-        model.status.casper_directory = None
-    elif len(file_paths) == 1:
-        model.status.casper_directory = os.path.dirname(file_paths[0])
-    else:
-        # Handle multiple casper directories.
-        for file_path in file_paths:
-            # Compare the root directory to the list of casper directories.
-            if file_path.split(os.path.sep)[0] in CASPER_DIRECTORIES:
-                # Get the full relative path (exclude the file name).
-                model.status.casper_directory = os.path.dirname(file_path)
-                break
-
-    if not model.status.casper_directory:
-        logger.log_value('Error', 'Unable to locate the casper directory')
-        # message = '<span foreground="red">Unable to locate the casper kernel files.</span>'
-        message = 'Unable to locate the casper kernel files.'
-        displayer.update_label('extract_page__analyze_original_iso_message', message, True)
-        displayer.update_status('extract_page__analyze_original_iso', displayer.ERROR)
-        return True  # (Error)
-
-    return False  # (No error)
+    directory_patterns = model.layout.values(directory_attribute)
+    for directory_pattern in directory_patterns:
+        directory_path_pattern = os.path.join(source_directory_path, directory_pattern)
+        directory_paths = glob.glob(directory_path_pattern)
+        for directory_path in directory_paths:
+            if os.path.exists(directory_path):
+                file_name_patterns = model.layout.values(file_attribute)
+                for file_name_pattern in file_name_patterns:
+                    file_path_pattern = os.path.join(directory_path, file_name_pattern)
+                    file_paths = glob.glob(file_path_pattern)
+                    for file_path in file_paths:
+                        if os.path.exists(file_path):
+                            # Set the directory.
+                            directory = os.path.relpath(directory_path, source_directory_path)
+                            model.layout.set(directory_attribute, directory, True)
+                            # Set the file name.
+                            # file_name = os.path.relpath(file_path, directory_path)
+                            # model.layout.set(file_attribute, file_name, True)
 
 
-def identify_has_typical_install():
+def identify_files(source_directory_path, directory_attribute, file_attribute):
     """
-    Identify if the ISO has the filesystem.manifest-remove file.
+    Identify files within the directory.
     """
 
-    file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE)
-    model.installer.has_typical_install = os.path.exists(file_path)
+    directory_patterns = model.layout.values(directory_attribute)
+    for directory_pattern in directory_patterns:
+        directory_path_pattern = os.path.join(source_directory_path, directory_pattern)
+        directory_paths = glob.glob(directory_path_pattern)
+        for directory_path in directory_paths:
+            if os.path.exists(directory_path):
+                file_name_patterns = model.layout.values(file_attribute)
+                for file_name_pattern in file_name_patterns:
+                    file_path_pattern = os.path.join(directory_path, file_name_pattern)
+                    file_paths = glob.glob(file_path_pattern)
+                    for file_path in file_paths:
+                        if os.path.exists(file_path):
+                            # Set the directory.
+                            # directory = os.path.relpath(directory_path, source_directory_path)
+                            # model.layout.set(directory_attribute, directory, True)
+                            # Set the file name.
+                            file_name = os.path.relpath(file_path, directory_path)
+                            model.layout.set(file_attribute, file_name, True)
 
 
-def identify_has_minimal_install():
+def analyze_iso_layout(source_directory_path):
     """
-    Identify if the ISO has the "filesystem.manifest-minimal-remove"
-    file.
-    """
+    Set valid possible values for each attribute as True.
+    Set invalid possible values for each attribute as False.
+    (See the Structures class).
 
-    file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE)
-    model.installer.has_minimal_install = os.path.exists(file_path)
-
-
-def identify_has_subiquity():
-    """
-    Identify if the ISO uses the Subiquity installer.
-    • Subiquity was introduced in Ubuntu 21.04+ Server ISO.
-    • Subiquity was introduced in Ubuntu 23.04+ Desktop ISO.
-
-    Assume the ISO uses Subiquity if:
-    • The file "install-sources.yaml" exists
-    • The squashfs directory contains at least one installer squashfs
-      file
-    """
-
-    # Ubuntu 23.04+ Desktop
-    # Search for install-sources.yaml in the squashfs directory.
-    # Assume the ISO uses Subiquity if the file install-sources.yaml
-    # exists in the squashfs directory.
-    file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, 'install-sources.yaml')
-    if os.path.isfile(file_path):
-        logger.log_value('Does the ISO use Subiquity?', True)
-        model.installer.has_subiquity = True
-        return
-
-    # Ubuntu 21.04+ Server
-    # Search for installer squashfs files in the squashfs directory.
-    # Assume the ISO uses Subiquity if the squashfs directory contains
-    # at least one installer squashfs file. The file name must have the
-    # word "installer", and it must have the "squashfs" extension.
-    directory = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory)
-    file_names = file_utilities.find_files_with_pattern(rf'.*installer.*{EXTENSION_SQUASHFS}$', directory)
-    if file_names:
-        logger.log_value('Does the ISO use Subiquity?', True)
-        model.installer.has_subiquity = True
-        return
-
-    logger.log_value('Does the ISO use Subiquity?', False)
-    model.installer.has_subiquity = False
-    return
-
-
-def _get_squashfs_file_paths():
-    """
-    Get the squashfs file paths relative to the rood directory of the
-    original ISO or custom ISO. The custom ISO is only searched if the
-    original ISO is not available/mounted.
+    Args:
+        source_directory_path (str): The source directory path
 
     Returns:
-    file_paths : list of str
-        The relative squashfs file paths.
+        None: N/A
     """
 
-    # Follow symlinks to accommodate Pop!_OS, because the init script
-    # specifically requires "casper" directory, instead of the real path
-    # to the squashfs directory. Pop!_OS has a symlink to the
-    # squashfs directory named "casper":
-    #   lrwxrwxrwx  casper -> casper_pop-os_20.04_amd64_intel_debug_25
-    #   drwxr-xr-x  casper_pop-os_20.04_amd64_intel_debug_25
-    # For Pop!_OS the identified squashfs directories will be "casper"
-    # and "casper_pop-os_20.04_amd64_intel_debug_25". However,
-    # identify_squashfs_file_path() will select "casper" because it
-    # appears in constants.CASPER_DIRECTORIES.
+    logger.log_label('Analyze the ISO layout')
 
-    # Search the mounted ISO directory, first. Follow symlinks.
-    file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.iso_mount_point, follow_links=True)
+    logger.log_value('Analyze', source_directory_path)
 
-    # Search the custom disk directory, second. Follow symlinks.
-    if not file_paths:
-        file_paths = file_utilities.find_files_with_pattern(rf'.*\.{EXTENSION_SQUASHFS}$', model.project.custom_disk_directory, follow_links=True)
+    # Casper Section
+    #   model.layout.casper_directory
+    #   model.layout.initrd_file_name
+    #   model.layout.vmlinuz_file_name
+    # General Section
+    #   model.layout.squashfs_directory
+    #   model.layout.squashfs_file_name
+    #   model.layout.manifest_file_name
+    #   model.layout.minimal_remove_file_name
+    #   model.layout.standard_remove_file_name
+    #   model.layout.size_file_name
+    # Minimal Section
+    #   model.layout.minimal_squashfs_file_name
+    #   model.layout.minimal_manifest_file_name
+    #   model.layout.minimal_size_file_name
+    # Standard Section
+    #   model.layout.standard_squashfs_file_name
+    #   model.layout.standard_manifest_file_name
+    #   model.layout.standard_size_file_name
+    # Installer / Live Section
+    #   model.layout.installer_sources_file_name
+    #   model.layout.installer_squashfs_file_name
+    #   model.layout.installer_manifest_file_name
+    #   model.layout.installer_size_file_name
+    #   model.layout.installer_generic_squashfs_file_name
+    #   model.layout.installer_generic_manifest_file_name
+    #   model.layout.installer_generic_size_file_name
 
-    logger.log_value('The squashfs file paths are', file_paths)
+    # Initialize the layout.
+    # Although layout is reset on the Start page and the Delete page,
+    # if the user clicks cancel, returns to the project page, and
+    # selects a different original ISO, the layout values should be
+    # reset, so the values from the previous ISO are not preserved.
+    model.layout.reset()
 
-    return file_paths
+    # Casper Section (Directories)
+    # Identify the casper_directory using:
+    # • initrd_file_name
+    # • vmlinuz_file_name
+    identify_directories(source_directory_path, 'casper_directory', 'initrd_file_name')
+    identify_directories(source_directory_path, 'casper_directory', 'vmlinuz_file_name')
 
+    # Casper Section (Files)
+    identify_files(source_directory_path, 'casper_directory', 'initrd_file_name')
+    identify_files(source_directory_path, 'casper_directory', 'vmlinuz_file_name')
 
-def _get_vmlinuz_file_paths():
-    """
-    Get the vmlinuz file paths relative to the rood directory of the
-    original ISO or custom ISO. The custom ISO is only searched if the
-    original ISO is not available/mounted.
+    # General Section (Directories)
+    # Identify the squashfs_directory using:
+    # • squashfs_file_name
+    # • minimal_squashfs_file_name
+    # • standard_squashfs_file_name
+    identify_directories(source_directory_path, 'squashfs_directory', 'squashfs_file_name')
+    identify_directories(source_directory_path, 'squashfs_directory', 'minimal_squashfs_file_name')
+    identify_directories(source_directory_path, 'squashfs_directory', 'standard_squashfs_file_name')
 
-    Returns:
-    file_paths : list of str
-        The relative vmlinuz file paths.
-    """
+    # General Section (Files)
+    identify_files(source_directory_path, 'squashfs_directory', 'squashfs_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'manifest_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'minimal_remove_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'standard_remove_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'size_file_name')
 
-    # logger.log_label('Find the vmlinuz file paths')
+    # Minimal Section
+    identify_files(source_directory_path, 'squashfs_directory', 'minimal_squashfs_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'minimal_manifest_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'minimal_size_file_name')
 
-    # Search the mounted ISO directory, first. Do not follow symlinks.
-    file_paths = file_utilities.find_files_with_pattern(r'vmlinuz.*', model.project.iso_mount_point)
+    # Standard Section
+    identify_files(source_directory_path, 'squashfs_directory', 'standard_squashfs_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'standard_manifest_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'standard_size_file_name')
 
-    # Search the custom disk directory, second. Do not follow symlinks.
-    if not file_paths:
-        file_paths = file_utilities.find_files_with_pattern(r'vmlinuz.*', model.project.custom_disk_directory)
+    # Installer / Live Section
+    identify_files(source_directory_path, 'squashfs_directory', 'installer_sources_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'installer_squashfs_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'installer_manifest_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'installer_size_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'installer_generic_squashfs_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'installer_generic_manifest_file_name')
+    identify_files(source_directory_path, 'squashfs_directory', 'installer_generic_size_file_name')
 
-    logger.log_value('The vmlinuz file paths are', file_paths)
+    # print('-' * 80)
+    # model.layout.print()
+    # print('-' * 80)
 
-    return file_paths
+    # Set important files that may not exist on the original ISO.
+    if not model.layout.size_file_name:
+        model.layout.size_file_name = 'filesystem.size', True
+    if not model.layout.manifest_file_name:
+        model.layout.manifest_file_name = 'filesystem.manifest', True
 
+    # Identify if the ISO has a legacy minimal install option.
+    model.options.has_minimal_install = bool(model.layout.minimal_remove_file_name)
 
-def _get_initrd_file_paths():
-    """
-    Get the initrd file paths relative to the rood directory of the
-    original ISO or custom ISO. The custom ISO is only searched if the
-    original ISO is not available/mounted.
+    # Check if the analysis succeeded.
+    is_success_analyze_1 = bool(                    \
+        model.layout.casper_directory and           \
+        model.layout.squashfs_directory and         \
+        model.layout.squashfs_file_name)
+    is_success_analyze_2 = bool(                    \
+        model.layout.casper_directory and           \
+        model.layout.squashfs_directory and         \
+        model.layout.minimal_squashfs_file_name and \
+        model.layout.standard_squashfs_file_name)
+    model.status.is_success_analyze = is_success_analyze_1 or is_success_analyze_2
 
-    Returns:
-    file_paths : list of str
-        The relative initrd file paths.
-    """
+    is_error = not model.status.is_success_analyze
 
-    # logger.log_label('Find the initrd file paths')
-
-    # Search the mounted ISO directory, first.
-    file_paths = file_utilities.find_files_with_pattern(r'initrd.*', model.project.iso_mount_point)
-
-    # Search the custom disk directory, second.
-    if not file_paths:
-        file_paths = file_utilities.find_files_with_pattern(r'initrd.*', model.project.custom_disk_directory)
-
-    logger.log_value('The initrd file paths are', file_paths)
-
-    return file_paths
+    return is_error
 
 
 # ----------------------------------------------------------------------
 # Copy Original Disk Files Functions
 # ----------------------------------------------------------------------
+"""
+Here is an example of the files that are copied (and not copied) for
+ubuntu-24.04-desktop. Note that "??" represents languages, including
+"no-languages".
+
+~ ~ ~  copy: filesystem.manifest
+~ ~ ~  copy: filesystem.size
+~ ~ ~  copy: install-sources.yaml
+do not copy: minimal.manifest
+do not copy: minimal.size
+do not copy: minimal.squashfs
+do not copy: minimal.squashfs.gpg
+
+do not copy: minimal.??.manifest
+do not copy: minimal.??.size
+do not copy: minimal.??.squashfs
+do not copy: minimal.??.squashfs.gpg
+
+do not copy: minimal.standard.manifest
+do not copy: minimal.standard.size
+do not copy: minimal.standard.squashfs
+do not copy: minimal.standard.squashfs.gpg
+
+~ ~ ~  copy: minimal.standard.live.manifest
+~ ~ ~  copy: minimal.standard.live.size
+~ ~ ~  copy: minimal.standard.live.squashfs
+do not copy: minimal.standard.live.squashfs.gpg
+
+do not copy: minimal.standard.??.manifest
+do not copy: minimal.standard.??.size
+do not copy: minimal.standard.??.squashfs
+do not copy: minimal.standard.??.squashfs.gpg
+
+do not copy: minimal.enhanced-secureboot.manifest
+do not copy: minimal.enhanced-secureboot.size
+do not copy: minimal.enhanced-secureboot.squashfs
+do not copy: minimal.enhanced-secureboot.squashfs.gpg
+
+do not copy: minimal.enhanced-secureboot.??.manifest
+do not copy: minimal.enhanced-secureboot.??.size
+do not copy: minimal.enhanced-secureboot.??.squashfs
+do not copy: minimal.enhanced-secureboot.??.squashfs.gpg
+
+do not copy: minimal.standard.enhanced-secureboot.manifest
+do not copy: minimal.standard.enhanced-secureboot.size
+do not copy: minimal.standard.enhanced-secureboot.squashfs
+do not copy: minimal.standard.enhanced-secureboot.squashfs.gpg
+
+do not copy: minimal.standard.enhanced-secureboot.??.manifest
+do not copy: minimal.standard.enhanced-secureboot.??.size
+do not copy: minimal.standard.enhanced-secureboot.??.squashfs
+do not copy: minimal.standard.enhanced-secureboot.??.squashfs.gpg
+
+~ ~ ~  copy: initrd
+~ ~ ~  copy: vmlinuz
+"""
 
 
 def copy_original_iso_files():
     """
-    Exclude or copy the following files as indicated.
+    Excludes all files in the casper and squashfs directories, but
+    copies specified files.
 
-    do not copy: /md5sum.txt
-    do not copy: /MD5SUMS (for Linux Mint)
+    Exclude or copy the following files:
 
-    ~ ~ ~  copy: /squashfs_directory/filesystem.manifest-remove
-    ~ ~ ~  copy: /squashfs_directory/filesystem.manifest-minimal-remove
+    do not copy: md5sum.txt
+    do not copy: MD5SUMS
+    do not copy: .disk/release notes url
 
-    do not copy: /squashfs_directory/filesystem.manifest
-    do not copy: /squashfs_directory/filesystem.size
-    do not copy: /squashfs_directory/filesystem.squashfs
-    do not copy: /squashfs_directory/filesystem.squashfs.gpg
+    # Casper Section
+    ~ ~ ~  copy: initrd file name
+    ~ ~ ~  copy: vmlinuz file name
 
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.manifest
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.size
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.squashfs
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.squashfs.gpg
+    # General Section
+    do not copy: squashfs file name
+    do not copy: manifest file name
+    ~ ~ ~  copy: minimal remove file name
+    ~ ~ ~  copy: standard remove file name
+    do not copy: size file name
 
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.manifest
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.size
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs.gpg
+    # Minimal Section
+    do not copy: minimal squashfs file name
+    do not copy: minimal manifest file name
+    do not copy: minimal size file name
 
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.manifest
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.size
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.squashfs
-    ~ ~ ~  copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.installer.squashfs.gpg
+    # Standard Section
+    do not copy: standard squashfs file name
+    do not copy: standard manifest file name
+    do not copy: standard size file name
 
-    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.manifest
-    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.size
-    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.squashfs
-    do not copy: /squashfs_directory/ubuntu-server-minimal.ubuntu-server.squashfs.gpg
-
-    ~ ~ ~  copy: /casper/initrd
-    ~ ~ ~  copy: /casper/vmlinuz
+    # Installer / Live Section
+    ~ ~ ~  copy: installer sources file name
+    ~ ~ ~  copy: installer squashfs file name
+    ~ ~ ~  copy: installer manifest file name
+    ~ ~ ~  copy: installer size file name
+    ~ ~ ~  copy: installer generic squashfs file name
+    ~ ~ ~  copy: installer generic manifest file name
+    ~ ~ ~  copy: installer generic size file name
     """
 
     logger.log_label('Copy important files from the original disk image')
@@ -677,14 +791,38 @@ def copy_original_iso_files():
     # Add read and write permissions for the user.
     # Set read and write permissions for group and other.
 
-    # If the squashfs file name is not "filesystem", the files
-    # filesystem.manifest and filesystem.size still exist, so they must
-    # be explicitly excluded. filesystem.size is created on the
-    # Generate page. See generate_page.update_file_system_size().
+    # Includes: Casper Section
+    include_11 = constructor.construct_rsync_includes(model.layout.casper_directory_as_list, model.layout.initrd_file_name_as_list)
+    include_12 = constructor.construct_rsync_includes(model.layout.casper_directory_as_list, model.layout.vmlinuz_file_name_as_list)
 
-    # TODO: Create the filesystem.manifest file as an aggregation of all
-    #       *.squashfs files.
+    # Includes: General Section
+    include_21 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.minimal_remove_file_name_as_list)
+    include_22 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.standard_remove_file_name_as_list)
 
+    # Includes: Installer / Live Section
+    include_31 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_sources_file_name_as_list)
+    include_32 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_squashfs_file_name_as_list)
+    include_33 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_manifest_file_name_as_list)
+    include_34 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_size_file_name_as_list)
+    include_35 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_squashfs_file_name_as_list)
+    include_36 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_manifest_file_name_as_list)
+    include_37 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_size_file_name_as_list)
+
+    # Excludes: Casper Section
+    # The * is used to exclude all files in the casper directory.
+    # However, the preceding includes supersede all excludes, so
+    # specified files in the casper directory will still be copied.
+    exclude_11 = constructor.construct_rsync_excludes(model.layout.casper_directory_as_list, ['*'])
+
+    # Excludes: General Section
+    # The * is used to exclude all files in the squashfs directory.
+    # However, the preceding includes supersede all excludes, so
+    # specified files in the squashfs directory will still be copied.
+    exclude_21 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, ['*'])
+
+    # Do not include a leading "/" in front of the relative file paths,
+    # in the include and exclude arguments. Includes must precede
+    # excludes.
     command = (
         'rsync'
         f' --info=progress2 "{source_file_path}" "{target_file_path}"'
@@ -693,15 +831,28 @@ def copy_original_iso_files():
         ' --recursive'
         ' --links'
         ' --chmod=u+rwX,g=rX,o=rX'
+        # Casper Section
+        f' {include_11}'  # initrd_file_name
+        f' {include_12}'  # vmlinuz_file_name
+        # General Section
+        f' {include_21}'  # minimal_remove_file_name
+        f' {include_22}'  # standard_remove_file_name
+        # Installer / Live Section
+        f' {include_31}'  # installer_sources_file_name
+        f' {include_32}'  # installer_squashfs_file_name
+        f' {include_33}'  # installer_manifest_file_name
+        f' {include_34}'  # installer_size_file_name
+        f' {include_35}'  # installer_generic_squashfs_file
+        f' {include_36}'  # installer_generic_manifest_file_name
+        f' {include_37}'  # installer_generic_size_file_name
+        # Casper Section
+        f' {exclude_11}'  # casper_directory
+        # General Section
+        f' {exclude_21}'  # squashfs_directory
+        # Additional Excludes
         ' --exclude="md5sum.txt"'
         ' --exclude="MD5SUMS"'
-        ' --exclude=".disk/release_notes_url"'
-        f' --exclude="/{model.status.squashfs_directory}/{FILE_SYSTEM_MANIFEST}"'
-        f' --exclude="/{model.status.squashfs_directory}/{FILE_SYSTEM_SIZE}"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_MANIFEST}"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SIZE}"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}"'
-        f' --exclude="/{model.status.squashfs_directory}/{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS_GPG}"')
+        ' --exclude=".disk/release_notes_url"')
 
     # The progress callback function.
     def progress_callback(percent):
@@ -720,7 +871,7 @@ def copy_original_iso_files():
             # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
             message = 'Error. Unable to copy files from the original disk image.'
         displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
-        displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
+        displayer.update_status('extract_page__copy_original_iso_files', ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
@@ -732,12 +883,169 @@ def copy_original_iso_files():
             # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
             message = 'Error. Unable to copy files from the original disk image.'
         displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
-        displayer.update_status('extract_page__copy_original_iso_files', displayer.ERROR)
+        displayer.update_status('extract_page__copy_original_iso_files', ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 
     model.status.is_success_copy = True
-    return False  # (No error)
+
+    return False  # (No Error)
+
+
+def copy_original_iso_files_ALTERNATIVE():
+    """
+    Copies all files in the casper and squashfs directories, but
+    excludes specified files.
+
+    Exclude or copy the following files:
+
+    do not copy: md5sum.txt
+    do not copy: MD5SUMS
+    do not copy: .disk/release notes url
+
+    # Casper Section
+    ~ ~ ~  copy: initrd file name
+    ~ ~ ~  copy: vmlinuz file name
+
+    # General Section
+    do not copy: squashfs file name
+    do not copy: manifest file name
+    ~ ~ ~  copy: minimal remove file name
+    ~ ~ ~  copy: standard remove file name
+    do not copy: size file name
+
+    # Minimal Section
+    do not copy: minimal squashfs file name
+    do not copy: minimal manifest file name
+    do not copy: minimal size file name
+
+    # Standard Section
+    do not copy: standard squashfs file name
+    do not copy: standard manifest file name
+    do not copy: standard size file name
+
+    # Installer / Live Section
+    ~ ~ ~  copy: installer sources file name
+    ~ ~ ~  copy: installer squashfs file name
+    ~ ~ ~  copy: installer manifest file name
+    ~ ~ ~  copy: installer size file name
+    ~ ~ ~  copy: installer generic squashfs file name
+    ~ ~ ~  copy: installer generic manifest file name
+    ~ ~ ~  copy: installer generic size file name
+
+    do not copy: squashfs directory/*.gpg
+    """
+
+    logger.log_label('Copy important files from the original disk image')
+
+    # Add a "/" at the end of the path so rsync copies the contents
+    # of the source directory to the target directory.
+    source_file_path = os.path.join(model.project.iso_mount_point, '')
+    logger.log_value('The source file path is', source_file_path)
+
+    # Add a "/" at the end of the path so rsync copies files into
+    # the target directory. This is not required, but is consistent
+    # with the source directory path above.
+    target_file_path = os.path.join(model.project.custom_disk_directory, '')
+    logger.log_value('The target file path is', target_file_path)
+
+    # Copy files from the original iso.
+
+    # Some important rsync options:
+    #
+    #   -rlptgoD
+    #
+    #     -r --recursive
+    #     -l --links
+    #     -p --perms (do not use)
+    #     -t --times
+    #     -g --group
+    #     -O --owner
+    #     -D --devices --specials
+
+    # Use info=progress2 to get the total progress, instead of the
+    # progress for individual files.
+    # Add read and write permissions for the user.
+    # Set read and write permissions for group and other.
+
+    # General Section
+    exclude_11 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.squashfs_file_name_as_list)
+    exclude_12 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.manifest_file_name_as_list)
+    exclude_13 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.size_file_name_as_list)
+
+    # Minimal Section
+    exclude_21 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.minimal_squashfs_file_name_as_list)
+    exclude_22 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.minimal_manifest_file_name_as_list)
+    exclude_23 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.minimal_size_file_name_as_list)
+
+    # Standard Section
+    exclude_31 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.standard_squashfs_file_name_as_list)
+    exclude_32 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.standard_manifest_file_name_as_list)
+    exclude_33 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.standard_size_file_name_as_list)
+
+    # Do not include a leading "/" in front of the relative file paths
+    # in the include and exclude arguments.
+    command = (
+        'rsync'
+        f' --info=progress2 "{source_file_path}" "{target_file_path}"'
+        ' --delete'
+        # ' --archive'
+        ' --recursive'
+        ' --links'
+        ' --chmod=u+rwX,g=rX,o=rX'
+        # Squashfs Section
+        f' {exclude_11}'  # squashfs_file_name
+        f' {exclude_12}'  # manifest_file_name
+        f' {exclude_13}'  # size_file_name
+        # Minimal Section
+        f' {exclude_21}'  # minimal_squashfs_file_name
+        f' {exclude_22}'  # minimal_manifest_file_name
+        f' {exclude_23}'  # minimal_size_file_name
+        # Standard Section
+        f' {exclude_31}'  # standard_squashfs_file_name
+        f' {exclude_32}'  # standard_manifest_file_name
+        f' {exclude_33}'  # standard_size_file_name
+        f' --exclude="{model.layout.squashfs_directory}/*.gpg"'
+        ' --exclude="md5sum.txt"'
+        ' --exclude="MD5SUMS"'
+        ' --exclude=".disk/release_notes_url"')
+
+    # The progress callback function.
+    def progress_callback(percent):
+        displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
+        if percent % 10 == 0:
+            logger.log_value('Completed', f'{percent:n}%')
+
+    try:
+        track_progress(command, progress_callback)
+    except InterruptException as exception:
+        model.status.is_success_copy = False
+        if 'No space left on device' in str(exception):
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
+        else:
+            # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
+            message = 'Error. Unable to copy files from the original disk image.'
+        displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
+        displayer.update_status('extract_page__copy_original_iso_files', ERROR)
+        logger.log_value('Propagate exception', exception)
+        raise exception
+    except Exception as exception:
+        model.status.is_success_copy = False
+        if 'No space left on device' in str(exception):
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
+        else:
+            # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
+            message = 'Error. Unable to copy files from the original disk image.'
+        displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
+        displayer.update_status('extract_page__copy_original_iso_files', ERROR)
+        logger.log_value('Do not propagate exception', exception)
+        return True  # (Error)
+
+    model.status.is_success_copy = True
+
+    return False  # (No Error)
 
 
 # ----------------------------------------------------------------------
@@ -745,30 +1053,45 @@ def copy_original_iso_files():
 # ----------------------------------------------------------------------
 
 
-def extract_squashfs():
+def extract_squashfs(file_name, file_number, total_files):
 
     logger.log_label('Extract the compressed Linux file system')
-
-    # Clear the terminal because the history will no longer be valid
-    # when the new *.squashfs file is extracted.
-    terminal = model.builder.get_object('terminal_page__terminal')
-    terminal.reset(True, True)
 
     target_file_path = model.project.custom_root_directory
     logger.log_value('The target file path is', target_file_path)
 
-    file_name = f'{model.status.squashfs_file_name}.{EXTENSION_SQUASHFS}'
-    source_file_path = os.path.join(model.project.iso_mount_point, model.status.squashfs_directory, file_name)
+    source_file_path = os.path.join(model.project.iso_mount_point, model.layout.squashfs_directory, file_name)
     logger.log_value('The source file path is', source_file_path)
 
+    if total_files > 1:
+        file_number_text = constructor.number_as_text(file_number + 1)
+        total_files_text = constructor.number_as_text(total_files)
+        message = f'Extracting Linux file system {file_number_text} of {total_files_text}.'
+    else:
+        message = 'Extracting the Linux file system.'
+    displayer.update_label('extract_page__unsquashfs_message', message, False)
+
+    # https://manpages.ubuntu.com/manpages/noble/man1/unsquashfs.1.html
+    # EXIT STATUS
+    # 0 The filesystem listed or extracted OK.
+    # 1 FATAL errors occurred, e.g. filesystem corruption, I/O errors.
+    #   Unsquashfs did not continue and aborted.
+    # 2 Non-fatal errors occurred, e.g. no support for XATTRs, Symbolic
+    #   links in output filesystem or couldn't write permissions to
+    #   output filesystem. Unsquashfs continued and did not abort.
+    # See -ignore-errors, -strict-errors and -no-exit-code options for
+    # how they affect the exit status.
     program = os.path.join(model.application.directory, 'commands', 'extract-root')
     command = ['pkexec', program, target_file_path, source_file_path]
 
     # The progress callback function.
     def progress_callback(percent):
-        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', percent)
-        if percent % 10 == 0:
-            logger.log_value('Completed', f'{percent:n}%')
+        total_percent = (FINAL_PERCENT * file_number + percent) / total_files
+        # displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', total_percent)
+        displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', f'{locale.format_string("%.1f", total_percent, True)}{GAP}%')
+        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', total_percent)
+        if total_percent % 10 == 0:
+            logger.log_value('Completed', f'{total_percent:n}%')
 
     try:
         track_progress(command, progress_callback)
@@ -781,7 +1104,7 @@ def extract_squashfs():
             # message = '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>'
             message = 'Error. Unable to extract the compressed Linux file system.'
         displayer.update_label('extract_page__unsquashfs_message', message, True)
-        displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
+        displayer.update_status('extract_page__unsquashfs', ERROR)
         logger.log_value('Propagate exception', exception)
         raise exception
     except Exception as exception:
@@ -793,7 +1116,7 @@ def extract_squashfs():
             # message = '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>'
             message = 'Error. Unable to extract the compressed Linux file system.'
         displayer.update_label('extract_page__unsquashfs_message', message, True)
-        displayer.update_status('extract_page__unsquashfs', displayer.ERROR)
+        displayer.update_status('extract_page__unsquashfs', ERROR)
         logger.log_value('Do not propagate exception', exception)
         return True  # (Error)
 

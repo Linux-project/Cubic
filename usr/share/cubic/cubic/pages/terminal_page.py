@@ -56,6 +56,7 @@ from cubic.choosers import copy_file_chooser
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CONTROL_SHIFT_KEYS_1, CONTROL_SHIFT_KEYS_2
 from cubic.constants import LOCK_FILE_NAME
+from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
 from cubic.constants import SLEEP_0250_MS
 from cubic.navigator import handle_navigation
 from cubic.utilities.displayer import MONOSPACE_FONT
@@ -149,6 +150,22 @@ terminal.drag_dest_set(flags, targets, actions)
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -284,6 +301,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -337,6 +372,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -404,7 +455,7 @@ def leave(action, new_page=None):
         result, exit_status, signal_status = file_utilities.delete_path_as_root(lock_file_path)
 
         # Save the model values.
-        model.project.configuration.save()
+        # model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -670,12 +721,12 @@ def update_status(status):
     # Display the status.
     if status:
         message = 'You are in the virtual environment.'
-        displayer.update_status_image('terminal_page__status', displayer.OK)
+        displayer.update_status_image('terminal_page__status', OK)
         displayer.update_label('terminal_page__status_label', message, False)
         displayer.update_label('terminal_page__kernel_version_label', f'kernel {model.application.kernel_version}')
     else:
         message = 'You are not in the virtual environment.'
-        displayer.update_status_image('terminal_page__status', displayer.ERROR)
+        displayer.update_status_image('terminal_page__status', ERROR)
         displayer.update_label('terminal_page__status_label', message, True)
         displayer.update_label('terminal_page__kernel_version_label', '')
 

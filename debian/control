@@ -15,6 +15,8 @@ Build-Depends:
 #                   Required for mkisofs; usually preinstalled
                     genisoimage (>=9:1.1.11),
 #                   Required for GtkSource; gir1.2-gtksource-3.0 is usually preinstalled
+                    gir1.2-gtk-3.0 (>=3.22.30),
+#                   Required to monitor file system events
                     gir1.2-gtksource-4 (>=4.2.0) | gir1.2-gtksource-3.0 (>=3.24.7),
 #                   Required for libvte-2.91; usually preinstalled
                     gir1.2-vte-2.91 (>=0.52.1),
@@ -47,10 +49,10 @@ Build-Depends:
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
 #                   Required for Gtk 3; usually preinstalled
-                    gir1.2-gtk-3.0 (>=3.22.30),
-#                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
 #                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
+                    python3-yaml (>=3.12),
+#                   Required to update yaml; usually preinstalled
                     qemu-system-gui (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for qemu-system-x86_64
                     qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<<1:4.2),
@@ -78,6 +80,8 @@ Depends:
 #                   Required for mkisofs; usually preinstalled
                     genisoimage (>=9:1.1.11),
 #                   Required for GtkSource; gir1.2-gtksource-3.0 is usually preinstalled
+                    gir1.2-gtk-3.0 (>=3.22.30),
+#                   Required to monitor file system events
                     gir1.2-gtksource-4 (>=4.2.0) | gir1.2-gtksource-3.0 (>=3.24.7),
 #                   Required for libvte-2.91; usually preinstalled
                     gir1.2-vte-2.91 (>=0.52.1),
@@ -110,10 +114,10 @@ Depends:
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
 #                   Required for Gtk 3; usually preinstalled
-                    gir1.2-gtk-3.0 (>=3.22.30),
-#                   Required to monitor file system events
                     python3-pyinotify (>=0.9.6),
 #                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
+                    python3-yaml (>=3.12),
+#                   Required to update yaml; usually preinstalled
                     qemu-system-gui (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for qemu-system-x86_64
                     qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<<1:4.2),

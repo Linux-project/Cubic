@@ -65,6 +65,22 @@ custom = None
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'delete':
 
@@ -160,6 +176,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'delete':
 
@@ -179,6 +213,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'cancel':
 
@@ -571,19 +621,45 @@ def initialize_model():
     model.custom.iso_disk_name = None
     model.custom.iso_release_notes_url = None
 
+    # Set all possible values for each attribute to invalid (False).
+    # (See Structures class).
+    #
+    # Casper Section
+    #   model.layout.casper_directory
+    #   model.layout.initrd_file_name
+    #   model.layout.vmlinuz_file_name
+    # General Section
+    #   model.layout.squashfs_directory
+    #   model.layout.squashfs_file_name
+    #   model.layout.manifest_file_name
+    #   model.layout.minimal_remove_file_name
+    #   model.layout.standard_remove_file_name
+    #   model.layout.size_file_name
+    # Minimal Section
+    #   model.layout.minimal_squashfs_file_name
+    #   model.layout.minimal_manifest_file_name
+    #   model.layout.minimal_size_file_name
+    # Standard Section
+    #   model.layout.standard_squashfs_file_name
+    #   model.layout.standard_manifest_file_name
+    #   model.layout.standard_size_file_name
+    # Installer / Live Section
+    #   model.layout.installer_sources_file_name
+    #   model.layout.installer_squashfs_file_name
+    #   model.layout.installer_manifest_file_name
+    #   model.layout.installer_size_file_name
+    #   model.layout.installer_generic_squashfs_file_name
+    #   model.layout.installer_generic_manifest_file_name
+    #   model.layout.installer_generic_size_file_name
+    model.layout.reset()
+
     model.status.is_success_copy = None
     model.status.is_success_extract = None
     model.status.iso_template = None
-    model.status.squashfs_directory = None
-    model.status.squashfs_file_name = None
-    model.status.casper_directory = None
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 
     model.options.update_os_release = None
+    model.options.has_minimal_install = None
     model.options.boot_configurations = None
     model.options.compression = None
-
-    model.installer.has_typical_install = None
-    model.installer.has_minimal_install = None
-    model.installer.has_subiquity = None

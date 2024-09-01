@@ -196,9 +196,16 @@ class BootTab(FilesTab):
         logger.log_value('Search and replace in source view', source_view.file_path)
 
         # Get new values.
-        squashfs_directory = model.status.squashfs_directory.split(os.path.sep)[0]
-        casper_directory = model.status.casper_directory
-        has_subiquity = model.installer.has_subiquity
+
+        # Workaround for Grml.
+        # Only use the first directory from the squashfs directory path.
+        # This is to support Grml which uses "live" instead of
+        # "live/grml64-full" as the boot directory. Grml is currently
+        # the only distro that uses a path for the squashfs file system.
+        # squashfs_directory = model.layout.squashfs_directory
+        squashfs_directory = model.layout.squashfs_directory.split(os.path.sep)[0]
+        casper_directory = model.layout.casper_directory
+        has_subiquity = bool(model.layout.installer_sources_file_name)
         new_vmlinuz_file_name = model.kernel_details_list[model.selected_kernel_index]['new_vmlinuz_file_name']
         new_initrd_file_name = model.kernel_details_list[model.selected_kernel_index]['new_initrd_file_name']
 
@@ -301,35 +308,6 @@ class BootTab(FilesTab):
                         logger.log_value('%d. Added the boot path on line' % update_count, line_number)
                         # Get the current line because it has changed.
                         line = self.get_line_text(source_buffer, line_number)
-                    '''
-                    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-                    # TODO: This section is no longer needed
-                    #       (03/14/2023). This code was added as a
-                    #       temporary fix for Ubuntu 23.04 in Cubic
-                    #       release 2023.03.77. See GH #172, Extract
-                    #       Ubuntu 23.04 (Lunar) ISO image fails.
-                    #       (https://github.com/PJ-Singh-001/Cubic/issues/151)
-                    #
-                    # layerfs-path
-                    # Added to support Ubuntu 22.03.
-                    match = re.search(r'(?i:LAYERFS-PATH=\S+)', line)
-                    if match:
-                        # Remove layerfs-path=minimal.standard.live.squashfs.
-                        self.delete_text(source_buffer, line_number, match.start(0), match.end(0))
-                        update_count += 1
-                        logger.log_value('%d. Removed the layerfs path on line' % update_count, line_number)
-                        if model.installer.version:
-                            # If Ubiquity is installed, replace with
-                            # maybe-ubiquity
-                            text = 'maybe-ubiquity'
-                            text_iter_1, text_iter_2 = self.insert_text(source_buffer, text, line_number, match.start(0))
-                            source_buffer.apply_tag_by_name('HIGHLIGHT', text_iter_1, text_iter_2)
-                            update_count += 1
-                            logger.log_value('%d. Added maybe-ubiquity on line' % update_count, line_number)
-                            # Get the current line because it has changed.
-                            line = self.get_line_text(source_buffer, line_number)
-                    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-                    '''
                 else:
                     logger.log_value('Warning', 'Expected the vmlinuz path on line %d, but it was not found' % line_number)
 

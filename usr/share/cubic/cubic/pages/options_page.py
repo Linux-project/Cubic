@@ -77,6 +77,22 @@ boot_tab = None
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -158,6 +174,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -191,6 +225,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -210,6 +260,9 @@ def leave(action, new_page=None):
 
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
+
+        # Save the model values.
+        model.project.configuration.save()
 
         return
 
@@ -256,6 +309,9 @@ def leave(action, new_page=None):
         preseed_tab.remove_tree()
         boot_tab.remove_tree()
 
+        # Save the model values.
+        model.project.configuration.save()
+
         return
 
     elif action == 'next':
@@ -271,6 +327,9 @@ def leave(action, new_page=None):
 
         # Update the model to acknowledge changes.
         model.options.boot_configurations = boot_tab.get_required_file_paths()
+
+        # Save the model values.
+        model.project.configuration.save()
 
         return
 
@@ -525,7 +584,7 @@ def validate_page():
     Determine if the Packages page should be skipped.
     """
 
-    if model.installer.has_typical_install:
+    if model.layout.standard_remove_file_name:
         # Show the Packages page.
         # logger.log_value('Show the Packages page?', 'Yes')
         displayer.reset_buttons(

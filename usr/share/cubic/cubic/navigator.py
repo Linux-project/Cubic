@@ -90,7 +90,7 @@ Note, in the instructions below:
 • PAGE is the current page module, such as 'extract_page'
 • CURRENT_PAGE is also the current page module, such as 'extract_page'
 • ERROR_PAGE is an error page module
-• ACTION is an action such as 'back', 'next', or 'migrate'
+• ACTION is an action such as 'back', 'next', or 'generate'
 
 1. Stay on the current page.
 
@@ -752,8 +752,8 @@ def get_new_page(action, page):
         if action == 'next':
             new_page_name = 'project_page'
             effect = SLIDE_LEFT
-        elif action == 'migrate':
-            new_page_name = 'migrate_page'
+        elif action == 'alert':
+            new_page_name = 'alert_page'
             effect = SLIDE_LEFT
         elif action == 'quit':
             new_page_name = None
@@ -761,12 +761,12 @@ def get_new_page(action, page):
         else:
             raise InvalidActionException(action, page)
 
-    elif page_name == 'migrate_page':
+    elif page_name == 'alert_page':
         if action == 'back':
             new_page_name = 'start_page'
             effect = SLIDE_RIGHT
         elif action == 'error':
-            new_page_name = 'migrate_page'
+            new_page_name = 'alert_page'
             effect = SLIDE_NONE
         elif action == 'next':
             new_page_name = 'project_page'

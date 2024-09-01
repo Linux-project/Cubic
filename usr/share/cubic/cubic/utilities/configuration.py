@@ -56,9 +56,15 @@ Cubic versions:
 
 "Release" 2023 Version:
   From: Release 2023.03-76 on 03/11/2023
-  Thru: Release 20__.__-__ on __/__/20__
+  Thru: Release 2024.02-86 on 02/20/2024
   • Continue to use 2022 version for Application configuration 
-  • Added the "add_minimal_install" option to the Project configuration
+  • Added the "has_minimal_install" option to the Project configuration
+
+"Release" 2024 Version:
+  From: Release 2024.09-87 on 09/01/2024
+  Thru: Release 2024.__-__ on __/__/20__
+  • Added the Layout section to the the Project configuration
+  • Removed the "Installer" section from the Project configuration
 """
 
 ########################################################################
@@ -78,7 +84,7 @@ import os
 from abc import ABC, abstractmethod
 from packaging import version
 
-from cubic.constants import CUBIC_VERSION_2019, CUBIC_VERSION_2020, CUBIC_VERSION_2021, CUBIC_VERSION_2022, CUBIC_VERSION_2023
+from cubic.constants import CUBIC_VERSION_2024
 from cubic.utilities import constructor
 from cubic.utilities import file_utilities
 from cubic.utilities import logger
@@ -441,24 +447,24 @@ class Application(Configuration):
         """
 
         logger.log_label('Load application configuration')
-
+        '''
         # Get the previous version.
-        if not os.path.exists(self.file_path):
-            previous_version = CUBIC_VERSION_2021
-        else:
-            previous_version = self.get_value('Application', 'cubic_version')
-            previous_version = constructor.get_display_version(previous_version)
+        previous_version = self.get_value('Application', 'cubic_version')
+        previous_version = constructor.get_display_version(previous_version)
 
         # Load the model using the correct configuration file layout.
         previous_version = version.parse(previous_version)
-        if previous_version < version.parse(CUBIC_VERSION_2022):
-            self._load_model_2021_layout()
+        if previous_version < version.parse(CUBIC_VERSION_2024):
+            self._load_model_XXXX_layout()
         else:
-            self._load_model_2022_layout()
+            self._load_model_YYYY_layout()
+        '''
 
-    def _load_model_2021_layout(self):
+        self._load_model_2024_layout()
+
+    def _load_model_2024_layout(self):
         """
-        Load the application model from the 2021 configuration file
+        Load the application model from the 2024 configuration file
         layout.
 
         This method should only be called by the _load_model() method.
@@ -468,47 +474,7 @@ class Application(Configuration):
             A derived class of Configuration.
         """
 
-        logger.log_value('Load application configuration', '2021 layout from %s' % self.file_path)
-
-        # Cubic version
-        # The Cubic version should be set to the running version.
-        # Not in the original 2021 layout.
-        # model.application.cubic_version = CUBIC_VERSION_2021
-
-        # Visited sites
-        file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'visited_sites.conf')
-        # For the Cubic version '2022.11.73', ignore all visited sites.
-        model.application.visited_sites = []
-        # Delete this file because Cubic version '2022.11.73' does not
-        # use it.
-        file_utilities.delete_file(file_path)
-
-        # Projects
-        file_path = os.path.join(model.application.user_home, '.config', 'cubic', 'projects.conf')
-        model.application.projects = file_utilities.read_lines(file_path)
-        # Delete this file because Cubic version '2022.11.73' does not
-        # use it.
-        file_utilities.delete_file(file_path)
-
-        # ISO file path
-        model.application.iso_file_path = None
-
-        # Configuration
-        # model.application.configuration = self
-
-    def _load_model_2022_layout(self):
-        """
-        Load the application model from the 2022 configuration file
-        layout.
-
-        This method should only be called by the _load_model() method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Load application configuration', '2022 layout from %s' % self.file_path)
+        logger.log_value('Load application configuration', '2024 layout from %s' % self.file_path)
 
         # Read the configuration file.
         self.config_parser.read(self.file_path)
@@ -587,9 +553,9 @@ class Project(Configuration):
     • Project
     • Original
     • Custom
+    • Layout
     • Status
     • Options
-    • Installer
     """
 
     # ------------------------------------------------------------------
@@ -603,9 +569,9 @@ class Project(Configuration):
         • Project
         • Original
         • Custom
+        • Layout
         • Status
         • Options
-        • Installer
 
         Arguments:
         self : Configuration
@@ -614,7 +580,7 @@ class Project(Configuration):
             The file path of the configuration file.
         """
 
-        super().__init__(file_path, 'Project', 'Original', 'Custom', 'Status', 'Options', 'Installer')
+        super().__init__(file_path, 'Project', 'Original', 'Custom', 'Layout', 'Status', 'Options')
 
     # ------------------------------------------------------------------
     # Load Methods
@@ -633,296 +599,15 @@ class Project(Configuration):
         logger.log_label('Load project configuration')
 
         # Get the previous version.
-        if self.config_parser.has_section('General'):
-            # Configuration has 'General' section.
-            previous_version = CUBIC_VERSION_2019
-        else:
-            # Configuration has 'Project' section.
-            previous_version = self.get_value('Project', 'cubic_version')
-            previous_version = constructor.get_display_version(previous_version)
+        previous_version = self.get_value('Project', 'cubic_version')
+        previous_version = constructor.get_display_version(previous_version)
 
         # Load the model using the correct configuration file layout.
         previous_version = version.parse(previous_version)
-        if previous_version < version.parse(CUBIC_VERSION_2020):
-            # Classic or 2019 layout.
-            self._load_model_2019_layout()
-        elif previous_version < version.parse(CUBIC_VERSION_2021):
-            self._load_model_2020_layout()
-        elif previous_version < version.parse(CUBIC_VERSION_2022):
-            self._load_model_2021_layout()
-        elif previous_version < version.parse(CUBIC_VERSION_2023):
-            self._load_model_2022_layout()
-        else:
+        if previous_version < version.parse(CUBIC_VERSION_2024):
             self._load_model_2023_layout()
-
-    def _load_model_2019_layout(self):
-        """
-        Load the project model from the 2019 configuration file layout.
-
-        This method should only be called by the _load_model() method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Load project configuration', '2019 layout from %s' % self.file_path)
-
-        # The following fields must be set prior to invoking this method:
-        # 1. model.project.directory
-
-        # General -> Project
-        model.project.cubic_version = self.get_value('General', 'cubic_version')
-        # Not in the original 2019 layout.
-        model.project.create_date = constructor.get_file_time_stamp(self.file_path)
-        # Not in the original 2019 layout.
-        model.project.modify_date = model.project.create_date
-        # model.project.directory = self.get_value('General', 'project_directory')
-        # model.project.configuration = self
-
-        # Original
-        model.original.iso_file_name = self.get_value('Original', 'original_iso_image_filename')
-        model.original.iso_directory = self.get_value('Original', 'original_iso_image_directory')
-        model.original.iso_volume_id = self.get_value('Original', 'original_iso_image_volume_id')[:32]
-        model.original.iso_release_name = self.get_value('Original', 'original_iso_image_release_name')
-        model.original.iso_disk_name = self.get_value('Original', 'original_iso_image_disk_name')
-
-        # Custom
-        model.custom.iso_version_number = self.get_value('Custom', 'custom_iso_image_version_number')
-        model.custom.iso_file_name = self.get_value('Custom', 'custom_iso_image_filename')
-        model.custom.iso_directory = self.get_value('Custom', 'custom_iso_image_directory')
-        model.custom.iso_volume_id = self.get_value('Custom', 'custom_iso_image_volume_id')[:32]
-        model.custom.iso_release_name = self.get_value('Custom', 'custom_iso_image_release_name')
-        model.custom.iso_disk_name = self.get_value('Custom', 'custom_iso_image_disk_name')
-
-        # Status
-        model.status.is_success_copy = self.get_boolean('Status', 'is_success_copy_original_iso_files', default=False)
-        model.status.is_success_extract = self.get_boolean('Status', 'is_success_extract_squashfs', default=False)
-        # Not in the original 2019 layout.
-        model.status.iso_template = self.get_value('Status', 'iso_template', default=None)
-
-        # Not in the original 2019 layout.
-        model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
-        # Not in the original 2019 layout.
-        model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
-        # Not in the original 2019 layout.
-        model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
-        # Not in the original 2019 layout.
-        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
-        # Not in the original 2019 layout.
-        model.status.iso_checksum = self.get_value('Custom', 'custom_iso_image_checksum', default=None)
-        # In the Custom section of the 2019 layout.
-        model.status.iso_checksum_file_name = self.get_value('Custom', 'custom_iso_image_md5_filename', default=None)
-
-        # Options
-        # Not in the original 2019 layout.
-        model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
-        # Not in the original 2019 layout.
-        model.options.compression = self.get_value('Options', 'compression', default=None)
-
-        # Installer
-        # Not in the original 2019 layout.
-        # Assume has_typical_install is True for older configurations.
-        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=True)
-        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
-        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
-
-    def _load_model_2020_layout(self):
-        """
-        Load the project model from the 2020 configuration file layout.
-
-        This method should only be called by the _load_model() method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Load project configuration', '2020 layout from %s' % self.file_path)
-
-        # The following fields must be set prior to invoking this method:
-        # 1. model.project.directory
-
-        # Project
-        model.project.cubic_version = self.get_value('Project', 'cubic_version')
-        model.project.create_date = self.get_value('Project', 'create_date')
-        model.project.modify_date = self.get_value('Project', 'modify_date')
-        # model.project.directory = self.get_value('Project', 'directory')
-        # model.project.configuration = self
-
-        # Original
-        model.original.iso_file_name = self.get_value('Original', 'iso_filename')
-        model.original.iso_directory = self.get_value('Original', 'iso_directory')
-        model.original.iso_volume_id = self.get_value('Original', 'iso_volume_id')[:32]
-        model.original.iso_release_name = self.get_value('Original', 'iso_release_name')
-        model.original.iso_disk_name = self.get_value('Original', 'iso_disk_name')
-
-        # Custom
-        model.custom.iso_version_number = self.get_value('Custom', 'iso_version_number')
-        model.custom.iso_file_name = self.get_value('Custom', 'iso_filename')
-        model.custom.iso_directory = self.get_value('Custom', 'iso_directory')
-        model.custom.iso_volume_id = self.get_value('Custom', 'iso_volume_id')[:32]
-        model.custom.iso_release_name = self.get_value('Custom', 'iso_release_name')
-        model.custom.iso_disk_name = self.get_value('Custom', 'iso_disk_name')
-
-        # Status
-        model.status.is_success_copy = self.get_boolean('Status', 'is_success_copy', default=False)
-        model.status.is_success_extract = self.get_boolean('Status', 'is_success_extract', default=False)
-        # Not in the original 2020 layout.
-        model.status.iso_template = self.get_value('Status', 'iso_template', default=None)
-        # Not in the original 2020 layout.
-        model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
-        # Not in the original 2020 layout.
-        model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
-        model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
-        # Not in the original 2020 layout.
-        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
-        model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
-        model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_filename', default=None)
-
-        # Options
-        # Not in the original 2020 layout.
-        model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
-        model.options.compression = self.get_value('Options', 'compression', default=None)
-
-        # Installer
-        # Not in the original 2020 layout.
-        # Assume has_typical_install is True for older configurations.
-        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=True)
-        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
-        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
-
-    def _load_model_2021_layout(self):
-        """
-        Load the project model from the 2021 configuration file layout.
-
-        This method should only be called by the _load_model() method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Load project configuration', '2021 layout from %s' % self.file_path)
-
-        # The following fields must be set prior to invoking this method:
-        # 1. model.project.directory
-
-        # Project
-        model.project.cubic_version = self.get_value('Project', 'cubic_version')
-        model.project.create_date = self.get_value('Project', 'create_date')
-        model.project.modify_date = self.get_value('Project', 'modify_date')
-        # model.project.directory = self.get_value('Project', 'directory')
-        # model.project.configuration = self
-
-        # Original
-        model.original.iso_file_name = self.get_value('Original', 'iso_file_name')
-        model.original.iso_directory = self.get_value('Original', 'iso_directory')
-        model.original.iso_volume_id = self.get_value('Original', 'iso_volume_id')[:32]
-        model.original.iso_release_name = self.get_value('Original', 'iso_release_name')
-        model.original.iso_disk_name = self.get_value('Original', 'iso_disk_name')
-
-        # Custom
-        model.custom.iso_version_number = self.get_value('Custom', 'iso_version_number')
-        model.custom.iso_file_name = self.get_value('Custom', 'iso_file_name')
-        model.custom.iso_directory = self.get_value('Custom', 'iso_directory')
-        model.custom.iso_volume_id = self.get_value('Custom', 'iso_volume_id')[:32]
-        model.custom.iso_release_name = self.get_value('Custom', 'iso_release_name')
-        model.custom.iso_disk_name = self.get_value('Custom', 'iso_disk_name')
-
-        # Status
-        model.status.is_success_copy = self.get_boolean('Status', 'is_success_copy', default=False)
-        model.status.is_success_extract = self.get_boolean('Status', 'is_success_extract', default=False)
-        model.status.iso_template = self.get_value('Status', 'iso_template', default=None)
-        # Not in the original 2021 layout.
-        model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
-        # Not in the original 2021 layout.
-        model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
-        model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
-        # Not in the original 2021 layout.
-        model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
-        model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
-        model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
-
-        # Options
-        # Not in the original 2021 layout.
-        model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
-        model.options.compression = self.get_value('Options', 'compression', default=None)
-
-        # Installer
-        # Not in the original 2021 layout.
-        # Assume has_typical_install is True for older configurations.
-        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=True)
-        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
-        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
-
-    def _load_model_2022_layout(self):
-        """
-        Load the project model from the 2022 configuration file layout.
-
-        This method should only be called by the _load_model() method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Load project configuration', '2022 layout from %s' % self.file_path)
-
-        # The following fields must be set prior to invoking this method:
-        # 1. model.project.directory
-
-        # Project
-        model.project.cubic_version = self.get_value('Project', 'cubic_version')
-        model.project.create_date = self.get_value('Project', 'create_date')
-        model.project.modify_date = self.get_value('Project', 'modify_date')
-        # model.project.directory = self.get_value('Project', 'directory')
-        # model.project.configuration = self
-
-        # Original
-        model.original.iso_file_name = self.get_value('Original', 'iso_file_name')
-        model.original.iso_directory = self.get_value('Original', 'iso_directory')
-        model.original.iso_volume_id = self.get_value('Original', 'iso_volume_id')[:32]
-        model.original.iso_release_name = self.get_value('Original', 'iso_release_name')
-        model.original.iso_disk_name = self.get_value('Original', 'iso_disk_name')
-
-        # Custom
-        model.custom.iso_version_number = self.get_value('Custom', 'iso_version_number')
-        model.custom.iso_file_name = self.get_value('Custom', 'iso_file_name')
-        model.custom.iso_directory = self.get_value('Custom', 'iso_directory')
-        model.custom.iso_volume_id = self.get_value('Custom', 'iso_volume_id')[:32]
-        model.custom.iso_release_name = self.get_value('Custom', 'iso_release_name')
-        model.custom.iso_disk_name = self.get_value('Custom', 'iso_disk_name')
-
-        # Status
-        model.status.is_success_copy = self.get_boolean('Status', 'is_success_copy', default=False)
-        model.status.is_success_extract = self.get_boolean('Status', 'is_success_extract', default=False)
-        model.status.iso_template = self.get_value('Status', 'iso_template', default=None)
-        # Not in the original 2022 layout.
-        model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
-        model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
-        model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
-        # In the original 2022 layout.
-        # model.status.is_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
-        model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
-        model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
-
-        # Options
-        model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
-        model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
-        model.options.compression = self.get_value('Options', 'compression', default=None)
-
-        # Installer
-        # Installer is not in the original 2022 layout.
-        # is_subiquity is in the Status section of the original 2022 layout.
-        # Assume has_typical_install is the opposite of is_subiquity.
-        # Assume has_typical_install is True for older configurations.
-        model.installer.has_typical_install = not self.get_boolean('Status', 'is_subiquity', default=True)
-        model.installer.has_minimal_install = self.get_boolean('Options', 'add_minimal_install', default=False)
-        model.installer.has_subiquity = self.get_boolean('Status', 'is_subiquity', default=False)
+        else:
+            self._load_model_2024_layout()
 
     def _load_model_2023_layout(self):
         """
@@ -942,6 +627,7 @@ class Project(Configuration):
 
         # Project
         model.project.cubic_version = self.get_value('Project', 'cubic_version')
+        model.project.first_version = self.get_value('Project', 'first_version', default=model.project.cubic_version)
         model.project.create_date = self.get_value('Project', 'create_date')
         model.project.modify_date = self.get_value('Project', 'modify_date')
         # model.project.directory = self.get_value('Project', 'directory')
@@ -962,26 +648,144 @@ class Project(Configuration):
         model.custom.iso_release_name = self.get_value('Custom', 'iso_release_name')
         model.custom.iso_disk_name = self.get_value('Custom', 'iso_disk_name')
 
+        # Layout
+
+        # A new layout will be created on the Start page.
+        '''
+        # Casper Section
+        model.layout.set_attribute_values('casper_directory', self.get_list('Layout', 'casper_directory', default=[]))
+        # Initrd file name is not saved in the configuration.
+        # model.layout.set_attribute_values('initrd_file_name', self.get_list('Layout', 'initrd_file_name', default=[]))
+        # Vmlinuz file name is not saved in the configuration.
+        # model.layout.set_attribute_values('vmlinuz_file_name', self.get_list('Layout', 'vmlinuz_file_name', default=[]))
+        # Squashfs Section
+        model.layout.set_attribute_values('squashfs_directory', self.get_list('Layout', 'squashfs_directory', default=[]))
+        model.layout.set_attribute_values('squashfs_file_name', self.get_list('Layout', 'squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('manifest_file_name', self.get_list('Layout', 'manifest_file_name', default=[]))
+        model.layout.set_attribute_values('minimal_remove_file_name', self.get_list('Layout', 'minimal_remove_file_name', default=[]))
+        model.layout.set_attribute_values('standard_remove_file_name', self.get_list('Layout', 'standard_remove_file_name', default=[]))
+        model.layout.set_attribute_values('size_file_name', self.get_list('Layout', 'size_file_name', default=[]))
+        # Minimal Section
+        model.layout.set_attribute_values('minimal_squashfs_file_name', self.get_list('Layout', 'minimal_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('minimal_manifest_file_name', self.get_list('Layout', 'minimal_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('minimal_size_file_name', self.get_list('Layout', 'minimal_size_file_name', default=[]))
+        # Standard Section
+        model.layout.set_attribute_values('standard_squashfs_file_name', self.get_list('Layout', 'standard_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('standard_manifest_file_name', self.get_list('Layout', 'standard_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('standard_size_file_name', self.get_list('Layout', 'standard_size_file_name', default=[]))
+        # Installer / Live Section
+        model.layout.set_attribute_values('installer_sources_file_name', self.get_list('Layout', 'installer_sources_file_name', default=[]))
+        model.layout.set_attribute_values('installer_squashfs_file_name', self.get_list('Layout', 'installer_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('installer_manifest_file_name', self.get_list('Layout', 'installer_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('installer_size_file_name', self.get_list('Layout', 'installer_size_file_name', default=[]))
+        model.layout.set_attribute_values('installer_generic_squashfs_file_name', self.get_list('Layout', 'installer_generic_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('installer_generic_manifest_file_name', self.get_list('Layout', 'installer_generic_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('installer_generic_size_file_name', self.get_list('Layout', 'installer_generic_size_file_name', default=[]))
+        '''
+
         # Status
+        model.status.is_success_analyze = self.get_boolean('Status', 'is_success_analyze', default=False)
         model.status.is_success_copy = self.get_boolean('Status', 'is_success_copy', default=False)
         model.status.is_success_extract = self.get_boolean('Status', 'is_success_extract', default=False)
         model.status.iso_template = self.get_value('Status', 'iso_template', default=None)
-        # Not in the original 2022 layout.
-        model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
-        model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
-        model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
+        # The following have been move to the layout section.
+        # model.status.squashfs_directory = self.get_value('Status', 'squashfs_directory', default=None)
+        # model.status.squashfs_file_name = self.get_value('Status', 'squashfs_file_name', default=None)
+        # model.status.casper_directory = self.get_value('Status', 'casper_directory', default=None)
         model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
         model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
 
         # Options
         model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
+        # From the Installer section of the 2023 configuration.
+        model.options.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
         model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
         model.options.compression = self.get_value('Options', 'compression', default=None)
 
-        # Installer
-        model.installer.has_typical_install = self.get_boolean('Installer', 'has_typical_install', default=False)
-        model.installer.has_minimal_install = self.get_boolean('Installer', 'has_minimal_install', default=False)
-        model.installer.has_subiquity = self.get_boolean('Installer', 'has_subiquity', default=False)
+    def _load_model_2024_layout(self):
+        """
+        Load the project model from the 2024 configuration file layout.
+
+        This method should only be called by the _load_model() method.
+
+        Arguments:
+        self : Configuration
+            A derived class of Configuration.
+        """
+
+        logger.log_value('Load project configuration', '2024 layout from %s' % self.file_path)
+
+        # The following fields must be set prior to invoking this method:
+        # 1. model.project.directory
+
+        # Project
+        model.project.cubic_version = self.get_value('Project', 'cubic_version')
+        model.project.first_version = self.get_value('Project', 'first_version', default=model.project.cubic_version)
+        model.project.create_date = self.get_value('Project', 'create_date')
+        model.project.modify_date = self.get_value('Project', 'modify_date')
+        # model.project.directory = self.get_value('Project', 'directory')
+        # model.project.configuration = self
+
+        # Original
+        model.original.iso_file_name = self.get_value('Original', 'iso_file_name')
+        model.original.iso_directory = self.get_value('Original', 'iso_directory')
+        model.original.iso_volume_id = self.get_value('Original', 'iso_volume_id')[:32]
+        model.original.iso_release_name = self.get_value('Original', 'iso_release_name')
+        model.original.iso_disk_name = self.get_value('Original', 'iso_disk_name')
+
+        # Custom
+        model.custom.iso_version_number = self.get_value('Custom', 'iso_version_number')
+        model.custom.iso_file_name = self.get_value('Custom', 'iso_file_name')
+        model.custom.iso_directory = self.get_value('Custom', 'iso_directory')
+        model.custom.iso_volume_id = self.get_value('Custom', 'iso_volume_id')[:32]
+        model.custom.iso_release_name = self.get_value('Custom', 'iso_release_name')
+        model.custom.iso_disk_name = self.get_value('Custom', 'iso_disk_name')
+
+        # Layout
+
+        # Casper Section
+        model.layout.set_attribute_values('casper_directory', self.get_list('Layout', 'casper_directory', default=[]))
+        # Initrd file name is not saved in the configuration.
+        # model.layout.set_attribute_values('initrd_file_name', self.get_list('Layout', 'initrd_file_name', default=[]))
+        # Vmlinuz file name is not saved in the configuration.
+        # model.layout.set_attribute_values('vmlinuz_file_name', self.get_list('Layout', 'vmlinuz_file_name', default=[]))
+        # Squashfs Section
+        model.layout.set_attribute_values('squashfs_directory', self.get_list('Layout', 'squashfs_directory', default=[]))
+        model.layout.set_attribute_values('squashfs_file_name', self.get_list('Layout', 'squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('manifest_file_name', self.get_list('Layout', 'manifest_file_name', default=[]))
+        model.layout.set_attribute_values('minimal_remove_file_name', self.get_list('Layout', 'minimal_remove_file_name', default=[]))
+        model.layout.set_attribute_values('standard_remove_file_name', self.get_list('Layout', 'standard_remove_file_name', default=[]))
+        model.layout.set_attribute_values('size_file_name', self.get_list('Layout', 'size_file_name', default=[]))
+        # Minimal Section
+        model.layout.set_attribute_values('minimal_squashfs_file_name', self.get_list('Layout', 'minimal_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('minimal_manifest_file_name', self.get_list('Layout', 'minimal_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('minimal_size_file_name', self.get_list('Layout', 'minimal_size_file_name', default=[]))
+        # Standard Section
+        model.layout.set_attribute_values('standard_squashfs_file_name', self.get_list('Layout', 'standard_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('standard_manifest_file_name', self.get_list('Layout', 'standard_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('standard_size_file_name', self.get_list('Layout', 'standard_size_file_name', default=[]))
+        # Installer / Live Section
+        model.layout.set_attribute_values('installer_sources_file_name', self.get_list('Layout', 'installer_sources_file_name', default=[]))
+        model.layout.set_attribute_values('installer_squashfs_file_name', self.get_list('Layout', 'installer_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('installer_manifest_file_name', self.get_list('Layout', 'installer_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('installer_size_file_name', self.get_list('Layout', 'installer_size_file_name', default=[]))
+        model.layout.set_attribute_values('installer_generic_squashfs_file_name', self.get_list('Layout', 'installer_generic_squashfs_file_name', default=[]))
+        model.layout.set_attribute_values('installer_generic_manifest_file_name', self.get_list('Layout', 'installer_generic_manifest_file_name', default=[]))
+        model.layout.set_attribute_values('installer_generic_size_file_name', self.get_list('Layout', 'installer_generic_size_file_name', default=[]))
+
+        # Status
+        model.status.is_success_analyze = self.get_boolean('Status', 'is_success_analyze', default=False)
+        model.status.is_success_copy = self.get_boolean('Status', 'is_success_copy', default=False)
+        model.status.is_success_extract = self.get_boolean('Status', 'is_success_extract', default=False)
+        model.status.iso_template = self.get_value('Status', 'iso_template', default=None)
+        model.status.iso_checksum = self.get_value('Status', 'iso_checksum', default=None)
+        model.status.iso_checksum_file_name = self.get_value('Status', 'iso_checksum_file_name', default=None)
+
+        # Options
+        model.options.update_os_release = self.get_boolean('Options', 'update_os_release', default=True)
+        model.options.has_minimal_install = self.get_boolean('Options', 'has_minimal_install', default=False)
+        model.options.boot_configurations = self.get_list('Options', 'boot_configurations', default=None)
+        model.options.compression = self.get_value('Options', 'compression', default=None)
 
     # ------------------------------------------------------------------
     # Save Methods
@@ -1002,250 +806,11 @@ class Project(Configuration):
         logger.log_label('Save project configuration')
 
         # Save using the current layout.
-        self._save_model_2023_layout()
+        self._save_model_2024_layout()
 
-    def _save_model_2019_layout(self):
+    def _save_model_2024_layout(self):
         """
-        This method is not used.
-
-        Save the project model to the 2019 configuration file layout.
-
-        This method should only be called by the _save_model() method.
-        Be sure to specify the correct sections in the __init__()
-        method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Save project configuration', '2019 layout to %s' % self.file_path)
-
-        # Project
-        self.set('General', 'cubic_version', model.application.cubic_version)
-        self.set('General', 'project_directory', model.project.directory)
-
-        # Original
-        self.set('Original', 'original_iso_image_filename', model.original.iso_file_name)
-        self.set('Original', 'original_iso_image_directory', model.original.iso_directory)
-        self.set('Original', 'original_iso_image_volume_id', model.original.iso_volume_id)
-        self.set('Original', 'original_iso_image_release_name', model.original.iso_release_name)
-        self.set('Original', 'original_iso_image_disk_name', model.original.iso_disk_name)
-
-        # Custom
-        self.set('Custom', 'custom_iso_image_version_number', model.custom.iso_version_number)
-        self.set('Custom', 'custom_iso_image_filename', model.custom.iso_file_name)
-        self.set('Custom', 'custom_iso_image_directory', model.custom.iso_directory)
-        self.set('Custom', 'custom_iso_image_volume_id', model.custom.iso_volume_id)
-        self.set('Custom', 'custom_iso_image_release_name', model.custom.iso_release_name)
-        self.set('Custom', 'custom_iso_image_disk_name', model.custom.iso_disk_name)
-
-        # Status
-        self.set('Status', 'is_success_copy', model.status.is_success_copy)
-        self.set('Status', 'is_success_extract', model.status.is_success_extract)
-        # Not in the original 2019 layout.
-        self.set('Status', 'iso_template', model.status.iso_template)
-        # Not in the original 2019 layout.
-        self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
-        # Not in the original 2019 layout.
-        self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
-        # Not in the original 2019 layout.
-        self.set('Status', 'casper_directory', model.status.casper_directory)
-        # Not in the original 2019 layout.
-        self.set('Status', 'is_subiquity', model.status.is_subiquity)
-        # Not in the original 2019 layout.
-        self.set('Status', 'custom_iso_image_checksum', model.status.iso_checksum)
-        # In the Custom section of the 2019 layout.
-        self.set('Custom', 'custom_iso_image_md5_filename', model.status.iso_checksum_file_name)
-
-        # Options
-        # Not in the original 2019 layout.
-        self.set('Options', 'update_os_release', model.options.update_os_release)
-        # Not in the original 2019 layout.
-        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
-        self.set('Options', 'boot_configurations', model.options.boot_configurations)
-        # Not in the original 2019 layout.
-        self.set('Options', 'compression', model.options.compression)
-
-    def _save_model_2020_layout(self):
-        """
-        This method is not used.
-
-        Save the project model to the 2020 configuration file layout.
-
-        This method should only be called by the _save_model() method.
-        Be sure to specify the correct sections in the __init__()
-        method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Save project configuration', '2020 layout to %s' % self.file_path)
-
-        # Project
-        self.set('Project', 'cubic_version', model.application.cubic_version)
-        self.set('Project', 'create_date', model.project.create_date)
-        self.set('Project', 'modify_date', model.project.modify_date)
-        self.set('Project', 'directory', model.project.directory)
-
-        # Original
-        self.set('Original', 'iso_filename', model.original.iso_file_name)
-        self.set('Original', 'iso_directory', model.original.iso_directory)
-        self.set('Original', 'iso_volume_id', model.original.iso_volume_id)
-        self.set('Original', 'iso_release_name', model.original.iso_release_name)
-        self.set('Original', 'iso_disk_name', model.original.iso_disk_name)
-
-        # Custom
-        self.set('Custom', 'iso_version_number', model.custom.iso_version_number)
-        self.set('Custom', 'iso_filename', model.custom.iso_file_name)
-        self.set('Custom', 'iso_directory', model.custom.iso_directory)
-        self.set('Custom', 'iso_volume_id', model.custom.iso_volume_id)
-        self.set('Custom', 'iso_release_name', model.custom.iso_release_name)
-        self.set('Custom', 'iso_disk_name', model.custom.iso_disk_name)
-
-        # Status
-        self.set('Status', 'is_success_copy', model.status.is_success_copy)
-        self.set('Status', 'is_success_extract', model.status.is_success_extract)
-        # Not in the original 2020 layout.
-        self.set('Status', 'iso_template', model.status.iso_template)
-        # Not in the original 2020 layout.
-        self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
-        # Not in the original 2020 layout.
-        self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
-        self.set('Status', 'casper_directory', model.status.casper_directory)
-        # Not in the original 2020 layout.
-        self.set('Status', 'is_subiquity', model.status.is_subiquity)
-        self.set('Status', 'iso_checksum', model.status.iso_checksum)
-        self.set('Status', 'iso_checksum_filename', model.status.iso_checksum_file_name)
-
-        # Options
-        # Not in the original 2020 layout.
-        self.set('Options', 'update_os_release', model.options.update_os_release)
-        # Not in the original 2020 layout.
-        self.set('Options', 'add_minimal_install', model.options.add_minimal_install)
-        self.set('Options', 'boot_configurations', model.options.boot_configurations)
-        self.set('Options', 'compression', model.options.compression)
-
-    def _save_model_2021_layout(self):
-        """
-        This method is not used.
-
-        Save the project model to the 2021 configuration file layout.
-
-        This method should only be called by the _save_model() method.
-        Be sure to specify the correct sections in the __init__()
-        method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Save project configuration', '2021 layout to %s' % self.file_path)
-
-        # Project
-        self.set('Project', 'cubic_version', model.application.cubic_version)
-        self.set('Project', 'create_date', model.project.create_date)
-        self.set('Project', 'modify_date', model.project.modify_date)
-        self.set('Project', 'directory', model.project.directory)
-
-        # Original
-        self.set('Original', 'iso_file_name', model.original.iso_file_name)
-        self.set('Original', 'iso_directory', model.original.iso_directory)
-        self.set('Original', 'iso_volume_id', model.original.iso_volume_id)
-        self.set('Original', 'iso_release_name', model.original.iso_release_name)
-        self.set('Original', 'iso_disk_name', model.original.iso_disk_name)
-
-        # Custom
-        self.set('Custom', 'iso_version_number', model.custom.iso_version_number)
-        self.set('Custom', 'iso_file_name', model.custom.iso_file_name)
-        self.set('Custom', 'iso_directory', model.custom.iso_directory)
-        self.set('Custom', 'iso_volume_id', model.custom.iso_volume_id)
-        self.set('Custom', 'iso_release_name', model.custom.iso_release_name)
-        self.set('Custom', 'iso_disk_name', model.custom.iso_disk_name)
-
-        # Status
-        self.set('Status', 'is_success_copy', model.status.is_success_copy)
-        self.set('Status', 'is_success_extract', model.status.is_success_extract)
-        self.set('Status', 'iso_template', model.status.iso_template)
-        # Not in the original 2021 layout.
-        self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
-        # Not in the original 2021 layout.
-        self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
-        self.set('Status', 'casper_directory', model.status.casper_directory)
-        # Not in the original 2021 layout.
-        self.set('Status', 'is_subiquity', model.status.is_subiquity)
-        self.set('Status', 'iso_checksum', model.status.iso_checksum)
-        self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
-
-        # Options
-        # Not in the original 2021 layout.
-        self.set('Options', 'update_os_release', model.options.update_os_release)
-        # Not in the original 2021 layout.
-        self.set('Options', 'add_minimal_install', model.installer.has_minimal_install)
-        self.set('Options', 'boot_configurations', model.options.boot_configurations)
-        self.set('Options', 'compression', model.options.compression)
-
-    def _save_model_2022_layout(self):
-        """
-        Save the project model to the 2022 configuration file layout.
-
-        This method should only be called by the _save_model() method.
-        Be sure to specify the correct sections in the __init__()
-        method.
-
-        Arguments:
-        self : Configuration
-            A derived class of Configuration.
-        """
-
-        logger.log_value('Save project configuration', '2022 layout to %s' % self.file_path)
-
-        # Project
-        self.set('Project', 'cubic_version', model.application.cubic_version)
-        self.set('Project', 'create_date', model.project.create_date)
-        self.set('Project', 'modify_date', model.project.modify_date)
-        self.set('Project', 'directory', model.project.directory)
-
-        # Original
-        self.set('Original', 'iso_file_name', model.original.iso_file_name)
-        self.set('Original', 'iso_directory', model.original.iso_directory)
-        self.set('Original', 'iso_volume_id', model.original.iso_volume_id)
-        self.set('Original', 'iso_release_name', model.original.iso_release_name)
-        self.set('Original', 'iso_disk_name', model.original.iso_disk_name)
-
-        # Custom
-        self.set('Custom', 'iso_version_number', model.custom.iso_version_number)
-        self.set('Custom', 'iso_file_name', model.custom.iso_file_name)
-        self.set('Custom', 'iso_directory', model.custom.iso_directory)
-        self.set('Custom', 'iso_volume_id', model.custom.iso_volume_id)
-        self.set('Custom', 'iso_release_name', model.custom.iso_release_name)
-        self.set('Custom', 'iso_disk_name', model.custom.iso_disk_name)
-
-        # Status
-        self.set('Status', 'is_success_copy', model.status.is_success_copy)
-        self.set('Status', 'is_success_extract', model.status.is_success_extract)
-        self.set('Status', 'iso_template', model.status.iso_template)
-        self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
-        self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
-        self.set('Status', 'casper_directory', model.status.casper_directory)
-        # Not in the original 2022 layout.
-        self.set('Status', 'is_subiquity', model.status.is_subiquity)
-        self.set('Status', 'iso_checksum', model.status.iso_checksum)
-        self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
-
-        # Options
-        self.set('Options', 'update_os_release', model.options.update_os_release)
-        # Not in the original 2022 layout.
-        self.set('Options', 'add_minimal_install', model.installer.has_minimal_install)
-        self.set('Options', 'boot_configurations', model.options.boot_configurations)
-        self.set('Options', 'compression', model.options.compression)
-
-    def _save_model_2023_layout(self):
-        """
-        Save the project model to the 2023 configuration file layout.
+        Save the project model to the 2024 configuration file layout.
 
         This method should only be called by the _save_model() method.
         Be sure to specify the correct sections in the __init__()
@@ -1260,6 +825,7 @@ class Project(Configuration):
 
         # Project
         self.set('Project', 'cubic_version', model.application.cubic_version)
+        self.set('Project', 'first_version', model.project.first_version)
         self.set('Project', 'create_date', model.project.create_date)
         self.set('Project', 'modify_date', model.project.modify_date)
         self.set('Project', 'directory', model.project.directory)
@@ -1279,22 +845,48 @@ class Project(Configuration):
         self.set('Custom', 'iso_release_name', model.custom.iso_release_name)
         self.set('Custom', 'iso_disk_name', model.custom.iso_disk_name)
 
+        # Layout
+
+        # Casper Section
+        self.set('Layout', 'casper_directory', model.layout.casper_directory_as_list)
+        # Do not save the initrd file name in the configuration.
+        # self.set('Layout', 'initrd_file_name', model.layout.initrd_file_name_as_list)
+        # Do not save the vmlinuz file name in the configuration.
+        # self.set('Layout', 'vmlinuz_file_name', model.layout.vmlinuz_file_name_as_list)
+        # General Section
+        self.set('Layout', 'squashfs_directory', model.layout.squashfs_directory_as_list)
+        self.set('Layout', 'squashfs_file_name', model.layout.squashfs_file_name_as_list)
+        self.set('Layout', 'manifest_file_name', model.layout.manifest_file_name_as_list)
+        self.set('Layout', 'minimal_remove_file_name', model.layout.minimal_remove_file_name_as_list)
+        self.set('Layout', 'standard_remove_file_name', model.layout.standard_remove_file_name_as_list)
+        self.set('Layout', 'size_file_name', model.layout.size_file_name_as_list)
+        # Minimal Section
+        self.set('Layout', 'minimal_squashfs_file_name', model.layout.minimal_squashfs_file_name_as_list)
+        self.set('Layout', 'minimal_manifest_file_name', model.layout.minimal_manifest_file_name_as_list)
+        self.set('Layout', 'minimal_size_file_name', model.layout.minimal_size_file_name_as_list)
+        # Standard Section
+        self.set('Layout', 'standard_squashfs_file_name', model.layout.standard_squashfs_file_name_as_list)
+        self.set('Layout', 'standard_manifest_file_name', model.layout.standard_manifest_file_name_as_list)
+        self.set('Layout', 'standard_size_file_name', model.layout.standard_size_file_name_as_list)
+        # Installer / Live Section
+        self.set('Layout', 'installer_sources_file_name', model.layout.installer_sources_file_name_as_list)
+        self.set('Layout', 'installer_squashfs_file_name', model.layout.installer_squashfs_file_name_as_list)
+        self.set('Layout', 'installer_manifest_file_name', model.layout.installer_manifest_file_name_as_list)
+        self.set('Layout', 'installer_size_file_name', model.layout.installer_size_file_name_as_list)
+        self.set('Layout', 'installer_generic_squashfs_file_name', model.layout.installer_generic_squashfs_file_name_as_list)
+        self.set('Layout', 'installer_generic_manifest_file_name', model.layout.installer_generic_manifest_file_name_as_list)
+        self.set('Layout', 'installer_generic_size_file_name', model.layout.installer_generic_size_file_name_as_list)
+
         # Status
+        self.set('Status', 'is_success_analyze', model.status.is_success_analyze)
         self.set('Status', 'is_success_copy', model.status.is_success_copy)
         self.set('Status', 'is_success_extract', model.status.is_success_extract)
         self.set('Status', 'iso_template', model.status.iso_template)
-        self.set('Status', 'squashfs_directory', model.status.squashfs_directory)
-        self.set('Status', 'squashfs_file_name', model.status.squashfs_file_name)
-        self.set('Status', 'casper_directory', model.status.casper_directory)
         self.set('Status', 'iso_checksum', model.status.iso_checksum)
         self.set('Status', 'iso_checksum_file_name', model.status.iso_checksum_file_name)
 
         # Options
         self.set('Options', 'update_os_release', model.options.update_os_release)
+        self.set('Options', 'has_minimal_install', model.options.has_minimal_install)
         self.set('Options', 'boot_configurations', model.options.boot_configurations)
         self.set('Options', 'compression', model.options.compression)
-
-        # Installer
-        self.set('Installer', 'has_typical_install', model.installer.has_typical_install)
-        self.set('Installer', 'has_minimal_install', model.installer.has_minimal_install)
-        self.set('Installer', 'has_subiquity', model.installer.has_subiquity)

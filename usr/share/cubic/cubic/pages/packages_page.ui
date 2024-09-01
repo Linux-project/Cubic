@@ -29,7 +29,7 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkListStore" id="packages_page__list_store">
     <columns>
-      <!-- column-name Typical -->
+      <!-- column-name Standard -->
       <column type="gboolean"/>
       <!-- column-name Minimal -->
       <column type="gboolean"/>

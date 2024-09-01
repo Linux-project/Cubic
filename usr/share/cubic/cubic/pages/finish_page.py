@@ -69,6 +69,22 @@ name = 'finish_page'
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'cancel':
 
@@ -161,6 +177,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'cancel':
 
@@ -184,6 +218,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'back':
 
@@ -213,7 +263,7 @@ def leave(action, new_page=None):
         options_page.boot_tab.remove_tree()
 
         # Save the model values.
-        model.project.configuration.save()
+        # model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
@@ -242,7 +292,7 @@ def leave(action, new_page=None):
         options_page.boot_tab.remove_tree()
 
         # Save the model values.
-        model.project.configuration.save()
+        # model.project.configuration.save()
 
         iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 

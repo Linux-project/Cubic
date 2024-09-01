@@ -2,9 +2,9 @@
 
 ########################################################################
 #                                                                      #
-# compression_page.py                                                  #
+# alert_page.py                                                        #
 #                                                                      #
-# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
+# Copyright (C) 2024 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
 ########################################################################
 
@@ -31,19 +31,16 @@
 # References
 ########################################################################
 
-# https://catchchallenger.first-world.info/wiki/Quick_Benchmark:_Gzip_vs_Bzip2_vs_LZMA_vs_XZ_vs_LZ4_vs_LZO#The_file_test_results
-# http://www.ilsistemista.net/index.php/linux-a-unix/44-linux-compressors-comparison-on-centos-6-5-x86-64-lzo-vs-lz4-vs-gzip-vs-bzip2-vs-lzma.html?start=4
-# https://fastcompression.blogspot.com/2015/01/zstd-stronger-compression-algorithm.html
+# N/A
 
 ########################################################################
 # Imports
 ########################################################################
 
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import LZ4, LZO, GZIP, ZSTD, XZ
-from cubic.pages import options_page
+from cubic.utilities import constructor
 from cubic.utilities import displayer
-from cubic.utilities import iso_utilities
+from cubic.utilities import file_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
 
@@ -51,17 +48,7 @@ from cubic.utilities import model
 # Global Variables & Constants
 ########################################################################
 
-name = 'compression_page'
-
-radio_buttons = {
-    LZ4: 'compression_page__radio_button_1',
-    LZO: 'compression_page__radio_button_2',
-    GZIP: 'compression_page__radio_button_3',
-    ZSTD: 'compression_page__radio_button_4',
-    XZ: 'compression_page__radio_button_5'
-}
-
-compression = None
+name = 'alert_page'
 
 ########################################################################
 # Navigation Functions
@@ -86,7 +73,15 @@ def setup(action, old_page=None):
         To automatically transition to an error page.
     """
 
-    if action == 'back':
+    if action == 'alert':
+
+        display_version = constructor.get_display_version(model.project.first_version)
+        displayer.update_entry('alert_page__project_cubic_version_entry', display_version)
+        displayer.update_entry('alert_page__project_directory_entry', model.project.directory)
+        displayer.update_entry('alert_page__custom_iso_version_number_entry', model.custom.iso_version_number)
+        displayer.update_entry('alert_page__custom_iso_volume_id_entry', model.custom.iso_volume_id)
+        displayer.update_entry('alert_page__custom_iso_release_name_entry', model.custom.iso_release_name)
+        displayer.update_entry('alert_page__custom_iso_disk_name_entry', model.custom.iso_disk_name)
 
         displayer.reset_buttons(
             back_button_label='❬Back',
@@ -94,38 +89,17 @@ def setup(action, old_page=None):
             back_button_style=None,
             is_back_sensitive=True,
             is_back_visible=True,
-            next_button_label='Generate❭',
-            next_action='generate',
+            next_button_label='Continue❭',
+            next_action='next',
             next_button_style='suggested-action',
             is_next_sensitive=True,
             is_next_visible=True)
 
         return
 
-    elif action == 'next':
+    elif action == 'error':
 
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=True,
-            is_back_visible=True,
-            next_button_label='Generate❭',
-            next_action='generate',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
-
-        # 1 = lz4
-        # 2 = lzo
-        # 3 = gzip
-        # 4 = zstd
-        # 5 = xz
-
-        # Display the initial selection.
-        global compression
-        compression = model.options.compression
-        displayer.activate_radio_button(radio_buttons[compression], True)
+        # Handle the error from the leave() function.
 
         return
 
@@ -156,11 +130,13 @@ def enter(action, old_page=None):
         To automatically transition to an error page.
     """
 
-    if action == 'back':
+    if action == 'alert':
 
         return
 
-    elif action == 'next':
+    elif action == 'error':
+
+        # Handle the error from the leave() function.
 
         return
 
@@ -193,20 +169,21 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        # Save the model values.
-        model.project.configuration.save()
-
         return
 
-    elif action == 'generate':
+    elif action == 'next':
+
+        # The following fields must be set before leaving this page:
+        #
+        # 1. model.project.cubic_version
+        # 2. model.project.create_date
+        # 3. model.project.directory
+        # 4. model.project.configuration
+        # 5. model.project.iso_mount_point
+        # 6. model.project.custom_root_directory
+        # 7. model.project.custom_disk_directory
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
-
-        # Update the model to acknowledge changes.
-        model.options.compression = compression
-
-        # Save the model values.
-        model.project.configuration.save()
 
         return
 
@@ -214,13 +191,8 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        options_page.preseed_tab.remove_tree()
-        options_page.boot_tab.remove_tree()
-
         # Save the model values.
         model.project.configuration.save()
-
-        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
 
         return
 
@@ -230,7 +202,8 @@ def leave(action, new_page=None):
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
-        iso_utilities.unmount_iso_and_delete_mount_point(model.project.iso_mount_point)
+        # Save the model values.
+        model.project.configuration.save()
 
         return 'unknown'
 
@@ -240,22 +213,6 @@ def leave(action, new_page=None):
 ########################################################################
 
 
-def on_toggled__compression_page__radio_button(toggle_button):
+def on_clicked__alert_page__project_directory_open_button(widget):
 
-    # 1 = lz4
-    # 2 = lzo
-    # 3 = gzip
-    # 4 = zstd
-    # 5 = xz
-
-    if toggle_button.get_active():
-        global compression
-        compression = toggle_button.get_label()
-        logger.log_value('The selected compression is', compression)
-
-
-########################################################################
-# Support Functions
-########################################################################
-
-# N/A
+    file_utilities.open_directory_in_browser(model.project.directory)

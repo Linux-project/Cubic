@@ -95,7 +95,7 @@ GAP = '\u200A'
 # Application Versions
 ########################################################################
 
-CUBIC_COPYRIGHT = '© 2015, 2020 PJ Singh'
+CUBIC_COPYRIGHT = '© 2015, 2020, 2024 PJ Singh'
 
 BLANK_VERSION_0000 = '00.00.00'  # Unknown version
 
@@ -119,7 +119,11 @@ BLANK_VERSION_0000 = '00.00.00'  # Unknown version
 #
 # "Release" 2023 Version:
 #   From: Release 2023.05-83 on 05/22/2023
-#   Thru: Release 20__.__-__ on __/__/20__
+#   Thru: Release 2024.02-86 on 02/20/2024
+#
+# "Release" 2024 Version:
+#   From: Release 2024.09-87 on 09/01/2024
+#   Thru: Release 2024.__-__ on __/__/20__
 
 # Cubic release version numbers are in YYYY.MM.RR format.
 CUBIC_VERSION_0000 = '0000.00.00'  # Unknown version
@@ -127,7 +131,8 @@ CUBIC_VERSION_2019 = '2015.11.1'  # Releases 2015.11-1 thru 2020.02-62
 CUBIC_VERSION_2020 = '2020.04.1'  # Releases 2020.04-1 thru 2020.10-35
 CUBIC_VERSION_2021 = '2021.12.36'  # Releases 2021.12-36 thru 2022.06-72
 CUBIC_VERSION_2022 = '2022.11.73'  # Releases 2022.11-73 thru 2023.05.82
-CUBIC_VERSION_2023 = '2023.05.83'  # Releases 2023.03-76 thru present
+CUBIC_VERSION_2023 = '2023.05.83'  # Releases 2023.03-76 thru 2024.02-86
+CUBIC_VERSION_2024 = '2024.08.87'  # Releases 2024.08-87 thru present
 
 ###############################################################
 # File Sizes
@@ -151,89 +156,6 @@ IMAGE_FILE_NAME = 'partition-%s.img'
 LOCK_FILE_NAME = '.#custom-root.lck'
 LOG_FILE_NAME = 'cubic.%s.log'
 
-# This list is used to select the correct squashfs directory and file
-# name in extract_page.identify_squashfs_file_path() if multiple
-# squashfs files are found on the ISO.
-#
-# Ubuntu
-# • casper/filesystem.squashfs
-#
-# Ubuntu Live Server 22.04
-# • casper/ubuntu-server-minimal.squashfs
-# • casper/ubuntu-server-minimal.ubuntu-server.installer.generic.squashfs
-# • casper/ubuntu-server-minimal.ubuntu-server.installer.squashfs
-# • casper/ubuntu-server-minimal.ubuntu-server.squashfs
-#
-# Debian
-# • live/filesystem.squashfs
-#
-# Linux Mint
-# • casper/filesystem.squashfs
-#
-# Grml Live Linux ISO
-# • live/grml64-full/grml64-full.squashfs
-#
-# Pop_OS! 21.10
-# • /casper_pop-os_21.10_amd64_intel_debug_59/filesystem.squashfs
-# • /casper -> casper_pop-os_21.10_amd64_intel_debug_59
-# • /casper/filesystem.squashfs
-
-# Used to select a squashfs file if multiple files are discovered.
-SQUASHFS_FILE_NAMES = ['filesystem.squashfs', 'ubuntu-server-minimal.squashfs', 'minimal.squashfs']
-
-# This list is used to select the correct casper directory in
-# extract_page.identify_casper_directory() if multiple casper files are
-# found on the ISO. Only the root directories are listed here, since
-# the sub-directories do not seem to be relevant.
-#
-# Ubuntu
-# • casper/vmlinuz
-# • casper/initrd
-#
-# Ubuntu Live Server 22.04
-# • casper/vmlinuz
-# • casper/initrd
-#
-# Debian
-# • d-i/gtk/vmlinuz
-# • d-i/vmlinuz
-# • live/vmlinuz-5.10.0-18-amd64
-# • d-i/gtk/initrd.gz
-# • d-i/initrd.gz
-# • live/initrd.img-5.10.0-18-amd64
-#
-# Linux Mint
-# • casper/vmlinuz
-# • casper/initrd.lz
-#
-# Grml live ISO
-# • boot/grml64full/vmlinuz
-# • boot/grml64full/initrd.img
-#
-# Pop_OS! 21.10
-# • /casper_pop-os_21.10_amd64_intel_debug_59/vmlinuz.efi
-# • /casper_pop-os_21.10_amd64_intel_debug_59/initrd.gz
-# • /casper -> casper_pop-os_21.10_amd64_intel_debug_59
-# • /casper/vmlinuz.efi
-# • /casper/initrd.gz
-
-# Used to select a casper directory if multiple directories are discovered.
-CASPER_DIRECTORIES = ['casper', 'live', 'boot']
-
-# Extensions.
-EXTENSION_MANIFEST = 'manifest'
-EXTENSION_MANIFEST_MINIMAL_REMOVE = 'manifest-minimal-remove'
-EXTENSION_MANIFEST_TYPICAL_REMOVE = 'manifest-remove'
-EXTENSION_SIZE = 'size'
-EXTENSION_SQUASHFS_GPG = 'squashfs.gpg'
-EXTENSION_SQUASHFS = 'squashfs'
-
-# File names specific to Ubiquity.
-FILE_SYSTEM_MANIFEST = 'filesystem.manifest'
-FILE_SYSTEM_MANIFEST_MINIMAL_REMOVE = 'filesystem.manifest-minimal-remove'
-FILE_SYSTEM_MANIFEST_TYPICAL_REMOVE = 'filesystem.manifest-remove'
-FILE_SYSTEM_SIZE = 'filesystem.size'
-
 ########################################################################
 # Status
 ########################################################################
@@ -255,7 +177,7 @@ CUBIC_PAGE_HELP = 'cubic_page_help'
 CUBIC_WEBSITE = 'cubic_website'
 CUBIC_DONATE = 'cubic_donate'
 CUBIC_SITES = [CUBIC_WEBSITE, CUBIC_WIKI, CUBIC_PAGE_HELP, CUBIC_DONATE]
-CUBIC_URLS = '789C9D934B4EC330108659C0065A04DC010921A569917815D8501E12122252BBAF9CD424A64D6CC553010B240E9065381117C389C74DD8D5CECA0B7F5FE69FF17C6FFEFC6E6DD4DF57795474A365C8A2E93B0D25035A168709809043DF8F1924CBB017F1D40F9EBC31CBE2C4EBF707FEA8BA5F16DBC8B1392B8BE3B5205F5FEE6872C63352FD70B83EEBDFD58C07DC33554820394C058995E9D4C234AE382FA8B94ECAE25C7951736EA179D6A411899CBFD1081C44812651B40354C274809E6B07CF44098C6C46177495EECCA6DD3568C2D10FC88953B87B4DA2A80B344F59461668BAB0304D1045D5C14A1571F189BE1B17DF48F1CD14A920B9CB73083469820A12CDD5493A040D10353571018C67D2A1A6174DA2685F859394CEDA0DB37B5F35DEEED76EC839B47D9716BE5BC5B6657BEA7255A25435A3EECA42376A6833849866B4B5DD36437844D42CD22BCB984C1C16E9A106FF2DF789433AD434BBBDECFD01B809192B'
+CUBIC_URLS = '789C9D93BD4EC33010C71960290501EF808490D2B4487C1518A07C482C446AF7CA498FC4B48DA3F82A6040E2013286E7E1D5709C731BB6DA993CF8F7CBFDEF7CDF9B3FBF5B1BFAFB2A8F8A9D6811F268FC0EA1E4086571982066B2EFFB31C76411762231F783676FC8D338F1BADD9E3FA8EE97458B383EE56571BC16E4D797DB35391129AB7ED85F9FF5EF35E3A1F04C1512598EE38CC5CA746A611A569C1768AEC566E024B9AD3892B4B35CBC416434E7169AA02649B48D2071DC23CFB58367A404463681192090ECCCA6D51A34E1E00373E614EEA12649B48390CF79CA6664BAB0308D0825D5C1521589EC937C372EBE81E25753848CE5E034454D9AA0198BA6EA241D8206849A9A44865CA4D2A1A6979A24D1BE0A270126CD86D9BD2F8D37FBB51B0A814DDFA585EF4EB14DD99EBA5C952855CDA4BBB2D00D56B419420C29E46CF9FE6D86F044A859A4579E7299382CD2A306FF2DF789433AD2AC767BD1F90357161781'
 
 ########################################################################
 # File System Types

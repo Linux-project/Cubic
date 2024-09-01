@@ -2,9 +2,9 @@
 
 ########################################################################
 #                                                                      #
-# fields.py                                                            #
+# structures.py                                                        #
 #                                                                      #
-# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
+# Copyright (C) 2020, 2024 PJ Singh <psingh.cubic@gmail.com>           #
 #                                                                      #
 ########################################################################
 
@@ -76,7 +76,7 @@ class Fields:
     Notes:
     • The name of the Fields is stored with all underscore "_"
       characters replaced with space " " characters and leading and
-      trailing spaces removed to facilitate printing the log in a
+      trailing spaces removed to expedite printing the log in a
       readable format.
     • Keys are displayed with all underscore "_" characters replaced
       with space " " characters and leading and trailing spaces removed
@@ -162,7 +162,7 @@ class Fields:
         output whenever a new value is set.
 
         The log output has the format:
-        "Set <fields name> <key key>... <value>".
+        "Set <fields name> <key>... <value>".
 
         Arguments:
         key : str
@@ -215,6 +215,373 @@ class Fields:
 
 
 ########################################################################
+# Attributes Class
+########################################################################
+
+
+class Attributes:
+    """
+    A structure that allows attributes to have multiple unique values
+    which can be designated as valid or invalid. Accessing an attribute
+    returns a list of valid values for the attribute. Attributes can be
+    thought of as a dictionary of dictionaries, where attributes are
+    keys in the top level dictionary, and the possible values for each
+    attribute are keys in second level dictionaries.
+
+    Consider the following example for "structure" with two attributes
+    "attribute_a" and "attribute_b". "attribute_a" can have three
+    possible values, "a_value_1", "a_value_2", and "a_value_3".
+    "attribute_b" can have three possible values, "b_value_1",
+    "b_value_2", and "b_value_3". For "attribute_a", "a_value_1" and
+    "a_value_3" are valid. For "attribute_b", "b_value_2" is the only
+    valid value.
+
+    structure
+    ├── attribute_a
+    │   ├── a_value_1, True
+    │   ├── a_value_2, False
+    │   └── a_value_3, True
+    └── attribute_b
+        ├── b_value_1, False
+        ├── b_value_2, True
+        └── b_value_3, False
+
+    Create an instance of Attributes named "structure".
+
+        from structures import Attributes
+        structure = Attributes('structure')
+
+    Set valid values as True; set invalid values as False.
+
+        structure.attribute_a = 'a_value_1', True
+        > Set structure attribute a................... a_value_1 (True)
+        structure.attribute_a = 'a_value_2', False
+        > Set structure attribute a................... a_value_2 (False)
+        structure.attribute_a = 'a_value_3', True
+        > Set structure attribute a................... a_value_3 (True)
+
+        structure.attribute_b = 'b_value_1', False
+        > Set structure attribute b................... b_value_1 (False)
+        structure.attribute_b = 'b_value_2', True
+        > Set structure attribute b................... b_value_2 (True)
+        structure.attribute_b = 'b_value_3', False
+        > Set structure attribute b................... b_value_3 (False)
+
+    Print the string representation of "structure".
+        structure
+        > {'name': 'structure', 'attribute_a': {'a_value_1': True, 'a_value_2': False, 'a_value_3': True}, 'attribute_b': {'b_value_1': False, 'b_value_2': True, 'b_value_3': False}}
+
+    Only a_value_1 and a_value_3, are valid for attribute_a, so
+    accessing "attribute_a" will only list these values.
+
+        structure.attribute_a
+        > ['a_value_1', 'a_value_3']
+
+    Only b_value_2 is valid for attribute_b, so accessing "attribute_b"
+    will only list this values.
+
+        structure.attribute_b
+        > ['b_value_2']
+
+    Get a list of all attributes.
+
+        structure.attributes()
+        > ['attribute_a', 'attribute_b']
+
+    Get a dict of all attributes with their values.
+
+        structure.items()
+        > {'attribute_a': {'a_value_1': True, 'a_value_2': False, 'a_value_3': True}, 'attribute_b': {'b_value_1': False, 'b_value_2': True, 'b_value_3': False}}
+
+    Get a dict of all values for an attribute.
+
+        structure.items('attribute_a')
+        > {'a_value_1': True, 'a_value_2': False, 'a_value_3': True}
+
+    Get a list of all values for an attribute.
+
+        structure.values('attribute_a')
+        > ['a_value_1', 'a_value_2', 'a_value_3']
+
+    Here is the internal dictionary for the "structure" object.
+        > structure.__dict__
+        {'name': 'structure', 'attribute_a': {'a_value_1': True, 'a_value_2': False, 'a_value_3': True}, 'attribute_b': {'b_value_1': False, 'b_value_2': True, 'b_value_3': False}}
+    """
+
+    def __init__(self, name):
+        """
+        Create a new instance of Attributes with the specified name.
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
+        name : str
+            The name of the new Attributes structure. All underscore "_"
+            characters will be replaced with space " " characters and
+            leading and trailing spaces will be removed to facilitate
+            printing the log in a readable format.
+
+        Returns:
+        : Attributes
+            A new instance of Attributes with the specified name.
+        """
+
+        super().__setattr__('name', name.replace('_', ' ').strip())
+
+    def __getattribute__(self, attribute):
+        """
+        Override the get operation to return:
+        1) The last valid value in the list of valid values for the
+           specified attribute
+        2) All valid values for the specified attribute, if the
+           attribute name is suffixed with "_as_list".
+
+        Arguments:
+        attribute : str
+            The name of the attribute.
+
+        Returns:
+        : list(str)
+            A list containing valid keys for the specified attribute, or
+            an empty list if there are no valid keys.
+        """
+
+        as_list = attribute.endswith('_as_list')
+        attribute = attribute.removesuffix('_as_list')
+        if attribute.startswith('_'):
+            return super().__getattribute__(attribute)
+        elif callable(super().__getattribute__(attribute)):
+            return super().__getattribute__(attribute)
+        elif isinstance(self.__dict__[attribute], dict):
+            if as_list:
+                items = self.__dict__[attribute].items()
+                return [value for value, is_valid in items if is_valid]
+            else:
+                items = self.__dict__[attribute].items()
+                values = [value for value, is_valid in items if is_valid]
+                return values[-1] if values else ''
+        else:
+            return self.__dict__[attribute]
+
+    def __setattr__(self, attribute, value):
+        """
+        Override the assignment operation. For the specified attribute,
+        add or update the specified value as valid or invalid. The
+        specified attribute may store multiple unique values. Optionally
+        print a log output whenever a value is set.
+
+        The log output has the format:
+        "Set <structure name> <attribute>... <key>... <value>".
+
+        Arguments:
+        attribute : str
+            The name of the attribute being set. The attribute name can
+            be any accepted Python variable name, with the following
+            restrictions:
+            - "name" is reserved and may not be used
+            - may not start with an underscore "_" character
+            - may not end in "_as_list". See __getattribute__().
+            Leading and trailing spaces will be removed from the
+            attribute name, and the attribute will be logged with all
+            underscore "_" characters replaced with space " "
+            characters.
+
+        value : tuple
+            A tuple containing two or three items:
+            (value, is_valid, is_log)
+            1) value:
+            The first item is the name of a possible value. If value is
+            a string, leading and trailing spaces will be removed.
+            2) is_valid:
+            The second item indicates whether or not the value is valid.
+            It must evaluate to True or False.
+            3) is_log:
+            The third item is optional. It turns off logging if False.
+            It is True by default (i.e. logging is on).
+        """
+
+        if value == None:
+            is_log = True
+            is_valid = False
+            value = None
+        elif len(value) == 2 and value[0] == None:
+            is_log = value[1]
+            is_valid = False
+            value = value[0]  # None
+        elif len(value) == 2 and value[0] != None:
+            is_log = True
+            is_valid = value[1]
+            value = value[0]
+        elif len(value) == 3:
+            is_log = value[2]
+            is_valid = value[1]
+            value = value[0]
+        else:
+            # TODO: Throw exception.
+            pass
+
+        if isinstance(value, str):
+            value = str(value).strip()
+        if isinstance(is_valid, str):
+            is_valid = str(is_valid).strip()
+
+        if attribute not in self.__dict__:
+            self.__dict__[attribute] = {}
+
+        display_attribute = str(attribute).replace('_', ' ')
+        if not value:
+            # If no value was specified, set all values to False.
+            # For example structure.attribute_a = None is equivalent to:
+            # - structure.attribute_a = a_value_1, False
+            # - structure.attribute_a = a_value_2, False
+            # - structure.attribute_a = a_value_3, False
+            values = self.__dict__[attribute].keys()
+            for value in values:
+                if is_log:
+                    # print(f'Set {self.name} {display_attribute}...\t {value} ({is_valid})')
+                    # logger.log_value(f'Set {self.name} {display_attribute}', f'{value} ({is_valid})')
+                    logger.log_value(f'Set {display_attribute}', f'{value} ({is_valid})')
+                self.__dict__[attribute][value] = is_valid
+        else:
+            # If the value was specified, set it accordingly.
+            if is_log:
+                # print(f'Set {self.name} {display_attribute}...\t {value} ({is_valid})')
+                # logger.log_value(f'Set {self.name} {display_attribute}', f'{value} ({is_valid})')
+                logger.log_value(f'Set {display_attribute}', f'{value} ({is_valid})')
+            self.__dict__[attribute][value] = is_valid
+
+    def set(self, attribute, *value):
+        """
+        Store multiple values for the specified attribute. Optionally
+        print a log output whenever a value is set.
+        """
+
+        self.__setattr__(attribute, value)
+
+    def set_attribute_values(self, attribute, values, is_valid=True, is_log=True):
+        """
+        Store multiple values for the specified attribute. Optionally
+        print a log output whenever a value is set.
+        """
+        display_attribute = str(attribute).replace('_', ' ')
+        for value in values:
+            if is_log:
+                # print(f'Set {self.name} {display_attribute}...\t {value} ({is_valid})')
+                # logger.log_value(f'Set {self.name} {display_attribute}', f'{value} ({is_valid})')
+                logger.log_value(f'Set {display_attribute}', f'{value} ({is_valid})')
+            self.__dict__[attribute][value] = is_valid
+
+    def attributes(self):
+        """
+        Get a list of all attributes.
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
+
+        Returns:
+        : list(str)
+            A new list of attributes.
+        """
+
+        return list(self.__dict__)[1:]
+
+    def values(self, attribute, is_valid_only=False):
+        """
+        Get a list of values for the specified attribute. If
+        is_valid_only is True, only return values that are valid,
+        otherwise return all values (valid and invalid).
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
+        attribute : str
+            The name of the attribute.
+        is_valid_only : bool
+            Only return values that are valid.
+        
+        Returns:
+        : list(str)
+            A new list of values.
+        """
+        if is_valid_only:
+            items = self.__dict__[attribute].items()
+            return [value for value, is_valid in items if is_valid]
+        else:
+            return list(self.__dict__[attribute])
+
+    def dictionary(self, attribute=None):
+        """
+        Get a dict of all possible values for the attribute, if
+        specified. Get a dict of all attributes and all possible values,
+        if an attribute is not specified.
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
+        attribute : str
+            The optional name of an attribute. If an attribute is not
+            specified, then the top level dictionary will be returned.
+
+        Returns:
+        : dict
+            A new dict of keys and values.
+        """
+
+        if not attribute:
+            dictionary = dict(self.__dict__)
+            dictionary.pop('name')
+            return dictionary
+        else:
+            return dict(self.__dict__[attribute])
+
+    def reset(self, is_valid=False):
+        """
+        Reset all existing attributes as invalid (False).
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
+        is_valid : bool (or any type interpretable as True or False)
+            Optional value to reset all values to. The default is False.
+        """
+        '''
+        for attribute in self.attributes():
+            for value in self.values(attribute):
+                self.__dict__[attribute][value] = False
+        '''
+
+        for attribute, values in self.__dict__.items():
+            if attribute != 'name':
+                for value in values.keys():
+                    values[value] = is_valid
+
+    def print(self):
+        """
+        Print the attributes in a readable format.
+        """
+
+        for attribute, values in self.__dict__.items():
+            if attribute == 'name':
+                print(f'  {attribute}: {values}')
+            else:
+                print(f'  • {attribute}:')
+                for value, is_valid in values.items():
+                    print(f'        {value} ({is_valid})')
+
+    def __repr__(self):
+        """
+        Get the string representation of the underlying __dict__.
+
+        Returns:
+        : str
+            The the string representation of the underlying __dict__.
+        """
+
+        return str(self.__dict__)
+
+
+########################################################################
 # Iso Field Class
 ########################################################################
 
@@ -245,7 +612,7 @@ class IsoField:
             values will be the same as the values of the original
             object.
         iso_fields : IsoFields
-            The IsoFields container for the new Isofield.
+            The IsoFields container for the new IsoField.
         """
 
         # Ensure self.__dict__ contains all required keys. This
@@ -446,9 +813,9 @@ class IsoFields:
 
     def __eq__(self, iso_fields):
         """
-        Return True if the value property of each Isofield of this
+        Return True if the value property of each IsoField of this
         object is equal to the value property of each corresponding
-        Isofield of iso_fields. Otherwise, return False.
+        IsoField of iso_fields. Otherwise, return False.
         • iso_version_number.value
         • iso_file_name.value
         • iso_directory.value

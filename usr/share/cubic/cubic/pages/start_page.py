@@ -43,7 +43,7 @@ from packaging import version
 
 from cubic.choosers import directory_chooser
 from cubic.constants import BOLD_RED, NORMAL
-from cubic.constants import CUBIC_VERSION_2020
+from cubic.constants import CUBIC_VERSION_2024
 from cubic.constants import OK, ERROR, EXCLUDED_FILE_SYSTEM_TYPES, FILE_SYSTEM_TYPES
 from cubic.utilities import configuration
 from cubic.utilities import constructor
@@ -64,6 +64,22 @@ name = 'start_page'
 
 
 def setup(action, old_page=None):
+    """
+    Prepare this page for display. This function is executed while the
+    previous page is still shown.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To continue to this page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'open':
 
@@ -162,6 +178,24 @@ def setup(action, old_page=None):
 
 
 def enter(action, old_page=None):
+    """
+    Preform functions on this page after it is shown. This function is
+    executed after the previous page is hidden.
+
+    Args:
+    action : str
+        The action from the previous page.
+    old_page : str
+        The previous page; optional.
+
+    Returns:
+    : None
+        To stay on this page.
+    action : str
+        To automatically transition to another page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'open':
 
@@ -188,6 +222,22 @@ def enter(action, old_page=None):
 
 
 def leave(action, new_page=None):
+    """
+    Preform functions on this page before leaving it. This function is
+    executed while this page is visible.
+
+    Args:
+    action : str
+        The action on this page.
+    old_page : str
+        The next page to show; optional.
+
+    Returns:
+    : None
+        To continue to the next page.
+    error : str
+        To automatically transition to an error page.
+    """
 
     if action == 'next':
 
@@ -218,7 +268,7 @@ def leave(action, new_page=None):
 
         return
 
-    elif action == 'migrate':
+    elif action == 'alert':
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -490,6 +540,7 @@ def validate_page():
 
         # Set the Cubic version.
         model.project.cubic_version = model.application.cubic_version
+        model.project.first_version = model.application.cubic_version
 
         # Set the create date.
         model.project.create_date = constructor.get_current_time_stamp()
@@ -522,11 +573,12 @@ def validate_page():
     # Migrate existing project.
     # ------------------------------------------------------------------
 
-    cubic_version = constructor.get_display_version(model.project.cubic_version)
-    if version.parse(cubic_version) < version.parse(CUBIC_VERSION_2020):
+    cubic_version = constructor.get_display_version(model.project.first_version)
+    if version.parse(cubic_version) < version.parse(CUBIC_VERSION_2024):
 
-        # Set the Cubic version on the Migrate page.
-        # model.project.cubic_version = model.application.cubic_version
+        # Set the Cubic version.
+        model.project.cubic_version = model.application.cubic_version
+        # model.project.first_version = model.application.cubic_version
 
         # Already loaded the create date from the configuration.
         # model.project.create_date = constructor.get_current_time_stamp()
@@ -537,8 +589,8 @@ def validate_page():
             back_button_style=None,
             is_back_sensitive=False,
             is_back_visible=False,
-            next_button_label='Migrate❭',
-            next_action='migrate',
+            next_button_label='Alert❭',
+            next_action='alert',
             next_button_style='suggested-action',
             is_next_sensitive=True,
             is_next_visible=True)
@@ -550,57 +602,12 @@ def validate_page():
         return  # Done
 
     # ------------------------------------------------------------------
-    # Existing project without an ISO template.
-    # ------------------------------------------------------------------
-
-    # TODO: Remove the following section in a future release. (12/19/2020)
-    if not model.status.iso_template and not os.path.isfile(os.path.join(model.original.iso_directory, model.original.iso_file_name)):
-
-        # Set the Cubic version.
-        model.project.cubic_version = model.application.cubic_version
-
-        # Already loaded the create date from the configuration.
-        # model.project.create_date = constructor.get_current_time_stamp()
-
-        displayer.reset_buttons(
-            back_button_label='❬Back',
-            back_action='back',
-            back_button_style=None,
-            is_back_sensitive=False,
-            is_back_visible=False,
-            next_button_label='Next❭',
-            next_action='next',
-            next_button_style='suggested-action',
-            is_next_sensitive=True,
-            is_next_visible=True)
-
-        boot_configurations_string = ', '.join(model.options.boot_configurations)
-        # message = (
-        #     '<span foreground="red">Warning. Cubic will require the'
-        #     ' original disk image to copy important files and may'
-        #     f' overwrite your changes to the disk boot configurations ({boot_configurations_string})'
-        #     ' or preseed files. Before proceeding, make backups of these'
-        #     f' files located in {model.project.custom_disk_directory}.</span>')
-        message = (
-            'Warning. Cubic will require the original disk image '
-            'to copy important files and may overwrite your '
-            'changes to the disk boot configurations '
-            f'({boot_configurations_string}) '
-            'or preseed files. Before proceeding, make backups '
-            'of these files located in '
-            f'{model.project.custom_disk_directory}.')
-        displayer.update_label('start_page__project_directory_message', message, True)
-
-        displayer.set_entry_error('start_page__project_directory_entry', OK)
-
-        return  # Done
-
-    # ------------------------------------------------------------------
     # Existing project with ISO template.
     # ------------------------------------------------------------------
 
     # Set the Cubic version.
     model.project.cubic_version = model.application.cubic_version
+    # model.project.first_version = model.application.cubic_version
 
     # Already loaded the create date from the configuration.
     # model.project.create_date = constructor.get_current_time_stamp()
@@ -617,18 +624,6 @@ def validate_page():
         is_next_sensitive=True,
         is_next_visible=True)
 
-    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-    # TODO: Remove this section in a future release. (12/27/2020)
-    #       Also, remove similar code from start_page and extract_page.
-
-    # Correct an error in the ISO template.
-    if model.status.iso_template:
-        template = constructor.decode(model.status.iso_template)
-        if '{{volume_id}}' in template:
-            template = template.replace('{{volume_id}}', '{volume_id}')
-            model.status.iso_template = constructor.encode(template)
-    # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-
     message = 'This directory contains an existing Cubic project.'
     displayer.update_label('start_page__project_directory_message', message, False)
     displayer.set_entry_error('start_page__project_directory_entry', OK)
@@ -641,6 +636,7 @@ def initialize_model():
     logger.log_label('Initialize')
 
     # model.project.cubic_version = model.application.cubic_version
+    # model.project.first_version = model.application.first_version
     # model.project.create_date = constructor.get_current_time_stamp()
     model.project.modify_date = None
     # model.project.directory = None
@@ -664,19 +660,46 @@ def initialize_model():
     model.custom.iso_disk_name = None
     model.custom.iso_release_notes_url = None
 
+    # Set all possible values for each attribute to invalid (False).
+    # (See Structures class).
+    #
+    # Casper Section
+    #   model.layout.casper_directory
+    #   model.layout.initrd_file_name
+    #   model.layout.vmlinuz_file_name
+    # General Section
+    #   model.layout.squashfs_directory
+    #   model.layout.squashfs_file_name
+    #   model.layout.manifest_file_name
+    #   model.layout.minimal_remove_file_name
+    #   model.layout.standard_remove_file_name
+    #   model.layout.size_file_name
+    # Minimal Section
+    #   model.layout.minimal_squashfs_file_name
+    #   model.layout.minimal_manifest_file_name
+    #   model.layout.minimal_size_file_name
+    # Standard Section
+    #   model.layout.standard_squashfs_file_name
+    #   model.layout.standard_manifest_file_name
+    #   model.layout.standard_size_file_name
+    # Installer / Live Section
+    #   model.layout.installer_sources_file_name
+    #   model.layout.installer_squashfs_file_name
+    #   model.layout.installer_manifest_file_name
+    #   model.layout.installer_size_file_name
+    #   model.layout.installer_generic_squashfs_file_name
+    #   model.layout.installer_generic_manifest_file_name
+    #   model.layout.installer_generic_size_file_name
+    model.layout.reset()
+
+    model.status.is_success_analyze = None
     model.status.is_success_copy = None
     model.status.is_success_extract = None
     model.status.iso_template = None
-    model.status.squashfs_directory = None
-    model.status.squashfs_file_name = None
-    model.status.casper_directory = None
     model.status.iso_checksum = None
     model.status.iso_checksum_file_name = None
 
     model.options.update_os_release = None
+    model.options.has_minimal_install = None
     model.options.boot_configurations = None
     model.options.compression = None
-
-    model.installer.has_typical_install = None
-    model.installer.has_minimal_install = None
-    model.installer.has_subiquity = None

@@ -47,6 +47,7 @@ import os
 import re
 import shutil
 import traceback
+import yaml
 
 from cubic.utilities import logger
 from cubic.utilities import model
@@ -647,6 +648,50 @@ def _write_lines_2(lines, file_path):
             file.write(line)
 
 
+def read_yaml_file(file_path):
+    """
+    Read the contents of a yaml file.
+
+    Arguments:
+    file_path : str
+        The full path of the file to read.
+    Raises:
+    : yaml.YAMLError
+        The exception that occurred.
+    : Exception
+        The exception that occurred.
+    """
+
+    logger.log_label('Read yaml file')
+    logger.log_value('File path', file_path)
+
+    yaml_list = []
+    with open(file_path) as file:
+        yaml_list = yaml.safe_load(file)
+    return yaml_list
+
+
+def save_yaml_file(yaml_list, file_path):
+    """
+    Save the yaml file.
+
+    Arguments:
+    yaml_list : list of dict
+        List of dicts representing the yaml.
+    file_path : string
+        The full path of the file to write to.
+    Raises:
+    : Exception
+        The exception that occurred.
+    """
+
+    logger.log_label('Save yaml file')
+    logger.log_value('File path', file_path)
+
+    with open(file_path, 'w') as file:
+        yaml.dump(yaml_list, file)
+
+
 def find_files_with_pattern(file_name_pattern, start_directory, follow_links=False):
     """
     Recursively search files in the start directory that match the file
@@ -1038,6 +1083,83 @@ def delete_file(file_path):
     else:
         logger.log_value('Cannot delete file', 'File does not exist')
         result = f'File {file_path} does not exist.'
+        exit_status = None
+        signal_status = 1
+
+    logger.log_value('The result is', result)
+    logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
+
+    return result, exit_status, signal_status
+
+
+# TODO: Check if this function is terminated when the thread is killed?
+def create_link(directory_path, file_name, link_name):
+    """
+    Create a symbolic link pointing to file_name from link_name. If
+    link_name already exists and it is a file or link, it will be
+    deleted. If link_name is a directory, it will not be deleted.
+
+    Arguments:
+    directory_path : str
+        The directory path in which to create the symbolic link.
+    file_name : str
+        The name of the file or directory to link to; must not be None
+        or an empty string.
+    link_name : str
+        The name of the link; must not be None or an empty string.
+
+    Returns:
+    result : str
+        The result of the process.
+    exit_status : int
+        The exit status of the process.
+    signal_status : int
+        The signal status of the process.
+        0 if the link was created successfully.
+        1 if there was an error or if a file or link with the specified
+        link name already exists.
+    """
+
+    if link_name:
+        link_name = link_name.strip()
+    if not link_name:
+        link_name = None
+    if file_name:
+        file_name = file_name.strip()
+    if not file_name:
+        file_name = None
+    logger.log_value('Create link', f'to {file_name} from {link_name} in {directory_path}')
+
+    try:
+        # Raises TypeError if file_name or link_name are None.
+        link_path = os.path.join(directory_path, link_name)
+        # Delete the link path, if it is an existing link or file.
+        # If the link path is a directory, it will not be deleted.
+        if os.path.isfile(link_path): delete_file(link_path)
+        # Create the new link.
+        os.symlink(file_name, link_path)
+        logger.log_value('Successfully created link', f'from {link_name} to {file_name}')
+        result = f'Created link {link_path}'
+        exit_status = 0
+        signal_status = None
+    except FileExistsError as exception:
+        # If a link or a file with the link name already exists.
+        # logger.log_value('Exception', exception)
+        # type, value, traceback = sys.exc_info()
+        logger.log_value('Cannot create a link', f'{link_name} already exists.')
+        result = f'File {link_name} already exists.'
+        exit_status = None
+        signal_status = 1
+    except TypeError as exception:
+        logger.log_value('Exception', exception)
+        # type, value, traceback = sys.exc_info()
+        result = f'Error creating link {link_name}'
+        exit_status = None
+        signal_status = 1
+    except Exception as exception:
+        logger.log_value('Exception', exception)
+        # type, value, traceback = sys.exc_info()
+        result = f'Error creating link {link_name}'
         exit_status = None
         signal_status = 1
 

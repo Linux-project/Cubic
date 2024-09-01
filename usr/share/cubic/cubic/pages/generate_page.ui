@@ -363,7 +363,7 @@
             <property name="row-spacing">12</property>
             <property name="column-spacing">12</property>
             <child>
-              <object class="GtkImage" id="generate_page__update_disk_name_status">
+              <object class="GtkImage" id="generate_page__update_disk_and_installer_info_status">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="valign">start</property>
@@ -375,7 +375,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinner" id="generate_page__update_disk_name_spinner">
+              <object class="GtkSpinner" id="generate_page__update_disk_and_installer_info_spinner">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="valign">start</property>
@@ -391,7 +391,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Update the disk name.</property>
+                <property name="label" translatable="yes">Update the disk name and installer informaton.</property>
                 <property name="wrap">True</property>
                 <property name="max-width-chars">0</property>
                 <property name="xalign">0</property>
@@ -418,7 +418,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="generate_page__update_disk_name_message">
+              <object class="GtkLabel" id="generate_page__update_disk_and_installer_info_message">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="opacity">0.5</property>
@@ -837,8 +837,8 @@
       <widget name="generate_page__create_squashfs_spinner"/>
       <widget name="generate_page__update_file_system_size_status"/>
       <widget name="generate_page__update_file_system_size_spinner"/>
-      <widget name="generate_page__update_disk_name_status"/>
-      <widget name="generate_page__update_disk_name_spinner"/>
+      <widget name="generate_page__update_disk_and_installer_info_status"/>
+      <widget name="generate_page__update_disk_and_installer_info_spinner"/>
       <widget name="generate_page__update_checksums_status"/>
       <widget name="generate_page__update_checksums_spinner"/>
       <widget name="generate_page__check_custom_disk_size_status"/>

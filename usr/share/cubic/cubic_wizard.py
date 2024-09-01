@@ -72,8 +72,8 @@ parser = argparse.ArgumentParser(
     description='Cubic (Custom Ubuntu ISO Creator) is a GUI wizard to create a customized Live ISO image for Ubuntu and Debian based distributions.')
 parser.add_argument('directory', nargs='?', help='directory for a new or existing project')
 parser.add_argument('iso', nargs='?', help='original ISO file for a new project (ignored for existing projects)')
-parser.add_argument("-l", "--log", action="store_true", help="output formatted log to a file")
-parser.add_argument("-v", "--verbose", action="store_true", help="output formatted log to the console")
+parser.add_argument("-l", "--log", action="store_true", help="output a formatted log to a file in the project directory")
+parser.add_argument("-v", "--verbose", action="store_true", help="output a formatted log to the console")
 parser.add_argument("-V", "--version", action="store_true", help="print version information and exit")
 
 if os.getuid() == 0:
@@ -118,6 +118,8 @@ try:
 
     # Get the running Cubic version.
     model.application.cubic_version = constructor.get_package_version('cubic')
+    ### TODO: FOR TESTING ONLY
+    ### model.application.cubic_version = '2024.08-87-release~202402210132~ubuntu23.10.1'
 
     # Get the running kernel version.
     model.application.kernel_version = constructor.get_kernel_version()
@@ -231,7 +233,7 @@ try:
 
     # Menu items
     # Uncomment the lines below to show a ★ next to the menu item.
-    # Remember to uncommet lines in navigator.on_clicked_?_menu_button()
+    # Remember to uncomment lines in navigator.on_clicked_?_menu_button()
     # functions to remove the ★ once the site has been visited.
 
     # if CUBIC_WIKI not in model.application.visited_sites:
