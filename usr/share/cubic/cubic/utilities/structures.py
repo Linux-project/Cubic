@@ -347,7 +347,11 @@ class Attributes:
         """
 
         as_list = attribute.endswith('_as_list')
-        attribute = attribute.removesuffix('_as_list')
+        # The function str.removesuffix() is only available in Python 3.9.
+        # See: https://docs.python.org/3/library/stdtypes.html#str.removesuffix
+        # attribute = attribute.removesuffix('_as_list')
+        if as_list: attribute = attribute[:-8]
+
         if attribute.startswith('_'):
             return super().__getattribute__(attribute)
         elif callable(super().__getattribute__(attribute)):
