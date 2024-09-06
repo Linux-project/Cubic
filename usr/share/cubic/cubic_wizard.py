@@ -278,7 +278,7 @@ try:
 
         # Get the module name.
         module_name = os.path.basename(file_path)[:-3]
-        logger.log_value('Setup (ignore warnings)', module_name.replace('_', ' '))
+        logger.log_value('Setup', module_name.replace('_', ' '))
 
         # Load the user interface.
         model.builder.add_from_file(file_path)

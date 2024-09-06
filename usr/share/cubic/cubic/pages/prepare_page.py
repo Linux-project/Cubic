@@ -949,7 +949,7 @@ def _get_vmlinuz_version_name_from_file_contents(file_path):
                 candidate = ''
             # TODO: Is the following code more consistent with other
             # functions in this module?
-            '''
+            r'''
             version_information = re.search(r'(\d+\.\d+\.\d+(?:-\d+)*)', str(candidate))
             if version_information:
                 version_name = version_information.group(1)

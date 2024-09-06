@@ -28,6 +28,8 @@
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkFileChooserDialog" id="copy_file_chooser">
+    <!-- Resolve Gtk-WARNING: Content added to the action area of a dialog using header bars. -->
+    <property name="use-header-bar">0</property>
     <property name="width-request">600</property>
     <property name="height-request">600</property>
     <property name="can-focus">False</property>

@@ -1,5 +1,17 @@
 cubic (2024.09) bionic focal groovy hirsute impish jammy kinetic lunar mantic noble oracular; urgency=low
 
+  * Issues fixed in version 2024.09-89:
+
+  - Fixed Bug GH:#341, Cubic can't extract files from original disk. Updated the
+    extract-root command to ignore non-fatal exit status 2.
+  - Fixed Bug GH:#282 "Close" button in the About dialog doesn't work. Reuse the
+    on_close_about_dialog handler for the About dialog's response signal.
+  - Fixed Bug GH:#340, Invalid escape sequence syntax warnings are displayed
+    when installing or running Cubic.
+  - Fixed Bug GH:#344, Gtk-WARNING Content added to the action area of a dialog
+    using header bars. Added <property name="use-header-bar">0</property> to
+    file choosers.
+
   * Issues fixed in version 2024.09-88:
 
   - Fixed Bug GH:#337, Cubic doesn't open after last update on 09/02/2024.
@@ -553,4 +565,4 @@ cubic (2024.09) bionic focal groovy hirsute impish jammy kinetic lunar mantic no
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Mon, 02 Sep 2024 10:02:02 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 06 Sep 2024 18:07:25 -0400

@@ -560,7 +560,10 @@ def setup_boot_tab():
     # Get the the boot configuration files. These are text files located
     # in the root file paths that contain the words vmlinuz and initrd.
     if not model.options.boot_configurations:
-        command = f'find {" ".join(root_file_paths)} -type f -exec grep -HiIl "linux.*vmlinuz\|kernel.*vmlinuz" {{}} \;'
+        # Use raw string ("r") to avoid syntax warninings. See GH:#340.
+        # - SyntaxWarning: invalid escape sequence '\|'
+        # - SyntaxWarning: invalid escape sequence '\;'
+        command = rf'find {" ".join(root_file_paths)} -type f -exec grep -HiIl "linux.*vmlinuz\|kernel.*vmlinuz" {{}} \;'
         result, exit_status, signal_status = execute_synchronous(command, model.project.custom_disk_directory)
         model.options.boot_configurations = result.split()
 

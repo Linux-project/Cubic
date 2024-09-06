@@ -693,7 +693,7 @@ def save_yaml_file(yaml_list, file_path):
 
 
 def find_files_with_pattern(file_name_pattern, start_directory, follow_links=False):
-    """
+    r"""
     Recursively search files in the start directory that match the file
     name pattern, and return a list of matching file paths relative to
     the start directory. If follow links is True, symlinks that do not

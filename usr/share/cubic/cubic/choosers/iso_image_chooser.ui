@@ -33,6 +33,8 @@
     </mime-types>
   </object>
   <object class="GtkFileChooserDialog" id="iso_image_chooser">
+    <!-- Resolve Gtk-WARNING: Content added to the action area of a dialog using header bars. -->
+    <property name="use-header-bar">0</property>
     <property name="width-request">600</property>
     <property name="height-request">600</property>
     <property name="can-focus">False</property>
