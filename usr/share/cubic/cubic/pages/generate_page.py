@@ -1079,7 +1079,7 @@ def _update_installer_sources_file():
         file_utilities.save_yaml_file(yaml_list, file_path)
 
 
-def _update_installer_sources_yaml(yaml_list, path):
+def _update_installer_sources_yaml(yaml_items, path):
     """
     Create a new yaml configuration using information from the supplied
     configuration and using values from this project.
@@ -1091,7 +1091,7 @@ def _update_installer_sources_yaml(yaml_list, path):
     • name - Use the custom ISO volume ID
     • size - Use the calculated file system size
 
-    Here is an example configuration:
+    Here is an example configuration (Ubuntu 24.04):
       - default: true
         description:
           en: Custom Noble Numbat
@@ -1104,9 +1104,29 @@ def _update_installer_sources_yaml(yaml_list, path):
         type: fsimage
         variant: server
 
+    Here is an example configuration (Ubuntu 25.04):
+      kernel:
+        default: linux-generic-hwe-24.04
+      sources:
+      - default: true
+        description:
+          en: Custom Noble Numbat
+        id: ubuntu-server-minimal
+        locale_support: none
+        name:
+          en: Ubuntu-Server 24.04.0 2024.08.09
+        path: ubuntu-server-minimal.squashfs
+        size: 2430492672
+        type: fsimage
+        variant: server
+      version: 2
+
     Arguments:
-    yaml_list : list of dict
-        The supplied configuration.
+    yaml_items : list or dict
+        A list or dict representing the supplied yaml.
+        Prior to Ubuntu 25.04 the yaml is a list of "default" dictionaries.
+        In Ubuntu 25.04+, the yaml is a dictionary, and the list of "default"
+        dictionaries are under the "sources" key.
     path : str
         Used to select the section from the supplied yaml configuration
         that will be used as the basis of the new configuration.
@@ -1120,24 +1140,36 @@ def _update_installer_sources_yaml(yaml_list, path):
         The exception that occurred.
     """
 
-    new_yaml_list = []
+    # Get the list of "defaults" from the yaml.
+    # Prior to Ubuntu 25.04 the yaml is a list of "default" dictionaries.
+    # In Ubuntu 25.04+, the yaml is a dictionary, and the list of "default"
+    # dictionaries are under the "sources" key.
+    yaml_list = yaml_items['sources'] if isinstance(yaml_items, dict) else yaml_items
+
+    # Select the section from the supplied yaml configuration with the desired
+    # path (ex.'minimal.squashfs').
+    ### TODO: Handle situation where yaml_dict = None
+    yaml_dict = next((yaml_dict for yaml_dict in yaml_list if yaml_dict['path'] == path), None)
+
+    # Create a new dictionary using some custom values and some values from the
+    # original yaml.
     new_yaml_dict = {}
-    for yaml_dict in yaml_list:
-        if yaml_dict['path'] == path:
-            new_yaml_dict['default'] = True
-            # new_yaml_dict['description'] = yaml_dict['description']
-            new_yaml_dict['description'] = {'en': model.custom.iso_release_name}
-            new_yaml_dict['id'] = yaml_dict['id']
-            # new_yaml_dict['locale_support'] = yaml_dict['locale_support']
-            new_yaml_dict['locale_support'] = 'none'  # 'locale-only'
-            # new_yaml_dict['name'] = yaml_dict['name']
-            new_yaml_dict['name'] = {'en': model.custom.iso_volume_id}
-            new_yaml_dict['path'] = yaml_dict['path']
-            # new_yaml_dict['size'] = yaml_dict['size']
-            new_yaml_dict['size'] = model.file_system_size
-            new_yaml_dict['type'] = yaml_dict['type']
-            new_yaml_dict['variant'] = yaml_dict['variant']
-            new_yaml_list.append(new_yaml_dict)
+    new_yaml_dict['default'] = True
+    # new_yaml_dict['description'] = yaml_dict['description']
+    new_yaml_dict['description'] = {'en': model.custom.iso_release_name}
+    new_yaml_dict['id'] = yaml_dict['id']
+    # new_yaml_dict['locale_support'] = yaml_dict['locale_support']
+    new_yaml_dict['locale_support'] = 'none'  # 'locale-only'
+    # new_yaml_dict['name'] = yaml_dict['name']
+    new_yaml_dict['name'] = {'en': model.custom.iso_volume_id}
+    new_yaml_dict['path'] = yaml_dict['path']
+    # new_yaml_dict['size'] = yaml_dict['size']
+    new_yaml_dict['size'] = model.file_system_size
+    new_yaml_dict['type'] = yaml_dict['type']
+    new_yaml_dict['variant'] = yaml_dict['variant']
+
+    # Create a new list containing one element, the new dictionary.
+    new_yaml_list = [new_yaml_dict]
 
     return new_yaml_list
 

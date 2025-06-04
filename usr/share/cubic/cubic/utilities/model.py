@@ -126,6 +126,7 @@ layout = Attributes('layout')
 layout.casper_directory = 'd-i', False
 layout.casper_directory = 'd-i/gtk', False
 layout.casper_directory = 'install', False
+layout.casper_directory = 'install/gtk', False
 layout.casper_directory = 'live', False
 layout.casper_directory = 'boot/grml64full', False
 layout.casper_directory = 'LiveOS', False

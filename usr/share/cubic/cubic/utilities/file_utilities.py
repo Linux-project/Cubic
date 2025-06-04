@@ -655,6 +655,9 @@ def read_yaml_file(file_path):
     Arguments:
     file_path : str
         The full path of the file to read.
+    Returns:
+    yaml_items : list or dict
+        A list or dict representing the yaml.
     Raises:
     : yaml.YAMLError
         The exception that occurred.
@@ -665,19 +668,19 @@ def read_yaml_file(file_path):
     logger.log_label('Read yaml file')
     logger.log_value('File path', file_path)
 
-    yaml_list = []
+    yaml_items = None
     with open(file_path) as file:
-        yaml_list = yaml.safe_load(file)
-    return yaml_list
+        yaml_items = yaml.safe_load(file)
+    return yaml_items
 
 
-def save_yaml_file(yaml_list, file_path):
+def save_yaml_file(yaml_items, file_path):
     """
     Save the yaml file.
 
     Arguments:
-    yaml_list : list of dict
-        List of dicts representing the yaml.
+    yaml_list : list or dict
+        List or dict representing the yaml.
     file_path : string
         The full path of the file to write to.
     Raises:
@@ -689,7 +692,7 @@ def save_yaml_file(yaml_list, file_path):
     logger.log_value('File path', file_path)
 
     with open(file_path, 'w') as file:
-        yaml.dump(yaml_list, file)
+        yaml.dump(yaml_items, file)
 
 
 def find_files_with_pattern(file_name_pattern, start_directory, follow_links=False):

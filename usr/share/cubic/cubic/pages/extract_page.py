@@ -653,6 +653,9 @@ def analyze_iso_layout(source_directory_path):
 
     is_error = not model.status.is_success_analyze
 
+    ### TODO:
+    ### Display error and stop spinner.
+
     return is_error
 
 
