@@ -51,3 +51,4 @@ target_file_path=${3}
 ########################################################################
 
 sed -i "s|${search_text}|${replace_text}|g" "${target_file_path}"
+

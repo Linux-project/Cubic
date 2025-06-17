@@ -70,3 +70,4 @@ current_directory=$(readlink /proc/$process_id/cwd)
 # echo "The current directory is ${current_directory}"
 
 echo ${current_directory}
+

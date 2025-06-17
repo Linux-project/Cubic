@@ -48,7 +48,7 @@ import re
 import time
 import zlib
 
-from cubic.constants import BLANK_VERSION_0000, CUBIC_VERSION_0000
+from cubic.constants import BLANK_VERSION_0000
 from cubic.constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
 from cubic.constants import LOG_FILE_NAME
 from cubic.constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
@@ -411,196 +411,6 @@ def get_kernel_version_ALTERNATIVE():
     return result
 
 
-def get_display_version(package_version):
-    """
-    Get a displayable package version number. Delimiter characters, such as "-",
-    "+", "~", etc., are replaced with ".", and the version is truncated to
-    exclude alpha characters.
-
-    For example, "2021.10-61-release~202110150101~ubuntu21.10.1" will be
-    converted to "2021.10.61".
-
-    Returns:
-    : str
-        A truncated package version with leading digits delimited by ".". If a
-        displayable version can not be determined, the version is "00.00.00".
-    """
-
-    try:
-        # return re.search(r'([\d\W]*\d).*', re.sub(r'\W', '.', package_version))[1]
-        version = re.sub(r'\W', '.', package_version)
-        version = re.search(r'(^[\d\W]*\d).*', version)
-        version = version.group(1)
-        return version
-    except TypeError:
-        logger.log_value('Type error getting display version for', package_version)
-        version = BLANK_VERSION_0000
-        return version
-    except IndexError:
-        logger.log_value('Index error getting display version for', package_version)
-        version = BLANK_VERSION_0000
-        return version
-    except AttributeError:
-        logger.log_value('Attribute error getting display version for', package_version)
-        version = BLANK_VERSION_0000
-        return version
-    except Exception:
-        logger.log_value('Exception getting display version for', package_version)
-        version = BLANK_VERSION_0000
-        return version
-
-
-def get_display_version_ORIGINAL(package_version):
-    """
-    Get a displayable Cubic version in "YYYY.MM.RR" format. For example,
-    the package version "2021.10-61-release~202110150101~ubuntu21.10.1"
-    maps to "2021.10.61".
-
-    Returns:
-    : str
-        The Cubic package version in "YYYY.MM.RR" format.
-    """
-
-    if package_version:
-        return '.'.join(package_version.split('-')[0:2])
-    else:
-        return CUBIC_VERSION_0000
-
-
-def get_installed_packages_list(root_directory=os.path.sep):
-    """
-    This function is not used.
-
-    Create a list of installed package details. Each package detail is a
-    list containing the following elements. Only package name and
-    package version are populated.
-        1: package name
-        2: package version
-
-    Also see prepare_page.create_package_details_list().
-
-    Arguments:
-    root_directory : str
-        The root directory of "var/lib/dpkg" (the dpkg database).
-
-    Returns:
-    package_details_list : list
-        A list of package details.
-    """
-
-    logger.log_label('Create list of installed packages')
-
-    package_details_list = []
-
-    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
-    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
-    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
-    # and lower).
-    admin_directory = os.path.join(root_directory, 'var/lib/dpkg')
-    command = 'dpkg-query --admindir="%s" --show' % (admin_directory)
-    result, exit_status, signal_status = execute_synchronous(command)
-
-    if result:
-        packages = result.splitlines()
-        for package in packages:
-            package_name, package_version = package.split()
-
-            # Create a new package details for the current package.
-            # 1: package name
-            # 2: package version
-            package_details = [package_name, package_version]
-            package_details_list.append(package_details)
-
-    package_count = len(package_details_list)
-    logger.log_value('Total number of installed packages', package_count)
-
-    return package_details_list
-
-
-'''
-def get_installed_packages_list_01(root_directory=os.path.sep):
-    """
-    This function is not used.
-    See prepare_page.create_package_details_list().
-
-    Get a list of installed packages.
-
-    Arguments:
-    root_directory : str
-        Optional root directory of "var/lib/dpkg" (the dpkg database).
-        The default value is "/", which will get the packages list for
-        the host system. Use model.project.custom_root_directory to get
-        the packages list for the custom OS.
-
-    Returns:
-    installed_packages_list : list of tuples
-        A list of tuples (package name, package version).
-    """
-
-    installed_packages_list = []
-
-    apt_cache = apt.Cache(rootdir=root_directory)
-    for package in apt_cache:
-        if apt_cache[package.name].is_installed:
-            # package_details = f'{package.name}\t{package.installed.version}'
-            package_details = (package.name, package.installed.version)
-            installed_packages_list.append(package_details)
-    package_count = len(installed_packages_list)
-    logger.log_value('Total number of installed packages', package_count)
-
-    return installed_packages_list
-
-
-def get_installed_packages_list(root_directory=os.path.sep):
-    """
-    This function is not used.
-
-    Create a list of installed package details. Each package detail is a
-    list containing the following elements. Only package name and
-    package version are populated.
-        1: package name
-        2: package version
-
-    Also see prepare_page.create_package_details_list().
-
-    Arguments:
-    root_directory : str
-        The root directory of "var/lib/dpkg" (the dpkg database).
-
-    Returns:
-    package_details_list : list
-        A list of package details.
-    """
-
-    logger.log_label('Create list of installed packages')
-
-    package_details_list = []
-
-    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
-    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
-    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
-    # and lower).
-    command = 'dpkg-query --root="%s" --show' % (root_directory)
-    result, exit_status, signal_status = execute_synchronous(command)
-
-    if result:
-        packages = result.splitlines()
-        for package in packages:
-            package_name, package_version = package.split()
-
-            # Create a new package details for the current package.
-            # 1: package name
-            # 2: package version
-            package_details = [package_name, package_version]
-            package_details_list.append(package_details)
-
-    package_count = len(package_details_list)
-    logger.log_value('Total number of installed packages', len(package_details_list))
-
-    return package_details_list
-'''
-
-
 def get_package_version(package_name, root_directory=os.path.sep):
     """
     Get the installed version of the specified package.
@@ -828,6 +638,190 @@ def get_package_version_04(package_name, root_directory=os.path.sep):
     result, exit_status, signal_status = execute_synchronous(command)
 
     return result if exit_status == OK else None
+'''
+
+
+def get_display_version(package_version):
+    """
+    Get a displayable package version number.
+    • All characters preceding the first ":" (if present) are excluded
+    • All (subsequent) numbers and decimals followed by numbers are included
+    • All subsequent characters are excluded
+
+    Examples:
+    • 3.137ubuntu1 --> 3.137
+    • 1:238-5ubuntu1 --> 238
+    • 1:46.7-0ubuntu0.24.04.1 --> 46.7
+    • 1.46.0-1ubuntu2.2 --> 1.46.0
+    • 0.3.16-1.1ubuntu6.1~24.04.1 --> 0.3.16
+    • 0.0.7+21.10.20210712-0ubuntu3 0.0.7
+    • 29-2 --> 29
+    • 1:4.6.1-1build1 --> 4.6.1
+    Notice how the "1" from "1ubuntu0" is included.
+    • 3.20250311.1ubuntu0.24.04.1 --> 3.20250311.1
+    Notice how the release number is truncated because it is preceded by a "-".
+    • 2025.06-90-release~202506040157~ubuntu24.04.1 --> 2025.06
+    • 2025.06.91-release~202506040157~ubuntu24.04.1 --> 2025.06.91
+
+Returns:
+    : str
+        A truncated package version with leading digits delimited by ".". If a
+        displayable version can not be determined, the version is "00.00.00".
+    """
+
+    try:
+        version = re.search(r'(?:.*:)*(\d+(?:\.\d+)*)(?:.*)', package_version)
+        version = version.group(1)
+        return version
+    except TypeError:
+        logger.log_value('Type error getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+    except IndexError:
+        logger.log_value('Index error getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+    except AttributeError:
+        logger.log_value('Attribute error getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+    except Exception:
+        logger.log_value('Exception getting display version for', package_version)
+        version = BLANK_VERSION_0000
+        return version
+
+
+def get_installed_packages_list(root_directory=os.path.sep):
+    """
+    This function is not used.
+
+    Create a list of installed package details. Each package detail is a
+    list containing the following elements. Only package name and
+    package version are populated.
+        1: package name
+        2: package version
+
+    Also see prepare_page.create_package_details_list().
+
+    Arguments:
+    root_directory : str
+        The root directory of "var/lib/dpkg" (the dpkg database).
+
+    Returns:
+    package_details_list : list
+        A list of package details.
+    """
+
+    logger.log_label('Create list of installed packages')
+
+    package_details_list = []
+
+    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
+    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
+    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
+    # and lower).
+    admin_directory = os.path.join(root_directory, 'var/lib/dpkg')
+    command = 'dpkg-query --admindir="%s" --show' % (admin_directory)
+    result, exit_status, signal_status = execute_synchronous(command)
+
+    if result:
+        packages = result.splitlines()
+        for package in packages:
+            package_name, package_version = package.split()
+
+            # Create a new package details for the current package.
+            # 1: package name
+            # 2: package version
+            package_details = [package_name, package_version]
+            package_details_list.append(package_details)
+
+    package_count = len(package_details_list)
+    logger.log_value('Total number of installed packages', package_count)
+
+    return package_details_list
+
+
+'''
+def get_installed_packages_list_01(root_directory=os.path.sep):
+    """
+    This function is not used.
+    See prepare_page.create_package_details_list().
+
+    Get a list of installed packages.
+
+    Arguments:
+    root_directory : str
+        Optional root directory of "var/lib/dpkg" (the dpkg database).
+        The default value is "/", which will get the packages list for
+        the host system. Use model.project.custom_root_directory to get
+        the packages list for the custom OS.
+
+    Returns:
+    installed_packages_list : list of tuples
+        A list of tuples (package name, package version).
+    """
+
+    installed_packages_list = []
+
+    apt_cache = apt.Cache(rootdir=root_directory)
+    for package in apt_cache:
+        if apt_cache[package.name].is_installed:
+            # package_details = f'{package.name}\t{package.installed.version}'
+            package_details = (package.name, package.installed.version)
+            installed_packages_list.append(package_details)
+    package_count = len(installed_packages_list)
+    logger.log_value('Total number of installed packages', package_count)
+
+    return installed_packages_list
+
+
+def get_installed_packages_list(root_directory=os.path.sep):
+    """
+    This function is not used.
+
+    Create a list of installed package details. Each package detail is a
+    list containing the following elements. Only package name and
+    package version are populated.
+        1: package name
+        2: package version
+
+    Also see prepare_page.create_package_details_list().
+
+    Arguments:
+    root_directory : str
+        The root directory of "var/lib/dpkg" (the dpkg database).
+
+    Returns:
+    package_details_list : list
+        A list of package details.
+    """
+
+    logger.log_label('Create list of installed packages')
+
+    package_details_list = []
+
+    # The --root option was added to dpkg-query in Ubuntu 22.04 (dpkg
+    # package 1.21.1ubuntu2.1 and higher). Older versions of dpkg-query
+    # only support the --admindir option (dpkg package 1.20.9ubuntu2.2
+    # and lower).
+    command = 'dpkg-query --root="%s" --show' % (root_directory)
+    result, exit_status, signal_status = execute_synchronous(command)
+
+    if result:
+        packages = result.splitlines()
+        for package in packages:
+            package_name, package_version = package.split()
+
+            # Create a new package details for the current package.
+            # 1: package name
+            # 2: package version
+            package_details = [package_name, package_version]
+            package_details_list.append(package_details)
+
+    package_count = len(package_details_list)
+    logger.log_value('Total number of installed packages', len(package_details_list))
+
+    return package_details_list
 '''
 
 

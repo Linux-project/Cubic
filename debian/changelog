@@ -1,5 +1,19 @@
 cubic (2025.06) bionic focal groovy hirsute impish jammy kinetic lunar mantic noble oracular plucky questing; urgency=low
 
+  * Issues fixed in version 2025.06.91:
+
+  - Fixed Bug GH:#403, Unable to extract Ubuntu Server 25.04 on Cubic
+    2025.06.90. The error "FATAL ERROR: create_inode: failed to create hardlink,
+    because File exists" results when extracting Ubuntu 25.04 Server. Use the
+    "-no-exit-code" and "-ignore-errors" options available in unsquashfs
+    version 4.5+ (in Ubuntu 22.04+) to ignore errors while extracting the Linux
+    file systems. Note, extract errors will not be ignored for unsquashfs 4.4
+    (in Ubuntu 21.10 and lower).
+  - Changed the Cubic versioning scheme from YYYY.MM-RR to YYYY.MM.RR. (The dash
+    "-" has been replaced by a dot ".").
+  - Update the get_display_version() function in the constructor module to parse
+    only the decimal portion of the package version.
+
   * Issues fixed in version 2025.06-90:
 
   - Allow installation on Ubuntu 25.04 Plucky Puffin and upcoming Ubuntu 25.10
@@ -572,4 +586,4 @@ cubic (2025.06) bionic focal groovy hirsute impish jammy kinetic lunar mantic no
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 03 Jun 2025 21:42:43 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Mon, 16 Jun 2025 21:58:12 -0400

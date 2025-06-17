@@ -640,21 +640,34 @@ def analyze_iso_layout(source_directory_path):
     model.options.has_minimal_install = bool(model.layout.minimal_remove_file_name)
 
     # Check if the analysis succeeded.
+
+    logger.log_value('The casper directory is', model.layout.casper_directory)
+    logger.log_value('The squashfs directory is', model.layout.squashfs_directory)
+    logger.log_value('The squashfs file name is', model.layout.squashfs_file_name)
     is_success_analyze_1 = bool(                    \
         model.layout.casper_directory and           \
         model.layout.squashfs_directory and         \
         model.layout.squashfs_file_name)
+    logger.log_value('Is success analyze 1?', is_success_analyze_1)
+
+    logger.log_value('The casper directory is', model.layout.casper_directory)
+    logger.log_value('The squashfs directory is', model.layout.squashfs_directory)
+    logger.log_value('The minimal squashfs file name is', model.layout.minimal_squashfs_file_name)
+    logger.log_value('The standard squashfs file name is', model.layout.standard_squashfs_file_name)
     is_success_analyze_2 = bool(                    \
         model.layout.casper_directory and           \
         model.layout.squashfs_directory and         \
         model.layout.minimal_squashfs_file_name and \
         model.layout.standard_squashfs_file_name)
+    logger.log_value('Is success analyze 2', is_success_analyze_2)
+
     model.status.is_success_analyze = is_success_analyze_1 or is_success_analyze_2
 
     is_error = not model.status.is_success_analyze
 
     ### TODO:
     ### Display error and stop spinner.
+    logger.log_value('Is error?', is_error)
 
     return is_error
 
@@ -1066,6 +1079,17 @@ def extract_squashfs(file_name, file_number, total_files):
     source_file_path = os.path.join(model.project.iso_mount_point, model.layout.squashfs_directory, file_name)
     logger.log_value('The source file path is', source_file_path)
 
+    # Version 4.6 of unsquashfs, available in Ubuntu 24.04 LTS Noble Numbat,
+    # supports the following error handling options. Earlier versions do not
+    # support these options.
+    # -ignore-errors = treat errors writing files to output as non-fatal
+    # -no-exit-code = do not set exit code (to nonzero) on non-fatal errors
+    unsquashfs_version = constructor.get_package_version('squashfs-tools')
+    unsquashfs_version = constructor.get_display_version(unsquashfs_version)
+    has_error_option = version.parse(unsquashfs_version) >= version.parse('4.6')
+    logger.log_value('The unsquashfs version is', unsquashfs_version)
+    logger.log_value('Unsquashfs supports ignoring errors?', has_error_option)
+
     if total_files > 1:
         file_number_text = constructor.number_as_text(file_number + 1)
         total_files_text = constructor.number_as_text(total_files)
@@ -1074,8 +1098,13 @@ def extract_squashfs(file_name, file_number, total_files):
         message = 'Extracting the Linux file system.'
     displayer.update_label('extract_page__unsquashfs_message', message, False)
 
+    # Exit Status Codes
+    #
+    # https://manpages.ubuntu.com/manpages/focal/man1/unsquashfs.1.html
+    # https://manpages.ubuntu.com/manpages/jammy/man1/unsquashfs.1.html
     # https://manpages.ubuntu.com/manpages/noble/man1/unsquashfs.1.html
-    # EXIT STATUS
+    # https://manpages.ubuntu.com/manpages/plucky/man1/unsquashfs.1.html
+    #
     # 0 The filesystem listed or extracted OK.
     # 1 FATAL errors occurred, e.g. filesystem corruption, I/O errors.
     #   Unsquashfs did not continue and aborted.
@@ -1084,8 +1113,44 @@ def extract_squashfs(file_name, file_number, total_files):
     #   output filesystem. Unsquashfs continued and did not abort.
     # See -ignore-errors, -strict-errors and -no-exit-code options for
     # how they affect the exit status.
+    #
+    # These options are available in squashfs version 4.5 and above.
+    # -ignore-errors = treat errors writing files to output as non-fatal
+    # -strict-errors = treat all errors as fatal
+    # -no-exit-code = do not set exit code (to nonzero) on non-fatal errors
+    #
+    # The following versions of Ubuntu and squashfs do not support these options.
+    #
+    # Ubuntu Version                        Squashfs Version
+    # ----------------------------------    ----------------
+    # Ubuntu 20.04.6 LTS Focal Fossa        4.4
+    # Ubuntu 20.10 Groovy Gorilla           4.4
+    # Ubuntu 21.04 Hirsute Hippo            4.4
+    # Ubuntu 21.10 Impish Indri             4.4
+    #
+    # The following versions of Ubuntu and squashfs support these options:
+    #
+    # Ubuntu Version                        Squashfs Version
+    # ----------------------------------    ----------------
+    # Ubuntu 22.04.5 LTS Jammy Jellyfish    4.5
+    # Ubuntu 22.10 Kinetic Kudu             4.5.1
+    # Ubuntu 23.04 Lunar Lobster            4.5.1
+    # Ubuntu 23.10 Mantic Minotaur          4.6.1
+    # Ubuntu 24.04.2 LTS Noble Numbat       4.6.1
+    # Ubuntu 24.10 Oracular Oriole          4.6.1
+    # Ubuntu 25.04 Plucky Puffin            4.6.1
+    #
+    # The following fatal error occurs when extracting Ubuntu 25.04:
+    # FATAL ERROR: create_inode: failed to create hardlink, because File exists
+    #
+    # In bash, use echo $? to check the error status.
+    # http://www.tldp.org/LDP/abs/html/exitcodes.html
+
     program = os.path.join(model.application.directory, 'commands', 'extract-root')
-    command = ['pkexec', program, target_file_path, source_file_path]
+    if has_error_option:
+        command = ['pkexec', program, target_file_path, source_file_path, 'True']
+    else:
+        command = ['pkexec', program, target_file_path, source_file_path]
 
     # The progress callback function.
     def progress_callback(percent):

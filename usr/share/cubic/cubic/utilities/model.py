@@ -129,7 +129,7 @@ layout.casper_directory = 'install', False
 layout.casper_directory = 'install/gtk', False
 layout.casper_directory = 'live', False
 layout.casper_directory = 'boot/grml64full', False
-layout.casper_directory = 'LiveOS', False
+layout.casper_directory = 'isolinux', False
 layout.casper_directory = 'casper', False
 layout.casper_directory = 'casper_pop-os*', False
 
