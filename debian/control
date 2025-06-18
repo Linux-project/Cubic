@@ -28,8 +28,10 @@ Build-Depends:
                     libgtksourceview-4-0 (>=4.2.0) | libgtksourceview-3.0-1 (>=3.24.7),
 #                   Required for mount, umount; usually preinstalled
                     mount (>=2.31.1),
-#                   Required for PolicyKit; usually preinstalled
-                    policykit-1 (>=0.105),
+#                   Required for pkexec; usually preinstalled; pkexec replaces PolicyKit in Ubuntu 24.04 thru 25.04
+                    policykit-1 (>=0.105) | pkexec (>=124),
+#                   Required for pkexec; usually preinstalled; polkitd replaces PolicyKit in Ubuntu 24.04 thru 25.04
+                    policykit-1 (>=0.105) | polkitd (>=124),
 #                   Required for apt.cache; usually preinstalled
 #                   python3-apt (>=1.6.5),
 #                   Required for bash auto completion
@@ -50,9 +52,9 @@ Build-Depends:
                     python3-pydbus (>=0.6.0),
 #                   Required for Gtk 3; usually preinstalled
                     python3-pyinotify (>=0.9.6),
-#                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
-                    python3-yaml (>=3.12),
 #                   Required to update yaml; usually preinstalled
+                    python3-yaml (>=3.12),
+#                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
                     qemu-system-gui (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for qemu-system-x86_64
                     qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<<1:4.2),
@@ -93,8 +95,10 @@ Depends:
                     libgtksourceview-4-0 (>=4.2.0) | libgtksourceview-3.0-1 (>=3.24.7),
 #                   Required for mount, umount; usually preinstalled
                     mount (>=2.31.1),
-#                   Required for PolicyKit; usually preinstalled
-                    policykit-1 (>=0.105),
+#                   Required for pkexec; usually preinstalled; pkexec replaces PolicyKit in Ubuntu 24.04 thru 25.04
+                    policykit-1 (>=0.105) | pkexec (>=124),
+#                   Required for pkexec; usually preinstalled; polkitd replaces PolicyKit in Ubuntu 24.04 thru 25.04
+                    policykit-1 (>=0.105) | polkitd (>=124),
 #                   Required for apt.cache; usually preinstalled
 #                   python3-apt (>=1.6.5),
 #                   Required for bash auto completion
@@ -115,9 +119,9 @@ Depends:
                     python3-pydbus (>=0.6.0),
 #                   Required for Gtk 3; usually preinstalled
                     python3-pyinotify (>=0.9.6),
-#                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
-                    python3-yaml (>=3.12),
 #                   Required to update yaml; usually preinstalled
+                    python3-yaml (>=3.12),
+#                   Required for QEMU GTK zoom to fit for Ubuntu > 18.04 LTS
                     qemu-system-gui (>=1:4.2) | qemu-system-x86 (<<1:4.2),
 #                   Required for qemu-system-x86_64
                     qemu-system-x86 (>=1:4.2) | qemu-system-x86 (<<1:4.2),

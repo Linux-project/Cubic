@@ -645,7 +645,8 @@ def get_display_version(package_version):
     """
     Get a displayable package version number.
     • All characters preceding the first ":" (if present) are excluded
-    • All (subsequent) numbers and decimals followed by numbers are included
+    • All (subsequent) numbers and decimals followed by numbers are
+      included
     • All subsequent characters are excluded
 
     Examples:
@@ -657,16 +658,18 @@ def get_display_version(package_version):
     • 0.0.7+21.10.20210712-0ubuntu3 0.0.7
     • 29-2 --> 29
     • 1:4.6.1-1build1 --> 4.6.1
-    Notice how the "1" from "1ubuntu0" is included.
+      Notice how the "1" from "1ubuntu0" is included.
     • 3.20250311.1ubuntu0.24.04.1 --> 3.20250311.1
-    Notice how the release number is truncated because it is preceded by a "-".
+      Notice how the release number is truncated because it is preceded
+      by a "-".
     • 2025.06-90-release~202506040157~ubuntu24.04.1 --> 2025.06
     • 2025.06.91-release~202506040157~ubuntu24.04.1 --> 2025.06.91
 
 Returns:
     : str
-        A truncated package version with leading digits delimited by ".". If a
-        displayable version can not be determined, the version is "00.00.00".
+        A truncated package version with leading digits delimited by
+        ".". If a displayable version can not be determined, the version
+        is "00.00.00".
     """
 
     try:

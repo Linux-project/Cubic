@@ -1117,9 +1117,11 @@ def extract_squashfs(file_name, file_number, total_files):
     # These options are available in squashfs version 4.5 and above.
     # -ignore-errors = treat errors writing files to output as non-fatal
     # -strict-errors = treat all errors as fatal
-    # -no-exit-code = do not set exit code (to nonzero) on non-fatal errors
+    # -no-exit-code = do not set exit code (to nonzero) on non-fatal
+    #                 errors
     #
-    # The following versions of Ubuntu and squashfs do not support these options.
+    # The following versions of Ubuntu and squashfs do not support these
+    # options.
     #
     # Ubuntu Version                        Squashfs Version
     # ----------------------------------    ----------------
@@ -1128,7 +1130,8 @@ def extract_squashfs(file_name, file_number, total_files):
     # Ubuntu 21.04 Hirsute Hippo            4.4
     # Ubuntu 21.10 Impish Indri             4.4
     #
-    # The following versions of Ubuntu and squashfs support these options:
+    # The following versions of Ubuntu and squashfs support these
+    # options:
     #
     # Ubuntu Version                        Squashfs Version
     # ----------------------------------    ----------------
