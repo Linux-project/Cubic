@@ -51,7 +51,7 @@ import time
 
 from cubic.constants import BOLD_RED, NORMAL
 from cubic.constants import CUBIC_VERSION_2024
-from cubic.constants import FINAL_PERCENT
+from cubic.constants import FIFTY_PERCENT
 from cubic.constants import GAP
 from cubic.constants import IMAGE_FILE_NAME
 from cubic.constants import OK, ERROR, OPTIONAL, BULLET, PROCESSING, BLANK
@@ -300,7 +300,7 @@ def enter(action, old_page=None):
             time.sleep(SLEEP_1000_MS)
 
         # --------------------------------------------------------------
-        # Extract
+        # Extract & Merge
         # --------------------------------------------------------------
 
         if not model.status.is_success_extract:
@@ -338,12 +338,43 @@ def enter(action, old_page=None):
             file_names = [file_name for file_name in file_names \
                           if file_name and not os.path.islink(os.path.join(directory_path, file_name))]
 
-            # Extract each squashfs file in sequence.
+            # Extract and merge each squashfs file in sequence.
             # • Set model.status.is_success_extract
+            #
+            # The first file is extracted. Subsequent files must be
+            # extracted and merged with the first. The following table
+            # shows the sequence events for five files, where
+            # E = extract and M = Merge.
+            #
+            # File Number : 0 1   2   3   4
+            #       Steps : - - - - - - - - -
+            #     Extract : E E . E . E . E .
+            #     Merge :     M   M   M   M
+
             total_files = len(file_names)
             for file_number, file_name in enumerate(file_names):
-                is_error = extract_squashfs(file_name, file_number, total_files)
-                if is_error: return  # Stay on this page.
+                if file_number == 0:
+                    # Case for first file (or single file).
+                    # Extract
+                    source_file_path = os.path.join(model.project.iso_mount_point, model.layout.squashfs_directory, file_name)
+                    target_file_path = model.project.custom_root_directory
+                    is_error = extract_linux_file_system(source_file_path, target_file_path, file_number, total_files)
+                    if is_error: return  # Stay on this page.
+                    logger.log_value('Done extracting', f'{file_number + 1} of {total_files}: {file_name}')
+                else:
+                    # Case for subsequent files.
+                    # Extract
+                    source_file_path = os.path.join(model.project.iso_mount_point, model.layout.squashfs_directory, file_name)
+                    target_file_path = model.project.custom_temp_directory
+                    is_error = extract_linux_file_system(source_file_path, target_file_path, file_number, total_files)
+                    if is_error: return  # Stay on this page.
+                    logger.log_value('Done extracting', f'{file_number + 1} of {total_files}: {file_name}')
+                    # Merge
+                    source_file_path = model.project.custom_temp_directory
+                    target_file_path = model.project.custom_root_directory
+                    is_error = merge_linux_file_system(source_file_path, target_file_path, file_number, total_files)
+                    if is_error: return  # Stay on this page.
+                    logger.log_value('Done Merging', f'{file_number + 1} of {total_files}: {file_name}')
 
             # Pause to allow the user to see the result.
             message = 'Success.'
@@ -1069,26 +1100,11 @@ def copy_original_iso_files_ALTERNATIVE():
 # ----------------------------------------------------------------------
 
 
-def extract_squashfs(file_name, file_number, total_files):
+def extract_linux_file_system(source_file_path, target_file_path, file_number, total_files):
 
     logger.log_label('Extract the compressed Linux file system')
-
-    target_file_path = model.project.custom_root_directory
-    logger.log_value('The target file path is', target_file_path)
-
-    source_file_path = os.path.join(model.project.iso_mount_point, model.layout.squashfs_directory, file_name)
     logger.log_value('The source file path is', source_file_path)
-
-    # Version 4.6 of unsquashfs, available in Ubuntu 24.04 LTS Noble Numbat,
-    # supports the following error handling options. Earlier versions do not
-    # support these options.
-    # -ignore-errors = treat errors writing files to output as non-fatal
-    # -no-exit-code = do not set exit code (to nonzero) on non-fatal errors
-    unsquashfs_version = constructor.get_package_version('squashfs-tools')
-    unsquashfs_version = constructor.get_display_version(unsquashfs_version)
-    has_error_option = version.parse(unsquashfs_version) >= version.parse('4.6')
-    logger.log_value('The unsquashfs version is', unsquashfs_version)
-    logger.log_value('Unsquashfs supports ignoring errors?', has_error_option)
+    logger.log_value('The target file path is', target_file_path)
 
     if total_files > 1:
         file_number_text = constructor.number_as_text(file_number + 1)
@@ -1098,70 +1114,112 @@ def extract_squashfs(file_name, file_number, total_files):
         message = 'Extracting the Linux file system.'
     displayer.update_label('extract_page__unsquashfs_message', message, False)
 
-    # Exit Status Codes
-    #
-    # https://manpages.ubuntu.com/manpages/focal/man1/unsquashfs.1.html
-    # https://manpages.ubuntu.com/manpages/jammy/man1/unsquashfs.1.html
-    # https://manpages.ubuntu.com/manpages/noble/man1/unsquashfs.1.html
-    # https://manpages.ubuntu.com/manpages/plucky/man1/unsquashfs.1.html
-    #
-    # 0 The filesystem listed or extracted OK.
-    # 1 FATAL errors occurred, e.g. filesystem corruption, I/O errors.
-    #   Unsquashfs did not continue and aborted.
-    # 2 Non-fatal errors occurred, e.g. no support for XATTRs, Symbolic
-    #   links in output filesystem or couldn't write permissions to
-    #   output filesystem. Unsquashfs continued and did not abort.
-    # See -ignore-errors, -strict-errors and -no-exit-code options for
-    # how they affect the exit status.
-    #
-    # These options are available in squashfs version 4.5 and above.
-    # -ignore-errors = treat errors writing files to output as non-fatal
-    # -strict-errors = treat all errors as fatal
-    # -no-exit-code = do not set exit code (to nonzero) on non-fatal
-    #                 errors
-    #
-    # The following versions of Ubuntu and squashfs do not support these
-    # options.
-    #
-    # Ubuntu Version                        Squashfs Version
-    # ----------------------------------    ----------------
-    # Ubuntu 20.04.6 LTS Focal Fossa        4.4
-    # Ubuntu 20.10 Groovy Gorilla           4.4
-    # Ubuntu 21.04 Hirsute Hippo            4.4
-    # Ubuntu 21.10 Impish Indri             4.4
-    #
-    # The following versions of Ubuntu and squashfs support these
-    # options:
-    #
-    # Ubuntu Version                        Squashfs Version
-    # ----------------------------------    ----------------
-    # Ubuntu 22.04.5 LTS Jammy Jellyfish    4.5
-    # Ubuntu 22.10 Kinetic Kudu             4.5.1
-    # Ubuntu 23.04 Lunar Lobster            4.5.1
-    # Ubuntu 23.10 Mantic Minotaur          4.6.1
-    # Ubuntu 24.04.2 LTS Noble Numbat       4.6.1
-    # Ubuntu 24.10 Oracular Oriole          4.6.1
-    # Ubuntu 25.04 Plucky Puffin            4.6.1
-    #
-    # The following fatal error occurs when extracting Ubuntu 25.04:
-    # FATAL ERROR: create_inode: failed to create hardlink, because File exists
-    #
-    # In bash, use echo $? to check the error status.
-    # http://www.tldp.org/LDP/abs/html/exitcodes.html
-
     program = os.path.join(model.application.directory, 'commands', 'extract-root')
-    if has_error_option:
-        command = ['pkexec', program, target_file_path, source_file_path, 'True']
-    else:
-        command = ['pkexec', program, target_file_path, source_file_path]
+    command = ['pkexec', program, source_file_path, target_file_path]
+
+    # The total number of remaining extract steps, excluding the first
+    # extract step. This value is only used when there is more than one
+    # file to extract.
+    total_remaining_steps = (total_files - 1) * 2
+
+    # The number of the current extract step, excluding the first
+    # extract step. This value is only used when there is more than one
+    # file to extract.
+    remaining_step_number = (file_number * 2) - 2
 
     # The progress callback function.
     def progress_callback(percent):
-        total_percent = (FINAL_PERCENT * file_number + percent) / total_files
+        # total_percent = Start % + Δ %
+        if total_files == 1:
+            # Case for a single file: Use the entire progress bar.
+            total_percent = percent
+        elif file_number == 0:
+            # Case for the first file: Use the first half of the
+            # progress bar when there is more than one file to extract.
+            # Allocate a significant portion of the progress bar to the
+            # first file because it is usually the largest and takes
+            # the longest to extract.
+            total_percent = percent / 2
+        else:
+            # Case for subsequent files: use the second half of the
+            # progress bar, and split it equally between all remaining
+            # extract steps.
+            total_percent = (FIFTY_PERCENT) +                                                 \
+                            (FIFTY_PERCENT * remaining_step_number / total_remaining_steps) + \
+                            (percent / 2 / total_remaining_steps)
         # displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', total_percent)
         displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', f'{locale.format_string("%.1f", total_percent, True)}{GAP}%')
         displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', total_percent)
-        if total_percent % 10 == 0:
+        if total_percent % 5 == 0:
+            logger.log_value('Completed', f'{total_percent:n}%')
+
+    try:
+        track_progress(command, progress_callback)
+    except InterruptException as exception:
+        model.status.is_success_extract = False
+        if 'No space left on device' in str(exception):
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
+        else:
+            # message = '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>'
+            message = 'Error. Unable to extract the compressed Linux file system.'
+        displayer.update_label('extract_page__unsquashfs_message', message, True)
+        displayer.update_status('extract_page__unsquashfs', ERROR)
+        logger.log_value('Propagate exception', exception)
+        raise exception
+    except Exception as exception:
+        model.status.is_success_extract = False
+        if 'No space left on device' in str(exception):
+            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
+            message = 'Error. Not enough space on the disk.'
+        else:
+            # message = '<span foreground="red">Error. Unable to extract the compressed Linux file system.</span>'
+            message = 'Error. Unable to extract the compressed Linux file system.'
+        displayer.update_label('extract_page__unsquashfs_message', message, True)
+        displayer.update_status('extract_page__unsquashfs', ERROR)
+        logger.log_value('Do not propagate exception', exception)
+        return True  # (Error)
+
+    model.status.is_success_extract = True
+    return False  # (No error)
+
+
+def merge_linux_file_system(source_file_path, target_file_path, file_number, total_files):
+
+    logger.log_label('Merge the compressed Linux file system')
+    logger.log_value('The source file path is', source_file_path)
+    logger.log_value('The target file path is', target_file_path)
+
+    file_number_text = constructor.number_as_text(file_number + 1)
+    total_files_text = constructor.number_as_text(total_files)
+    message = f'Merging Linux file system {file_number_text} of {total_files_text}.'
+
+    displayer.update_label('extract_page__unsquashfs_message', message, False)
+
+    program = os.path.join(model.application.directory, 'commands', 'merge-directory')
+    command = ['pkexec', program, source_file_path, target_file_path]
+
+    # The total number of merge steps. This value is only used when
+    # there is more than one file to extract.
+    total_remaining_steps = (total_files - 1) * 2
+
+    # The number of the current merge step. This value is only used
+    # when there is more than one file to extract.
+    remaining_step_number = (file_number * 2) - 1
+
+    # The progress callback function.
+    def progress_callback(percent):
+        # total_percent = Start % + Δ %
+        # Case for subsequent files: Use the second half of the
+        # progress bar, and split it equally between all remaining
+        # extract steps.
+        total_percent = (FIFTY_PERCENT) +                                                 \
+                        (FIFTY_PERCENT * remaining_step_number / total_remaining_steps) + \
+                        (percent / 2 / total_remaining_steps)
+        # displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', total_percent)
+        displayer.update_progress_bar_text('extract_page__unsquashfs_progress_bar', f'{locale.format_string("%.1f", total_percent, True)}{GAP}%')
+        displayer.update_progress_bar_percent('extract_page__unsquashfs_progress_bar', total_percent)
+        if total_percent % 5 == 0:
             logger.log_value('Completed', f'{total_percent:n}%')
 
     try:

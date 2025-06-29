@@ -2,9 +2,9 @@
 
 ########################################################################
 #                                                                      #
-# extract-root                                                         #
+# merge-directory                                                      #
 #                                                                      #
-# Copyright (C) 2020 PJ Singh <psingh.cubic@gmail.com>                 #
+# Copyright (C) 2025 PJ Singh <psingh.cubic@gmail.com>                 #
 #                                                                      #
 ########################################################################
 
@@ -27,7 +27,7 @@
 #                                                                      #
 ########################################################################
 
-# Extract the root file system for Cubic.
+# Merge a source directory into a target directory for Cubic.
 
 ########################################################################
 # Arguments
@@ -35,16 +35,36 @@
 
 program=${0}
 number_arguments=${#}
-source_file_path=${1}
-target_file_path=${2}
+source_directory=${1}
+target_directory=${2}
 
 # echo "program..................... ${program}"
 # echo "number of arguments......... ${number_arguments}"
-# echo "source file path............ ${source_file_path}"
-# echo "target file path............ ${target_file_path}"
+# echo "source directory............ ${source_directory}"
+# echo "target directory............ ${target_directory}"
 
 ########################################################################
 # Command
 ########################################################################
 
-unsquashfs -force -dest "${target_file_path}" "${source_file_path}"
+# Sync contents from source to target, preserving devices and special files,
+# update files in place, and remove source regular files after transfer.
+rsync --archive --devices --specials --inplace --remove-source-files --info=progress2 "${source_directory}/" "${target_directory}"
+
+# Flush all pending file system writes.
+sync
+
+# Rsync does not remove block, character, or network special files. Therefore
+# delete all files that are not regular files, directories, or symbolic links.
+find "${source_directory}" ! \( -type f -o -type d -o -type l \) -exec rm -f {} +
+
+# Next, delete all empty directories. Directories that contain regular files
+# (that were not copied) will not be empty.
+find "${source_directory}" -type d -empty -delete
+
+# Check if the source directory is empty.
+if [ -d "${source_directory}" ]; then
+    # If the source directory is not empty, the copy was unsuccessful.
+    echo "Error. The directory ${source_directory} is not empty."
+    exit 1
+fi

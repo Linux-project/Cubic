@@ -152,6 +152,7 @@ MAXIMUM_DISK_SIZE_GIB = MAXIMUM_DISK_SIZE_BYTES / GIB
 ISO_MOUNT_POINT = 'source-disk'
 CUSTOM_DISK_DIRECTORY = 'custom-disk'
 CUSTOM_ROOT_DIRECTORY = 'custom-root'
+CUSTOM_TEMP_DIRECTORY = 'custom-temp'
 IMAGE_FILE_NAME = 'partition-%s.img'
 LOCK_FILE_NAME = '.#custom-root.lck'
 LOG_FILE_NAME = 'cubic.%s.log'
@@ -246,6 +247,7 @@ XZ = 'xz'
 # words, each progress step is 0.10% (1% ÷ 10 scale factor = 0.10%).
 SCALE_FACTOR = 10
 START_PERCENT = 0  # %
+FIFTY_PERCENT = 50  # %
 FINAL_PERCENT = 100  # %
 
 ########################################################################

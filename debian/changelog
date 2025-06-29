@@ -1,5 +1,22 @@
 cubic (2025.06) bionic focal groovy hirsute impish jammy kinetic lunar mantic noble oracular plucky questing; urgency=low
 
+  * Issues fixed in version 2025.06.93:
+  
+  - Fixed Bug GH:#411, Unable to extract the compressed Linux file system.
+  - Updated the Extract page.
+  - Sequentially extract multiple squashfs files into a temporary directory and
+    merge them into the custom-root directory.
+  - Modified the progress bar to show the status of the extract and merge steps.
+  - Log progress for verbose output in increments of 5% instead of 10%.
+  - Added a custom-temp folder to temporarily store the extracted squashfs
+    files.
+  - Simplified the extract-root command.
+  - Removed check for unsquashfs version, since version 4.5 from Ubuntu 22.04.5
+    LTS Jammy Jellyfish is sufficient.
+  - Added merge_linux_file_system() function to the Extract page.
+  - Added a new merge-directory command to Cubic.
+  - Ensured the temporary directory is removed on the Delete and Finish pages.
+
   * Issues fixed in version 2025.06.92:
   
   - Fixed Bug GH:#393, Please add a Plucky Puffin (25.04) PPA build target.
@@ -593,4 +610,4 @@ cubic (2025.06) bionic focal groovy hirsute impish jammy kinetic lunar mantic no
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 17 Jun 2025 21:00:58 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Sun, 29 Jun 2025 14:10:35 -0400

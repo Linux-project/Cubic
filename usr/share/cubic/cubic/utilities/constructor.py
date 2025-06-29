@@ -49,7 +49,7 @@ import time
 import zlib
 
 from cubic.constants import BLANK_VERSION_0000
-from cubic.constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_DISK_DIRECTORY
+from cubic.constants import ISO_MOUNT_POINT, CUSTOM_ROOT_DIRECTORY, CUSTOM_TEMP_DIRECTORY, CUSTOM_DISK_DIRECTORY
 from cubic.constants import LOG_FILE_NAME
 from cubic.constants import NUMBERS_LOWER_CASE, NUMBERS_TITLE_CASE
 from cubic.constants import OK
@@ -1045,6 +1045,29 @@ def construct_custom_root_directory(project_directory):
     # logger.log_value('The constructed custom root directory is', custom_root_directory)
 
     return custom_root_directory
+
+
+def construct_custom_temp_directory(project_directory):
+    """
+    Construct the full file path for the custom temp directory. This
+    directory is located in the Cubic project directory.
+
+    Arguments:
+    project_directory : str
+        The project directory.
+
+    Returns:
+    custom_temp_directory : str
+        The full file path for the custom temp directory.
+    """
+
+    # logger.log_label('Construct the custom temp directory')
+    # logger.log_value('The project directory is', project_directory)
+
+    custom_temp_directory = os.path.join(project_directory, CUSTOM_TEMP_DIRECTORY)
+    # logger.log_value('The constructed custom root directory is', custom_temp_directory)
+
+    return custom_temp_directory
 
 
 def construct_custom_disk_directory(project_directory):

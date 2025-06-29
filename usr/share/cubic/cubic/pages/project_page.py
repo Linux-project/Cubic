@@ -35,7 +35,8 @@ The following fields must be set before entering this page:
 4. model.project.configuration
 5. model.project.iso_mount_point
 6. model.project.custom_root_directory
-7. model.project.custom_disk_directory
+7. model.project.custom_temp_directory
+8. model.project.custom_disk_directory
 """
 
 ########################################################################

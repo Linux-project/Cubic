@@ -77,6 +77,7 @@ project.directory = None
 project.configuration = None
 project.iso_mount_point = None
 project.custom_root_directory = None
+project.custom_temp_directory = None
 project.custom_disk_directory = None
 
 ########################################################################

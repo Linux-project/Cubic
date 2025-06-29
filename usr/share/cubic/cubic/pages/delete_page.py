@@ -254,7 +254,8 @@ def leave(action, new_page=None):
         # 4. model.project.configuration
         # 5. model.project.iso_mount_point
         # 6. model.project.custom_root_directory
-        # 7. model.project.custom_disk_directory
+        # 7. model.project.custom_temp_directory
+        # 8. model.project.custom_disk_directory
 
         displayer.reset_buttons(is_back_sensitive=False, is_next_sensitive=False)
 
@@ -366,6 +367,7 @@ def delete_project_files_TEST():
 
     # ------------------------------------------------------------------
     # Delete the custom root directory.
+    # Delete the custom temp directory.
     # ------------------------------------------------------------------
 
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
@@ -470,15 +472,17 @@ def delete_project_files():
 
     # ------------------------------------------------------------------
     # Delete the custom root directory.
+    # Delete the custom temp directory.
     # ------------------------------------------------------------------
 
     logger.log_value('Delete the custom root directory', model.project.custom_root_directory)
     displayer.update_status('delete_page__custom_root_directory', PROCESSING)
     time.sleep(SLEEP_1000_MS)
 
-    if os.path.exists(model.project.custom_root_directory):
-        result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_root_directory)
-        if not signal_status:
+    if os.path.exists(model.project.custom_root_directory) or os.path.exists(model.project.custom_temp_directory):
+        result_1, exit_status_1, signal_status_1 = file_utilities.delete_path_as_root(model.project.custom_root_directory)
+        result_2, exit_status_2, signal_status_2 = file_utilities.delete_path_as_root(model.project.custom_temp_directory)
+        if not (signal_status_1 and signal_status_2):
             displayer.update_status('delete_page__custom_root_directory', OK)
             displayer.update_label('delete_page__custom_root_directory_message', '', False)
         else:
@@ -604,6 +608,7 @@ def initialize_model():
     # model.project.configuration = None
     # model.project.iso_mount_point = None
     # model.project.custom_root_directory = None
+    # model.project.custom_temp_directory = None
     # model.project.custom_disk_directory = None
 
     model.original.iso_file_name = None

@@ -449,6 +449,22 @@ def delete_project_files():
         pass
 
     #
+    # Delete the custom temp directory.
+    #
+    logger.log_value('Delete the custom temp directory', model.project.custom_temp_directory)
+    # time.sleep(SLEEP_1000_MS)
+    if os.path.exists(model.project.custom_temp_directory):
+        result, exit_status, signal_status = file_utilities.delete_path_as_root(model.project.custom_temp_directory)
+        if not signal_status:
+            # OK
+            pass
+        else:
+            is_error = True
+    else:
+        # Skip
+        pass
+
+    #
     # Delete the custom disk directory.
     #
     logger.log_value('Delete the custom disk directory', model.project.custom_disk_directory)
