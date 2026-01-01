@@ -1,7 +1,12 @@
-cubic (2025.06) bionic focal groovy hirsute impish jammy kinetic lunar mantic noble oracular plucky questing; urgency=low
+cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jammy impish hirsute groovy focal bionic; urgency=low
+
+  * Issues fixed in version 2026.01.94:
+
+  - Migrated from Bzr to Git.
+  - Updated debian control file and changelog.
 
   * Issues fixed in version 2025.06.93:
-  
+
   - Fixed Bug GH:#411, Unable to extract the compressed Linux file system.
   - Updated the Extract page.
   - Sequentially extract multiple squashfs files into a temporary directory and
@@ -18,7 +23,7 @@ cubic (2025.06) bionic focal groovy hirsute impish jammy kinetic lunar mantic no
   - Ensured the temporary directory is removed on the Delete and Finish pages.
 
   * Issues fixed in version 2025.06.92:
-  
+
   - Fixed Bug GH:#393, Please add a Plucky Puffin (25.04) PPA build target.
     Replaced dependency policykit-1 (>=0.105) with pkexec (>=124) and
     polkitd (>=124) because pkexec and polkitd replaced PolicyKit in
@@ -610,4 +615,4 @@ cubic (2025.06) bionic focal groovy hirsute impish jammy kinetic lunar mantic no
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 29 Jun 2025 14:10:35 -0400
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 01 Jan 2026 18:28:08 -0500

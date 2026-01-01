@@ -1,8 +1,8 @@
 Source:             cubic
-Section:            python
+Section:            devel
 Priority:           optional
-Maintainer:         PJ Singh, <psingh.cubic@gmail.com>
-Standards-Version:  4.1.1
+Maintainer:         PJ Singh <psingh.cubic@gmail.com>
+Standards-Version:  4.7.2
 Build-Depends:
                     debhelper (>=11.1),
                     dh-python (>=3.20180325),
@@ -21,7 +21,7 @@ Build-Depends:
 #                   Required for libvte-2.91; usually preinstalled
                     gir1.2-vte-2.91 (>=0.52.1),
 #                   Required for lsinitramfs; usually preinstalled
-                    initramfs-tools (>=0.130),
+                    initramfs-tools-core (>=0.130),
 #                   Required for isohdpfx.bin
                     isolinux (>=3:6.03),
 #                   Required for GtkSource.View, GtkSource.SearchContext, and GtkSource.SearchSettings
@@ -47,7 +47,7 @@ Build-Depends:
 #                   Required for pexpect
                     python3-pexpect (>=4.2.1),
 #                   Required to get system memory information
-                    python3-psutil (>=5.4.2-1),
+                    python3-psutil (>=5.4.2),
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
 #                   Required for Gtk 3; usually preinstalled
@@ -67,7 +67,7 @@ Build-Depends:
 #                   Required for xorriso
                     xorriso (>=1.4.8)
 X-Python3-Version:  >= 3.6
-Vcs-Bzr:            lp:cubic
+Vcs-Git:            https://git.launchpad.net/cubic
 Homepage:           https://github.com/PJ-Singh-001/Cubic
 
 Package:            cubic
@@ -88,7 +88,7 @@ Depends:
 #                   Required for libvte-2.91; usually preinstalled
                     gir1.2-vte-2.91 (>=0.52.1),
 #                   Required for lsinitramfs; usually preinstalled
-                    initramfs-tools (>=0.130),
+                    initramfs-tools-core (>=0.130),
 #                   Required for isohdpfx.bin
                     isolinux (>=3:6.03),
 #                   Required for GtkSource.View, GtkSource.SearchContext, and GtkSource.SearchSettings
@@ -114,7 +114,7 @@ Depends:
 #                   Required for pexpect
                     python3-pexpect (>=4.2.1),
 #                   Required to get system memory information
-                    python3-psutil (>=5.4.2-1),
+                    python3-psutil (>=5.4.2),
 #                   Required for pydbus
                     python3-pydbus (>=0.6.0),
 #                   Required for Gtk 3; usually preinstalled
