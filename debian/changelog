@@ -1,5 +1,12 @@
 cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jammy impish hirsute groovy focal bionic; urgency=low
 
+  * Issues fixed in version 2026.01.95:
+
+  - Removed superfluous directories and files added by the automatic migration:
+    usr/share/cubic/file_choosers,
+    usr/share/cubic/pages,
+    usr/share/cubic/utilities.
+
   * Issues fixed in version 2026.01.94:
 
   - Migrated from Bzr to Git.
@@ -615,4 +622,4 @@ cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jam
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 01 Jan 2026 18:28:08 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 01 Jan 2026 20:19:50 -0500
