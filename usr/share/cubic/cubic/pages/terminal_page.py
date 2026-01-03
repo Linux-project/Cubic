@@ -46,7 +46,7 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gdk
-from gi.repository import Gio
+# from gi.repository import Gio
 from gi.repository import Gtk
 
 import os
@@ -85,49 +85,149 @@ terminal = model.builder.get_object('terminal_page__terminal')
 
 # Set Terminal Font
 terminal.set_font(MONOSPACE_FONT)
-
+'''
 # Set Terminal Colors
 # TODO: Create and use displayer.get_terminal_colors() function.
 schema_source = Gio.SettingsSchemaSource.get_default()
 _, schemas = schema_source.list_schemas(True)
 if 'org.gnome.Terminal.Legacy.Profile' in schemas:
-    logger.log_value('Set terminal colors?', 'Yes')
+
+    logger.log_value('Set terminal colors?', 'Yes, using GNOME Terminal')
     settings = Gio.Settings.new_with_path('org.gnome.Terminal.Legacy.Profile', '/org/gnome/terminal/legacy/')
-    fg_rgb_color = None
-    bg_rgb_color = None
-    hex_palette = settings.get_value('palette')
-    if not hex_palette:
-        # Use custom foreground and background colors.
-        fg_rgb_color = Gdk.RGBA()
-        fg_rgb_color.parse('#e5e5e5')
-        bg_rgb_color = Gdk.RGBA()
-        bg_rgb_color.parse('#191919')
-        hex_palette = [
-            '#073642',
-            '#DC322F',
-            '#859900',
-            '#B58900',
-            '#268BD2',
-            '#D33682',
-            '#2AA198',
-            '#EEE8D5',
-            '#002B36',
-            '#CB4B16',
-            '#586E75',
-            '#657B83',
-            '#839496',
-            '#6C71C4',
-            '#93A1A1',
-            '#FDF6E3'
-        ]
-    rgb_palette = []
-    for hex_color in hex_palette:
-        rgb_color = Gdk.RGBA()
-        rgb_color.parse(hex_color)
-        rgb_palette.append(rgb_color)
-    terminal.set_colors(fg_rgb_color, bg_rgb_color, rgb_palette)
+
+    # Foreground color
+    # Get value and unpack GLib.Variant type.
+    # fg_color_hex = settings.get_value('foreground-color').unpack()
+    # fg_color_rgb = Gdk.RGBA()
+    # fg_color_rgb.parse(fg_color_hex)
+
+    # Background color
+    # Get value and unpack GLib.Variant type.
+    # bg_color_hex = settings.get_value('background-color').unpack()
+    # bg_color_rgb = Gdk.RGBA()
+    # bg_color_rgb.parse(bg_color_hex)
+
+    # Pallet
+    # Get value and unpack GLib.Variant type.
+    palette_hex = settings.get_value('palette').unpack()
+    palette_rgb = []
+    for color_hex in palette_hex:
+        color_rgb = Gdk.RGBA()
+        color_rgb.parse(color_hex)
+        palette_rgb.append(color_rgb)
+
+    # Set terminal colors
+    # If foreground is None and palette_size is greater than 0, the new
+    # foreground color is taken from palette[7].
+    # If background is None and palette_size is greater than 0, the new
+    # background color is taken from palette[0].
+    terminal.set_colors(None, None, palette_rgb)
+
+elif 'org.gnome.Ptyxis.Profile' in schemas:
+
+    # Ptyxis does not have a key for foreground color.
+    # Ptyxis does not have a key for background color.
+    # The value for the palette key in Ptyxis is the name of a color
+    # theme, and it is not a list of hex color codes.
+
+    logger.log_value('Set terminal colors?', 'Yes, using Ptyxis Terminal')
+    # settings = Gio.Settings.new_with_path('org.gnome.Ptyxis.Profile', '/org/gnome/Ptyxis/')
+
+    # Foreground color
+    # Get value and unpack GLib.Variant type.
+    # fg_color_hex = settings.get_value('foreground-color').unpack()
+    # fg_color_rgb = Gdk.RGBA()
+    # fg_color_rgb.parse(fg_color_hex)
+
+    # Background color
+    # Get value and unpack GLib.Variant type.
+    # bg_color_hex = settings.get_value('background-color').unpack()
+    # bg_color_rgb = Gdk.RGBA()
+    # bg_color_rgb.parse(bg_color_hex)
+
+    # Get value and unpack GLib.Variant type.
+    # palette_hex = settings.get_value('palette').unpack()
+    # palette_rgb = []
+    # for color_hex in palette_hex:
+    #     color_rgb = Gdk.RGBA()
+    #     color_rgb.parse(color_hex)
+    #     palette_rgb.append(color_rgb)
+
+    # Solarized Palette
+    # Replaced '#073642' with '#102142' to address background issue in
+    # Ubuntu 25.10.
+    palette_hex = [
+        '#102142',
+        '#DC322F',
+        '#859900',
+        '#B58900',
+        '#268BD2',
+        '#D33682',
+        '#2AA198',
+        '#EEE8D5',
+        '#002B36',
+        '#CB4B16',
+        '#586E75',
+        '#657B83',
+        '#839496',
+        '#6C71C4',
+        '#93A1A1',
+        '#FDF6E3'
+    ]
+    palette_rgb = []
+    for color_hex in palette_hex:
+        color_rgb = Gdk.RGBA()
+        color_rgb.parse(color_hex)
+        palette_rgb.append(color_rgb)
+
+    # Set terminal colors
+    # If foreground is None and palette_size is greater than 0, the new
+    # foreground color is taken from palette[7].
+    # If background is None and palette_size is greater than 0, the new
+    # background color is taken from palette[0].
+    terminal.set_colors(None, None, palette_rgb)
+
 else:
+
     logger.log_value('Set terminal colors?', 'Skip')
+'''
+
+# Set Terminal Colors
+logger.log_value('Set terminal colors', 'Solarized')
+
+# Explicitly use the Solarized palette.
+# Replace #073642 with #102142 to address background color issue in
+# Ubuntu 25.10.
+palette_hex = [
+    '#102142',
+    '#DC322F',
+    '#859900',
+    '#B58900',
+    '#268BD2',
+    '#D33682',
+    '#2AA198',
+    '#EEE8D5',
+    '#002B36',
+    '#CB4B16',
+    '#586E75',
+    '#657B83',
+    '#839496',
+    '#6C71C4',
+    '#93A1A1',
+    '#FDF6E3'
+]
+palette_rgb = []
+for color_hex in palette_hex:
+    color_rgb = Gdk.RGBA()
+    color_rgb.parse(color_hex)
+    palette_rgb.append(color_rgb)
+
+# Set terminal colors
+# If foreground is None and palette_size is greater than 0, the new
+# foreground color is taken from palette[7].
+# If background is None and palette_size is greater than 0, the new
+# background color is taken from palette[0].
+terminal.set_colors(None, None, palette_rgb)
 
 # Allow Drag and Drop in the Terminal
 

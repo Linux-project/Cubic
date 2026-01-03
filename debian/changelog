@@ -1,5 +1,12 @@
 cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jammy impish hirsute groovy focal bionic; urgency=low
 
+  * Issues fixed in version 2026.01.96:
+
+  - Fixed terminal color display issues in Ubuntu 25.10 and the Ptyxis terminal.
+    Always use the Solarized color palette to ensure directories are easily
+    viewable. Replaced color #073642 with #102142 to ensure the font background
+    matches the terminal background.
+
   * Issues fixed in version 2026.01.95:
 
   - Removed superfluous directories and files added by the automatic migration:
@@ -622,4 +629,4 @@ cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jam
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 01 Jan 2026 20:19:50 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 02 Jan 2026 23:17:23 -0500
