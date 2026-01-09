@@ -1137,8 +1137,9 @@ def create_link(directory_path, file_name, link_name):
         # Raises TypeError if file_name or link_name are None.
         link_path = os.path.join(directory_path, link_name)
         # Delete the link path, if it is an existing link or file.
+        # Do not delete the link if it is the same as the file.
         # If the link path is a directory, it will not be deleted.
-        if os.path.isfile(link_path): delete_file(link_path)
+        if file_name != link_name and os.path.isfile(link_path): delete_file(link_path)
         # Create the new link.
         os.symlink(file_name, link_path)
         logger.log_value('Successfully created link', f'from {link_name} to {file_name}')

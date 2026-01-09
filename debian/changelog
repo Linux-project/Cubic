@@ -1,5 +1,9 @@
 cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jammy impish hirsute groovy focal bionic; urgency=low
 
+  * Issues fixed in version 2026.01.97:
+
+  - Fixed Bug GH:#448, Issues creating custom Pop!_OS 24.04 iso.
+
   * Issues fixed in version 2026.01.96:
 
   - Fixed terminal color display issues in Ubuntu 25.10 and the Ptyxis terminal.
@@ -629,4 +633,4 @@ cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jam
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Fri, 02 Jan 2026 23:17:23 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Thu, 08 Jan 2026 21:45:25 -0500
