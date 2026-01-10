@@ -56,6 +56,10 @@ process = None
 # Process Functions
 ########################################################################
 
+# https://pexpect.readthedocs.io/en/stable/api/pexpect.html#pexpect.spawn
+# Pexpect does NOT interpret shell meta characters such as redirect,
+# pipe, or wild cards (>, |, or *).
+
 # https://pexpect.readthedocs.org/en/stable/api/pexpect.html#spawn-class
 # Because spwan() is a byte interface, use process.read().decode().
 # Because spwanu() is a string interface, process.read().decode() is not

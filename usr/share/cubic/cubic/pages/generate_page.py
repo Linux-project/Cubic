@@ -774,7 +774,14 @@ def update_file_system_size():
         program = os.path.join(model.application.directory, 'commands', 'file-size')
         command = ['pkexec', program, model.project.custom_root_directory]
         result, exit_status, signal_status = execute_synchronous(command)
-        size_1_information = re.search(r'^([0-9]+)\s', result)
+        # size_1_information = re.search(r'^(\d+)', result)
+        # The following regex is a workaround for non-UTF8 encoded
+        # scripts such as Cyrillic, because the result from the pkexec
+        # processes is preceded with the error:
+        # "GLib-CRITICAL g_variant_new_string assertion 'g_utf8_validate
+        # (string, -1, NULL)' failed."
+        # See https://github.com/PJ-Singh-001/Cubic/issues/420.
+        size_1_information = re.search(rf'(\d+)\s*{model.project.custom_root_directory}', result)
         size_1_in_bytes = int(size_1_information.group(1))
         size_1_in_mib = size_1_in_bytes / MIB
         size_1_in_gib = size_1_in_bytes / GIB
@@ -1346,12 +1353,25 @@ def check_custom_disk_directory_size():
 
     logger.log_label('Get the custom disk size')
 
+    # It is not necessary to initialize these values because they are
+    # not used if there is an exception.
+    size_in_bytes = 0
+    size_in_mib = 0
+    size_in_gib = 0
+
     try:
         # Pkexec is not required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
         command = ['pkexec', program, model.project.custom_disk_directory]
         result, exit_status, signal_status = execute_synchronous(command)
-        size_information = re.search(r'^([0-9]+)\s', result)
+        # size_information = re.search(r'^(\d+)', result)
+        # The following regex is a workaround for non-UTF8 encoded
+        # scripts such as Cyrillic, because the result from the pkexec
+        # processes is preceded with the error:
+        # "GLib-CRITICAL g_variant_new_string assertion 'g_utf8_validate
+        # (string, -1, NULL)' failed."
+        # See https://github.com/PJ-Singh-001/Cubic/issues/420.
+        size_information = re.search(rf'(\d+)\s*{model.project.custom_disk_directory}', result)
         size_in_bytes = int(size_information.group(1))
         size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
@@ -1458,13 +1478,26 @@ def create_iso_image():
 
     logger.log_label('Get the custom disk size')
 
+    # It is not necessary to initialize these values because they are
+    # not used if there is an exception.
+    size_in_bytes = 0
+    size_in_mib = 0
+    size_in_gib = 0
+
     iso_file_path = os.path.join(model.custom.iso_directory, model.custom.iso_file_name)
     try:
         # Pkexec is not required.
         program = os.path.join(model.application.directory, 'commands', 'file-size')
         command = ['pkexec', program, iso_file_path]
         result, exit_status, signal_status = execute_synchronous(command)
-        size_information = re.search(r'^([0-9]+)\s', result)
+        # size_information = re.search(r'^(\d+)', result)
+        # The following regex is a workaround for non-UTF8 encoded
+        # scripts such as Cyrillic, because the result from the pkexec
+        # processes is preceded with the error:
+        # "GLib-CRITICAL g_variant_new_string assertion 'g_utf8_validate
+        # (string, -1, NULL)' failed."
+        # See https://github.com/PJ-Singh-001/Cubic/issues/420.
+        size_information = re.search(rf'(\d+)\s*{iso_file_path}', result)
         size_in_bytes = int(size_information.group(1))
         size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB

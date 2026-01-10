@@ -1,5 +1,10 @@
 cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jammy impish hirsute groovy focal bionic; urgency=low
 
+  * Issues fixed in version 2026.01.98:
+
+  - Fixed Bug GH:#420, Unable to parse file size on Generate page when using
+    non-UTF-8 encoding such as Cyrillic.
+
   * Issues fixed in version 2026.01.97:
 
   - Fixed Bug GH:#448, Issues creating custom Pop!_OS 24.04 iso.
@@ -633,4 +638,4 @@ cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jam
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Thu, 08 Jan 2026 21:45:25 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 10 Jan 2026 16:06:56 -0500
