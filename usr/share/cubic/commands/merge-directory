@@ -47,24 +47,94 @@ target_directory=${2}
 # Command
 ########################################################################
 
-# Sync contents from source to target, preserving devices and special files,
-# update files in place, and remove source regular files after transfer.
-rsync --archive --devices --specials --inplace --remove-source-files --info=progress2 "${source_directory}/" "${target_directory}"
+# Perform the following steps to merge directories.
+# 1. Remove deleted files from the target directory.
+# 2. Merge source files and directories into the target directory.
+# 3. Check if the merge was successful.
+
+#
+# 1. Remove deleted files from the target directory.
+#
+
+# Find all character files in the source directory that have both device
+# id and file type equal to 0, indicating that these files have been
+# removed from the upper overlay file system.
+# • device id = 0 - the file does not represent a physical device
+# • device type = 0 - the file is not a valid character device
+# For each character found file, delete the corresponding regular file
+# from the target directory and then delete the character file from the
+# source directory.
+# See bug https://github.com/PJ-Singh-001/Cubic/issues/417.
+find "${source_directory}" -type c -exec bash -c '
+    source_prefix="$1"  # Set source directory to $source_directory
+    target_prefix="$2"  # Set target directory to $target_directory
+    output=$(stat -c "%t %T" "$3")  # Get the device id and device type
+    if [[ "$output" == "0 0" ]]; then  # Check if the file is unlinked (inactive)
+        source_path="${3}";  # Current file path
+        target_path="$target_prefix/${3#"$source_prefix/"}";  # Corresponding target path
+        rm -rf "${source_path}";  # Delete the source character file
+        rm -rf "${target_path}";  # Delete the corresponding target file
+    fi
+' _ "$source_directory" "$target_directory" {} \;  # Execute the delete commands with directories for each found character file
+
+# Notes:
+#
+# Execute the following command to manually identify any character files
+# remaining in the source directory that have both device id and file
+# type equal to 0, indicating that these files have been removed from
+# the file system. The source directory is typically
+# <cubic project directory>/custom-temp.
+# $ sudo find "${source_directory}" -type c -exec bash -c 'output=$(sudo stat -c "%t %T" "$1"); if [[ "$output" == "0 0" ]]; then echo "$1"; fi' _ {} \;
+#
+# Execute the following command to manually identify any character files
+# remaining in the target directory that have both device id and file
+# type equal to 0, indicating that these files have been removed from
+# the file system. The target directory is typically
+# <cubic project directory>/custom-root.
+# $ sudo find "${target_directory}" -type c -exec bash -c 'output=$(sudo stat -c "%t %T" "$1"); if [[ "$output" == "0 0" ]]; then echo "$1"; fi' _ {} \;
+
+#
+# 2. Merge source files and directories into the target directory.
+#
+
+# Move the remaining contents from the source directory to the target
+# directory, overwriting any existing files in the target, including
+# devices and special files. Files that are moved will be removed from
+# the source directory after transfer.
+rsync --archive --inplace --remove-source-files --info=progress2 "${source_directory}/" "${target_directory}"
+
+# Notes:
+#
+# Execute the following command to manually identify if there are any
+# non-directory files remaining in the source directory. The source
+# directory is typically <cubic project directory>/custom-temp.
+# $ sudo find "${source_directory}" -not -type d -print
+
+# Delete all empty directories in the source directory. If the rsync
+# command completed successfully, the source directory will only contain
+# empty directories and will be deleted.
+find "${source_directory}" -type d -empty -delete
 
 # Flush all pending file system writes.
 sync
 
-# Rsync does not remove block, character, or network special files. Therefore
-# delete all files that are not regular files, directories, or symbolic links.
-find "${source_directory}" ! \( -type f -o -type d -o -type l \) -exec rm -f {} +
+#
+# 3. Check if the merge was successful.
+#
 
-# Next, delete all empty directories. Directories that contain regular files
-# (that were not copied) will not be empty.
-find "${source_directory}" -type d -empty -delete
+# If the target directory contains character files with both device id
+# and device type equal to 0, the merge was unsuccessful.
+find "${target_directory}" -type c -exec bash -c '
+    output=$(stat -c "%t %T" "$1");  # Get the device id and device type
+    if [[ "$output" == "0 0" ]]; then  # Check if the file is unlinked (inactive)
+        echo "Error. Found character file with device id 0 and device type 0: $1";
+        exit 1;  # Exit with an error code
+    fi
+' _ {} \;  # Execute the command for each found character file
 
-# Check if the source directory is empty.
+# If the source directory still exists, the merge was unsuccessful.
 if [ -d "${source_directory}" ]; then
-    # If the source directory is not empty, the copy was unsuccessful.
     echo "Error. The directory ${source_directory} is not empty."
-    exit 1
+    exit 1  # Exit with an error code
 fi
+

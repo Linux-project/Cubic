@@ -48,3 +48,4 @@ target_file_path=${2}
 ########################################################################
 
 unsquashfs -force -dest "${target_file_path}" "${source_file_path}"
+
