@@ -101,6 +101,41 @@ find "${source_directory}" -type c -exec bash -c '
 # directory, overwriting any existing files in the target, including
 # devices and special files. Files that are moved will be removed from
 # the source directory after transfer.
+#
+# Use the following rsync options to preserve the the corresponding
+# file attributes.
+# • -rlptgoD
+# • --recursive --links --perms --times --group --owner --devices
+#   --specials
+# ┌───────┬──────────────┬─────────────────────────────────────────┐
+# │ Short │ Long         │ Description                             │
+# ├───────┼──────────────┼─────────────────────────────────────────┤
+# │ -r    │ --recursive  │ Recurse into directories                │
+# │ -l    │ --links      │ Copy symlinks as symlinks               │
+# │ -p    │ --perms      │ Preserve permissions                    │
+# │ -t    │ --times      │ Preserve modification times             │
+# │ -g    │ --group      │ Preserve group                          │
+# │ -o    │ --owner      │ Preserve owner (super-user only)        │
+# │ -D    │              │ Same as --devices --specials            │
+# │       │ --devices    │ Preserve device files (super-user only) │
+# │       │ --specials   │ Preserve special files                  │
+# └───────┴──────────────┴─────────────────────────────────────────┘
+#
+# The -a or --archive option to the rsync command does not apply the
+# following short or long options, so the corresponding attributes are
+# not preserved.
+# • -A, -X, -U, -N, -H
+# • --acls, --xattrs, --crtimes, --atimes, --hard-links
+# ┌───────┬──────────────┬─────────────────────────────────────────┐
+# │ Short │ Long         │ Description                             │
+# ├───────┼──────────────┼─────────────────────────────────────────┤
+# │ -A    │ --acls       │ Preserve ACLs (implies --perms)         │
+# │ -X    │ --xattrs     │ Preserve extended attributes            │
+# │ -U    │ --atimes     │ Preserve access (use) times             │
+# │ -N    │ --crtimes    │ Preserve create times (newness)         │
+# │ -H    │ --hard-links │ Preserve hard links                     │
+# └───────┴──────────────┴─────────────────────────────────────────┘
+
 rsync --archive --inplace --remove-source-files --info=progress2 "${source_directory}/" "${target_directory}"
 
 # Notes:

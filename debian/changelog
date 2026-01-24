@@ -1,9 +1,16 @@
 cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jammy impish hirsute groovy focal bionic; urgency=low
 
+  * Issues fixed in version 2026.01.100:
+
+  - Fixed Bug GH:#431, Folder caper/extras missing from customized ISO for
+    Ubuntu Server 20.04. Allow Cubic to copy the contents of the following
+    directories to the customized ISO: casper/extras, casper/maas,
+    install/hwe-netboot, install/netboot.
+
   * Issues fixed in version 2026.01.99:
 
-  - Fixed Bug GH:#417, Ubuntu Server 24.04 Installation Failure During Curtin
-    Command Extract. Updated merge-directory command to account for files
+  - Fixed Bug GH:#417, Ubuntu Server 24.04 installation failure during curtin
+    command extract. Updated merge-directory command to account for files
     removed in the upper overlay file system.
 
   * Issues fixed in version 2026.01.98:
@@ -644,4 +651,4 @@ cubic (2026.01) resolute questing plucky oracular noble mantic lunar kinetic jam
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Sun, 18 Jan 2026 15:53:27 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Fri, 23 Jan 2026 23:03:55 -0500

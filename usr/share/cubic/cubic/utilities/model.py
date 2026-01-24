@@ -109,9 +109,17 @@ custom.iso_release_notes_url = None
 # Layout
 ########################################################################
 
+# Sections:
+# 1. Casper Section - vmlinuz and initrd files
+# 2. General Section - squashfs directory
+# 3. Minimal Section - minimal install squashfs files
+# 4. Standard Section - standard install squashfs files
+# 5. Installer / Live Section - installer yaml and installer squashfs files
+# 6. Additional Section - additional directory or file paths
+
 layout = Attributes('layout')
 
-# Casper Section
+# 1. Casper Section
 
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 # Workaround for Pop!_OS
@@ -144,7 +152,8 @@ layout.initrd_file_name = 'initrd', False
 layout.vmlinuz_file_name = 'vmlinuz.efi', False
 layout.vmlinuz_file_name = 'vmlinuz', False
 
-# General Section
+# 2. General Section
+
 layout.squashfs_directory = 'install', False
 layout.squashfs_directory = 'live', False
 layout.squashfs_directory = 'live/grml64-full', False
@@ -164,7 +173,8 @@ layout.standard_remove_file_name = 'filesystem.manifest-remove', False
 
 layout.size_file_name = 'filesystem.size', False
 
-# Minimal Section
+# 3. Minimal Section
+
 layout.minimal_squashfs_file_name = 'minimal.squashfs', False
 layout.minimal_squashfs_file_name = 'ubuntu-server-minimal.squashfs', False
 
@@ -174,7 +184,8 @@ layout.minimal_manifest_file_name = 'ubuntu-server-minimal.manifest', False
 layout.minimal_size_file_name = 'minimal.size', False
 layout.minimal_size_file_name = 'ubuntu-server-minimal.size', False
 
-# Standard Section
+# 4. Standard Section
+
 layout.standard_squashfs_file_name = 'minimal.standard.squashfs', False
 layout.standard_squashfs_file_name = 'ubuntu-server-minimal.ubuntu-server.squashfs', False
 
@@ -184,7 +195,8 @@ layout.standard_manifest_file_name = 'ubuntu-server-minimal.ubuntu-server.manife
 layout.standard_size_file_name = 'minimal.standard.size', False
 layout.standard_size_file_name = 'ubuntu-server-minimal.ubuntu-server.size', False
 
-# Installer / Live Section
+# 5. Installer / Live Section
+
 layout.installer_sources_file_name = 'install-sources.yaml', False
 
 layout.installer_squashfs_file_name = 'installer.squashfs', False
@@ -202,6 +214,24 @@ layout.installer_generic_squashfs_file_name = 'ubuntu-server-minimal.ubuntu-serv
 layout.installer_generic_manifest_file_name = 'ubuntu-server-minimal.ubuntu-server.installer.generic.manifest', False
 
 layout.installer_generic_size_file_name = 'ubuntu-server-minimal.ubuntu-server.installer.generic.size', False
+
+# 6. Additional Section
+
+# Ubuntu Server 18.04, 18.04.3, 18.04.4
+layout.additional_include_path = 'casper/extras', False
+
+# Ubuntu Server 18.04.3, 18.04.4, 18.04.5, 18.04.6, 20.04, 20.04.3, 20.04.4, 20.04.6, 21.04
+layout.additional_include_path = 'casper/maas', False
+
+# Ubuntu Server 16.04.6, 18.04.2, 18.04.5
+layout.additional_include_path = 'install/hwe-netboot', False
+
+# Ubuntu Server 14.04.5, 16.04.6, 18.04.2, 18.04.5
+layout.additional_include_path = 'install/netboot', False
+
+layout.additional_exclude_path = 'md5sum.txt', False
+layout.additional_exclude_path = 'MD5SUMS', False
+layout.additional_exclude_path = '.disk/release_notes_url', False
 
 ########################################################################
 # Status

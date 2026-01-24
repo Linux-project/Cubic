@@ -512,6 +512,14 @@ def identify_directories_and_files(source_directory_path, directory_attribute, f
 def identify_directories(source_directory_path, directory_attribute, file_attribute):
     """
     Identify a directory by searching for files within the directory.
+
+    Args:
+        source_directory_path (str): The source directory path
+        directory_attribute (str): ???
+        file_attribute (str): ???
+
+    Returns:
+        ???
     """
 
     directory_patterns = model.layout.values(directory_attribute)
@@ -537,6 +545,14 @@ def identify_directories(source_directory_path, directory_attribute, file_attrib
 def identify_files(source_directory_path, directory_attribute, file_attribute):
     """
     Identify files within the directory.
+
+    Args:
+        source_directory_path (str): The source directory path
+        directory_attribute (str): ???
+        file_attribute (str): ???
+
+    Returns:
+        ???
     """
 
     directory_patterns = model.layout.values(directory_attribute)
@@ -559,6 +575,29 @@ def identify_files(source_directory_path, directory_attribute, file_attribute):
                             model.layout.set(file_attribute, file_name, True)
 
 
+def identify_paths(source_directory_path, path_attribute):
+    """
+    Identify files or directories within the source directory.
+
+    Args:
+        source_directory_path (str): The source directory path
+        path_attribute (str):
+
+    Returns:
+        ???
+    """
+
+    path_patterns = model.layout.values(path_attribute)
+    for path_pattern in path_patterns:
+        full_path_pattern = os.path.join(source_directory_path, path_pattern)
+        full_paths = glob.glob(full_path_pattern)
+        for full_path in full_paths:
+            if os.path.exists(full_path):
+                # Set the file name or directory.
+                path = os.path.relpath(full_path, source_directory_path)
+                model.layout.set(path_attribute, path, True)
+
+
 def analyze_iso_layout(source_directory_path):
     """
     Set valid possible values for each attribute as True.
@@ -576,33 +615,44 @@ def analyze_iso_layout(source_directory_path):
 
     logger.log_value('Analyze', source_directory_path)
 
-    # Casper Section
-    #   model.layout.casper_directory
-    #   model.layout.initrd_file_name
-    #   model.layout.vmlinuz_file_name
-    # General Section
-    #   model.layout.squashfs_directory
-    #   model.layout.squashfs_file_name
-    #   model.layout.manifest_file_name
-    #   model.layout.minimal_remove_file_name
-    #   model.layout.standard_remove_file_name
-    #   model.layout.size_file_name
-    # Minimal Section
-    #   model.layout.minimal_squashfs_file_name
-    #   model.layout.minimal_manifest_file_name
-    #   model.layout.minimal_size_file_name
-    # Standard Section
-    #   model.layout.standard_squashfs_file_name
-    #   model.layout.standard_manifest_file_name
-    #   model.layout.standard_size_file_name
-    # Installer / Live Section
-    #   model.layout.installer_sources_file_name
-    #   model.layout.installer_squashfs_file_name
-    #   model.layout.installer_manifest_file_name
-    #   model.layout.installer_size_file_name
-    #   model.layout.installer_generic_squashfs_file_name
-    #   model.layout.installer_generic_manifest_file_name
-    #   model.layout.installer_generic_size_file_name
+    # Sections:
+    # 1. Casper Section - vmlinuz and initrd files
+    # 2. General Section - squashfs directory
+    # 3. Minimal Section - minimal install squashfs files
+    # 4. Standard Section - standard install squashfs files
+    # 5. Installer / Live Section - installer yaml and installer squashfs files
+    # 6. Additional Section - additional directory or file paths
+
+    # 1. Casper Section
+    #    • model.layout.casper_directory
+    #    • model.layout.initrd_file_name
+    #    • model.layout.vmlinuz_file_name
+    # 2. General Section
+    #    • model.layout.squashfs_directory
+    #    • model.layout.squashfs_file_name
+    #    • model.layout.manifest_file_name
+    #    • model.layout.minimal_remove_file_name
+    #    • model.layout.standard_remove_file_name
+    #    • model.layout.size_file_name
+    # 3. Minimal Section
+    #    • model.layout.minimal_squashfs_file_name
+    #    • model.layout.minimal_manifest_file_name
+    #    • model.layout.minimal_size_file_name
+    # 4. Standard Section
+    #    • model.layout.standard_squashfs_file_name
+    #    • model.layout.standard_manifest_file_name
+    #    • model.layout.standard_size_file_name
+    # 5. Installer / Live Section
+    #    • model.layout.installer_sources_file_name
+    #    • model.layout.installer_squashfs_file_name
+    #    • model.layout.installer_manifest_file_name
+    #    • model.layout.installer_size_file_name
+    #    • model.layout.installer_generic_squashfs_file_name
+    #    • model.layout.installer_generic_manifest_file_name
+    #    • model.layout.installer_generic_size_file_name
+    # 6. Additional Section
+    #    • model.layout.additional_include_path
+    #    • model.layout.additional_exclude_path
 
     # Initialize the layout.
     # Although layout is reset on the Start page and the Delete page,
@@ -611,18 +661,22 @@ def analyze_iso_layout(source_directory_path):
     # reset, so the values from the previous ISO are not preserved.
     model.layout.reset()
 
-    # Casper Section (Directories)
+    # 1. Casper Section
+
+    # Identify Directories
     # Identify the casper_directory using:
     # • initrd_file_name
     # • vmlinuz_file_name
     identify_directories(source_directory_path, 'casper_directory', 'initrd_file_name')
     identify_directories(source_directory_path, 'casper_directory', 'vmlinuz_file_name')
 
-    # Casper Section (Files)
+    # Identify Files
     identify_files(source_directory_path, 'casper_directory', 'initrd_file_name')
     identify_files(source_directory_path, 'casper_directory', 'vmlinuz_file_name')
 
-    # General Section (Directories)
+    # 2. General Section
+
+    # Identify Directories
     # Identify the squashfs_directory using:
     # • squashfs_file_name
     # • minimal_squashfs_file_name
@@ -631,24 +685,30 @@ def analyze_iso_layout(source_directory_path):
     identify_directories(source_directory_path, 'squashfs_directory', 'minimal_squashfs_file_name')
     identify_directories(source_directory_path, 'squashfs_directory', 'standard_squashfs_file_name')
 
-    # General Section (Files)
+    # Identify Files
     identify_files(source_directory_path, 'squashfs_directory', 'squashfs_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'manifest_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'minimal_remove_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'standard_remove_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'size_file_name')
 
-    # Minimal Section
+    # 3. Minimal Section
+
+    # Identify Files
     identify_files(source_directory_path, 'squashfs_directory', 'minimal_squashfs_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'minimal_manifest_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'minimal_size_file_name')
 
-    # Standard Section
+    # 4. Standard Section
+
+    # Identify Files
     identify_files(source_directory_path, 'squashfs_directory', 'standard_squashfs_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'standard_manifest_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'standard_size_file_name')
 
-    # Installer / Live Section
+    # 5. Installer / Live Section
+
+    # Identify Files
     identify_files(source_directory_path, 'squashfs_directory', 'installer_sources_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'installer_squashfs_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'installer_manifest_file_name')
@@ -657,9 +717,11 @@ def analyze_iso_layout(source_directory_path):
     identify_files(source_directory_path, 'squashfs_directory', 'installer_generic_manifest_file_name')
     identify_files(source_directory_path, 'squashfs_directory', 'installer_generic_size_file_name')
 
-    # print('-' * 80)
-    # model.layout.print()
-    # print('-' * 80)
+    # 6. Additional Section
+
+    # Identify Files or Directories
+    identify_paths(source_directory_path, 'additional_include_path')
+    identify_paths(source_directory_path, 'additional_exclude_path')
 
     # Set important files that may not exist on the original ISO.
     if not model.layout.size_file_name:
@@ -667,10 +729,14 @@ def analyze_iso_layout(source_directory_path):
     if not model.layout.manifest_file_name:
         model.layout.manifest_file_name = 'filesystem.manifest', True
 
+    # print('-' * 80)
+    # model.layout.print()
+    # print('-' * 80)
+
     # Identify if the ISO has a legacy minimal install option.
     model.options.has_minimal_install = bool(model.layout.minimal_remove_file_name)
 
-    # Check if the analysis succeeded.
+    # Check if the analysis succeeded
 
     logger.log_value('The casper directory is', model.layout.casper_directory)
     logger.log_value('The squashfs directory is', model.layout.squashfs_directory)
@@ -775,28 +841,28 @@ def copy_original_iso_files():
     do not copy: MD5SUMS
     do not copy: .disk/release notes url
 
-    # Casper Section
+    # 1. Casper Section
     ~ ~ ~  copy: initrd file name
     ~ ~ ~  copy: vmlinuz file name
 
-    # General Section
+    # 2. General Section
     do not copy: squashfs file name
     do not copy: manifest file name
     ~ ~ ~  copy: minimal remove file name
     ~ ~ ~  copy: standard remove file name
     do not copy: size file name
 
-    # Minimal Section
+    # 3. Minimal Section
     do not copy: minimal squashfs file name
     do not copy: minimal manifest file name
     do not copy: minimal size file name
 
-    # Standard Section
+    # 4. Standard Section
     do not copy: standard squashfs file name
     do not copy: standard manifest file name
     do not copy: standard size file name
 
-    # Installer / Live Section
+    # 5. Installer / Live Section
     ~ ~ ~  copy: installer sources file name
     ~ ~ ~  copy: installer squashfs file name
     ~ ~ ~  copy: installer manifest file name
@@ -804,6 +870,10 @@ def copy_original_iso_files():
     ~ ~ ~  copy: installer generic squashfs file name
     ~ ~ ~  copy: installer generic manifest file name
     ~ ~ ~  copy: installer generic size file name
+
+    # 6. Additional Section
+    ~ ~ ~  copy: casper/extras
+    ~ ~ ~  copy: casper/maas
     """
 
     logger.log_label('Copy important files from the original disk image')
@@ -819,53 +889,91 @@ def copy_original_iso_files():
     target_file_path = os.path.join(model.project.custom_disk_directory, '')
     logger.log_value('The target file path is', target_file_path)
 
-    # Copy files from the original iso.
+    # Sections:
+    # 1. Casper Section - vmlinuz and initrd files
+    # 2. General Section - squashfs directory
+    # 3. Minimal Section - minimal install squashfs files
+    # 4. Standard Section - standard install squashfs files
+    # 5. Installer / Live Section - installer yaml and installer squashfs files
+    # 6. Additional Section - additional directory or file paths
 
-    # Some important rsync options:
-    #
-    #   -rlptgoD
-    #
-    #     -r --recursive
-    #     -l --links
-    #     -p --perms (do not use)
-    #     -t --times
-    #     -g --group
-    #     -O --owner
-    #     -D --devices --specials
+    # ------------------------------------------------------------------
+    # Includes
+    # ------------------------------------------------------------------
 
-    # Use info=progress2 to get the total progress, instead of the
-    # progress for individual files.
-    # Add read and write permissions for the user.
-    # Set read and write permissions for group and other.
-
-    # Includes: Casper Section
+    # 1. Casper Section
     include_11 = constructor.construct_rsync_includes(model.layout.casper_directory_as_list, model.layout.initrd_file_name_as_list)
     include_12 = constructor.construct_rsync_includes(model.layout.casper_directory_as_list, model.layout.vmlinuz_file_name_as_list)
 
-    # Includes: General Section
+    # 2. General Section
     include_21 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.minimal_remove_file_name_as_list)
     include_22 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.standard_remove_file_name_as_list)
 
-    # Includes: Installer / Live Section
-    include_31 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_sources_file_name_as_list)
-    include_32 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_squashfs_file_name_as_list)
-    include_33 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_manifest_file_name_as_list)
-    include_34 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_size_file_name_as_list)
-    include_35 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_squashfs_file_name_as_list)
-    include_36 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_manifest_file_name_as_list)
-    include_37 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_size_file_name_as_list)
+    # 3. Minimal Section
+    # N/A
 
-    # Excludes: Casper Section
+    # 4. Standard Section
+    # N/A
+
+    # 5. Installer / Live Section
+    include_51 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_sources_file_name_as_list)
+    include_52 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_squashfs_file_name_as_list)
+    include_53 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_manifest_file_name_as_list)
+    include_54 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_size_file_name_as_list)
+    include_55 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_squashfs_file_name_as_list)
+    include_56 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_manifest_file_name_as_list)
+    include_57 = constructor.construct_rsync_includes(model.layout.squashfs_directory_as_list, model.layout.installer_generic_size_file_name_as_list)
+
+    # 6. Additional Section
+    include_61 = constructor.construct_rsync_includes(model.layout.additional_include_path_as_list)
+
+    # ------------------------------------------------------------------
+    # Excludes
+    # ------------------------------------------------------------------
+
+    # 1. Casper Section
     # The * is used to exclude all files in the casper directory.
     # However, the preceding includes supersede all excludes, so
     # specified files in the casper directory will still be copied.
     exclude_11 = constructor.construct_rsync_excludes(model.layout.casper_directory_as_list, ['*'])
 
-    # Excludes: General Section
+    # 2. General Section
     # The * is used to exclude all files in the squashfs directory.
     # However, the preceding includes supersede all excludes, so
     # specified files in the squashfs directory will still be copied.
     exclude_21 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, ['*'])
+
+    # 3. Minimal Section
+    # N/A
+
+    # 4. Standard Section
+    # N/A
+
+    # 5. Installer / Live Section
+    # N/A
+
+    # 6. Additional Section
+    exclude_61 = constructor.construct_rsync_excludes(model.layout.additional_exclude_path_as_list)
+
+    # ------------------------------------------------------------------
+    # Copy files from the original iso
+    # ------------------------------------------------------------------
+
+    # Use the following rsync options:
+    # ┌───────┬──────────────────┬─────────────────────────────────────┐
+    # │ Short │ Long             │ Description                         │
+    # ├───────┼──────────────────┼─────────────────────────────────────┤
+    # │       │ --info=progress2 │ Output the total progress, instead  │
+    # │       │                  │   of progress for individual files  │
+    # │       │ --delete         │ Delete extraneous files from        │
+    # │       │                  │   destination directories           │
+    # │ -r    │ --recursive      │ Recurse into directories            │
+    # │ -l    │ --links          │ Copy symlinks as symlinks           │
+    # │       │ --chmod=CHMOD    │ Apply comma-separated permissions   │
+    # │       │                  │   --chmod=u+rwX,g=rX,o=rX           │
+    # │       │                  │   Set Read/write permissions for    │
+    # │       │                  │   the user, group, and other        │
+    # └───────┴──────────────────┴─────────────────────────────────────┘
 
     # Do not include a leading "/" in front of the relative file paths,
     # in the include and exclude arguments. Includes must precede
@@ -878,184 +986,45 @@ def copy_original_iso_files():
         ' --recursive'
         ' --links'
         ' --chmod=u+rwX,g=rX,o=rX'
-        # Casper Section
+        #
+        # Includes
+        #
+        # 1. Casper Section
         f' {include_11}'  # initrd_file_name
         f' {include_12}'  # vmlinuz_file_name
-        # General Section
+        # 2. General Section
         f' {include_21}'  # minimal_remove_file_name
         f' {include_22}'  # standard_remove_file_name
-        # Installer / Live Section
-        f' {include_31}'  # installer_sources_file_name
-        f' {include_32}'  # installer_squashfs_file_name
-        f' {include_33}'  # installer_manifest_file_name
-        f' {include_34}'  # installer_size_file_name
-        f' {include_35}'  # installer_generic_squashfs_file
-        f' {include_36}'  # installer_generic_manifest_file_name
-        f' {include_37}'  # installer_generic_size_file_name
-        # Casper Section
+        # 3. Minimal Section
+        #   N/A
+        # 4. Standard Section
+        #   N/A
+        # 5. Installer / Live Section
+        f' {include_51}'  # installer_sources_file_name
+        f' {include_52}'  # installer_squashfs_file_name
+        f' {include_53}'  # installer_manifest_file_name
+        f' {include_54}'  # installer_size_file_name
+        f' {include_55}'  # installer_generic_squashfs_file
+        f' {include_56}'  # installer_generic_manifest_file_name
+        f' {include_57}'  # installer_generic_size_file_name
+        # 6. Additional Section
+        f' {include_61}'  # additional_path
+        #
+        # Excludes
+        #
+        # 1. Casper Section
         f' {exclude_11}'  # casper_directory
-        # General Section
+        # 2. General Section
         f' {exclude_21}'  # squashfs_directory
-        # Additional Excludes
-        ' --exclude="md5sum.txt"'
-        ' --exclude="MD5SUMS"'
-        ' --exclude=".disk/release_notes_url"')
-
-    # The progress callback function.
-    def progress_callback(percent):
-        displayer.update_progress_bar_percent('extract_page__copy_original_iso_files_progress_bar', percent)
-        if percent % 10 == 0:
-            logger.log_value('Completed', f'{percent:n}%')
-
-    try:
-        track_progress(command, progress_callback)
-    except InterruptException as exception:
-        model.status.is_success_copy = False
-        if 'No space left on device' in str(exception):
-            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
-            message = 'Error. Not enough space on the disk.'
-        else:
-            # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
-            message = 'Error. Unable to copy files from the original disk image.'
-        displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
-        displayer.update_status('extract_page__copy_original_iso_files', ERROR)
-        logger.log_value('Propagate exception', exception)
-        raise exception
-    except Exception as exception:
-        model.status.is_success_copy = False
-        if 'No space left on device' in str(exception):
-            # message = '<span foreground="red">Error. Not enough space on the disk.</span>'
-            message = 'Error. Not enough space on the disk.'
-        else:
-            # message = '<span foreground="red">Error. Unable to copy files from the original disk image.</span>'
-            message = 'Error. Unable to copy files from the original disk image.'
-        displayer.update_label('extract_page__copy_original_iso_files_message', message, True)
-        displayer.update_status('extract_page__copy_original_iso_files', ERROR)
-        logger.log_value('Do not propagate exception', exception)
-        return True  # (Error)
-
-    model.status.is_success_copy = True
-
-    return False  # (No Error)
-
-
-def copy_original_iso_files_ALTERNATIVE():
-    """
-    Copies all files in the casper and squashfs directories, but
-    excludes specified files.
-
-    Exclude or copy the following files:
-
-    do not copy: md5sum.txt
-    do not copy: MD5SUMS
-    do not copy: .disk/release notes url
-
-    # Casper Section
-    ~ ~ ~  copy: initrd file name
-    ~ ~ ~  copy: vmlinuz file name
-
-    # General Section
-    do not copy: squashfs file name
-    do not copy: manifest file name
-    ~ ~ ~  copy: minimal remove file name
-    ~ ~ ~  copy: standard remove file name
-    do not copy: size file name
-
-    # Minimal Section
-    do not copy: minimal squashfs file name
-    do not copy: minimal manifest file name
-    do not copy: minimal size file name
-
-    # Standard Section
-    do not copy: standard squashfs file name
-    do not copy: standard manifest file name
-    do not copy: standard size file name
-
-    # Installer / Live Section
-    ~ ~ ~  copy: installer sources file name
-    ~ ~ ~  copy: installer squashfs file name
-    ~ ~ ~  copy: installer manifest file name
-    ~ ~ ~  copy: installer size file name
-    ~ ~ ~  copy: installer generic squashfs file name
-    ~ ~ ~  copy: installer generic manifest file name
-    ~ ~ ~  copy: installer generic size file name
-
-    do not copy: squashfs directory/*.gpg
-    """
-
-    logger.log_label('Copy important files from the original disk image')
-
-    # Add a "/" at the end of the path so rsync copies the contents
-    # of the source directory to the target directory.
-    source_file_path = os.path.join(model.project.iso_mount_point, '')
-    logger.log_value('The source file path is', source_file_path)
-
-    # Add a "/" at the end of the path so rsync copies files into
-    # the target directory. This is not required, but is consistent
-    # with the source directory path above.
-    target_file_path = os.path.join(model.project.custom_disk_directory, '')
-    logger.log_value('The target file path is', target_file_path)
-
-    # Copy files from the original iso.
-
-    # Some important rsync options:
-    #
-    #   -rlptgoD
-    #
-    #     -r --recursive
-    #     -l --links
-    #     -p --perms (do not use)
-    #     -t --times
-    #     -g --group
-    #     -O --owner
-    #     -D --devices --specials
-
-    # Use info=progress2 to get the total progress, instead of the
-    # progress for individual files.
-    # Add read and write permissions for the user.
-    # Set read and write permissions for group and other.
-
-    # General Section
-    exclude_11 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.squashfs_file_name_as_list)
-    exclude_12 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.manifest_file_name_as_list)
-    exclude_13 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.size_file_name_as_list)
-
-    # Minimal Section
-    exclude_21 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.minimal_squashfs_file_name_as_list)
-    exclude_22 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.minimal_manifest_file_name_as_list)
-    exclude_23 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.minimal_size_file_name_as_list)
-
-    # Standard Section
-    exclude_31 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.standard_squashfs_file_name_as_list)
-    exclude_32 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.standard_manifest_file_name_as_list)
-    exclude_33 = constructor.construct_rsync_excludes(model.layout.squashfs_directory_as_list, model.layout.standard_size_file_name_as_list)
-
-    # Do not include a leading "/" in front of the relative file paths
-    # in the include and exclude arguments.
-    command = (
-        'rsync'
-        f' --info=progress2 "{source_file_path}" "{target_file_path}"'
-        ' --delete'
-        # ' --archive'
-        ' --recursive'
-        ' --links'
-        ' --chmod=u+rwX,g=rX,o=rX'
-        # Squashfs Section
-        f' {exclude_11}'  # squashfs_file_name
-        f' {exclude_12}'  # manifest_file_name
-        f' {exclude_13}'  # size_file_name
-        # Minimal Section
-        f' {exclude_21}'  # minimal_squashfs_file_name
-        f' {exclude_22}'  # minimal_manifest_file_name
-        f' {exclude_23}'  # minimal_size_file_name
-        # Standard Section
-        f' {exclude_31}'  # standard_squashfs_file_name
-        f' {exclude_32}'  # standard_manifest_file_name
-        f' {exclude_33}'  # standard_size_file_name
-        f' --exclude="{model.layout.squashfs_directory}/*.gpg"'
-        ' --exclude="md5sum.txt"'
-        ' --exclude="MD5SUMS"'
-        ' --exclude=".disk/release_notes_url"')
+        # 3. Minimal Section
+        #   N/A
+        # 4. Standard Section
+        #   N/A
+        # 5. Installer / Live Section
+        #   N/A
+        # 6. Additional Section
+        f' {exclude_61}'  # md5sum.txt, MD5SUMS, .disk/release_notes_url
+    )
 
     # The progress callback function.
     def progress_callback(percent):
