@@ -652,7 +652,7 @@ def analyze_iso_layout(source_directory_path):
     #    • model.layout.installer_generic_size_file_name
     # 6. Additional Section
     #    • model.layout.additional_include_path
-    #    • model.layout.additional_exclude_path
+    #    • model.layout.additional_exclude_path (not set in model)
 
     # Initialize the layout.
     # Although layout is reset on the Start page and the Delete page,
@@ -721,7 +721,23 @@ def analyze_iso_layout(source_directory_path):
 
     # Identify Files or Directories
     identify_paths(source_directory_path, 'additional_include_path')
-    identify_paths(source_directory_path, 'additional_exclude_path')
+
+    # The files md5sum.txt, MD5SUMS, and .disk/release_notes_url are
+    # required by Cubic. But they may not exist on the source disk, so
+    # they cannot be automatically validated using the functions
+    # identify_directories_and_files(), identify_directories(),
+    # identify_files(), or identify_paths(). Therefore, these values
+    # are explicitly set to valid (i.e. True). Excluding these files
+    # prevents them from being overwritten or removed by the rsync
+    # command in the copy_original_iso_files() function.
+
+    # identify_paths(source_directory_path, 'additional_exclude_path')
+    model.layout.additional_exclude_path = 'md5sum.txt', True
+    model.layout.additional_exclude_path = 'MD5SUMS', True
+    model.layout.additional_exclude_path = '.disk/release_notes_url', True
+
+    # Exclude all *.gpg files in the squashfs directory.
+    model.layout.additional_exclude_path = f'{model.layout.squashfs_directory}/*.gpg', True
 
     # Set important files that may not exist on the original ISO.
     if not model.layout.size_file_name:
@@ -1008,7 +1024,7 @@ def copy_original_iso_files():
         f' {include_56}'  # installer_generic_manifest_file_name
         f' {include_57}'  # installer_generic_size_file_name
         # 6. Additional Section
-        f' {include_61}'  # additional_path
+        f' {include_61}'  # additional_include_path
         #
         # Excludes
         #
@@ -1023,7 +1039,7 @@ def copy_original_iso_files():
         # 5. Installer / Live Section
         #   N/A
         # 6. Additional Section
-        f' {exclude_61}'  # md5sum.txt, MD5SUMS, .disk/release_notes_url
+        f' {exclude_61}'  # additional_exclude_path
     )
 
     # The progress callback function.

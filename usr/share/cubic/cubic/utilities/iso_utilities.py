@@ -132,7 +132,9 @@ def _is_mounted_1(iso_mount_point, iso_file_path):
     result, exit_status, signal_status = execute_synchronous(command)
     is_mounted = False
     if not exit_status and not signal_status:
-        mount_information = re.search(r'%s\s*on\s*%s' % (re.escape(iso_file_path), re.escape(iso_mount_point)), result)
+        escaped_iso_file_path = re.escape(iso_file_path)
+        escaped_iso_mount_point = re.escape(iso_mount_point)
+        mount_information = re.search(rf'{escaped_iso_file_path}\s*on\s*{escaped_iso_mount_point}', result)
         is_mounted = bool(mount_information)
 
     logger.log_value('Is mounted?', is_mounted)

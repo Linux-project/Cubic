@@ -337,6 +337,8 @@ class Attributes:
            attribute name is suffixed with "_as_list".
 
         Arguments:
+        self : Attributes
+            The Attributes class.
         attribute : str
             The name of the attribute.
 
@@ -370,109 +372,153 @@ class Attributes:
     def __setattr__(self, attribute, value):
         """
         Override the assignment operation. For the specified attribute,
-        add or update the specified value as valid or invalid. The
-        specified attribute may store multiple unique values. Optionally
-        print a log output whenever a value is set.
-
-        The log output has the format:
-        "Set <structure name> <attribute>... <key>... <value>".
+        add or update the specified value as valid or invalid. Each
+        attribute may have multiple unique values. Optionally output a
+        log when the value is set, with the format:
+        "Set <display_attribute>... <value> (<is_valid>)".
 
         Arguments:
+        self : Attributes
+            The Attributes class.
         attribute : str
             The name of the attribute being set. The attribute name can
             be any accepted Python variable name, with the following
             restrictions:
-            - "name" is reserved and may not be used
-            - may not start with an underscore "_" character
-            - may not end in "_as_list". See __getattribute__().
-            Leading and trailing spaces will be removed from the
-            attribute name, and the attribute will be logged with all
-            underscore "_" characters replaced with space " "
-            characters.
-
+            • The word "name" is reserved and may not be used
+            • May not start with an underscore "_" character
+            • May not end in "_as_list". See __getattribute__().
+            In the log output the attribute will be displayed with all
+            underscore "_" characters replaced by space " " characters.
         value : tuple
             A tuple containing two or three items:
-            (value, is_valid, is_log)
-            1) value:
-            The first item is the name of a possible value. If value is
-            a string, leading and trailing spaces will be removed.
-            2) is_valid:
-            The second item indicates whether or not the value is valid.
-            It must evaluate to True or False.
-            3) is_log:
-            The third item is optional. It turns off logging if False.
-            It is True by default (i.e. logging is on).
+            • value (str): The actual value (non-empty string)
+            • is_valid (bool): Indicates if the value is valid
+            • is_log (bool, optional): Enables logging; the default is
+                                       True if not provided
         """
 
-        if value == None:
-            is_log = True
-            is_valid = False
-            value = None
-        elif len(value) == 2 and value[0] == None:
-            is_log = value[1]
-            is_valid = False
-            value = value[0]  # None
-        elif len(value) == 2 and value[0] != None:
+        display_attribute = str(attribute).replace('_', ' ')
+
+        if not isinstance(value, tuple):
+            raise TypeError(f'Error. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool, is log: bool (optional)).')
+
+        # Validate the inputs and set is_log, is_valid, and value.
+        # The variable "value" is reassigned from the tuple value to the
+        # actual value (which is the first item in the tuple) after the
+        # is_log and is_valid variables are extracted from the tuple.
+        if len(value) == 2:
+            if not isinstance(value[0], str):
+                raise TypeError(f'Error. Value is not a string. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool).')
+            if not value[0].strip():
+                raise TypeError(f'Error. Value is empty. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool).')
+            if not isinstance(value[1], bool):
+                raise TypeError(f'Error. Is valid is not a boolean. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool).')
             is_log = True
             is_valid = value[1]
-            value = value[0]
+            value = value[0].strip()
         elif len(value) == 3:
+            if not isinstance(value[0], str):
+                raise TypeError(
+                    f'Error. Value is not a string. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool, is log: bool).')
+            if not value[0].strip():
+                raise TypeError(f'Error. Value is empty. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool, is log: bool).')
+            if not isinstance(value[1], bool):
+                raise TypeError(
+                    f'Error. Is valid is not a boolean. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool, is log: bool).')
+            if not isinstance(value[2], bool):
+                raise TypeError(
+                    f'Error. Is log is not a boolean. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool, is log: bool).')
             is_log = value[2]
             is_valid = value[1]
-            value = value[0]
+            value = value[0].strip()
         else:
-            # TODO: Throw exception.
-            pass
+            raise TypeError(f'Error. The assignment for {display_attribute} must be a tuple (value: str, is valid: bool, is log: bool (optional)).')
 
-        if isinstance(value, str):
-            value = str(value).strip()
-        if isinstance(is_valid, str):
-            is_valid = str(is_valid).strip()
-
+        # Add the attribute if it does not exist.
         if attribute not in self.__dict__:
             self.__dict__[attribute] = {}
 
-        display_attribute = str(attribute).replace('_', ' ')
-        if not value:
-            # If no value was specified, set all values to False.
-            # For example structure.attribute_a = None is equivalent to:
-            # - structure.attribute_a = a_value_1, False
-            # - structure.attribute_a = a_value_2, False
-            # - structure.attribute_a = a_value_3, False
-            values = self.__dict__[attribute].keys()
-            for value in values:
-                if is_log:
-                    # print(f'Set {self.name} {display_attribute}...\t {value} ({is_valid})')
-                    # logger.log_value(f'Set {self.name} {display_attribute}', f'{value} ({is_valid})')
-                    logger.log_value(f'Set {display_attribute}', f'{value} ({is_valid})')
-                self.__dict__[attribute][value] = is_valid
-        else:
-            # If the value was specified, set it accordingly.
-            if is_log:
-                # print(f'Set {self.name} {display_attribute}...\t {value} ({is_valid})')
-                # logger.log_value(f'Set {self.name} {display_attribute}', f'{value} ({is_valid})')
-                logger.log_value(f'Set {display_attribute}', f'{value} ({is_valid})')
-            self.__dict__[attribute][value] = is_valid
+        # Log the output if required.
+        if is_log:
+            # print(f'Set {self.name} {display_attribute}...\t {value} ({is_valid})')
+            # logger.log_value(f'Set {self.name} {display_attribute}', f'{value} ({is_valid})')
+            logger.log_value(f'Set {display_attribute}', f'{value} ({is_valid})')
+
+        # Add or update the value for the attribute and set it as valid
+        # or invalid.
+        self.__dict__[attribute][value] = is_valid
 
     def set(self, attribute, *value):
         """
-        Store multiple values for the specified attribute. Optionally
-        print a log output whenever a value is set.
+        For the specified attribute, add or update the specified value
+        as valid or invalid. Each attribute may have multiple unique
+        values. Optionally output a log when the value is set, with the
+        format: "Set <display_attribute>... <value> (<is_valid>)".
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
+        attribute : str
+            The name of the attribute being set. The attribute name can
+            be any accepted Python variable name, with the following
+            restrictions:
+            • The word "name" is reserved and may not be used
+            • May not start with an underscore "_" character
+            • May not end in "_as_list". See __getattribute__().
+            In the log output the attribute will be displayed with all
+            underscore "_" characters replaced by space " " characters.
+        value : tuple
+            A tuple containing two or three items:
+            • value (str): The actual value (non-empty string)
+            • is_valid (bool): Indicates if the value is valid
+            • is_log (bool, optional): Enables logging; the default is
+                                       True if not provided
         """
 
         self.__setattr__(attribute, value)
 
     def set_attribute_values(self, attribute, values, is_valid=True, is_log=True):
         """
-        Store multiple values for the specified attribute. Optionally
-        print a log output whenever a value is set.
+        For the specified attribute, add or update the specified values
+        as valid or invalid. Each attribute may have multiple unique
+        values. Optionally output a log when each value is set, with the
+        format: "Set <display_attribute>... <value> (<is_valid>)".
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
+        attribute : str
+            The name of the attribute being set. The attribute name can
+            be any accepted Python variable name, with the following
+            restrictions:
+            • The word "name" is reserved and may not be used
+            • May not start with an underscore "_" character
+            • May not end in "_as_list". See __getattribute__().
+            In the log output the attribute will be displayed  with all
+            underscore "_" characters replaced by space " " characters.
+        values : list
+            The list of values to set
+        is_valid : bool
+            Indicates if the value is valid (optional). The default is
+            True if not provided.
+        is_log: bool
+            Enables logging (optional). The default is
+            True if not provided.
         """
+
+        # Add the attribute if it does not exist.
+        if attribute not in self.__dict__:
+            self.__dict__[attribute] = {}
+
         display_attribute = str(attribute).replace('_', ' ')
         for value in values:
+            # Log the output if required.
             if is_log:
                 # print(f'Set {self.name} {display_attribute}...\t {value} ({is_valid})')
                 # logger.log_value(f'Set {self.name} {display_attribute}', f'{value} ({is_valid})')
                 logger.log_value(f'Set {display_attribute}', f'{value} ({is_valid})')
+            # Add or update the value for the attribute and set it as
+            # valid or invalid.
             self.__dict__[attribute][value] = is_valid
 
     def attributes(self):
@@ -541,7 +587,8 @@ class Attributes:
 
     def reset(self, is_valid=False):
         """
-        Reset all existing attributes as invalid (False).
+        For all existing attributes, reset all values as invalid (or
+        valid, if specified).
 
         Arguments:
         self : Attributes
@@ -563,6 +610,10 @@ class Attributes:
     def print(self):
         """
         Print the attributes in a readable format.
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
         """
 
         for attribute, values in self.__dict__.items():
@@ -576,6 +627,10 @@ class Attributes:
     def __repr__(self):
         """
         Get the string representation of the underlying __dict__.
+
+        Arguments:
+        self : Attributes
+            The Attributes class.
 
         Returns:
         : str

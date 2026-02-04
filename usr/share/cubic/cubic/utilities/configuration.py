@@ -474,7 +474,7 @@ class Application(Configuration):
             A derived class of Configuration.
         """
 
-        logger.log_value('Load application configuration', '2024 layout from %s' % self.file_path)
+        logger.log_value('Load application configuration', f'2024 layout from {self.file_path}')
 
         # Read the configuration file.
         self.config_parser.read(self.file_path)
@@ -529,7 +529,7 @@ class Application(Configuration):
             A derived class of Configuration.
         """
 
-        logger.log_value('Save application configuration', '2022 layout to %s' % self.file_path)
+        logger.log_value('Save application configuration', f'2022 layout to {self.file_path}')
 
         # Save application values.
         self.set('Application', 'cubic_version', model.application.cubic_version)
@@ -620,7 +620,7 @@ class Project(Configuration):
             A derived class of Configuration.
         """
 
-        logger.log_value('Load project configuration', '2023 layout from %s' % self.file_path)
+        logger.log_value('Load project configuration', f'2023 layout from {self.file_path}')
 
         # The following fields must be set prior to invoking this method:
         # 1. model.project.directory
@@ -713,7 +713,7 @@ class Project(Configuration):
             A derived class of Configuration.
         """
 
-        logger.log_value('Load project configuration', '2024 layout from %s' % self.file_path)
+        logger.log_value('Load project configuration', f'2024 layout from {self.file_path}')
 
         # The following fields must be set prior to invoking this method:
         # 1. model.project.directory
@@ -821,7 +821,7 @@ class Project(Configuration):
             A derived class of Configuration.
         """
 
-        logger.log_value('Save project configuration', '2023 layout to %s' % self.file_path)
+        logger.log_value('Save project configuration', f'2023 layout to {self.file_path}')
 
         # Project
         self.set('Project', 'cubic_version', model.application.cubic_version)

@@ -119,6 +119,18 @@ custom.iso_release_notes_url = None
 
 layout = Attributes('layout')
 
+# The assignment for layout.<attribute> takes up to three arguments.
+# (See the structures module for more information). When two arguments
+# are supplied, the second argument is a flag that indicates if the
+# value (i.e. the first argument) is valid. Below, all values are
+# initially set to False (invalid), and they must be validated on the
+# Extract page using the identify_directories_and_files(),
+# identify_directories(), identify_files(), or identify_paths()
+# functions; values may also be explicitly set as valid (i.e. True).
+# Note that the model.layout.reset() function sets all values as invalid
+# prior to the Extract page, where they are validated in the
+# analyze_iso_layout() function.
+
 # 1. Casper Section
 
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -229,9 +241,19 @@ layout.additional_include_path = 'install/hwe-netboot', False
 # Ubuntu Server 14.04.5, 16.04.6, 18.04.2, 18.04.5
 layout.additional_include_path = 'install/netboot', False
 
+# The files md5sum.txt, MD5SUMS, and .disk/release_notes_url are
+# required by Cubic, but they may not exist on the source disk. These
+# values are explicitly set to valid (True) on the Extract page in the
+# analyze_iso_layout() function.
 layout.additional_exclude_path = 'md5sum.txt', False
 layout.additional_exclude_path = 'MD5SUMS', False
 layout.additional_exclude_path = '.disk/release_notes_url', False
+
+# Exclude all *.gpg files in the squashfs directory.
+# The value for model.layout.additional_exclude_path requires
+# model.layout.squashfs_directory to be set first, so it is can not be
+# set here and must be set on the Extract page.
+# model.layout.additional_exclude_path = f'{model.layout.squashfs_directory}/*.gpg', True
 
 ########################################################################
 # Status

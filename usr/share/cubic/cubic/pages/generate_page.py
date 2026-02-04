@@ -781,7 +781,8 @@ def update_file_system_size():
         # "GLib-CRITICAL g_variant_new_string assertion 'g_utf8_validate
         # (string, -1, NULL)' failed."
         # See https://github.com/PJ-Singh-001/Cubic/issues/420.
-        size_1_information = re.search(rf'(\d+)\s*{model.project.custom_root_directory}', result)
+        escaped_path = re.escape(model.project.custom_root_directory)
+        size_1_information = re.search(rf'(\d+)\s*{escaped_path}', result)
         size_1_in_bytes = int(size_1_information.group(1))
         size_1_in_mib = size_1_in_bytes / MIB
         size_1_in_gib = size_1_in_bytes / GIB
@@ -1351,7 +1352,7 @@ def update_checksums():
 
 def check_custom_disk_directory_size():
 
-    logger.log_label('Get the custom disk size')
+    logger.log_label('Get the custom disk directory size')
 
     # It is not necessary to initialize these values because they are
     # not used if there is an exception.
@@ -1371,7 +1372,8 @@ def check_custom_disk_directory_size():
         # "GLib-CRITICAL g_variant_new_string assertion 'g_utf8_validate
         # (string, -1, NULL)' failed."
         # See https://github.com/PJ-Singh-001/Cubic/issues/420.
-        size_information = re.search(rf'(\d+)\s*{model.project.custom_disk_directory}', result)
+        escaped_path = re.escape(model.project.custom_disk_directory)
+        size_information = re.search(rf'(\d+)\s*{escaped_path}', result)
         size_in_bytes = int(size_information.group(1))
         size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
@@ -1497,7 +1499,8 @@ def create_iso_image():
         # "GLib-CRITICAL g_variant_new_string assertion 'g_utf8_validate
         # (string, -1, NULL)' failed."
         # See https://github.com/PJ-Singh-001/Cubic/issues/420.
-        size_information = re.search(rf'(\d+)\s*{iso_file_path}', result)
+        escaped_path = re.escape(iso_file_path)
+        size_information = re.search(rf'(\d+)\s*{escaped_path}', result)
         size_in_bytes = int(size_information.group(1))
         size_in_mib = size_in_bytes / MIB
         size_in_gib = size_in_bytes / GIB
