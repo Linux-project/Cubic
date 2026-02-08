@@ -1,5 +1,11 @@
 cubic (2026.02) resolute questing plucky oracular noble mantic lunar kinetic jammy impish hirsute groovy focal bionic; urgency=low
 
+  * Issues fixed in version 2026.02.102:
+
+  - Updated Debian control file section value to "admin".
+  - Fixed Bug GH:#458, The release description does not get updated for some
+    non-Ubuntu distributions.
+
   * Issues fixed in version 2026.02.101:
 
   - Fixed Bug GH:#455, Generate page error: Unable to get the size of the custom
@@ -659,4 +665,4 @@ cubic (2026.02) resolute questing plucky oracular noble mantic lunar kinetic jam
     customized OS.
   - Merged from Experimental branch, revision 19
 
- -- PJ Singh <psingh.cubic@gmail.com>  Tue, 03 Feb 2026 19:25:03 -0500
+ -- PJ Singh <psingh.cubic@gmail.com>  Sat, 07 Feb 2026 23:30:57 -0500

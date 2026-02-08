@@ -50,6 +50,7 @@ from gi.repository import Gdk
 from gi.repository import Gtk
 
 import os
+import re
 import time
 
 from cubic.choosers import copy_file_chooser
@@ -66,7 +67,6 @@ from cubic.utilities import file_utilities
 from cubic.utilities import iso_utilities
 from cubic.utilities import logger
 from cubic.utilities import model
-from cubic.utilities.processor import execute_synchronous
 
 ########################################################################
 # Global Variables & Constants
@@ -444,23 +444,23 @@ def enter(action, old_page=None):
 
     elif action == 'next':
 
-        # Attempt to enter the virtual environment.
-        console.enter_virtual_environment(update_status)
-
         # Update the release description.
         if model.options.update_os_release:
             update_release_descriptions()
+
+        # Attempt to enter the virtual environment.
+        console.enter_virtual_environment(update_status)
 
         return
 
     elif action == 'next-terminal':
 
-        # Attempt to enter the virtual environment.
-        console.enter_virtual_environment(update_status)
-
         # Update the release description.
         if model.options.update_os_release:
             update_release_descriptions()
+
+        # Attempt to enter the virtual environment.
+        console.enter_virtual_environment(update_status)
 
         return
 
@@ -522,14 +522,14 @@ def leave(action, new_page=None):
 
         displayer.set_visible('terminal_page__copy_header_bar_button', False)
 
+        # Update the release description.
+        if model.options.update_os_release:
+            update_release_descriptions()
+
         # The terminal continues running whenever the application
         # navigates away from the Terminal page, so the pseudo terminal
         # process must be explicitly killed.
         console.exit_virtual_environment()
-
-        # Update the release description.
-        if model.options.update_os_release:
-            update_release_descriptions()
 
         # Delete the virtual environment lock file.
         lock_file_path = os.path.join(model.project.directory, LOCK_FILE_NAME)
@@ -833,32 +833,83 @@ def update_status(status):
     logger.log_value('Virtual environment status message', message)
 
 
-def update_release_descriptions():
+def update_release_description(base_file_path, relative_file_path, search_text, replacement_text):
+    """
+    Update the release description in a specified file.
 
-    # logger.log_label('Update the release descriptions')
+    Args:
+        base_file_path (str): The base directory where the target file is located.
+        relative_file_path (str): The relative path to the target file from the base directory.
+        search_text (str): The text pattern to search for in the target file.
+        replacement_text (str): The text to replace the found pattern with.
+    """
+
+    full_file_path = os.path.join(base_file_path, relative_file_path)
+    real_file_path = os.path.realpath(full_file_path)
+
+    # The target file path may be the same as the source file path, if
+    # source file path is not a link.
+    display_source_file_path = os.path.join(os.path.sep, relative_file_path)
+    display_target_file_path = os.path.join(os.path.sep, os.path.relpath(real_file_path, base_file_path))
+
+    logger.log_value('Update release description', display_source_file_path)
+
+    # Check if the full file path is a symbolic link.
+    if os.path.islink(full_file_path):
+        logger.log_value(f'File {display_source_file_path} is a link to', display_target_file_path)
+
+    # Ensure the full file path exists and is a regular file.
+    if not os.path.isfile(full_file_path):
+        logger.log_value('Unable to update release description', f'The file {display_target_file_path} does not exist')
+        return
+
+    # Check if the file contains the specified search text.
+    if not file_utilities.find_in_file(search_text, full_file_path):
+        logger.log_value('Unable to update release description', f'The file {display_target_file_path} does not contain {search_text}')
+        return
+
+    # Check if the replacement text has already been applied.
+    if file_utilities.find_in_file(re.escape(replacement_text), full_file_path):
+        # Display the existing release description.
+        match = file_utilities.find_in_file(search_text, full_file_path)
+        if match: logger.log_value('Already updated release description', match[0])
+        return
+
+    # Replace the specified search text with the replacement text.
+    result, exit_status, signal_status = file_utilities.replace_text_in_file(real_file_path, search_text, replacement_text)
+    if exit_status == OK:
+        # Display the updated release description.
+        match = file_utilities.find_in_file(search_text, full_file_path)
+        if match: logger.log_value('The new release description is', match[0])
+    else:
+        logger.log_value('Unable to update release description', display_source_file_path)
+        logger.log_value('The result is', result)
+        logger.log_value('The exit status, signal status is', f'{exit_status}, {signal_status}')
+
+
+def update_release_descriptions():
+    """
+    Update the release descriptions in the following files:
+    • /etc/lsb-release
+    • /etc/os-release
+    • /usr/lib/os-release
+    """
+
+    logger.log_label('Update the release descriptions')
 
     description = f'{model.custom.iso_volume_id} (Cubic {model.project.modify_date})'
 
-    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'lsb-release')
-    if os.path.isfile(file_path) and not os.path.islink(file_path):
-        search_text = 'DISTRIB_DESCRIPTION.*'
-        replacement_text = f'DISTRIB_DESCRIPTION="{description}"'
-        program = os.path.join(model.application.directory, 'commands', 'replace-text')
-        command = ['pkexec', program, search_text, replacement_text, file_path]
-        result, exit_status, signal_status = execute_synchronous(command)
+    relative_file_path = os.path.join('etc', 'lsb-release')
+    search_text = r'DISTRIB_DESCRIPTION.*'
+    replacement_text = rf'DISTRIB_DESCRIPTION="{description}"'
+    update_release_description(model.project.custom_root_directory, relative_file_path, search_text, replacement_text)
 
-    file_path = os.path.join(model.project.custom_root_directory, 'etc', 'os-release')
-    if os.path.isfile(file_path) and not os.path.islink(file_path):
-        search_text = 'PRETTY_NAME.*'
-        replacement_text = f'PRETTY_NAME="{description}"'
-        program = os.path.join(model.application.directory, 'commands', 'replace-text')
-        command = ['pkexec', program, search_text, replacement_text, file_path]
-        result, exit_status, signal_status = execute_synchronous(command)
+    relative_file_path = os.path.join('etc', 'os-release')
+    search_text = r'PRETTY_NAME.*'
+    replacement_text = rf'PRETTY_NAME="{description}"'
+    update_release_description(model.project.custom_root_directory, relative_file_path, search_text, replacement_text)
 
-    file_path = os.path.join(model.project.custom_root_directory, 'usr', 'lib', 'os-release')
-    if os.path.isfile(file_path) and not os.path.islink(file_path):
-        search_text = 'PRETTY_NAME.*'
-        replacement_text = f'PRETTY_NAME="{description}"'
-        program = os.path.join(model.application.directory, 'commands', 'replace-text')
-        command = ['pkexec', program, search_text, replacement_text, file_path]
-        result, exit_status, signal_status = execute_synchronous(command)
+    relative_file_path = os.path.join('usr', 'lib', 'os-release')
+    search_text = r'PRETTY_NAME.*'
+    replacement_text = rf'PRETTY_NAME="{description}"'
+    update_release_description(model.project.custom_root_directory, relative_file_path, search_text, replacement_text)

@@ -70,17 +70,20 @@ process = None
 # If the child was terminated abnormally with a signal, then
 # signal_status will store the signal value and exit_status will be None.
 #
-# Process              exit_status     signal_status
-# -----------------    -----------    ------------
-# Running              None           None
-# Exited Normally      Return Code    None
-# Exited Abnormally    None           Signal Code
-
-# Bash Process         exit_status     signal_status
-# -----------------    -----------    ------------
-# Running              None           None
-# Exited Normally      0              None
-# Exited Abnormally    1 | Error #    None
+# ┌─────────────────────┬────────────────┬─────────────────┐
+# │ Process             │ exit_status    │ signal_status   │
+# ├─────────────────────┼────────────────┼─────────────────┤
+# │ Running             │ None           │ None            │
+# │ Exited Normally     │ Return Code    │ None            │
+# │ Exited Abnormally   │ None           │ Signal Code     │
+# └─────────────────────┴────────────────┴─────────────────┘
+# ┌─────────────────────┬────────────────┬─────────────────┐
+# │ Bash Process        │ exit_status    │ signal_status   │
+# ├─────────────────────┼────────────────┼─────────────────┤
+# │ Running             │ None           │ None            │
+# │ Exited Normally     │ 0              │ None            │
+# │ Exited Abnormally   │ 1 | Error #    │ None            │
+# └─────────────────────┴────────────────┴─────────────────┘
 
 
 # TODO: Double check all invocations that use a command, because we
